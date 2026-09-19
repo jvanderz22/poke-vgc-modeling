@@ -25,6 +25,10 @@ class PoolTeam:
     replays: list[str]
 
     @property
+    def id(self) -> str:
+        return replays.team_id(self.key)
+
+    @property
     def team(self) -> Team:
         return parse_team(self.text)
 

@@ -115,9 +115,57 @@ function replay(req) {
 	return {id: req.id, ok: true, ended: true, end: {winner: end.winner || null, turns: end.turns, seed: end.seed, score: end.score, inputLog: end.inputLog, log}};
 }
 
+/**
+ * Re-simulate from an inputLog and return every channel step by step, for snapshot extraction:
+ * steps[i] = {input, spectator: [line...], p1: [line...], p2: [line...], requests: {p1?, p2?}}
+ * holds what each channel received after input line i was applied. `requests` are the raw
+ * request JSON strings each side was sent at that step (the decision points).
+ */
+function trace(req) {
+	const steps = [];
+	let cur = null;
+	let battle = null;
+	let end = null;
+	const send = (type, data) => {
+		if (type === 'update') {
+			const ch = extractChannelMessages(Array.isArray(data) ? data.join('\n') : data, [0, 1, 2]);
+			cur.spectator.push(...ch[0]);
+			cur.p1.push(...ch[1]);
+			cur.p2.push(...ch[2]);
+		} else if (type === 'sideupdate') {
+			const nl = data.indexOf('\n');
+			const body = data.slice(nl + 1);
+			if (body.startsWith('|request|')) cur.requests[data.slice(0, nl)] = body.slice('|request|'.length);
+			else cur[data.slice(0, nl)].push(...body.split('\n'));  // |error| lines etc.
+		} else if (type === 'end') {
+			end = JSON.parse(data);
+		}
+	};
+	for (const line of req.inputLog) {
+		cur = {input: line, spectator: [], p1: [], p2: [], requests: {}};
+		steps.push(cur);
+		const [cmd, rest] = [line.slice(1, line.indexOf(' ')), line.slice(line.indexOf(' ') + 1)];
+		if (cmd === 'start') {
+			battle = new Battle({...JSON.parse(rest), send});
+		} else if (cmd === 'player') {
+			const [slot, opts] = [rest.slice(0, 2), JSON.parse(rest.slice(3))];
+			battle.setPlayer(slot, opts);
+			if (req.ots && slot === 'p2') battle.showOpenTeamSheets();
+		} else if (cmd === 'p1' || cmd === 'p2') {
+			battle.choose(cmd, rest);
+		} else if (!cmd.startsWith('version')) {
+			throw new Error(`unsupported input line: ${line}`);
+		}
+		battle && battle.sendUpdates();
+	}
+	if (!end) throw new Error('trace did not finish');
+	return {id: req.id, ok: true, ended: true, steps, winner: end.winner || null, turns: end.turns};
+}
+
 function handle(req) {
 	if (req.op === 'start') return flush(req.id, start(req));
 	if (req.op === 'replay') return replay(req);
+	if (req.op === 'trace') return trace(req);
 	const state = battles.get(req.id);
 	if (!state) throw new Error(`no battle ${req.id}`);
 	if (req.op === 'close') {

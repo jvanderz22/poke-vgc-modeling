@@ -33,6 +33,19 @@ vgc team stats team.txt                          # level-50 stats, including Meg
 vgc calc --attacker "Garchomp @ Garchompite Z | Jolly Nature | EVs: 32 Atk / 32 Spe" --attacker-mega \
          --defender "Kingambit | Careful Nature | EVs: 32 HP / 32 Def" --move Earthquake
 vgc server start | status | stop                 # local Showdown on :8000, --no-security
+
+vgc meta scrape --format both --pages 8          # cache public replays (data/replays/)
+vgc meta pool                                    # dated team pool from open team sheets
+vgc sim battle --team-a a.txt --team-b b.txt --n 50   # seeded, parallel; win rate with 95% CI
+vgc sim selfplay --n 500 --policy-a heuristic --policy-b random
+
+vgc data freeze                                  # freeze held-out teams/battles/replays (once)
+vgc data generate --n 6000 --workers 7           # heuristic self-play, then snapshots
+vgc data extract --run data/selfplay/<run_id>    # snapshots from any self-play run
+vgc data human                                   # snapshots from cached human replays
+vgc data manifest --name wp-v1-train             # training manifest, refused if it touches held-out data
+vgc data parity --n 50                           # snapshots vs what poke-env showed live
+vgc data stats
 ```
 
 Team files use Showdown's export format. In Champions, the `EVs:` line holds **Stat Points**
@@ -45,8 +58,11 @@ configs/regulations/     regulation configs (L0): reg_mc.yaml, reg_mb.yaml
 data/regulations/<id>/   legality snapshot exported from the pinned Showdown (vgc regulation export)
 data/champions-data/     vbbjandrade/pokemon-champions-data (CC BY 4.0) — mechanics docs, cross-check
 vendor/pokemon-showdown/ smogon/pokemon-showdown (MIT), pinned
-sidecar/                 Node helpers: calc server, Showdown dex export, damage sampler
-src/vgc/                 regulation · engine · teams · cli  (policy · building · mcp to come)
+data/teams/<id>/         team pools built from open team sheets
+data/splits/<id>.json    the frozen held-out split (tracked; never re-rolled)
+data/selfplay/, data/snapshots/, data/replays/   generated / cached, not tracked
+sidecar/                 Node helpers: calc server, Showdown dex export, damage sampler, battle runner
+src/vgc/                 regulation · engine · teams · policy · meta · sim · data · cli  (building · mcp to come)
 ```
 
 ## Attribution

@@ -16,7 +16,7 @@ import random
 import subprocess
 import time
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 import orjson
 from poke_env.battle.double_battle import DoubleBattle
@@ -178,7 +178,11 @@ def play_battle(
     team_ids: tuple[str, str] = ("", ""),
     ots: bool = True,
     max_decisions: int = 2000,
+    on_decision: Callable[[str, DoubleBattle, int], None] | None = None,
 ) -> BattleRecord:
+    """Play one battle. `on_decision(side, battle, k)` is called once per accepted choice
+    with the view the policy chose from; `k` counts that side's accepted choices, i.e. its
+    `>side` lines in the inputLog (used to check snapshot parity with live play)."""
     t0 = time.perf_counter()
     names = ("p1", "p2")
     res = runner.request({
@@ -189,6 +193,7 @@ def play_battle(
     rngs = {s: random.Random(f"{seed}:{s}") for s in names}
     pol = dict(zip(names, policies))
     invalid = trapped = 0
+    accepted = {s: 0 for s in names}
     for _ in range(max_decisions):
         for s in names:
             for chunk in res.get(s, []):
@@ -215,7 +220,11 @@ def play_battle(
         else:
             choice = _choice_text(pol[side].choose_move(view.battle, rngs[side]))
         res = runner.request({"op": "choose", "id": battle_id, "side": side, "choice": choice})
-        if not res["ok"]:
+        if res["ok"]:
+            if on_decision is not None:  # the view isn't fed this response until the next loop
+                on_decision(side, view.battle, accepted[side])
+            accepted[side] += 1
+        else:
             # Hidden trapping (Shadow Tag, Arena Trap…) is only revealed by a rejected switch.
             if "is trapped" in (res.get("error") or ""):
                 trapped += 1

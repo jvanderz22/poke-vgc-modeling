@@ -133,3 +133,10 @@ def teams_from_replay(replay: dict, reg: Regulation) -> list[tuple[str, Team]]:
 def team_key(team: Team) -> str:
     """Identity of a sheet ignoring order and (imputed) spreads."""
     return "/".join(sorted(f"{to_id(m.species)}@{to_id(m.item or '')}:{','.join(sorted(to_id(x) for x in m.moves))}" for m in team))
+
+
+def team_id(key: str) -> str:
+    """Short stable id for a `team_key` (used in battle records, splits and manifests)."""
+    import hashlib
+
+    return "t" + hashlib.sha1(key.encode()).hexdigest()[:11]

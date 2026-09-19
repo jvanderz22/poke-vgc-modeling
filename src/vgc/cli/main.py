@@ -200,9 +200,133 @@ def cmd_sim_selfplay(args: argparse.Namespace) -> int:
     from vgc.sim.selfplay import gauntlet_matchups, run
 
     reg = _reg(args)
-    teams = [(f"pool{i}", t.text) for i, t in enumerate(load_pool(reg))]
+    teams = [(t.id, t.text) for t in load_pool(reg)]
     ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed)
     _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=args.run_id))
+    return 0
+
+
+# --- data -----------------------------------------------------------------------------
+
+def cmd_data_freeze(args: argparse.Namespace) -> int:
+    from vgc.data import splits
+    from vgc.data.snapshots import replay_group
+    from vgc.meta import pool, replays
+
+    reg = _reg(args)
+    found = sorted((pool.TEAMS / reg.id).glob("ots_pool_*.json"))
+    teams = pool.load_pool(reg, found[-1])
+    groups = [replay_group(r) for fmt in pool.formats_for(reg) for r in replays.cached(fmt)]
+    path = splits.freeze(reg, [t.id for t in teams], groups, found[-1].name)
+    d = json.loads(path.read_text())
+    print(f"froze {path}: {len(d['heldout_teams'])}/{d['teams_at_freeze']} teams, "
+          f"{len(d['heldout_human_groups'])}/{d['human_groups_at_freeze']} replay groups held out; rates {d['rates']}")
+    return 0
+
+
+def _print_extract(r: dict) -> None:
+    print(f"{r['source']}: {sum(r['battles'].values())} battles → {r['out_dir']} ({r['seconds']}s)")
+    for split, n in sorted(r["records"].items()):
+        print(f"  {split:15} {r['battles'][split]:6} battles {n:8} snapshots")
+    if r["errors"]:
+        print(f"  {r['errors']} errors, e.g. {r['error_examples'][:2]}")
+
+
+def cmd_data_extract(args: argparse.Namespace) -> int:
+    from vgc.data.pipeline import extract_selfplay
+
+    r = extract_selfplay(Path(args.run), _reg(args), workers=args.workers)
+    _print_extract(r)
+    return 1 if r["errors"] else 0
+
+
+def cmd_data_human(args: argparse.Namespace) -> int:
+    from vgc.data.pipeline import extract_human
+    from vgc.meta import pool
+
+    reg = _reg(args)
+    fmts = pool.formats_for(reg) if args.format == "both" else [reg.showdown_format + ("bo3" if args.format == "bo3" else "")]
+    bad = 0
+    for fmt in fmts:
+        r = extract_human(fmt, reg)
+        _print_extract(r)
+        bad += r["errors"]
+    return 1 if bad else 0
+
+
+def cmd_data_generate(args: argparse.Namespace) -> int:
+    from vgc.data.pipeline import extract_selfplay
+    from vgc.meta.pool import load_pool
+    from vgc.sim.selfplay import SELFPLAY, gauntlet_matchups, run
+
+    reg = _reg(args)
+    teams = [(t.id, t.text) for t in load_pool(reg)]
+    ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed)
+    run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}-s{args.seed}-n{args.n}"
+    _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=run_id))
+    r = extract_selfplay(SELFPLAY / run_id, reg, workers=args.workers)
+    _print_extract(r)
+    return 1 if r["errors"] else 0
+
+
+def cmd_data_manifest(args: argparse.Namespace) -> int:
+    from vgc.data import pipeline, splits
+
+    reg = _reg(args)
+    files = [Path(f) for f in args.files] or pipeline.snapshot_files(reg, args.split)
+    m = splits.build_manifest(files, reg, purpose="train" if args.split == "train" else args.split)
+    problems = splits.check_manifest(m, reg)
+    out = pipeline.SNAPSHOTS / reg.id / "manifests" / f"{args.name}.json"
+    if problems:
+        print(f"refusing to write {out}: {len(problems)} problems")
+        for p in problems[:20]:
+            print(f"  {p}")
+        return 1
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(m, indent=1) + "\n")
+    print(f"{len(m['files'])} files, {len(m['battles'])} battles, {sum(f['records'] for f in m['files'])} snapshots → {out}")
+    return 0
+
+
+def cmd_data_check(args: argparse.Namespace) -> int:
+    from vgc.data import splits
+
+    reg = _reg(args)
+    problems = splits.check_manifest(json.loads(Path(args.manifest).read_text()), reg)
+    for p in problems[:50]:
+        print(p)
+    print("clean" if not problems else f"{len(problems)} problems")
+    return 1 if problems else 0
+
+
+def cmd_data_parity(args: argparse.Namespace) -> int:
+    from vgc.data.parity import run_parity
+
+    r = run_parity(_reg(args), args.n, seed=args.seed)
+    print(f"{r['battles']} battles, {r['decisions_checked']} player decisions checked, {r['missing']} unmatched")
+    for k, v in r["mismatches"].items():
+        print(f"  {v:5} {k}  e.g. {r['examples'][k]}")
+    if r["illusion_divergences"]:
+        n = sum(r["illusion_divergences"].values())
+        print(f"  ({n} differences in battles with a broken Illusion: poke-env tracks Pokémon by name; not counted)")
+    print("parity: exact" if not r["mismatches"] and not r["missing"] else "parity: MISMATCHES")
+    return 1 if r["mismatches"] or r["missing"] else 0
+
+
+def cmd_data_stats(args: argparse.Namespace) -> int:
+    from vgc.data import pipeline, splits
+
+    reg = _reg(args)
+    root = pipeline.SNAPSHOTS / reg.id
+    for d in sorted(p for p in root.glob("*/*") if p.is_dir() and p.parent.name != "manifests"):
+        parts = []
+        for f in sorted(d.glob("*.jsonl.gz")):
+            battles, n = set(), 0
+            for rec in splits.read_shard(f):
+                battles.add(rec["battle"])
+                n += 1
+            parts.append(f"{f.name.split('.')[0]} {len(battles)}/{n}")
+        print(f"{d.relative_to(root)}: " + ", ".join(parts) + "  (battles/snapshots)")
     return 0
 
 
@@ -278,6 +402,33 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_sim_battle)
     p = with_run(simp.add_parser("selfplay", help="random pairs from the latest team pool"))
     p.set_defaults(func=cmd_sim_selfplay)
+
+    data = sub.add_parser("data", help="battle snapshots, held-out splits, manifests").add_subparsers(dest="data_cmd", required=True)
+    p = with_reg(data.add_parser("freeze", help="freeze the held-out split (once per regulation)"))
+    p.set_defaults(func=cmd_data_freeze)
+    p = with_reg(data.add_parser("extract", help="snapshots from a self-play run's inputLogs"))
+    p.add_argument("--run", required=True, help="data/selfplay/<run_id>")
+    p.add_argument("--workers", type=int, default=4)
+    p.set_defaults(func=cmd_data_extract)
+    p = with_reg(data.add_parser("human", help="snapshots from cached human replays"))
+    p.add_argument("--format", choices=["bo3", "bo1", "both"], default="both")
+    p.set_defaults(func=cmd_data_human)
+    p = with_run(data.add_parser("generate", help="self-play across the team pool, then extract snapshots"))
+    p.set_defaults(func=cmd_data_generate)
+    p = with_reg(data.add_parser("manifest", help="write a checked training manifest"))
+    p.add_argument("--name", required=True)
+    p.add_argument("--split", choices=["train", "heldout_battle", "heldout_team", "heldout_human"], default="train")
+    p.add_argument("files", nargs="*", help="snapshot shards (default: every <split> shard)")
+    p.set_defaults(func=cmd_data_manifest)
+    p = with_reg(data.add_parser("check", help="re-check a manifest against the frozen split"))
+    p.add_argument("manifest")
+    p.set_defaults(func=cmd_data_check)
+    p = with_reg(data.add_parser("parity", help="live poke-env view vs re-derived snapshots"))
+    p.add_argument("--n", type=int, default=50)
+    p.add_argument("--seed", type=int, default=0)
+    p.set_defaults(func=cmd_data_parity)
+    p = with_reg(data.add_parser("stats", help="snapshot datasets on disk"))
+    p.set_defaults(func=cmd_data_stats)
     return ap
 
 

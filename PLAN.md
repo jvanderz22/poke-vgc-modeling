@@ -7,8 +7,8 @@
 | 0 — Environment spike       | ✅ Done 2026-09-19 | [findings](docs/phase0-findings.md): 36.5 battles/s (8 workers), pins set, ONNX ok |
 | 1 — Foundation              | ✅ Done 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; 42 tests; calc = simulator on 4 scenarios |
 | 2 — Battle layer, tier 1    | ✅ Done 2026-09-19 | heuristic 98.4% vs random (500, CI 96.9–99.2%); seeded runner, identical across worker counts; 52 tests |
-| 3 — Battle data             | ⏳ Next        | snapshots per perspective, human replay corpus, frozen held-out sets (split from old 3) |
-| 4 — Win probability v1 (OTS) | —             | **new** — spectator + player perspectives, from team preview on                        |
+| 3 — Battle data             | ✅ Done 2026-09-19 | 134k training snapshots (6k self-play + 1.6k human games); parity exact on 3,089 live decisions; split frozen; 63 tests |
+| 4 — Win probability v1 (OTS) | ⏳ Next       | **new** — spectator + player perspectives, from team preview on                        |
 | 5 — Win probability v2 (closed sheets) | —   | **new** — belief over opponent sets in player mode                                     |
 | 6 — Expected WP, BC + search | —             | driven by expected win probability per action                                          |
 | 7 — Team evaluation         | —              | was 3; now judged by the Phase 6 battle stack                                          |
@@ -50,6 +50,24 @@ _Order changed 2026-09-19: battle strength first (3–6), then team evaluation a
   warns about them.
 - **Engine gotcha for Phase 2:** a raw `Battle` does not apply `Adjust Level = 50` (the validator does). Any
   harness that skips the server's validator must set level 50 itself.
+
+**Changes from the original plan (from Phase 3):**
+
+- **Snapshots are structured observations, not feature vectors.** Featurization belongs to Phase 4 (one featurizer
+  for all perspectives), so a snapshot records what a perspective knows, including what it doesn't, e.g.
+  `item: null` means unknown and `""` means known to be empty. Re-featurizing never needs re-simulation.
+- **Our own observer, not poke-env, builds snapshots.** poke-env has no spectator mode, its move data is Gen 9, and it
+  mis-tracks Illusion. poke-env is kept as the independent reference for the parity check instead.
+- **Matching live decisions to replayed ones uses choice order, not request ids.** A raw `Battle` has no `rqid` (the
+  server adds it). `play_battle(on_decision=…)` fires once per accepted choice, and snapshots carry `choice_index`.
+- **Champions public HP is floored and colour-tagged** (`50/100y`, `20/100r`). It's parsed as a fraction.
+- **Human data is forfeit-heavy.** 37–38% of games end in a forfeit, labelled `ended_by: forfeit`. Phase 4 has to
+  decide whether to weight these or cut them off at the forfeit, not just count them as wins.
+- **Held-out teams are a large share of the data** (34% of self-play battles, 32% of Bo3 games), because the popular
+  teams recur. That leaves the team-generalization test well powered. Closed-sheet Bo1 games can't be matched to
+  teams, so they're split only by player pair.
+- **The team pool stays at the committed 263 teams** so Phase 2's results remain reproducible. Teams seen in the new
+  replays are split by the same hash rule when the pool is rebuilt.
 
 **Changes from the original plan (from Phase 2):**
 
@@ -580,6 +598,34 @@ held-out teams and held-out human replays.
 _Verification:_ snapshots re-derived from the same `inputLog` are byte-identical. For self-play, the player snapshot
 matches what poke-env's `DoubleBattle` showed that player at the time (parity with the live run). No held-out battle
 or team appears in any training manifest (checked by the manifest tool, not by eye).
+
+> **✅ Completed 2026-09-19.** Built:
+> - `vgc.data.observe.Observer`: one protocol reader for the spectator channel or one player's channel plus its
+>   requests. It emits a perspective-limited observation for each side's 6 Pokémon: state (active, bench, fainted,
+>   unrevealed or not brought), HP (exact only for your own side), status, boosts, volatiles, item/ability/moves with
+>   where each was learned (sheet, revealed or own), natures from the sheet, Mega state, plus field and side conditions
+>   with the turn they started.
+> - A `trace` op in the battle runner, which re-simulates an `inputLog` and returns every channel step by step.
+> - `vgc.data.snapshots`: self-play decision points are exactly the non-wait requests: preview, turn, and forced
+>   switches (end-of-turn or mid-turn). Each is labelled with the winner, the true brought 4 and the choice made.
+>   Human replays use preview, turn start and end-of-turn replacements. They also get an approximate player view for
+>   a side whose 4 all appeared.
+> - `vgc.data.splits`: salted-hash splits frozen in `data/splits/reg_mc.json` (tracked), and manifests whose
+>   checker re-reads every record.
+> - `vgc data freeze | generate | extract | human | manifest | check | parity | stats`.
+>
+> **Data:** 6,000 heuristic-vs-heuristic battles (25.9 battles/s; mirror 50.5%, CI 49.2–51.7%). 800 Bo3 open-sheet
+> games and 800 Bo1 ladder games (735 rated, 14 with sheets). Held out: 49 of 263 pool teams and 186 of 1,147 replay
+> groups. The training manifest `wp-v1-train` covers 4,683 battles and 133,619 snapshots.
+>
+> **Verification:**
+> - Re-extracting the self-play run and both human corpora gave **byte-identical shards** (sha256).
+> - **Live parity:** 200 battles, 3,089 player decisions. Every re-derived player snapshot matched poke-env's view at
+>   the moment it chose: active Pokémon, HP, status, boosts, Mega used, faints, weather, terrain and rooms, side
+>   conditions, turn. Mismatches: 0. 12 differences in one battle with a broken Illusion are reported separately. They
+>   are poke-env's error: it tracks Pokémon by name, and the snapshot is correct there.
+> - **Manifest tool:** the train manifest checks clean. Pointing it at the held-out-team shard is refused with 2,041
+>   problems. A file edited after the manifest was built is caught. Both have tests.
 
 ### Phase 4 — Win probability v1: Open Team Sheets (question 5)
 

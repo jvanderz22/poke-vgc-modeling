@@ -16,3 +16,4 @@ checkpoints/
 .DS_Store
 node_modules/
 .vgc/
+data/snapshots/
