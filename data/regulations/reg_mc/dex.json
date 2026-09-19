@@ -895,1001 +895,2971 @@
  },
  "items": {
   "abomasite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Abomasnow"
+   ],
    "megaStone": {
     "Abomasnow": "Abomasnow-Mega"
    },
-   "name": "Abomasite"
+   "name": "Abomasite",
+   "naturalGift": null
   },
   "absolite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Absol"
+   ],
    "megaStone": {
     "Absol": "Absol-Mega"
    },
-   "name": "Absolite"
+   "name": "Absolite",
+   "naturalGift": null
   },
   "absolitez": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Absol"
+   ],
    "megaStone": {
     "Absol": "Absol-Mega-Z"
    },
-   "name": "Absolite Z"
+   "name": "Absolite Z",
+   "naturalGift": null
   },
   "aerodactylite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Aerodactyl"
+   ],
    "megaStone": {
     "Aerodactyl": "Aerodactyl-Mega"
    },
-   "name": "Aerodactylite"
+   "name": "Aerodactylite",
+   "naturalGift": null
   },
   "aggronite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Aggron"
+   ],
    "megaStone": {
     "Aggron": "Aggron-Mega"
    },
-   "name": "Aggronite"
+   "name": "Aggronite",
+   "naturalGift": null
   },
   "airballoon": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onAfterSubDamage",
+    "onDamagingHit",
+    "onStart"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Air Balloon"
+   "name": "Air Balloon",
+   "naturalGift": null
   },
   "alakazite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Alakazam"
+   ],
    "megaStone": {
     "Alakazam": "Alakazam-Mega"
    },
-   "name": "Alakazite"
+   "name": "Alakazite",
+   "naturalGift": null
   },
   "altarianite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Altaria"
+   ],
    "megaStone": {
     "Altaria": "Altaria-Mega"
    },
-   "name": "Altarianite"
+   "name": "Altarianite",
+   "naturalGift": null
   },
   "ampharosite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Ampharos"
+   ],
    "megaStone": {
     "Ampharos": "Ampharos-Mega"
    },
-   "name": "Ampharosite"
+   "name": "Ampharosite",
+   "naturalGift": null
   },
   "aspearberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Aspear Berry"
+   "name": "Aspear Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Ice"
+   }
   },
   "audinite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Audino"
+   ],
    "megaStone": {
     "Audino": "Audino-Mega"
    },
-   "name": "Audinite"
+   "name": "Audinite",
+   "naturalGift": null
   },
   "babiriberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Babiri Berry"
+   "name": "Babiri Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Steel"
+   }
   },
   "banettite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Banette"
+   ],
    "megaStone": {
     "Banette": "Banette-Mega"
    },
-   "name": "Banettite"
+   "name": "Banettite",
+   "naturalGift": null
   },
   "barbaracite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Barbaracle"
+   ],
    "megaStone": {
     "Barbaracle": "Barbaracle-Mega"
    },
-   "name": "Barbaracite"
+   "name": "Barbaracite",
+   "naturalGift": null
   },
   "baxcalibrite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Baxcalibur"
+   ],
    "megaStone": {
     "Baxcalibur": "Baxcalibur-Mega"
    },
-   "name": "Baxcalibrite"
+   "name": "Baxcalibrite",
+   "naturalGift": null
   },
   "beedrillite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Beedrill"
+   ],
    "megaStone": {
     "Beedrill": "Beedrill-Mega"
    },
-   "name": "Beedrillite"
+   "name": "Beedrillite",
+   "naturalGift": null
   },
   "bigroot": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onTryHeal"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Big Root"
+   "name": "Big Root",
+   "naturalGift": null
   },
   "bindingband": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Binding Band"
+   "name": "Binding Band",
+   "naturalGift": null
   },
   "blackbelt": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Black Belt"
+   "name": "Black Belt",
+   "naturalGift": null
   },
   "blackglasses": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Black Glasses"
+   "name": "Black Glasses",
+   "naturalGift": null
   },
   "blastoisinite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Blastoise"
+   ],
    "megaStone": {
     "Blastoise": "Blastoise-Mega"
    },
-   "name": "Blastoisinite"
+   "name": "Blastoisinite",
+   "naturalGift": null
   },
   "blazikenite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Blaziken"
+   ],
    "megaStone": {
     "Blaziken": "Blaziken-Mega"
    },
-   "name": "Blazikenite"
+   "name": "Blazikenite",
+   "naturalGift": null
   },
   "brightpowder": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onModifyAccuracy"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Bright Powder"
+   "name": "Bright Powder",
+   "naturalGift": null
   },
   "cameruptite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Camerupt"
+   ],
    "megaStone": {
     "Camerupt": "Camerupt-Mega"
    },
-   "name": "Cameruptite"
+   "name": "Cameruptite",
+   "naturalGift": null
   },
   "chandelurite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Chandelure"
+   ],
    "megaStone": {
     "Chandelure": "Chandelure-Mega"
    },
-   "name": "Chandelurite"
+   "name": "Chandelurite",
+   "naturalGift": null
   },
   "charcoal": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Charcoal"
+   "name": "Charcoal",
+   "naturalGift": null
   },
   "charizarditex": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Charizard"
+   ],
    "megaStone": {
     "Charizard": "Charizard-Mega-X"
    },
-   "name": "Charizardite X"
+   "name": "Charizardite X",
+   "naturalGift": null
   },
   "charizarditey": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Charizard"
+   ],
    "megaStone": {
     "Charizard": "Charizard-Mega-Y"
    },
-   "name": "Charizardite Y"
+   "name": "Charizardite Y",
+   "naturalGift": null
   },
   "chartiberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Charti Berry"
+   "name": "Charti Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Rock"
+   }
   },
   "cheriberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Cheri Berry"
+   "name": "Cheri Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Fire"
+   }
   },
   "chesnaughtite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Chesnaught"
+   ],
    "megaStone": {
     "Chesnaught": "Chesnaught-Mega"
    },
-   "name": "Chesnaughtite"
+   "name": "Chesnaughtite",
+   "naturalGift": null
   },
   "chestoberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Chesto Berry"
+   "name": "Chesto Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Water"
+   }
   },
   "chilanberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Chilan Berry"
+   "name": "Chilan Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Normal"
+   }
   },
   "chimechite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Chimecho"
+   ],
    "megaStone": {
     "Chimecho": "Chimecho-Mega"
    },
-   "name": "Chimechite"
+   "name": "Chimechite",
+   "naturalGift": null
   },
   "choicescarf": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onModifyMove",
+    "onModifySpe",
+    "onStart"
+   ],
+   "isBerry": false,
+   "isChoice": true,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Choice Scarf"
+   "name": "Choice Scarf",
+   "naturalGift": null
   },
   "chopleberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Chople Berry"
+   "name": "Chople Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Fighting"
+   }
   },
   "clefablite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Clefable"
+   ],
    "megaStone": {
     "Clefable": "Clefable-Mega"
    },
-   "name": "Clefablite"
+   "name": "Clefablite",
+   "naturalGift": null
   },
   "cobaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Coba Berry"
+   "name": "Coba Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Flying"
+   }
   },
   "colburberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Colbur Berry"
+   "name": "Colbur Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Dark"
+   }
   },
   "crabominite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Crabominable"
+   ],
    "megaStone": {
     "Crabominable": "Crabominable-Mega"
    },
-   "name": "Crabominite"
+   "name": "Crabominite",
+   "naturalGift": null
   },
   "damprock": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 60,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Damp Rock"
+   "name": "Damp Rock",
+   "naturalGift": null
   },
   "delphoxite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Delphox"
+   ],
    "megaStone": {
     "Delphox": "Delphox-Mega"
    },
-   "name": "Delphoxite"
+   "name": "Delphoxite",
+   "naturalGift": null
   },
   "dragalgite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Dragalge"
+   ],
    "megaStone": {
     "Dragalge": "Dragalge-Mega"
    },
-   "name": "Dragalgite"
+   "name": "Dragalgite",
+   "naturalGift": null
   },
   "dragonfang": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 70,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Dragon Fang"
+   "name": "Dragon Fang",
+   "naturalGift": null
   },
   "dragoninite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Dragonite"
+   ],
    "megaStone": {
     "Dragonite": "Dragonite-Mega"
    },
-   "name": "Dragoninite"
+   "name": "Dragoninite",
+   "naturalGift": null
   },
   "drampanite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Drampa"
+   ],
    "megaStone": {
     "Drampa": "Drampa-Mega"
    },
-   "name": "Drampanite"
+   "name": "Drampanite",
+   "naturalGift": null
   },
   "eelektrossite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Eelektross"
+   ],
    "megaStone": {
     "Eelektross": "Eelektross-Mega"
    },
-   "name": "Eelektrossite"
+   "name": "Eelektrossite",
+   "naturalGift": null
   },
   "ejectbutton": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onAfterMoveSecondary"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Eject Button"
+   "name": "Eject Button",
+   "naturalGift": null
   },
   "electricseed": {
+   "boosts": {
+    "def": 1
+   },
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onStart",
+    "onTerrainChange"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Electric Seed"
+   "name": "Electric Seed",
+   "naturalGift": null
   },
   "emboarite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Emboar"
+   ],
    "megaStone": {
     "Emboar": "Emboar-Mega"
    },
-   "name": "Emboarite"
+   "name": "Emboarite",
+   "naturalGift": null
   },
   "excadrite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Excadrill"
+   ],
    "megaStone": {
     "Excadrill": "Excadrill-Mega"
    },
-   "name": "Excadrite"
+   "name": "Excadrite",
+   "naturalGift": null
   },
   "expertbelt": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onModifyDamage"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Expert Belt"
+   "name": "Expert Belt",
+   "naturalGift": null
   },
   "fairyfeather": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Fairy Feather"
+   "name": "Fairy Feather",
+   "naturalGift": null
   },
   "falinksite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Falinks"
+   ],
    "megaStone": {
     "Falinks": "Falinks-Mega"
    },
-   "name": "Falinksite"
+   "name": "Falinksite",
+   "naturalGift": null
   },
   "feraligite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Feraligatr"
+   ],
    "megaStone": {
     "Feraligatr": "Feraligatr-Mega"
    },
-   "name": "Feraligite"
+   "name": "Feraligite",
+   "naturalGift": null
   },
   "floettite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Floette-Eternal"
+   ],
    "megaStone": {
     "Floette-Eternal": "Floette-Mega"
    },
-   "name": "Floettite"
+   "name": "Floettite",
+   "naturalGift": null
   },
   "focusband": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onDamage"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Focus Band"
+   "name": "Focus Band",
+   "naturalGift": null
   },
   "focussash": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onDamage"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Focus Sash"
+   "name": "Focus Sash",
+   "naturalGift": null
   },
   "froslassite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Froslass"
+   ],
    "megaStone": {
     "Froslass": "Froslass-Mega"
    },
-   "name": "Froslassite"
+   "name": "Froslassite",
+   "naturalGift": null
   },
   "galladite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Gallade"
+   ],
    "megaStone": {
     "Gallade": "Gallade-Mega"
    },
-   "name": "Galladite"
+   "name": "Galladite",
+   "naturalGift": null
   },
   "garchompite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Garchomp"
+   ],
    "megaStone": {
     "Garchomp": "Garchomp-Mega"
    },
-   "name": "Garchompite"
+   "name": "Garchompite",
+   "naturalGift": null
   },
   "garchompitez": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Garchomp"
+   ],
    "megaStone": {
     "Garchomp": "Garchomp-Mega-Z"
    },
-   "name": "Garchompite Z"
+   "name": "Garchompite Z",
+   "naturalGift": null
   },
   "gardevoirite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Gardevoir"
+   ],
    "megaStone": {
     "Gardevoir": "Gardevoir-Mega"
    },
-   "name": "Gardevoirite"
+   "name": "Gardevoirite",
+   "naturalGift": null
   },
   "gengarite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Gengar"
+   ],
    "megaStone": {
     "Gengar": "Gengar-Mega"
    },
-   "name": "Gengarite"
+   "name": "Gengarite",
+   "naturalGift": null
   },
   "glalitite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Glalie"
+   ],
    "megaStone": {
     "Glalie": "Glalie-Mega"
    },
-   "name": "Glalitite"
+   "name": "Glalitite",
+   "naturalGift": null
   },
   "glimmoranite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Glimmora"
+   ],
    "megaStone": {
     "Glimmora": "Glimmora-Mega"
    },
-   "name": "Glimmoranite"
+   "name": "Glimmoranite",
+   "naturalGift": null
   },
   "golisopite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Golisopod"
+   ],
    "megaStone": {
     "Golisopod": "Golisopod-Mega"
    },
-   "name": "Golisopite"
+   "name": "Golisopite",
+   "naturalGift": null
   },
   "golurkite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Golurk"
+   ],
    "megaStone": {
     "Golurk": "Golurk-Mega"
    },
-   "name": "Golurkite"
+   "name": "Golurkite",
+   "naturalGift": null
   },
   "grassyseed": {
+   "boosts": {
+    "def": 1
+   },
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onStart",
+    "onTerrainChange"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Grassy Seed"
+   "name": "Grassy Seed",
+   "naturalGift": null
   },
   "greninjite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Greninja"
+   ],
    "megaStone": {
     "Greninja": "Greninja-Mega"
    },
-   "name": "Greninjite"
+   "name": "Greninjite",
+   "naturalGift": null
   },
   "gyaradosite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Gyarados"
+   ],
    "megaStone": {
     "Gyarados": "Gyarados-Mega"
    },
-   "name": "Gyaradosite"
+   "name": "Gyaradosite",
+   "naturalGift": null
   },
   "habanberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Haban Berry"
+   "name": "Haban Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Dragon"
+   }
   },
   "hardstone": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 100,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Hard Stone"
+   "name": "Hard Stone",
+   "naturalGift": null
   },
   "hawluchanite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Hawlucha"
+   ],
    "megaStone": {
     "Hawlucha": "Hawlucha-Mega"
    },
-   "name": "Hawluchanite"
+   "name": "Hawluchanite",
+   "naturalGift": null
   },
   "heatrock": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 60,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Heat Rock"
+   "name": "Heat Rock",
+   "naturalGift": null
   },
   "heracronite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Heracross"
+   ],
    "megaStone": {
     "Heracross": "Heracross-Mega"
    },
-   "name": "Heracronite"
+   "name": "Heracronite",
+   "naturalGift": null
   },
   "houndoominite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Houndoom"
+   ],
    "megaStone": {
     "Houndoom": "Houndoom-Mega"
    },
-   "name": "Houndoominite"
+   "name": "Houndoominite",
+   "naturalGift": null
   },
   "icyrock": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 40,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Icy Rock"
+   "name": "Icy Rock",
+   "naturalGift": null
   },
   "ironball": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 130,
+   "hooks": [
+    "onEffectiveness",
+    "onModifySpe"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Iron Ball"
+   "name": "Iron Ball",
+   "naturalGift": null
   },
   "kangaskhanite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Kangaskhan"
+   ],
    "megaStone": {
     "Kangaskhan": "Kangaskhan-Mega"
    },
-   "name": "Kangaskhanite"
+   "name": "Kangaskhanite",
+   "naturalGift": null
   },
   "kasibberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Kasib Berry"
+   "name": "Kasib Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Ghost"
+   }
   },
   "kebiaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Kebia Berry"
+   "name": "Kebia Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Poison"
+   }
   },
   "kingsrock": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onModifyMove"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "King's Rock"
+   "name": "King's Rock",
+   "naturalGift": null
   },
   "leek": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 60,
+   "hooks": [
+    "onModifyCritRatio"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Farfetch\u2019d",
+    "Farfetch\u2019d-Galar",
+    "Sirfetch\u2019d"
+   ],
    "megaStone": null,
-   "name": "Leek"
+   "name": "Leek",
+   "naturalGift": null
   },
   "leftovers": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onResidual"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Leftovers"
+   "name": "Leftovers",
+   "naturalGift": null
   },
   "leppaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Leppa Berry"
+   "name": "Leppa Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Fighting"
+   }
   },
   "lifeorb": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onAfterMoveSecondarySelf",
+    "onModifyDamage"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Life Orb"
+   "name": "Life Orb",
+   "naturalGift": null
   },
   "lightball": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onModifyAtk",
+    "onModifySpA"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Pikachu",
+    "Pikachu-Cosplay",
+    "Pikachu-Rock-Star",
+    "Pikachu-Belle",
+    "Pikachu-Pop-Star",
+    "Pikachu-PhD",
+    "Pikachu-Libre",
+    "Pikachu-Original",
+    "Pikachu-Hoenn",
+    "Pikachu-Sinnoh",
+    "Pikachu-Unova",
+    "Pikachu-Kalos",
+    "Pikachu-Alola",
+    "Pikachu-Partner",
+    "Pikachu-Starter",
+    "Pikachu-World"
+   ],
    "megaStone": null,
-   "name": "Light Ball"
+   "name": "Light Ball",
+   "naturalGift": null
   },
   "lightclay": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Light Clay"
+   "name": "Light Clay",
+   "naturalGift": null
   },
   "lopunnite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Lopunny"
+   ],
    "megaStone": {
     "Lopunny": "Lopunny-Mega"
    },
-   "name": "Lopunnite"
+   "name": "Lopunnite",
+   "naturalGift": null
   },
   "lucarionite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Lucario"
+   ],
    "megaStone": {
     "Lucario": "Lucario-Mega"
    },
-   "name": "Lucarionite"
+   "name": "Lucarionite",
+   "naturalGift": null
   },
   "lucarionitez": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Lucario"
+   ],
    "megaStone": {
     "Lucario": "Lucario-Mega-Z"
    },
-   "name": "Lucarionite Z"
+   "name": "Lucarionite Z",
+   "naturalGift": null
   },
   "lumberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onAfterSetStatus",
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Lum Berry"
+   "name": "Lum Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Flying"
+   }
   },
   "magnet": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Magnet"
+   "name": "Magnet",
+   "naturalGift": null
   },
   "malamarite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Malamar"
+   ],
    "megaStone": {
     "Malamar": "Malamar-Mega"
    },
-   "name": "Malamarite"
+   "name": "Malamarite",
+   "naturalGift": null
   },
   "manectite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Manectric"
+   ],
    "megaStone": {
     "Manectric": "Manectric-Mega"
    },
-   "name": "Manectite"
+   "name": "Manectite",
+   "naturalGift": null
   },
   "mawilite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Mawile"
+   ],
    "megaStone": {
     "Mawile": "Mawile-Mega"
    },
-   "name": "Mawilite"
+   "name": "Mawilite",
+   "naturalGift": null
   },
   "medichamite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Medicham"
+   ],
    "megaStone": {
     "Medicham": "Medicham-Mega"
    },
-   "name": "Medichamite"
+   "name": "Medichamite",
+   "naturalGift": null
   },
   "meganiumite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Meganium"
+   ],
    "megaStone": {
     "Meganium": "Meganium-Mega"
    },
-   "name": "Meganiumite"
+   "name": "Meganiumite",
+   "naturalGift": null
   },
   "mentalherb": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onUpdate"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Mental Herb"
+   "name": "Mental Herb",
+   "naturalGift": null
   },
   "meowsticite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Meowstic",
+    "Meowstic-F"
+   ],
    "megaStone": {
     "Meowstic": "Meowstic-M-Mega",
     "Meowstic-F": "Meowstic-F-Mega"
    },
-   "name": "Meowsticite"
+   "name": "Meowsticite",
+   "naturalGift": null
   },
   "metagrossite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Metagross"
+   ],
    "megaStone": {
     "Metagross": "Metagross-Mega"
    },
-   "name": "Metagrossite"
+   "name": "Metagrossite",
+   "naturalGift": null
   },
   "metalcoat": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Metal Coat"
+   "name": "Metal Coat",
+   "naturalGift": null
   },
   "metronome": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onStart"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Metronome"
+   "name": "Metronome",
+   "naturalGift": null
   },
   "miracleseed": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Miracle Seed"
+   "name": "Miracle Seed",
+   "naturalGift": null
   },
   "mistyseed": {
+   "boosts": {
+    "spd": 1
+   },
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onStart",
+    "onTerrainChange"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Misty Seed"
+   "name": "Misty Seed",
+   "naturalGift": null
   },
   "muscleband": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Muscle Band"
+   "name": "Muscle Band",
+   "naturalGift": null
   },
   "mysticwater": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Mystic Water"
+   "name": "Mystic Water",
+   "naturalGift": null
   },
   "nevermeltice": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Never-Melt Ice"
+   "name": "Never-Melt Ice",
+   "naturalGift": null
   },
   "normalgem": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 0,
+   "hooks": [
+    "onSourceTryPrimaryHit"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": true,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Normal Gem"
+   "name": "Normal Gem",
+   "naturalGift": null
   },
   "occaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Occa Berry"
+   "name": "Occa Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Fire"
+   }
   },
   "oranberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onTryEatItem",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Oran Berry"
+   "name": "Oran Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Poison"
+   }
   },
   "passhoberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Passho Berry"
+   "name": "Passho Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Water"
+   }
   },
   "payapaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Payapa Berry"
+   "name": "Payapa Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Psychic"
+   }
   },
   "pechaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Pecha Berry"
+   "name": "Pecha Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Electric"
+   }
   },
   "persimberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Persim Berry"
+   "name": "Persim Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Ground"
+   }
   },
   "pidgeotite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Pidgeot"
+   ],
    "megaStone": {
     "Pidgeot": "Pidgeot-Mega"
    },
-   "name": "Pidgeotite"
+   "name": "Pidgeotite",
+   "naturalGift": null
   },
   "pinsirite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Pinsir"
+   ],
    "megaStone": {
     "Pinsir": "Pinsir-Mega"
    },
-   "name": "Pinsirite"
+   "name": "Pinsirite",
+   "naturalGift": null
   },
   "poisonbarb": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 70,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Poison Barb"
+   "name": "Poison Barb",
+   "naturalGift": null
   },
   "psychicseed": {
+   "boosts": {
+    "spd": 1
+   },
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onStart",
+    "onTerrainChange"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Psychic Seed"
+   "name": "Psychic Seed",
+   "naturalGift": null
   },
   "pyroarite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Pyroar"
+   ],
    "megaStone": {
     "Pyroar": "Pyroar-Mega"
    },
-   "name": "Pyroarite"
+   "name": "Pyroarite",
+   "naturalGift": null
   },
   "quickclaw": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onFractionalPriority"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Quick Claw"
+   "name": "Quick Claw",
+   "naturalGift": null
   },
   "raichunitex": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Raichu"
+   ],
    "megaStone": {
     "Raichu": "Raichu-Mega-X"
    },
-   "name": "Raichunite X"
+   "name": "Raichunite X",
+   "naturalGift": null
   },
   "raichunitey": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Raichu"
+   ],
    "megaStone": {
     "Raichu": "Raichu-Mega-Y"
    },
-   "name": "Raichunite Y"
+   "name": "Raichunite Y",
+   "naturalGift": null
   },
   "rawstberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Rawst Berry"
+   "name": "Rawst Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Grass"
+   }
   },
   "redcard": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onAfterMoveSecondary"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Red Card"
+   "name": "Red Card",
+   "naturalGift": null
   },
   "rindoberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Rindo Berry"
+   "name": "Rindo Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Grass"
+   }
   },
   "rockyhelmet": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 60,
+   "hooks": [
+    "onDamagingHit"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Rocky Helmet"
+   "name": "Rocky Helmet",
+   "naturalGift": null
   },
   "roseliberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Roseli Berry"
+   "name": "Roseli Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Fairy"
+   }
   },
   "sablenite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Sableye"
+   ],
    "megaStone": {
     "Sableye": "Sableye-Mega"
    },
-   "name": "Sablenite"
+   "name": "Sablenite",
+   "naturalGift": null
   },
   "salamencite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Salamence"
+   ],
    "megaStone": {
     "Salamence": "Salamence-Mega"
    },
-   "name": "Salamencite"
+   "name": "Salamencite",
+   "naturalGift": null
   },
   "sceptilite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Sceptile"
+   ],
    "megaStone": {
     "Sceptile": "Sceptile-Mega"
    },
-   "name": "Sceptilite"
+   "name": "Sceptilite",
+   "naturalGift": null
   },
   "scizorite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Scizor"
+   ],
    "megaStone": {
     "Scizor": "Scizor-Mega"
    },
-   "name": "Scizorite"
+   "name": "Scizorite",
+   "naturalGift": null
   },
   "scolipite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Scolipede"
+   ],
    "megaStone": {
     "Scolipede": "Scolipede-Mega"
    },
-   "name": "Scolipite"
+   "name": "Scolipite",
+   "naturalGift": null
   },
   "scopelens": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onModifyCritRatio"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Scope Lens"
+   "name": "Scope Lens",
+   "naturalGift": null
   },
   "scovillainite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Scovillain"
+   ],
    "megaStone": {
     "Scovillain": "Scovillain-Mega"
    },
-   "name": "Scovillainite"
+   "name": "Scovillainite",
+   "naturalGift": null
   },
   "scraftinite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Scrafty"
+   ],
    "megaStone": {
     "Scrafty": "Scrafty-Mega"
    },
-   "name": "Scraftinite"
+   "name": "Scraftinite",
+   "naturalGift": null
   },
   "sharpbeak": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 50,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Sharp Beak"
+   "name": "Sharp Beak",
+   "naturalGift": null
   },
   "sharpedonite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Sharpedo"
+   ],
    "megaStone": {
     "Sharpedo": "Sharpedo-Mega"
    },
-   "name": "Sharpedonite"
+   "name": "Sharpedonite",
+   "naturalGift": null
   },
   "shedshell": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onMaybeTrapPokemon",
+    "onTrapPokemon"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Shed Shell"
+   "name": "Shed Shell",
+   "naturalGift": null
   },
   "shellbell": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onAfterMoveSecondarySelf"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Shell Bell"
+   "name": "Shell Bell",
+   "naturalGift": null
   },
   "shucaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Shuca Berry"
+   "name": "Shuca Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Ground"
+   }
   },
   "silkscarf": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Silk Scarf"
+   "name": "Silk Scarf",
+   "naturalGift": null
   },
   "silverpowder": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Silver Powder"
+   "name": "Silver Powder",
+   "naturalGift": null
   },
   "sitrusberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onTryEatItem",
+    "onUpdate"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Sitrus Berry"
+   "name": "Sitrus Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Psychic"
+   }
   },
   "skarmorite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Skarmory"
+   ],
    "megaStone": {
     "Skarmory": "Skarmory-Mega"
    },
-   "name": "Skarmorite"
+   "name": "Skarmorite",
+   "naturalGift": null
   },
   "slowbronite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Slowbro"
+   ],
    "megaStone": {
     "Slowbro": "Slowbro-Mega"
    },
-   "name": "Slowbronite"
+   "name": "Slowbronite",
+   "naturalGift": null
   },
   "smoothrock": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Smooth Rock"
+   "name": "Smooth Rock",
+   "naturalGift": null
   },
   "softsand": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Soft Sand"
+   "name": "Soft Sand",
+   "naturalGift": null
   },
   "spelltag": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Spell Tag"
+   "name": "Spell Tag",
+   "naturalGift": null
   },
   "staraptite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Staraptor"
+   ],
    "megaStone": {
     "Staraptor": "Staraptor-Mega"
    },
-   "name": "Staraptite"
+   "name": "Staraptite",
+   "naturalGift": null
   },
   "starminite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Starmie"
+   ],
    "megaStone": {
     "Starmie": "Starmie-Mega"
    },
-   "name": "Starminite"
+   "name": "Starminite",
+   "naturalGift": null
   },
   "steelixite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Steelix"
+   ],
    "megaStone": {
     "Steelix": "Steelix-Mega"
    },
-   "name": "Steelixite"
+   "name": "Steelixite",
+   "naturalGift": null
   },
   "swampertite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Swampert"
+   ],
    "megaStone": {
     "Swampert": "Swampert-Mega"
    },
-   "name": "Swampertite"
+   "name": "Swampertite",
+   "naturalGift": null
   },
   "tangaberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Tanga Berry"
+   "name": "Tanga Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Bug"
+   }
   },
   "terrainextender": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 60,
+   "hooks": [],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Terrain Extender"
+   "name": "Terrain Extender",
+   "naturalGift": null
   },
   "twistedspoon": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 30,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Twisted Spoon"
+   "name": "Twisted Spoon",
+   "naturalGift": null
   },
   "tyranitarite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Tyranitar"
+   ],
    "megaStone": {
     "Tyranitar": "Tyranitar-Mega"
    },
-   "name": "Tyranitarite"
+   "name": "Tyranitarite",
+   "naturalGift": null
   },
   "venusaurite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Venusaur"
+   ],
    "megaStone": {
     "Venusaur": "Venusaur-Mega"
    },
-   "name": "Venusaurite"
+   "name": "Venusaurite",
+   "naturalGift": null
   },
   "victreebelite": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 80,
+   "hooks": [
+    "onTakeItem"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": [
+    "Victreebel"
+   ],
    "megaStone": {
     "Victreebel": "Victreebel-Mega"
    },
-   "name": "Victreebelite"
+   "name": "Victreebelite",
+   "naturalGift": null
   },
   "wacanberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Wacan Berry"
+   "name": "Wacan Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Electric"
+   }
   },
   "whiteherb": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onAnyAfterMega",
+    "onAnyAfterMove",
+    "onAnySwitchIn",
+    "onResidual",
+    "onStart",
+    "onUse"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "White Herb"
+   "name": "White Herb",
+   "naturalGift": null
   },
   "widelens": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onSourceModifyAccuracy"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Wide Lens"
+   "name": "Wide Lens",
+   "naturalGift": null
   },
   "wiseglasses": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onBasePower"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Wise Glasses"
+   "name": "Wise Glasses",
+   "naturalGift": null
   },
   "yacheberry": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onEat",
+    "onSourceModifyDamage"
+   ],
+   "isBerry": true,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Yache Berry"
+   "name": "Yache Berry",
+   "naturalGift": {
+    "basePower": 80,
+    "type": "Ice"
+   }
   },
   "zoomlens": {
+   "boosts": null,
    "desc": "",
+   "flingBasePower": 10,
+   "hooks": [
+    "onSourceModifyAccuracy"
+   ],
+   "isBerry": false,
+   "isChoice": false,
+   "isGem": false,
+   "itemUser": null,
    "megaStone": null,
-   "name": "Zoom Lens"
+   "name": "Zoom Lens",
+   "naturalGift": null
   }
  },
  "meta": {
-  "exported_at": "2026-09-19T17:36:28+00:00",
+  "exported_at": "2026-09-19T23:05:42+00:00",
   "format": {
    "gameType": "doubles",
    "id": "gen9championsvgc2026regmc",

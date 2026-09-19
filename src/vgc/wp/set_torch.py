@@ -89,17 +89,21 @@ class SetWP(nn.Module):
 
 def _load(path: Path) -> dict[str, np.ndarray]:
     with np.load(path) as z:
-        return {k: z[k] for k in ("cat", "num", "glob", "y", "bring")}
+        return {k: z[k] for k in ("cat", "num", "glob", "y", "bring", "source")}
 
 
-def _tensors(d: dict[str, np.ndarray]) -> list[torch.Tensor]:
+def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.Tensor]:
     # num stays float16 in memory (it's the bulk of the data) and is cast per batch.
+    # Human rows are a few percent of the data but they are the distribution we are judged on,
+    # so they can be weighted up; the model also gets a human/self-play flag in `glob`.
+    w = np.where(d["source"] == 1, human_weight, 1.0).astype(np.float32)
     return [torch.from_numpy(d["cat"].astype(np.int16)), torch.from_numpy(d["num"].astype(np.float16)),
-            torch.from_numpy(d["glob"]), torch.from_numpy(d["y"]), torch.from_numpy(d["bring"])]
+            torch.from_numpy(d["glob"]), torch.from_numpy(d["y"]), torch.from_numpy(d["bring"]),
+            torch.from_numpy(w), torch.from_numpy(d["source"].astype(np.int64))]
 
 
 def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str = "cpu") -> list[torch.Tensor]:
-    cat, num, glob, y, bring = (t[idx].to(device, non_blocking=True) for t in data)
+    cat, num, glob, y, bring, w = (t[idx].to(device, non_blocking=True) for t in data[:6])
     cat = cat.long()
     if id_dropout > 0:
         # Hide a Pokémon's identity (species/forme/item/ability/moves → UNK) at random, so the
@@ -107,30 +111,40 @@ def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str =
         # (base stats, types, move summary) that describe the position.
         hide = torch.rand(cat.shape[:2], device=cat.device) < id_dropout
         cat = torch.where(hide.unsqueeze(-1), torch.full_like(cat, UNK), cat)
-    return [cat, num.float(), glob, y, bring]
+    return [cat, num.float(), glob, y, bring, w]
 
 
 def _losses(model: SetWP, batch: list[torch.Tensor], bring_weight: float) -> tuple[torch.Tensor, torch.Tensor]:
-    cat, num, glob, y, bring = batch
+    cat, num, glob, y, bring, w = batch
     wp_logit, bring_logit = model(cat, num, glob)
-    wp_loss = nn.functional.binary_cross_entropy_with_logits(wp_logit, y)
+    wp_loss = (nn.functional.binary_cross_entropy_with_logits(wp_logit, y, reduction="none") * w).sum() / w.sum()
     mask = bring >= 0
     if mask.any():
-        br_loss = nn.functional.binary_cross_entropy_with_logits(bring_logit[mask], bring[mask])
+        bw = w.unsqueeze(1).expand_as(bring)[mask]
+        br = nn.functional.binary_cross_entropy_with_logits(bring_logit[mask], bring[mask], reduction="none")
+        br_loss = (br * bw).sum() / bw.sum()
     else:
         br_loss = wp_loss * 0
     return wp_loss, wp_loss + bring_weight * br_loss
 
 
 @torch.no_grad()
-def _eval(model: SetWP, data: list[torch.Tensor], bs: int = 4096, device: str = "cpu") -> tuple[float, np.ndarray]:
+def _eval(model: SetWP, data: list[torch.Tensor], bs: int = 4096, device: str = "cpu") -> tuple[dict, np.ndarray]:
+    """Validation log loss overall and on human rows alone. Validation is mostly self-play, so a
+    model trained to fit human play scores worse overall by construction — when human rows are
+    weighted up, they are also what the model is selected on."""
     model.eval()
     logits = []
     for i in range(0, len(data[0]), bs):
         logits.append(model(*_batch(data, slice(i, i + bs), device=device)[:3])[0])
     lg = torch.cat(logits).cpu()
-    loss = nn.functional.binary_cross_entropy_with_logits(lg, data[3]).item()
-    return loss, lg.numpy()
+    bce = nn.functional.binary_cross_entropy_with_logits
+    out = {"all": bce(lg, data[3]).item()}
+    human = data[6] == 1
+    if human.any():
+        out["human"] = bce(lg[human], data[3][human]).item()
+        out["human_rows"] = int(human.sum())
+    return out, lg.numpy()
 
 
 def _fit_temperature(logits: np.ndarray, y: np.ndarray) -> float:
@@ -144,7 +158,8 @@ def _fit_temperature(logits: np.ndarray, y: np.ndarray) -> float:
 
 def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float = 3e-4, d: int = 128, layers: int = 3,
           heads: int = 4, dropout: float = 0.1, bring_weight: float = 0.3, seed: int = 0, patience: int = 2,
-          threads: int = 6, weight_decay: float = 0.05, id_dropout: float = 0.0, device: str = "auto") -> dict:
+          threads: int = 6, weight_decay: float = 0.05, id_dropout: float = 0.0, device: str = "auto",
+          human_weight: float = 1.0) -> dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.set_num_threads(threads)
@@ -153,7 +168,7 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     info = json.loads((data_dir / "info.json").read_text())
     vocab = json.loads((data_dir / "vocab.json").read_text())
     sizes = {k: len(vocab[k]) + 3 for k in ("species", "items", "abilities", "moves")}
-    tr, va = _tensors(_load(data_dir / "train.npz")), _tensors(_load(data_dir / "val.npz"))
+    tr, va = _tensors(_load(data_dir / "train.npz"), human_weight), _tensors(_load(data_dir / "val.npz"))
     hp = {"d": d, "layers": layers, "heads": heads, "dropout": dropout}
     model = SetWP(sizes, info["n_num"], info["n_glob"], **hp).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -175,9 +190,12 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
             opt.step()
             sched.step()
             total += wp_loss.item() * len(idx)
-        val_loss, _ = _eval(model, va, device=device)
-        history.append({"epoch": ep + 1, "train_wp_logloss": round(total / len(perm), 5), "val_wp_logloss": round(val_loss, 5),
-                        "seconds": round(time.perf_counter() - t0, 1)})
+        val, _ = _eval(model, va, device=device)
+        val_loss = val.get("human", val["all"]) if human_weight > 1 else val["all"]
+        history.append({"epoch": ep + 1, "train_wp_logloss": round(total / len(perm), 5),
+                        "val_wp_logloss": round(val["all"], 5),
+                        "val_wp_logloss_human": round(val["human"], 5) if "human" in val else None,
+                        "selected_on": round(val_loss, 5), "seconds": round(time.perf_counter() - t0, 1)})
         print(json.dumps(history[-1]), flush=True)
         if val_loss < best[0] - 1e-4:
             best, bad = (val_loss, ep + 1), 0
@@ -187,10 +205,10 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
             if bad >= patience:
                 break
     model.load_state_dict(torch.load(out / "best.pt", map_location=device))
-    _, logits = _eval(model, va, device=device)
+    val, logits = _eval(model, va, device=device)
     temp = _fit_temperature(logits, va[3].numpy())
     model.temperature.fill_(temp)
-    val_loss_t, _ = _eval(model, va, device=device)
+    val_t, _ = _eval(model, va, device=device)
     model.eval().to("cpu")  # export from CPU: the artifact must not depend on where it trained
     n = 2
     torch.onnx.export(
@@ -200,9 +218,12 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     )
     (out / "best.pt").unlink()
     result = {"hyperparams": hp | {"epochs": epochs, "bs": bs, "lr": lr, "bring_weight": bring_weight, "seed": seed,
-                                   "weight_decay": weight_decay, "id_dropout": id_dropout},
-              "best_epoch": best[1], "val_wp_logloss": round(best[0], 5), "temperature": round(temp, 4),
-              "val_wp_logloss_calibrated": round(val_loss_t, 5), "history": history,
+                                   "weight_decay": weight_decay, "id_dropout": id_dropout,
+                                   "human_weight": human_weight},
+              "best_epoch": best[1], "val_wp_logloss": round(val["all"], 5), "selection_metric": round(best[0], 5),
+              "selected_on": "human" if human_weight > 1 else "all", "temperature": round(temp, 4),
+              "val_wp_logloss_calibrated": round(val_t["all"], 5),
+              "val_wp_logloss_human": round(val["human"], 5) if "human" in val else None, "history": history,
               "parameters": sum(p.numel() for p in model.parameters()), "torch": torch.__version__, "device": device,
               "train_rows": int(len(tr[0])), "val_rows": int(len(va[0]))}
     (out / "train.json").write_text(json.dumps(result, indent=1) + "\n")
@@ -223,12 +244,13 @@ def main() -> None:
     ap.add_argument("--threads", type=int, default=6)
     ap.add_argument("--bs", type=int, default=512)
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
+    ap.add_argument("--human-weight", type=float, default=1.0, help="weight on human rows (they are ~3% of the data)")
     ap.add_argument("--weight-decay", type=float, default=0.05)
     ap.add_argument("--id-dropout", type=float, default=0.0, help="chance of hiding a Pokémon's identity in training")
     a = ap.parse_args()
     r = train(a.data, a.out, epochs=a.epochs, bs=a.bs, d=a.d, layers=a.layers, lr=a.lr, dropout=a.dropout,
               bring_weight=a.bring_weight, seed=a.seed, threads=a.threads, weight_decay=a.weight_decay,
-              id_dropout=a.id_dropout, device=a.device)
+              id_dropout=a.id_dropout, device=a.device, human_weight=a.human_weight)
     print(json.dumps({k: v for k, v in r.items() if k != "history"}))
 
 

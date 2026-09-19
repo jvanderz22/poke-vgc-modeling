@@ -53,6 +53,27 @@ def build_pool(reg: Regulation) -> list[PoolTeam]:
     return sorted(by_key.values(), key=lambda t: (-t.count, -(t.max_rating or 0), t.key))
 
 
+def sampling_weights(pool: list[PoolTeam], alpha: float = 0.7, floor: float = 0.15,
+                     min_rating: int | None = None) -> list[float]:
+    """How often each team should be played in generated matchups.
+
+    Uniform sampling over the pool trains on a meta that doesn't exist: a team seen once in 800
+    replay sheets gets as many battles as the most popular team. Weighting by how often a team
+    actually appeared (`count`) fixes that, but pure usage weighting starves the tail, and the
+    model still has to generalise to teams it has barely seen (and the held-out-team evaluation is
+    drawn from the whole pool). So: weight ∝ count**alpha, mixed with a uniform `floor`.
+
+    alpha=0 is uniform, alpha=1 is usage-proportional. `min_rating` drops teams that never appeared
+    in a replay at that rating or above (ratings are sparse: most replays are unrated)."""
+    counts = [t.count for t in pool]
+    raw = [c ** alpha for c in counts]
+    if min_rating is not None:
+        raw = [w if (t.max_rating or 0) >= min_rating else 0.0 for w, t in zip(raw, pool)]
+    total = sum(raw) or 1.0
+    n = sum(w > 0 for w in raw) or 1
+    return [(1 - floor) * w / total + (floor / n if w > 0 else 0.0) for w in raw]
+
+
 def pool_path(reg: Regulation, date: dt.date | None = None) -> Path:
     return TEAMS / reg.id / f"ots_pool_{(date or dt.date.today()).isoformat()}.json"
 

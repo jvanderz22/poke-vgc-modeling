@@ -65,9 +65,25 @@ for (const s of dex.species.all()) {
 	};
 }
 
+// Items carry no stats of their own, so the model would only see an id unless we export what
+// each item *does*. Showdown keeps mechanics in code, but the effect hooks an item defines are a
+// good data-driven proxy (onBasePower = damage boost, onSourceModifyDamage = resist berry,
+// onModifySpe = Choice Scarf, onResidual = Leftovers), alongside the plain data fields.
 const items = {};
 for (const i of legalItems) {
-	items[i.id] = {name: i.name, megaStone: i.megaStone || null, desc: i.shortDesc || i.desc || ''};
+	items[i.id] = {
+		name: i.name,
+		megaStone: i.megaStone || null,
+		isBerry: !!i.isBerry,
+		isChoice: !!i.isChoice,
+		isGem: !!i.isGem,
+		boosts: i.boosts || null,
+		naturalGift: i.naturalGift || null,
+		flingBasePower: (i.fling && i.fling.basePower) || 0,
+		itemUser: i.itemUser || null,
+		hooks: Object.keys(i).filter(k => k.startsWith('on') && typeof i[k] === 'function').sort(),
+		desc: i.shortDesc || i.desc || '',
+	};
 }
 
 const learnable = new Set(Object.values(species).flatMap(s => s.moves));

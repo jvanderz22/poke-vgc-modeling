@@ -167,7 +167,8 @@ def load_battles(out_dir: Path) -> list[dict[str, Any]]:
 
 
 def gauntlet_matchups(
-    teams: list[tuple[str, str]], n: int, policy_a: str, policy_b: str, seed: int = 0
+    teams: list[tuple[str, str]], n: int, policy_a: str, policy_b: str, seed: int = 0,
+    weights: list[float] | None = None,
 ) -> list[Matchup]:
     """`n` battles between random pairs of (id, text) teams, alternating sides."""
     import random
@@ -175,8 +176,38 @@ def gauntlet_matchups(
     rng = random.Random(seed)
     out = []
     for i in range(n):
-        (ia, ta), (ib, tb) = rng.sample(teams, 2)
+        (ia, ta), (ib, tb) = _sample_pair(rng, teams, weights)
         out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2)))
+    return out
+
+
+def _sample_pair(rng, teams: list, weights: list[float] | None) -> tuple:
+    if weights is None:
+        return tuple(rng.sample(teams, 2))
+    a = rng.choices(teams, weights)[0]
+    while True:
+        b = rng.choices(teams, weights)[0]
+        if b is not a:
+            return (a, b)
+
+
+def paired_matchups(
+    teams: list[tuple[str, str]], pairs: int, per_pair: int, policy_a: str, policy_b: str, seed: int = 0,
+    weights: list[float] | None = None,
+) -> list[Matchup]:
+    """`pairs` distinct team pairings, each played `per_pair` times with sides alternating.
+
+    Sampling a fresh random pairing for every battle (`gauntlet_matchups`) gives about one battle
+    per pairing, so a team-preview model sees one coin flip per matchup and can't learn what the
+    matchup is worth. Repeating each pairing turns that into an estimate."""
+    import random
+
+    rng = random.Random(seed)
+    out = []
+    for _ in range(pairs):
+        (ia, ta), (ib, tb) = _sample_pair(rng, teams, weights)
+        for i in range(per_pair):
+            out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2)))
     return out
 
 

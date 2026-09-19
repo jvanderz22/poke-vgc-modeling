@@ -36,6 +36,48 @@
      "ece": 0.03311
     }
    }
+  },
+  {
+   "version": "wp-v1-set-small",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-19T17:41:29",
+   "path": "models/wp/reg_mc/wp-v1-set-small",
+   "headline": {
+    "human_spectator": {
+     "n": 3437,
+     "logloss": 0.54339,
+     "brier": 0.18539,
+     "ece": 0.04198
+    },
+    "human_player_approx": {
+     "n": 6616,
+     "logloss": 0.56387,
+     "brier": 0.19431,
+     "ece": 0.0291
+    }
+   }
+  },
+  {
+   "version": "wp-v1-set-iddrop",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-19T17:41:34",
+   "path": "models/wp/reg_mc/wp-v1-set-iddrop",
+   "headline": {
+    "human_spectator": {
+     "n": 3437,
+     "logloss": 0.58284,
+     "brier": 0.19728,
+     "ece": 0.07205
+    },
+    "human_player_approx": {
+     "n": 6616,
+     "logloss": 0.62263,
+     "brier": 0.21102,
+     "ece": 0.08682
+    }
+   }
   }
  ]
 }

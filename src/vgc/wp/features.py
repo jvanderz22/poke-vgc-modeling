@@ -8,7 +8,8 @@ as `(f(A=p1) + 1 − f(A=p2)) / 2`, so spectator WP is symmetric by construction
 Set-encoder inputs:
   cat  int32  [12, 8]   species, current forme, item, ability, 4 moves (vocabulary ids)
   num  float32[12, F]   per-Pokémon numbers: state, HP, status, boosts, what is known, forme
-                        stats and types, nature, exact stats (own side), volatiles, move summary
+                        stats and types, nature, exact stats (own side), volatiles, move summary,
+                        held-item properties
   glob float32[G]       turn, kind, perspective, context, field, side conditions, totals
 Tokens 0–5 are A's team, 6–11 the opponent's, both in team-preview order. The model has no
 positional encoding, so it is permutation-invariant within a side.
@@ -43,6 +44,11 @@ TERRAINS = ("electricterrain", "grassyterrain", "psychicterrain", "mistyterrain"
 SIDE_CONDS = (("tailwind", 4), ("reflect", 5), ("lightscreen", 5), ("auroraveil", 5), ("safeguard", 5))
 HAZARDS = ("stealthrock", "spikes", "toxicspikes", "stickyweb")
 SPREAD = {"allAdjacent", "allAdjacentFoes"}
+# What an item does, from the regulation export: Showdown keeps item mechanics in code, but the
+# effect hooks it defines identify the behaviour that matters here.
+ITEM_HOOKS = ("onBasePower", "onModifyDamage", "onSourceModifyDamage", "onEat", "onUpdate", "onStart",
+              "onResidual", "onDamagingHit", "onModifySpe", "onModifyMove", "onTerrainChange",
+              "onAfterMoveSecondarySelf", "onModifyCritRatio", "onSourceModifyAccuracy", "onTryHeal", "onDamage")
 SPEED_CONTROL = {"tailwind", "trickroom", "icywind", "electroweb", "thunderwave", "scaryface"}
 
 CAT_FIELDS = ("species", "forme", "item", "ability", "move1", "move2", "move3", "move4")
@@ -94,6 +100,7 @@ class Featurizer:
         self.type_idx = {t: i for i, t in enumerate(self.vocab.types)}
         self._forme_cache: dict[str, np.ndarray] = {}
         self._move_cache: dict[str, np.ndarray] = {}
+        self._item_cache: dict[str, np.ndarray] = {}
         self.n_num = len(self._mon_num(_blank_mon(), True, False))
         self.n_glob = len(self._glob(_blank_obs(), "p1", "turn", False, False))
 
@@ -136,6 +143,31 @@ class Featurizer:
             self._move_cache[key] = v
         return self._move_cache[key]
 
+    def _item_vec(self, item: str | None) -> np.ndarray:
+        """What a held item is and does. Without this an item is only an id, so an item the model
+        never saw in training means nothing to it — unlike a Pokémon or a move, which carry stats
+        and types. Unknown and "no item" are all-zero (the known/none flags cover those)."""
+        key = item or ""
+        if key not in self._item_cache:
+            v = np.zeros(6 + 5 + len(self.vocab.types) + len(ITEM_HOOKS), np.float32)
+            it = self.dex.get_item(key) if key else None
+            if it:
+                v[0] = 1
+                v[1] = float(it.get("isBerry", False))
+                v[2] = float(it.get("isChoice", False))
+                v[3] = float(bool(it.get("megaStone")))
+                v[4] = float(it.get("isGem", False))
+                v[5] = (it.get("flingBasePower") or 0) / 130
+                for i, stat in enumerate(STATS[1:]):
+                    v[6 + i] = (it.get("boosts") or {}).get(stat, 0) / 2
+                ng = it.get("naturalGift") or {}
+                if ng.get("type") in self.type_idx:  # a berry's type: resist berries pair with it
+                    v[11 + self.type_idx[ng["type"]]] = 1
+                for i, hook in enumerate(ITEM_HOOKS):
+                    v[11 + len(self.vocab.types) + i] = float(hook in (it.get("hooks") or []))
+            self._item_cache[key] = v
+        return self._item_cache[key]
+
     def _known_moves(self, m: dict) -> list[str]:
         if m["moves"]:
             return m["moves"][:4]
@@ -172,7 +204,9 @@ class Featurizer:
                 exact[i] = m["stats"].get(s, 0) / 250
             exact[6] = 1
         vol = np.array([float(any(v.startswith(x) for v in m["volatiles"])) for x in VOLATILES], np.float32)
-        return np.concatenate([head, self._forme(m["forme"]), nat, exact, vol, self._move_summary(self._known_moves(m))])
+        item = m["item"] if m["item"] is not None else m["lost_item"]
+        return np.concatenate([head, self._forme(m["forme"]), nat, exact, vol,
+                               self._move_summary(self._known_moves(m)), self._item_vec(item)])
 
     def _mon_cat(self, m: dict) -> list[int]:
         v = self.vocab

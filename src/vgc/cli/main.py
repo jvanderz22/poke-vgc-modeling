@@ -257,12 +257,27 @@ def cmd_data_human(args: argparse.Namespace) -> int:
 def cmd_data_generate(args: argparse.Namespace) -> int:
     from vgc.data.pipeline import extract_selfplay
     from vgc.meta.pool import load_pool
-    from vgc.sim.selfplay import SELFPLAY, gauntlet_matchups, run
+    from vgc.sim.selfplay import SELFPLAY, gauntlet_matchups, paired_matchups, run
 
     reg = _reg(args)
-    teams = [(t.id, t.text) for t in load_pool(reg)]
-    ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed)
-    run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}-s{args.seed}-n{args.n}"
+    pool = load_pool(reg)
+    teams = [(t.id, t.text) for t in pool]
+    weights = None
+    if args.usage_alpha > 0 or args.min_rating:
+        from vgc.meta.pool import sampling_weights
+
+        weights = sampling_weights(pool, alpha=args.usage_alpha, min_rating=args.min_rating)
+        live = sum(w > 0 for w in weights)
+        print(f"usage weighting: alpha {args.usage_alpha}, {live}/{len(pool)} teams, "
+              f"top team {max(weights):.3%} of battles vs uniform {1 / len(pool):.3%}")
+    if args.per_pair > 1:
+        pairs = args.n // args.per_pair
+        ms = paired_matchups(teams, pairs, args.per_pair, args.policy_a, args.policy_b, seed=args.seed, weights=weights)
+        suffix = f"-p{pairs}x{args.per_pair}"
+    else:
+        ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed, weights=weights)
+        suffix = f"-n{args.n}"
+    run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}-s{args.seed}{suffix}"
     _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=run_id))
     r = extract_selfplay(SELFPLAY / run_id, reg, workers=args.workers)
     _print_extract(r)
@@ -574,6 +589,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", choices=["bo3", "bo1", "both"], default="both")
     p.set_defaults(func=cmd_data_human)
     p = with_run(data.add_parser("generate", help="self-play across the team pool, then extract snapshots"))
+    p.add_argument("--per-pair", type=int, default=1,
+                   help="battles per team pairing (>1 repeats pairings, which is what team-preview WP needs)")
+    p.add_argument("--usage-alpha", type=float, default=0.0,
+                   help="weight pairings by how often each team appeared in replays (0 uniform, 1 proportional)")
+    p.add_argument("--min-rating", type=int, help="only teams seen at this replay rating or above")
     p.set_defaults(func=cmd_data_generate)
     p = with_reg(data.add_parser("manifest", help="write a checked training manifest"))
     p.add_argument("--name", required=True)
