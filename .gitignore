@@ -1,0 +1,17 @@
+# Python
+.venv/
+.venv-train/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+
+# Generated / large data (regenerated or downloaded; keep out of git)
+data/replays/
+data/matrices/
+*.onnx
+*.npz
+checkpoints/
+
+.DS_Store
+node_modules/
+.vgc/

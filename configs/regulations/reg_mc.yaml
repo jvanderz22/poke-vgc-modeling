@@ -1,0 +1,20 @@
+# Pokémon Champions VGC — Regulation M-C. Every rule the codebase applies comes from here
+# or from the Showdown export pinned below (data/regulations/reg_mc/dex.json).
+id: reg_mc
+name: Regulation M-C
+showdown_format: gen9championsvgc2026regmc # bo3 variant: gen9championsvgc2026regmcbo3
+window: [2026-09-09, 2026-12-02]
+platform: champions
+battle: { style: doubles, team_size: 6, bring: 4, level: 50 }
+clauses: { species: true, item: true } # item clause: no two share a held item
+mechanics: { mega: true, tera: false, dynamax: false, z_moves: false }
+stats: { system: sp, budget: 66, per_stat_cap: 32, ivs: fixed_31 }
+data_source:
+  # Legality (species/learnsets/items) is exported from the pinned Showdown build — the
+  # simulator is ground truth. pokemon-champions-data is kept for mechanics docs and as a
+  # cross-check; it under-reports 26 legal items at this pin (docs/phase0-findings.md).
+  showdown_repo: smogon/pokemon-showdown
+  showdown_sha: 2ddfa0476f8207e12e204b1c69f7c7683b17633c
+  dataset_repo: vbbjandrade/pokemon-champions-data
+  dataset_sha: bc6d0a8c8498d7f8817857dec6625904a201dac9
+  dataset_dir: regm-c

@@ -1,0 +1,1 @@
+"""`vgc` command-line interface."""

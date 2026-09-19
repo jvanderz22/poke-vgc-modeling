@@ -1,5 +1,51 @@
 # VGC Reg M-C Model & Advisor — Implementation Plan
 
+## Progress
+
+| Phase                       | Status         | Notes                                                                                  |
+| --------------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| 0 — Environment spike       | ✅ Done 2026-09-19 | [findings](docs/phase0-findings.md): 36.5 battles/s (8 workers), pins set, ONNX ok |
+| 1 — Foundation              | ✅ Done 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; 42 tests; calc = simulator on 4 scenarios |
+| 2 — Battle layer, tier 1    | ⏳ Next        |                                                                                        |
+| 3 — Team evaluation         | —              |                                                                                        |
+| 4 — Team building           | —              |                                                                                        |
+| 5 — BC + search             | —              |                                                                                        |
+| 6 — Interface               | —              |                                                                                        |
+
+**Changes from the original plan (from Phase 0):**
+
+- **Two venvs, not one pin set.** poke-env 0.16.1 needs numpy ≥2, and torch 2.2.2 can't exchange arrays
+  with numpy 2. `.venv` (poke-env, onnxruntime, no torch) runs everything. `.venv-train` (torch 2.2.2 +
+  numpy 1.26, no poke-env) only smoke-tests the BC trainer, which reads `.npz` and never imports poke-env.
+- **Showdown pin is ours, not the dataset's.** `pokemon-champions-data` fetches M-C from Showdown `master`,
+  so it records no SHA. Pinned `pokemon-showdown@2ddfa04` + `pokemon-champions-data@bc6d0a8` (same date) as
+  submodules. Bump them together.
+- **Showdown accepts a `Tera Type:` line in Champions** (it ignores it), so our validator must reject Tera.
+- **SP lives in Showdown's `evs` field** (`EVs: 32 HP / 32 Atk / 2 Spe` means SP). Serialize at the boundary only.
+- **Throughput is not a constraint** (~35× the 1/s/worker threshold). Set Showdown `simulator: 4`.
+
+**Changes from the original plan (from Phase 1):**
+
+- **Legality comes from the pinned Showdown, not the dataset.** `pokemon-champions-data` matches Showdown
+  exactly on learnsets and base stats but is **missing 26 legal items** at this pin (Life Orb, Rocky Helmet,
+  Expert Belt, Light Clay, Eject Button, terrain seeds…) because its M-B/M-C deltas never re-add items that
+  became legal after M-A. `vgc regulation export` now writes `data/regulations/<id>/dex.json` from Showdown's
+  own validator (`checkCanLearn`, rule table). The dataset remains a cross-check (`tests/test_regulation.py`
+  asserts the known drift so we notice an upstream fix) and the source for the type chart and mechanics docs.
+- **No damage-calc fork needed.** Upstream `@smogon/calc` **0.12.0** (2026-09-18) has native Champions
+  mechanics (`gen 0`) and every M-C Mega. It's pinned exactly via npm in `sidecar/calc/`, not as a
+  submodule. VGCHelper's fork is not used.
+- **The calc is verified against the simulator, not a website.** ChampDex and the official calc run the same
+  library, so matching them proves nothing. `tests/test_calc_vs_sim.py` instead plays scripted turns in the
+  pinned Showdown over 300 seeds and requires every non-crit hit to be one of the calc's 16 rolls, covering the
+  whole range. The scenarios are single-target, Grassy Terrain priority, Mega Salamence Aerilate spread, and
+  spread super-effective Earthquake. All match exactly.
+- **Items that matter:** Choice Band/Specs and Assault Vest are **illegal** in M-C (so the plan's
+  `Rillaboom @ Choice Band` example was illegal). The calc **silently ignores** illegal items, so `vgc calc`
+  warns about them.
+- **Engine gotcha for Phase 2:** a raw `Battle` does not apply `Adjust Level = 50` (the validator does). Any
+  harness that skips the server's validator must set level 50 itself.
+
 ## Context
 
 You want a trained model that gives VGC team-building recommendations, fed by a local Pokémon
@@ -185,7 +231,8 @@ data_source:
   {
     repo: vbbjandrade/pokemon-champions-data,
     tag: regm-c,
-    showdown_sha: <pinned>,
+    dataset_sha: bc6d0a8c8498d7f8817857dec6625904a201dac9,
+    showdown_sha: 2ddfa0476f8207e12e204b1c69f7c7683b17633c, # pinned in Phase 0
   }
 ```
 
@@ -194,10 +241,10 @@ anywhere else in the codebase.** Add a `reg_md.yaml` later and the whole stack f
 
 ### L1 — Engine
 
-- `vendor/pokemon-showdown` as a git submodule, pinned to the SHA that `pokemon-champions-data`
-  records for Reg M-C. Run `node pokemon-showdown start --no-security` on localhost.
-- `vendor/damage-calc` — Champions-capable `@smogon/calc` fork. VGCHelper pins commit
-  `e7fd7e59f3eef7ea42fba3c8b83261cb4a14109d`; verify it covers Reg M-C Megas before adopting.
+- `vendor/pokemon-showdown` as a git submodule, pinned to `2ddfa04` (the dataset records no M-C SHA;
+  see Phase 0). Run `node pokemon-showdown start --no-security` on localhost.
+- ~~`vendor/damage-calc` — Champions-capable `@smogon/calc` fork.~~ **Superseded:** upstream `@smogon/calc@0.12.0`
+  supports Champions natively; pinned via npm in `sidecar/calc/` (Phase 1).
 - `poke-env==0.16.1` (0.15.0 added Champions data; `DoublesEnv` + VGC teampreview already exist).
 - A thin Node sidecar exposing the calculator over stdio JSON, so Python calls damage calcs without
   a per-call process spawn.
@@ -287,7 +334,12 @@ a local lookup once the data layer is in place.
 Each phase ends in something runnable. Do not start a phase before its predecessor's verification
 passes.
 
-### Phase 0 — Environment spike (~half a day). _Do this before committing to anything above._
+### Phase 0 — Environment spike (~half a day). _Do this before committing to anything above._ ✅ Done
+
+> **Completed 2026-09-19** → [docs/phase0-findings.md](docs/phase0-findings.md).
+> 1 ✅ split into `.venv` / `.venv-train` (numpy conflict), sb3 dropped · 2 ✅ ONNX round trip, 6e-8 max diff ·
+> 3 ✅ Showdown `2ddfa04`, format id confirmed, SP validated (Tera is **not** rejected by Showdown) ·
+> 4 ✅ 11.4/s at 1 worker, 36.5/s at 8 workers with `simulator: 4` · 5 ✅ ~1.4 GB project; 14 GB free.
 
 Purpose is to kill the three risks that would invalidate the plan, cheaply.
 
@@ -328,6 +380,18 @@ Species Clause, Item Clause, SP budget (66 / 32 cap), legality against the Reg M
 _Verification:_ `vgc calc` reproduces a known damage roll from ChampDex or Porygon Labs to the exact
 16-roll range; `vgc team validate` correctly accepts a real rental team and rejects one with a
 duplicate item, an illegal species, a 67-SP spread, and a Tera type.
+
+> **✅ Completed 2026-09-19.** `pyproject.toml` (name `vgc`, py ≥3.10, no torch) and README rewritten. Built
+> `src/vgc/{regulation,engine,teams,cli}` with `policy/building/mcp` stubs. `configs/regulations/reg_mc.yaml`
+> plus a `reg_mb.yaml` stub prove the spine; both load and both have snapshots. Team model is SP-native, with
+> Showdown text I/O (`EVs:` only at the boundary). The validator covers Species Clause (by dex number, so
+> Indeedee/Indeedee-F collide), Item Clause, 66/32 SP, fixed IVs, pool/learnset/ability/item legality, Mega
+> stone checks and **Tera rejection**. Also built: calc sidecar (`sidecar/calc`), Showdown server lifecycle
+> (`vgc server start` writes `simulator: 4`), and CLI `vgc regulation | team validate [--showdown] | team stats | calc | server`.
+> **Verification:** the calc matches the simulator exactly (see above, stronger than the ChampDex check).
+> Validator parity with Showdown holds on all 6 fixtures; the only divergence is Tera, which we reject and
+> Showdown ignores. The valid fixture is a hand-built team, not a published rental. **42 tests pass.**
+> Deferred to Phase 3: validating against a real published rental team, which comes with the gauntlet.
 
 ### Phase 2 — Battle layer, tier 1 (question 4, first cut)
 
@@ -429,7 +493,7 @@ When all phases land, this sequence should work from a cold start:
 pyenv local 3.12.14 && python -m venv .venv && source .venv/bin/activate && pip install -e .[dev]
 git submodule update --init --recursive && (cd vendor/pokemon-showdown && npm i)
 vgc server start                                  # local Showdown, --no-security
-vgc calc --attacker "Rillaboom @ Choice Band" --move "Grassy Glide" --defender "..."
+vgc calc --attacker "Rillaboom @ Miracle Seed | Adamant Nature | EVs: 32 Atk" --move "Grassy Glide" --defender "..." --terrain Grassy
 vgc team validate team.txt --regulation reg_mc    # SP budget, clauses, no Tera
 vgc sim battle --team-a team.txt --team-b gauntlet/01.txt --n 50   # CI reported
 vgc team analyze team.txt                         # Q1

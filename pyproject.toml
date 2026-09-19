@@ -3,18 +3,29 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pokemon-model"
+name = "vgc"
 version = "0.1.0"
-description = "A lightweight Pokémon data model and battle utility"
+description = "Pokémon Champions VGC team-building and battle advisor backed by a local Showdown simulator"
 readme = "README.md"
-requires-python = ">=3.9"
-authors = [{ name = "AI Assistant" }]
-dependencies = []
+requires-python = ">=3.10"
+authors = [{ name = "Jordan VanderZwaag" }]
+# Main runtime env (`.venv`). torch is deliberately absent: poke-env needs numpy>=2 and
+# torch 2.2.2 (the last Intel-Mac wheel) can't exchange arrays with numpy 2. Inference
+# runs through onnxruntime; training lives in `.venv-train` — see docs/phase0-findings.md.
+dependencies = [
+  "poke-env==0.16.1",
+  "numpy>=2",
+  "onnxruntime>=1.23",
+  "pyyaml>=6",
+]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0.0",
 ]
+
+[project.scripts]
+vgc = "vgc.cli.main:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -25,3 +36,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = [
+  "showdown: needs the built Showdown in vendor/pokemon-showdown (node)",
+  "calc: needs the calc sidecar's node_modules (node)",
+]

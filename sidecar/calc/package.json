@@ -1,0 +1,9 @@
+{
+  "name": "vgc-calc-sidecar",
+  "private": true,
+  "description": "stdio JSON-lines wrapper around @smogon/calc (Champions = gen 0) for the vgc Python package",
+  "main": "index.js",
+  "dependencies": {
+    "@smogon/calc": "0.12.0"
+  }
+}
