@@ -115,6 +115,10 @@ vgc data manifest -r reg_md --name wp-v1-train \
 
 ## 5. Win-probability models (~1 h)
 
+If you're tuning rather than rerunning a known-good config, a GPU turns a 45-minute run into
+minutes: [docs/cloud-compute.md](cloud-compute.md). Step 4's generation is the other candidate,
+on CPU.
+
 ```bash
 vgc wp featurize -r reg_md --manifest wp-v1-train --name wp-v1
 vgc wp train -r reg_md --kind logistic

@@ -380,6 +380,24 @@ def finish_set_model(reg, dataset: str, version: str) -> None:
     models.write_card(reg.id, version, "set", info, {"training": {k: v for k, v in trained.items() if k != "history"}})
 
 
+def cmd_wp_card(args: argparse.Namespace) -> int:
+    """Write the card for a set model trained outside `vgc wp train` (e.g. on rented hardware)."""
+    reg = _reg(args)
+    finish_set_model(reg, args.dataset, args.version)
+    print(f"card written for {args.version}")
+    return 0
+
+
+def cmd_wp_calibrate(args: argparse.Namespace) -> int:
+    from vgc.wp.dataset import load
+    from vgc.wp.models import calibrate
+
+    reg = _reg(args)
+    temps = calibrate(reg.id, args.version, load(reg, args.dataset, "train"), load(reg, args.dataset, "val"))
+    print(f"{args.version} temperatures: {json.dumps(temps)}")
+    return 0
+
+
 def cmd_wp_eval(args: argparse.Namespace) -> int:
     from vgc.wp import evaluate, models
     from vgc.wp.dataset import FEATURES, load, merge
@@ -586,6 +604,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--threads", type=int, default=6)
     p.add_argument("extra", nargs="*", help="extra set_torch flags after --")
     p.set_defaults(func=cmd_wp_train)
+    p = with_reg(wp.add_parser("card", help="write a model card for a set model trained outside `wp train`"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--dataset", default="wp-v1")
+    p.set_defaults(func=cmd_wp_card)
+    p = with_reg(wp.add_parser("calibrate", help="fit per-context temperatures (train/val rows only)"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--dataset", default="wp-v1")
+    p.set_defaults(func=cmd_wp_calibrate)
     p = with_reg(wp.add_parser("eval", help="calibration and accuracy on the frozen held-out sets"))
     p.add_argument("--version", required=True)
     p.add_argument("--baseline", action="append", help="versions to compare against (repeatable; 'constant' = 50%%)")

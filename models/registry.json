@@ -15,6 +15,27 @@
    "created": "2026-09-19T17:11:19",
    "path": "models/wp/reg_mc/wp-v1-gbt",
    "headline": {}
+  },
+  {
+   "version": "wp-v1-set",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-19T17:24:34",
+   "path": "models/wp/reg_mc/wp-v1-set",
+   "headline": {
+    "human_spectator": {
+     "n": 3437,
+     "logloss": 0.55963,
+     "brier": 0.19168,
+     "ece": 0.05249
+    },
+    "human_player_approx": {
+     "n": 6616,
+     "logloss": 0.58382,
+     "brier": 0.20182,
+     "ece": 0.03311
+    }
+   }
   }
  ]
 }

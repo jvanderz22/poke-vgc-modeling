@@ -117,12 +117,21 @@ class SetModel(WPModel):
     kind = "set"
     has_bring = True
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, calibration: dict | None = None, human_ctx_col: int = 6):
         import onnxruntime as ort
 
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = 4
         self.session = ort.InferenceSession(str(path), opts, providers=["CPUExecutionProvider"])
+        self.calibration = calibration or {}
+        self.human_ctx_col = human_ctx_col
+
+    def _temperatures(self, glob: np.ndarray) -> np.ndarray:
+        """Per-row temperature: human play and bot play are calibrated separately."""
+        if not self.calibration:
+            return np.ones(len(glob))
+        human = glob[:, self.human_ctx_col] == 1
+        return np.where(human, self.calibration.get("human", 1.0), self.calibration.get("selfplay", 1.0))
 
     def predict(self, d, bs: int = 4096):
         wp, br = [], []
@@ -134,7 +143,7 @@ class SetModel(WPModel):
         if not wp:
             return np.zeros(0), np.zeros((0, 12))
         sig = lambda z: 1 / (1 + np.exp(-z))  # noqa: E731
-        return sig(np.concatenate(wp)), sig(np.concatenate(br))
+        return sig(np.concatenate(wp) / self._temperatures(d["glob"])), sig(np.concatenate(br))
 
 
 def load_model(reg_id: str, version: str) -> WPModel:
@@ -142,7 +151,11 @@ def load_model(reg_id: str, version: str) -> WPModel:
         return ConstantModel()
     out = model_dir(reg_id, version)
     kind = json.loads((out / "card.json").read_text())["kind"]
-    return {"logistic": LogisticModel.load, "gbt": GBTModel.load, "set": lambda o: SetModel(o / "model.onnx")}[kind](out)
+    def _set(o: Path) -> SetModel:
+        cal = o / "calibration.json"
+        return SetModel(o / "model.onnx", json.loads(cal.read_text()) if cal.exists() else None)
+
+    return {"logistic": LogisticModel.load, "gbt": GBTModel.load, "set": _set}[kind](out)
 
 
 # --- predictions for records (orientation + spectator symmetry) -----------------------------------
@@ -244,3 +257,35 @@ def train_baseline(reg, kind: str, dataset: str, version: str) -> Path:
     val_loss = float(-np.mean(val["y"] * np.log(p) + (1 - val["y"]) * np.log(1 - p)))
     (out / "vocab.json").write_text((FEATURES / reg.id / dataset / "vocab.json").read_text())
     return write_card(reg.id, version, kind, info, {"val_wp_logloss": round(val_loss, 5)})
+
+
+# --- calibration ------------------------------------------------------------------------------
+
+def fit_temperature(logit: np.ndarray, y: np.ndarray) -> float:
+    """Temperature that minimises log loss: >1 makes the model less confident."""
+    best = (1e9, 1.0)
+    for t in np.exp(np.linspace(np.log(0.5), np.log(4.0), 141)):
+        p = 1 / (1 + np.exp(-logit / t))
+        loss = -np.mean(y * np.log(p + 1e-9) + (1 - y) * np.log(1 - p + 1e-9))
+        best = min(best, (float(loss), float(t)))
+    return best[1]
+
+
+def calibrate(reg_id: str, version: str, train: dict[str, np.ndarray], val: dict[str, np.ndarray],
+              human_ctx_col: int = 6) -> dict[str, Any]:
+    """Fit one temperature per play context. Bot self-play and human play differ in how decisive
+    positions are, and validation is mostly self-play, so a single temperature leaves human
+    predictions over-confident. Human rows come from the *training* manifest — never a held-out set."""
+    out = model_dir(reg_id, version)
+    model = load_model(reg_id, version)
+    temps = {}
+    for name, d, rows in (("selfplay", val, val["glob"][:, human_ctx_col] == 0),
+                          ("human", train, train["glob"][:, human_ctx_col] == 1)):
+        sub = {k: v[rows] for k, v in d.items() if k != "battle_names"}
+        if not len(sub["y"]):
+            continue
+        p = np.clip(model.predict(sub)[0], 1e-6, 1 - 1e-6)
+        temps[name] = round(fit_temperature(np.log(p / (1 - p)), sub["y"]), 4)
+        temps[f"{name}_rows"] = int(len(sub["y"]))
+    (out / "calibration.json").write_text(json.dumps(temps, indent=1) + "\n")
+    return temps

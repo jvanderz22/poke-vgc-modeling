@@ -70,6 +70,7 @@ src/vgc/                 regulation · engine · teams · policy · meta · sim 
 - [PLAN.md](PLAN.md): architecture, phases, progress
 - [docs/phase0-findings.md](docs/phase0-findings.md): environment spike results
 - [docs/regulation-change.md](docs/regulation-change.md): runbook for moving to a new regulation and retraining
+- [docs/cloud-compute.md](docs/cloud-compute.md): when renting hardware pays off, and the spend controls
 
 ## Attribution
 
