@@ -1,0 +1,20 @@
+{
+ "wp": [
+  {
+   "version": "wp-v1-logistic",
+   "regulation": "reg_mc",
+   "kind": "logistic",
+   "created": "2026-09-19T17:09:22",
+   "path": "models/wp/reg_mc/wp-v1-logistic",
+   "headline": {}
+  },
+  {
+   "version": "wp-v1-gbt",
+   "regulation": "reg_mc",
+   "kind": "gbt",
+   "created": "2026-09-19T17:11:19",
+   "path": "models/wp/reg_mc/wp-v1-gbt",
+   "headline": {}
+  }
+ ]
+}

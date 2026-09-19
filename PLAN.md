@@ -17,6 +17,29 @@
 
 _Order changed 2026-09-19: battle strength first (3–6), then team evaluation and building (7–8) on top of it._
 
+## TODO
+
+Work that doesn't belong to a single phase. Pick an item up when it's cheapest (usually at the next
+re-featurize), and move it into a phase's "Completed" note when done.
+
+- [ ] **Regulation-portable models** _(added 2026-09-19; do after the Phase 4 gates pass)_. Today every model is tied
+  to one regulation, because the feature vocabulary is built from that regulation's dex: a pool change shifts every
+  embedding id, and an M-C model gives wrong answers on M-D inputs. Most of what the model learns is not
+  regulation-specific: damage, types, speed control, late-game WP, and the generic per-Pokémon numbers (base stats,
+  types, move summary). The meta (preview WP, the bring head) and calibration are specific.
+  1. **One global vocabulary** keyed by Showdown id across all regulations (from Showdown's full dex, not the
+     regulation export), so the same Pokémon, item or move keeps its id from regulation to regulation. Features record
+     the vocabulary version.
+  2. **Identity dropout in training:** replace ~10% of species/item/ability/move ids with UNK, so the model leans on the
+     generic numbers for Pokémon it hasn't seen.
+  3. **Pretrain on older regulations, fine-tune on the new one** as its data accumulates (optionally with a regulation
+     context input).
+  4. **Measure the transfer before relying on it:** scrape M-B replays, train on M-B, and evaluate on M-C's frozen
+     held-out games against a fresh M-C logistic baseline. If the transfer is weak, the runbook's answer stays
+     "retrain", with the number to back it.
+  _Done when:_ an M-B-trained model's result on M-C held-out games is recorded, and
+  [docs/regulation-change.md](docs/regulation-change.md) says whether to warm-start or retrain at rotation.
+
 **Changes from the original plan (from Phase 0):**
 
 - **Two venvs, not one pin set.** poke-env 0.16.1 needs numpy ≥2, and torch 2.2.2 can't exchange arrays
@@ -762,7 +785,7 @@ You asked for the modelling insight, so — the ones that actually decide whethe
 | WP model learns the bot, not the game (self-play labels reflect heuristic play)                             | Human-replay calibration is the reported number; player-vs-spectator consistency check; re-fit after Phase 6                    |
 | 19 GB free disk                                                                                            | Compress replay corpus; keep one checkpoint per regulation; don't vendor all of VGC-Bench                                       |
 | torch 2.2.2 ceiling breaks a dependency                                                                    | Plain-torch BC instead of sb3; ONNX for inference                                                                               |
-| Reg M-C rotates 2026-12-02 (~10 weeks out)                                                                 | L0 config spine is exactly the mitigation — validate it by adding a stub `reg_mb.yaml` early and confirming the stack runs both |
+| Reg M-C rotates 2026-12-02 (~10 weeks out)                                                                 | L0 config spine is exactly the mitigation — validate it by adding a stub `reg_mb.yaml` early and confirming the stack runs both. Rebuild steps and gates: [docs/regulation-change.md](docs/regulation-change.md) |
 
 ---
 

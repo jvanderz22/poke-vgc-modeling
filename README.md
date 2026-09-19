@@ -65,6 +65,12 @@ sidecar/                 Node helpers: calc server, Showdown dex export, damage 
 src/vgc/                 regulation · engine · teams · policy · meta · sim · data · cli  (building · mcp to come)
 ```
 
+## Docs
+
+- [PLAN.md](PLAN.md): architecture, phases, progress
+- [docs/phase0-findings.md](docs/phase0-findings.md): environment spike results
+- [docs/regulation-change.md](docs/regulation-change.md): runbook for moving to a new regulation and retraining
+
 ## Attribution
 
 Regulation data cross-checked against [pokemon-champions-data](https://github.com/vbbjandrade/pokemon-champions-data)

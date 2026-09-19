@@ -17,3 +17,7 @@ checkpoints/
 node_modules/
 .vgc/
 data/snapshots/
+data/features/
+models/**/*.pkl
+models/**/*.pt
+models/**/vocab.json

@@ -330,6 +330,148 @@ def cmd_data_stats(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- wp -------------------------------------------------------------------------------
+
+def cmd_wp_featurize(args: argparse.Namespace) -> int:
+    from vgc.data.pipeline import SNAPSHOTS
+    from vgc.wp.dataset import build
+
+    reg = _reg(args)
+    info = build(reg, SNAPSHOTS / reg.id / "manifests" / f"{args.manifest}.json", args.name, workers=args.workers)
+    print(json.dumps(info, indent=1))
+    return 0
+
+
+def cmd_wp_train(args: argparse.Namespace) -> int:
+    import subprocess
+
+    from vgc import paths
+    from vgc.wp import models
+    from vgc.wp.dataset import FEATURES
+
+    reg = _reg(args)
+    version = args.version or f"wp-v1-{args.kind}"
+    if args.kind in ("logistic", "gbt"):
+        out = models.train_baseline(reg, args.kind, args.dataset, version)
+        print(f"{version} → {out}")
+        return 0
+    data = FEATURES / reg.id / args.dataset
+    out = models.model_dir(reg.id, version)
+    py = paths.ROOT / ".venv-train" / "bin" / "python"
+    cmd = [str(py), "-m", "vgc.wp.set_torch", "--data", str(data), "--out", str(out), "--epochs", str(args.epochs),
+           "--threads", str(args.threads)] + (args.extra or [])
+    r = subprocess.run(cmd, env={"PYTHONPATH": str(paths.ROOT / "src"), "PATH": "/usr/bin:/bin"})
+    if r.returncode:
+        return r.returncode
+    finish_set_model(reg, args.dataset, version)
+    print(f"{version} → {out}")
+    return 0
+
+
+def finish_set_model(reg, dataset: str, version: str) -> None:
+    """Card + vocab for a set model that `set_torch` has written."""
+    from vgc.wp import models
+    from vgc.wp.dataset import FEATURES
+
+    out = models.model_dir(reg.id, version)
+    info = json.loads((FEATURES / reg.id / dataset / "info.json").read_text())
+    (out / "vocab.json").write_text((FEATURES / reg.id / dataset / "vocab.json").read_text())
+    trained = json.loads((out / "train.json").read_text())
+    models.write_card(reg.id, version, "set", info, {"training": {k: v for k, v in trained.items() if k != "history"}})
+
+
+def cmd_wp_eval(args: argparse.Namespace) -> int:
+    from vgc.wp import evaluate, models
+    from vgc.wp.dataset import FEATURES, load, merge
+
+    reg = _reg(args)
+    base = FEATURES / reg.id / args.dataset
+    data = {p.stem[len("eval_"):]: load(reg, args.dataset, p.stem) for p in sorted(base.glob("eval_*.npz"))}
+    # Every held-out human OTS game (held out by replay group or by team): the headline set.
+    human = [data[k] for k in ("human_ots", "human_ots_team") if k in data]
+    if human:
+        data = {"human_ots_all": merge(human)} | data
+    usage = evaluate.usage_rates(load(reg, args.dataset, "train"))
+    all_results: dict[str, dict] = {}
+    for version in [args.version] + (args.baseline or []):
+        model = models.load_model(reg.id, version)
+        all_results[version] = {name: evaluate.evaluate_set(model, d, usage) for name, d in data.items()}
+    main_r = all_results.pop(args.version)
+    print(evaluate.format_report(main_r, all_results))
+    if args.version != "constant":
+        out = models.model_dir(reg.id, args.version)
+        (out / "eval.json").write_text(json.dumps({"dataset": args.dataset, "results": main_r,
+                                                   "baselines": all_results}, indent=1) + "\n")
+        models.update_card(reg.id, args.version, headline=evaluate.headline(main_r))
+    return 0
+
+
+def cmd_wp_preview(args: argparse.Namespace) -> int:
+    from vgc.wp.tools import preview
+
+    reg = _reg(args)
+    r = preview(reg, Path(args.team).read_text(), Path(args.opponent).read_text(), args.version, context=args.context)
+    if args.json:
+        print(json.dumps(r, indent=1))
+        return 0
+    print(f"{r['version']} ({r['context']} play) — you: {', '.join(r['mine'])}")
+    print(f"  vs {', '.join(r['theirs'])}")
+    print(f"  WP before choosing: {r['preview_wp_player']:.1%} (spectator view {r['preview_wp_spectator']:.1%})")
+    if "their_bring" in r:
+        guess = sorted(r["their_bring"].items(), key=lambda kv: -kv[1])
+        print("  their likely bring: " + ", ".join(f"{s} {q:.0%}" for s, q in guess))
+    print(f"\n  best {args.top} of {len(r['options'])} bring + lead choices:")
+    for o in r["options"][: args.top]:
+        print(f"    {o['wp']:6.1%}  lead {' + '.join(o['leads']):32} back {' + '.join(o['back'])}")
+    print("\n  best lead for each bring:")
+    for o in r["best_by_bring"][: args.top]:
+        print(f"    {o['wp']:6.1%}  {', '.join(sorted(o['bring'])):56} lead {' + '.join(o['leads'])}")
+    return 0
+
+
+def cmd_wp_replay(args: argparse.Namespace) -> int:
+    from vgc.meta import replays
+    from vgc.wp.tools import replay_trajectory
+
+    reg = _reg(args)
+    if Path(args.replay).exists():
+        rep = json.loads(Path(args.replay).read_text())
+    else:
+        fmt = args.replay.rsplit("-", 1)[0]
+        rep = replays.fetch(args.replay, fmt)
+    traj = replay_trajectory(reg, rep, args.version)
+    players = rep.get("players", ["p1", "p2"])
+    print(f"{rep['id']}: {players[0]} (p1) vs {players[1]} (p2) — WP for p1 ({args.version})")
+    for t in traj:
+        bar = "█" * round(20 * t["wp_p1"])
+        print(f"  {t['kind']:7} t{t['turn']:<2} {t['wp_p1']:6.1%} {bar:20}  {t['left']['p1']}v{t['left']['p2']}  "
+              f"{' / '.join(t['active']['p1'])}  vs  {' / '.join(t['active']['p2'])}")
+    return 0
+
+
+def cmd_wp_check_preview(args: argparse.Namespace) -> int:
+    from vgc.wp.tools import preview_vs_sim
+
+    r = preview_vs_sim(_reg(args), args.version, pairs=args.pairs, n=args.n, seed=args.seed, workers=args.workers)
+    for key in ("all", "train_teams", "heldout_team"):
+        print(f"{key:13} {json.dumps(r[key])}")
+    out = Path(f"models/wp/{args.regulation}/{args.version}/preview_vs_sim.json")
+    out.write_text(json.dumps(r, indent=1) + "\n")
+    print(f"→ {out}")
+    return 0
+
+
+def cmd_wp_registry(args: argparse.Namespace) -> int:
+    from vgc.wp.models import REGISTRY
+
+    reg = json.loads(REGISTRY.read_text()) if REGISTRY.exists() else {"wp": []}
+    for e in reg["wp"]:
+        h = e.get("headline", {}).get("human_spectator", {})
+        tail = f"human spectator logloss {h['logloss']:.4f} ece {h['ece']:.4f}" if h else "(not evaluated)"
+        print(f"{e['regulation']:7} {e['version']:24} {e['kind']:9} {e['created']}  {tail}")
+    return 0
+
+
 # --- parser ---------------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
@@ -429,6 +571,47 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_data_parity)
     p = with_reg(data.add_parser("stats", help="snapshot datasets on disk"))
     p.set_defaults(func=cmd_data_stats)
+
+    wp = sub.add_parser("wp", help="win probability models").add_subparsers(dest="wp_cmd", required=True)
+    p = with_reg(wp.add_parser("featurize", help="feature arrays from a checked manifest + the held-out sets"))
+    p.add_argument("--manifest", default="wp-v1-train")
+    p.add_argument("--name", default="wp-v1")
+    p.add_argument("--workers", type=int, default=6)
+    p.set_defaults(func=cmd_wp_featurize)
+    p = with_reg(wp.add_parser("train", help="train a WP model version"))
+    p.add_argument("--kind", choices=["logistic", "gbt", "set"], required=True)
+    p.add_argument("--dataset", default="wp-v1")
+    p.add_argument("--version")
+    p.add_argument("--epochs", type=int, default=20)
+    p.add_argument("--threads", type=int, default=6)
+    p.add_argument("extra", nargs="*", help="extra set_torch flags after --")
+    p.set_defaults(func=cmd_wp_train)
+    p = with_reg(wp.add_parser("eval", help="calibration and accuracy on the frozen held-out sets"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--baseline", action="append", help="versions to compare against (repeatable; 'constant' = 50%%)")
+    p.add_argument("--dataset", default="wp-v1")
+    p.set_defaults(func=cmd_wp_eval)
+    p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
+    p.add_argument("--team", required=True, help="your team (Showdown text)")
+    p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")
+    p.add_argument("--version", default="wp-v1-set")
+    p.add_argument("--context", choices=["human", "heuristic"], default="human")
+    p.add_argument("--top", type=int, default=10)
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_wp_preview)
+    p = with_reg(wp.add_parser("replay", help="WP trajectory of a public replay (id or JSON file)"))
+    p.add_argument("replay")
+    p.add_argument("--version", default="wp-v1-set")
+    p.set_defaults(func=cmd_wp_replay)
+    p = with_reg(wp.add_parser("check-preview", help="preview WP vs simulated win rate for team pairings"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--pairs", type=int, default=30)
+    p.add_argument("--n", type=int, default=200)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--workers", type=int, default=6)
+    p.set_defaults(func=cmd_wp_check_preview)
+    p = wp.add_parser("registry", help="all WP model versions")
+    p.set_defaults(func=cmd_wp_registry)
     return ap
 
 

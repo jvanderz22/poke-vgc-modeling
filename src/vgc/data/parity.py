@@ -134,7 +134,7 @@ def run_parity(reg, n: int, seed: int = 0) -> dict[str, Any]:
             broken_illusion = any(line.startswith("|replace|") for line in rec.log)
             for s in trace_snapshots(trace, rec.summary(), reg):
                 p = s["obs"]["perspective"]
-                if p not in s["deciding"]:
+                if p not in s["deciding"] or s["kind"] == "bring":  # bring views are constructed, not observed
                     continue
                 key = (p, s["choice_index"][p])
                 if key not in live:

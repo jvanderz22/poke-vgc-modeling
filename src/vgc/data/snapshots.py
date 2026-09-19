@@ -5,6 +5,9 @@ Two sources, one format:
     yields the spectator channel and each player's channel and requests. Decision points are
     exactly the requests that ask a side to choose (team preview, a turn, a forced switch),
     and the choice that side then made is recorded in the label.
+  - **bring** snapshots (both sources): a player's view the moment it has committed its 4
+    and its 2 leads, before seeing the opponent's leads. This is the state "WP of this
+    bring/lead choice" is asked about at team preview.
   - **human replays**: the public log is the spectator channel. Decision points are team
     preview, each turn start, and end-of-turn replacements (inferred from public info).
     Where all 4 of a side's Pokémon appeared, a reconstructed player snapshot is added for
@@ -29,7 +32,7 @@ from typing import Any, Iterator
 from vgc.data.observe import PERSPECTIVES, Observer, dumps
 from vgc.regulation import Regulation
 
-VERSION = 1
+VERSION = 2
 
 
 def _short(text: str) -> str:
@@ -40,6 +43,22 @@ def _record(battle: str, source: str, point: int, kind: str, phase: str | None, 
             obs: dict, label: dict, meta: dict, choice_index: dict | None = None) -> dict[str, Any]:
     return {"v": VERSION, "battle": battle, "source": source, "point": point, "kind": kind, "phase": phase,
             "deciding": deciding, "choice_index": choice_index or {}, "obs": obs, "label": label, "meta": meta}
+
+
+def bring_view(obs: dict[str, Any], sid: str, order: list[str]) -> dict[str, Any]:
+    """`sid`'s view right after choosing its team at preview. `order` lists the chosen species,
+    leads first. Leads show as active in slots a/b, the rest as bench, the others not brought."""
+    obs = json.loads(dumps(obs))
+    side = obs["sides"][sid]
+    side["brought_known"] = True
+    for m in side["mons"]:
+        if m["species"] in order[:2]:
+            m["state"], m["position"] = "active", order.index(m["species"])
+        elif m["species"] in order:
+            m["state"], m["position"] = "bench", None
+        else:
+            m["state"], m["position"] = "not_brought", None
+    return obs
 
 
 # --- self-play ------------------------------------------------------------------------
@@ -107,9 +126,13 @@ def trace_snapshots(trace: dict, battle: dict, reg: Regulation) -> list[dict[str
             if len(choice) == len(deciding):
                 break
         label = label_base | {"choice": choice}
+        views = {p: obs[p].observation() for p in PERSPECTIVES}
         for p in PERSPECTIVES:
-            out.append(_record(battle["battle_id"], "selfplay", point, kind, phase, deciding, obs[p].observation(),
-                               label, meta, made))
+            out.append(_record(battle["battle_id"], "selfplay", point, kind, phase, deciding, views[p], label, meta, made))
+        if kind == "preview":
+            for sid in deciding:
+                out.append(_record(battle["battle_id"], "selfplay", point, "bring", None, [sid],
+                                   bring_view(views[sid], sid, brought[sid]), label, meta, {sid: made[sid]}))
         point += 1
     return out
 
@@ -164,6 +187,10 @@ def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | No
             if need:
                 pending.append(("switch", "end", need, o.observation()))
     appeared = {sid: [m.species for m in o.sides[sid].mons if m.state != "unrevealed"] for sid in ("p1", "p2")}
+    first_turn = next((obs for kind, _, _, obs in pending if kind == "turn"), None)
+    leads = {sid: [m["species"] for m in sorted((m for m in first_turn["sides"][sid]["mons"] if m["state"] == "active"),
+                                                key=lambda m: m["position"])] if first_turn else []
+             for sid in ("p1", "p2")}
     size = {sid: o.sides[sid].team_size or 4 for sid in ("p1", "p2")}
     complete = {sid: len(appeared[sid]) >= size[sid] for sid in ("p1", "p2")}
     label = {
@@ -180,8 +207,12 @@ def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | No
         out.append(_record(replay["id"], "human", point, kind, phase, deciding, spec, label, base_meta | {"approx": False}))
         for sid in ("p1", "p2"):
             if complete[sid]:
-                out.append(_record(replay["id"], "human", point, kind, phase, deciding,
-                                   player_view(spec, sid, appeared[sid]), label, base_meta | {"approx": True}))
+                view = player_view(spec, sid, appeared[sid])
+                out.append(_record(replay["id"], "human", point, kind, phase, deciding, view, label, base_meta | {"approx": True}))
+                if kind == "preview" and len(leads[sid]) == 2:
+                    order = leads[sid] + [x for x in appeared[sid] if x not in leads[sid]]
+                    out.append(_record(replay["id"], "human", point, "bring", None, [sid], bring_view(view, sid, order),
+                                       label, base_meta | {"approx": True}))
     return out
 
 

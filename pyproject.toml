@@ -17,6 +17,7 @@ dependencies = [
   "numpy>=2",
   "onnxruntime>=1.23",
   "pyyaml>=6",
+  "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]

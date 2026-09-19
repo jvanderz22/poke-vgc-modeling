@@ -1,0 +1,49 @@
+{
+ "version": "wp-v1-gbt",
+ "kind": "gbt",
+ "regulation": "reg_mc",
+ "created": "2026-09-19T17:11:19",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
+  "manifest_battles": 27958,
+  "n_num": 105,
+  "n_glob": 42,
+  "rows": {
+   "train": 347786,
+   "val": 17934,
+   "eval_human_ots": 2999,
+   "eval_human_ots_team": 10491,
+   "eval_selfplay_battle": 122764,
+   "eval_selfplay_team": 612874
+  },
+  "val_rate": 0.05,
+  "seconds": 459.0
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
+  "sha256": "2f04bf300a02ded1ed97a732f2e45068f599f17f038bff71a8f21305d4fd2e4b"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s1-n6000/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s2-n40000/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 27491,
+   "human": 467
+  }
+ },
+ "git": {
+  "sha": "d547b653c5f6ca7e89ab211812d563724f5324cd",
+  "dirty": true
+ },
+ "val_wp_logloss": 0.56071
+}
