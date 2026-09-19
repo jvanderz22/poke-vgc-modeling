@@ -7,12 +7,15 @@
 | 0 — Environment spike       | ✅ Done 2026-09-19 | [findings](docs/phase0-findings.md): 36.5 battles/s (8 workers), pins set, ONNX ok |
 | 1 — Foundation              | ✅ Done 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; 42 tests; calc = simulator on 4 scenarios |
 | 2 — Battle layer, tier 1    | ✅ Done 2026-09-19 | heuristic 98.4% vs random (500, CI 96.9–99.2%); seeded runner, identical across worker counts; 52 tests |
-| 3 — Team evaluation         | ⏳ Next        | + decision-point snapshot extraction for the WP model                                  |
-| 4 — Team building           | —              |                                                                                        |
-| 5 — Win probability v1 (OTS) | —             | **new** — spectator + player perspectives, from team preview on                        |
-| 6 — Win probability v2 (closed sheets) | —   | **new** — belief over opponent sets in player mode                                     |
-| 7 — Expected WP, BC + search | —             | was Phase 5; now driven by expected win probability per action                         |
-| 8 — Interface               | —              | was Phase 6                                                                            |
+| 3 — Battle data             | ⏳ Next        | snapshots per perspective, human replay corpus, frozen held-out sets (split from old 3) |
+| 4 — Win probability v1 (OTS) | —             | **new** — spectator + player perspectives, from team preview on                        |
+| 5 — Win probability v2 (closed sheets) | —   | **new** — belief over opponent sets in player mode                                     |
+| 6 — Expected WP, BC + search | —             | driven by expected win probability per action                                          |
+| 7 — Team evaluation         | —              | was 3; now judged by the Phase 6 battle stack                                          |
+| 8 — Team building           | —              | was 4                                                                                  |
+| 9 — Interface               | —              | CLI/MCP **plus the battle-companion web app** (staged W1–W5)                           |
+
+_Order changed 2026-09-19: battle strength first (3–6), then team evaluation and building (7–8) on top of it._
 
 **Changes from the original plan (from Phase 0):**
 
@@ -83,6 +86,8 @@ Showdown environment running self-play, and callable by a Claude agent. The four
    either as a spectator (neither side's 4 known until revealed) or as a player (my side fully known, the
    opponent revealed over time). And what is the **expected** win probability of each turn action I'm
    considering?
+6. _(added 2026-09-19)_ All of the above from a **web app** during a real game. Paste my teams, pick one, enter
+   what the opponent reveals turn by turn, and get recommendations and probabilities as the battle goes.
 
 You have a `vgc-advisor`
 plugin whose three skills reason from web search and public datasets, with no simulator and no model
@@ -177,10 +182,10 @@ That includes every one of your four questions in a first working form. Data is 
 Pikalytics, the Champions dataset, the MIT repos and the HuggingFace checkpoints are all public
 downloads. Disk and bandwidth are the only cost, and they're your own.
 
-### The one line item: model training (Phases 5–7)
+### The one line item: model training (Phases 4–6)
 
 BC is a small supervised model over a few hundred thousand state-action pairs. On a rented RTX 4090
-that's **roughly 10–30 minutes per run**. The WP set encoder (Phases 5–6) is the same scale: a small supervised model
+that's **roughly 10–30 minutes per run**. The WP set encoder (Phases 4–5) is the same scale: a small supervised model
 over decision-point snapshots, trained the same way. It adds runs, not a new cost tier, and fits the same free
 Kaggle quota.
 
@@ -308,7 +313,7 @@ and never as the starting point.
 _Added 2026-09-19._ One model family that answers "who is winning, and by how much?" at every decision
 point from team preview to the last turn. It also answers "which action raises my chances most?"
 Search needs exactly this: the plan's "calibrated value head at the leaves" **is** this model, so it's
-built as its own layer, before search.
+built as its own layer, before search, and both come before team evaluation.
 
 **What it outputs.** `WP(o) = P(p1 wins | o)`, where `o` is what a given **perspective** can observe at a
 **decision point**: team preview, each turn's choice, and each forced switch.
@@ -425,6 +430,48 @@ retrieval discipline for genuinely live questions (bans, errata, this week's usa
 every "hand off to damage-calc skill" with a real calculation, and every roster/learnset fetch with
 a local lookup once the data layer is in place.
 
+### L5b — Battle-companion web app (question 6)
+
+_Added 2026-09-19._ A local web app for use *during* a game. Champions is played in the game itself, not on
+Showdown, so there's no log to read: you tell it what happened, and it answers with recommendations and
+probabilities from the same functions the CLI uses. `vgc web` serves it on `localhost`. There's an opt-in LAN mode
+with an access token, so a phone next to the Switch can drive it while the Mac does the work. It stays local:
+the simulator, calc sidecar and ONNX models all live on the Mac, and nothing is hosted.
+
+**Team library.** Paste a team in Showdown/PokéPaste text, or a `pokepast.es` link that it fetches and parses.
+Every team is validated against the active regulation on save (SP budget, clauses, pool, no Tera), with stats and
+Mega formes shown. Teams are stored locally with a name and notes and can be edited, duplicated or archived. You
+pick one as the **active team** for a battle.
+
+**Battle session**, one per game, with player perspective and your side fully known:
+
+1. **Team preview.** Enter the opponent's 6 species (search-as-you-type over the legal pool), or paste their sheet
+   if it's an open-team-sheet game (Bo3). Output: WP for each of your 15 bring choices and leads against their
+   predicted bring, with the recommended 4 and 2 leads highlighted. It also shows which of their Pokémon threaten
+   yours (calc-backed).
+2. **Each turn.** A fast, mostly-click input for what you saw. Which opponent Pokémon are on the field (revealing
+   their brought 4 as they appear), HP % (slider or the in-game bar), status, stat stages, items, abilities and
+   moves as they're revealed, Mega Evolution, weather, terrain, Trick Room, Tailwind, screens, and faints. Your own
+   side is pre-filled from the team and needs only HP, status and boosts corrected when the app can't infer them.
+   Output: current WP, and your joint actions ranked by **expected WP** with intervals and the worst-case reply.
+   Every recommended move has a calc panel (rolls, KO chance) and shows the opponent replies that matter.
+3. **Belief panel** (from v2). For each opponent Pokémon, the likely item, ability, spread and moves, and how that
+   changed with each reveal or damage observation. You can correct it by hand ("it's Choice Scarf").
+4. **Timeline.** A WP curve by turn, undo and edit any earlier turn (everything downstream recomputes), and a
+   post-game review that flags the turns where the chosen action's EWP was well below the best.
+
+**Architecture.** A FastAPI backend calls `vgc.*` directly: validation, calc, WP, EWP, belief. A light frontend
+(server-rendered with htmx, or Preact without a build step) is mobile-first for one-thumb use. The API is
+documented, so the MCP server and the app share one surface. The hard part is **state reconstruction**: turning
+manual input into a Showdown `Battle` state that the EWP evaluator can clone and step. That needs its own parity
+tests (a reconstructed state from a self-play log's public information vs the true state: same legal actions, same
+damage rolls, EWP within tolerance). The app only shows EWP for states that pass reconstruction checks, and it says
+so when one doesn't.
+
+**Sessions are data.** Every game you log is saved as a player-perspective record (inputs, recommendations shown,
+what you actually clicked, the result). Those are exactly the real player-perspective human games that public
+replays can't provide, so with your opt-in they feed WP calibration and a personal review of your decisions.
+
 ---
 
 ## Phases
@@ -489,7 +536,7 @@ duplicate item, an illegal species, a 67-SP spread, and a Tera type.
 > **Verification:** the calc matches the simulator exactly (see above, stronger than the ChampDex check).
 > Validator parity with Showdown holds on all 6 fixtures; the only divergence is Tera, which we reject and
 > Showdown ignores. The valid fixture is a hand-built team, not a published rental. **42 tests pass.**
-> Deferred to Phase 3: validating against a real published rental team, which comes with the gauntlet.
+> Deferred: validating against a real published rental team. **Resolved in Phase 2:** 800/800 real team sheets accepted.
 
 ### Phase 2 — Battle layer, tier 1 (question 4, first cut)
 
@@ -514,75 +561,113 @@ completes unattended with reproducible results from a fixed seed.
 > Known limits for later tiers: no voluntary switching beyond hopeless positions; opponent spreads are a single
 > guess; no prediction of opponent Protect or target choice.
 
-### Phase 3 — Team evaluation (unlocks 1–3)
+> **Reordered 2026-09-19:** battle strength first, team building second. Win probability, expected WP and
+> search (old Phases 5–7) now come *before* team evaluation and team building (old Phases 3–4). Team rankings
+> only mean something under a policy that plays well, so the strongest battle stack is built and verified first,
+> then used to judge and build teams. The old Phase 3's snapshot extraction is split out as the new Phase 3,
+> because the battle phases need that data.
 
-Build the dated meta gauntlet. Matchup matrix generator with the racing allocator and common random
-numbers. Team-embedding feature extractor.
+### Phase 3 — Battle data: snapshots and replay corpus
 
-_Added for the WP model:_ a **decision-point snapshot extractor**. It re-simulates battles from `inputLog` (Phase 2
-`replay` op), emits spectator/p1/p2 channels, and writes one featurized snapshot per perspective per decision point,
-labelled with the winner and the true brought-4. Run it over the matrix's battles as they're generated, since they
-are Phase 5's first training set. Also parse human replays into the same snapshot format.
+_Split out of the old Phase 3, 2026-09-19._ A **decision-point snapshot extractor**. It re-simulates battles from
+`inputLog` (Phase 2 `replay` op), emits spectator/p1/p2 channels, and writes one featurized snapshot per perspective
+per decision point, labelled with the winner and the true brought-4. A human-replay parser writes the same snapshot
+format: Bo3 open-team-sheet games for v1, Bo1 closed-sheet games for v2 (`vgc meta scrape --format bo1`), with
+rating kept for filtering. A standing self-play generator (heuristic vs heuristic across the team pool) produces the
+first training set. **Frozen held-out sets** are fixed here, before any model sees data: held-out battles,
+held-out teams and held-out human replays.
 
-_Verification:_ **calibration gate** — matrix rankings correlate positively with real-world results;
-top-usage/tournament-winning gauntlet teams should land in the upper half. If they don't, the policy
-is too weak for its outputs to mean anything, and the matrix measures the bot, not the teams. This
-gate is the single most important check in the plan; do not build L4 on a matrix that fails it.
+_Verification:_ snapshots re-derived from the same `inputLog` are byte-identical. For self-play, the player snapshot
+matches what poke-env's `DoubleBattle` showed that player at the time (parity with the live run). No held-out battle
+or team appears in any training manifest (checked by the manifest tool, not by eye).
 
-### Phase 4 — Team building (questions 1–3)
-
-Analytic weakness report first (no model, immediately useful). Then the surrogate regressor trained
-on Phase 3 outcomes, slot-completion search with simulated verification of the top-k, then moveset
-and SP optimization.
-
-_Verification:_ held-out test — remove one Pokémon from 10 known-strong Reg M-C teams and check
-whether `vgc team complete` recovers the real member in its top 5. Weakness reports on those teams
-should match published tournament-report commentary.
-
-### Phase 5 — Win probability v1: Open Team Sheets (question 5)
+### Phase 4 — Win probability v1: Open Team Sheets (question 5)
 
 _New 2026-09-19._ Featurizer shared by all perspectives. v0 GBT baseline. Set-encoder WP model with a bring head,
-trained on self-play snapshots plus Bo3 OTS human replays (Kaggle/rented GPU → ONNX). Frozen held-out sets:
-held-out battles, and held-out *teams*. `vgc wp preview` (WP per bring/lead), `vgc wp replay` (trajectory),
-`vgc wp eval`. Model cards and registry.
+trained on self-play snapshots plus Bo3 OTS human replays (Kaggle/rented GPU → ONNX). Uses the frozen held-out sets
+from Phase 3. `vgc wp preview` (WP per bring/lead), `vgc wp replay` (trajectory), `vgc wp eval`. Model cards and
+registry.
 
 _Verification:_ on held-out human replays, per perspective: log loss and Brier beat both the 50% baseline and a
 remaining-Pokémon/HP logistic baseline; **ECE < 0.03** with reliability diagrams per turn bucket. On the same states
 the **player perspective scores lower log loss than the spectator** (more information must help; if it doesn't,
-the hidden-information handling is broken). Preview WP correlates with the Phase 3 matrix cell for the same
-pairing, which is an independent estimate of the same quantity. The bring head beats a usage-frequency baseline
-at predicting the brought 4.
+the hidden-information handling is broken). Preview WP agrees with a direct simulated win rate for a sample of
+pairings (an independent estimate of the same quantity). The bring head beats a usage-frequency baseline at
+predicting the brought 4.
 
-### Phase 6 — Win probability v2: closed sheets, player mode
+### Phase 5 — Win probability v2: closed sheets, player mode
 
 _New 2026-09-19._ Set prior from the replay corpus and usage data. Belief tracker with hard reveals plus a damage-roll
 likelihood from the calc; particles per opponent Pokémon. `WP_v2 = E_belief[WP_v1]`, compared against a
-directly trained v2. Needs Bo1 closed-sheet replays (`vgc meta scrape --format bo1`).
+directly trained v2.
 
 _Verification:_ on held-out closed-sheet games, v2 log loss is between v1-with-oracle-sets (lower bound) and
 v1-with-prior-only (upper bound), and moves toward the oracle as sets are revealed. Belief calibration: the true
 item and nature land in the belief's 80% set ~80% of the time.
 
-### Phase 7 — Expected WP, behavior cloning + search (questions 4 and 5, properly)
+### Phase 6 — Expected WP, behavior cloning + search (questions 4 and 5, properly)
 
-_Was Phase 5; restructured 2026-09-19 around EWP._ **EWP action evaluator** first: serialized-state clone and step in
-the runner, top-k pruning of both sides by the policy prior, K common-random-number seeds, determinization from
-the v1 unrevealed-bench prior or the v2 belief, and the per-action EWP table in `vgc battle advise`. Then scrape and
-clean Reg M-C replays and train BC (rented GPU → ONNX) as `π_opp` and move-ordering prior. Then deeper
-expectiminimax with WP at the leaves.
+_Restructured 2026-09-19 around EWP._ **EWP action evaluator** first: serialized-state clone and step in the runner,
+top-k pruning of both sides by the policy prior, K common-random-number seeds, determinization from the v1
+unrevealed-bench prior or the v2 belief, and the per-action EWP table in `vgc battle advise`. Then train BC on the
+Phase 3 human corpus (rented GPU → ONNX) as `π_opp` and move-ordering prior. Then deeper expectiminimax with WP at
+the leaves. Finally, **refit WP on self-play from the stronger policy** and re-check calibration, because WP learned
+from heuristic play describes heuristic play.
 
 _Verification:_ the EWP-greedy policy (heuristic prior) beats the heuristic ≥60% over 500 battles; BC beats the
 heuristic ≥60%; search with the BC prior beats BC ≥60%; turn latency stays under the 45 s VGC clock with margin.
 EWP sanity: an action's EWP matches the realized win rate of that action in held-out self-play within its interval.
-Then re-run Phase 3's matrix under the stronger policy and check how much team rankings move. If they move a lot,
-L4's conclusions were policy artifacts.
+Also measure each policy's **battles/s**, because Phase 7 has to pick one it can afford to run at matrix scale.
 
-### Phase 8 — Interface
+### Phase 7 — Team evaluation (unlocks 1–3)
 
-MCP server wrapping the CLI. Rewrite the three skills against it. Fix the SP/EV errors.
+_Was Phase 3; now runs on the Phase 6 battle stack._ Build the dated meta gauntlet from the team pool plus
+usage-weighted external lists. Matchup matrix generator with the racing allocator and common random numbers.
+Team-embedding feature extractor. The matrix policy is the **strongest policy affordable at matrix scale**: full
+search is too slow for ~100k battles, so expect BC or EWP-greedy with small K, chosen from Phase 6's strength and
+throughput numbers. Preview WP (Phase 4) gives a free first pass on every cell. The racing allocator spends
+simulation only where WP is uncertain or the cell matters.
 
-_Verification:_ in a fresh Claude Code session, ask each of your four questions and confirm every
+_Verification:_ **calibration gate**. Matrix rankings correlate positively with real-world results, and
+top-usage/tournament-winning gauntlet teams should land in the upper half. **Policy-artifact check, built in:**
+compute a subset of cells under both the heuristic and the matrix policy. If rankings move a lot between them, the
+weaker policy was misjudging teams, and that's the reason this phase now comes after the battle work. Do not build
+L4 on a matrix that fails the gate.
+
+### Phase 8 — Team building (questions 1–3)
+
+_Was Phase 4._ Analytic weakness report first (no model, immediately useful). Then the surrogate regressor trained on
+Phase 7 outcomes, with preview WP as a feature, slot-completion search with simulated verification of the top-k, then
+moveset and SP optimization. All candidate verification uses the Phase 7 matrix policy.
+
+_Verification:_ held-out test — remove one Pokémon from 10 known-strong Reg M-C teams and check
+whether `vgc team complete` recovers the real member in its top 5. Weakness reports on those teams
+should match published tournament-report commentary.
+
+### Phase 9 — Interface
+
+MCP server wrapping the CLI. Rewrite the three skills against it. Fix the SP/EV errors. Finish the
+battle-companion web app (L5b).
+
+_Verification:_ in a fresh Claude Code session, ask each of your questions and confirm every
 numeric claim traces to a real tool call, not a web guess.
+
+**Web app, staged.** Each stage ships as soon as the phase that powers it lands, so the app is usable
+early and grows with the model. With battles first, the in-battle companion arrives before the team-building tools:
+
+| Stage | After | Adds |
+| --- | --- | --- |
+| **W1** | Phase 3 | `vgc web`, team library (paste / pokepast.es, validation, stats), active team, calc panel, battle session input, heuristic move suggestions (no probabilities yet) |
+| **W2** | Phase 4 | Team-preview bring/lead recommendations with WP; per-turn current WP; WP timeline |
+| **W3** | Phase 5 | Belief panel for closed-sheet games; manual belief corrections |
+| **W4** | Phase 6 | Expected-WP action table with intervals and worst-case replies (determinized over the belief); state-reconstruction parity checks; post-game review |
+| **W5** | Phase 8 | Team tools in the library: weakness report, complete-my-team, moveset/SP suggestions |
+
+_Web app verification:_ replay 20 held-out self-play battles through the app's input forms, entering only public
+information from the player's perspective. The reconstructed states must pass parity (same legal actions and calc
+rolls as the true state), and the app's WP and EWP must match `vgc wp` and `vgc battle advise` on the same inputs.
+Entering a full turn takes under ~20 seconds on a phone (timed), well inside the in-game turn timer.
+Recommendations come back within the turn clock with margin.
 
 ---
 
@@ -609,7 +694,8 @@ You asked for the modelling insight, so — the ones that actually decide whethe
    rates; a 30-battle 55% result is noise.
 7. **Watch for policy-induced artifacts.** A matchup matrix computed under one policy measures teams
    _under that policy_. Trick Room teams in particular tend to be undervalued by weak bots that
-   misplay the setup turn. Re-running Phase 3 after Phase 7 (and comparing) is how you detect this.
+   misplay the setup turn. Phase 7 computes a subset of cells under both the heuristic and the strong policy
+   and compares them; that's how you detect this.
    The same applies to the WP model: WP learned from heuristic self-play measures heuristic play, so
    report calibration on human replays separately.
 8. **Tag every artifact with its regulation id.** Checkpoints, matrices, gauntlets, surrogates. When
@@ -626,8 +712,8 @@ You asked for the modelling insight, so — the ones that actually decide whethe
 | Showdown's Reg M-C format differs from what poke-env 0.16.1 expects (Mega in the action space, SP parsing) | Phase 0 spike item 3. This is the likeliest thing to break; find out in hour one, not week three                                |
 | Not enough Reg M-C replays yet — format opened 2026-09-09, ~10 days ago                                    | Bootstrap BC from Reg M-B replays (much larger corpus, same platform/mechanics) and fine-tune on M-C as it accumulates          |
 | Simulation throughput too low for the matchup matrix                                                       | Racing allocator; shrink the gauntlet; a damage-calc-only fast approximate turn model for the surrogate's inner loop only       |
-| Policy too weak → meaningless team rankings                                                                | Phase 3 calibration gate is a hard stop                                                                                         |
-| WP model learns the bot, not the game (self-play labels reflect heuristic play)                             | Human-replay calibration is the reported number; player-vs-spectator consistency check; re-fit after Phase 7                    |
+| Policy too weak → meaningless team rankings                                                                | Phase 7 calibration gate is a hard stop                                                                                         |
+| WP model learns the bot, not the game (self-play labels reflect heuristic play)                             | Human-replay calibration is the reported number; player-vs-spectator consistency check; re-fit after Phase 6                    |
 | 19 GB free disk                                                                                            | Compress replay corpus; keep one checkpoint per regulation; don't vendor all of VGC-Bench                                       |
 | torch 2.2.2 ceiling breaks a dependency                                                                    | Plain-torch BC instead of sb3; ONNX for inference                                                                               |
 | Reg M-C rotates 2026-12-02 (~10 weeks out)                                                                 | L0 config spine is exactly the mitigation — validate it by adding a stub `reg_mb.yaml` early and confirming the stack runs both |
