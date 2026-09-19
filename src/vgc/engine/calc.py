@@ -83,6 +83,13 @@ class DamageCalc:
             raise CalcError(resp["error"])
         return resp
 
+    def batch(self, requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Many raw calcs in one round trip. Each result is {"ok": True, "damage": [...],
+        "defenderHP", "defenderCurHP", ...} or {"ok": False, "error"}; no desc/KO text."""
+        if not requests:
+            return []
+        return self.raw({"batch": requests})["results"]
+
     def calc(
         self,
         attacker: PokemonSet,

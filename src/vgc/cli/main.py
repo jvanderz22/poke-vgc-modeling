@@ -146,6 +146,66 @@ def cmd_calc(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- meta -----------------------------------------------------------------------------
+
+def cmd_meta_scrape(args: argparse.Namespace) -> int:
+    from vgc.meta import pool, replays
+
+    reg = _reg(args)
+    fmts = pool.formats_for(reg) if args.format == "both" else [reg.showdown_format + ("bo3" if args.format == "bo3" else "")]
+    for fmt in fmts:
+        new = cached = 0
+        for meta in replays.search(fmt, pages=args.pages):
+            if replays.cache_path(meta["id"], fmt).exists():
+                cached += 1
+                continue
+            replays.fetch(meta["id"], fmt)
+            new += 1
+        print(f"{fmt}: {new} new, {cached} already cached")
+    return 0
+
+
+def cmd_meta_pool(args: argparse.Namespace) -> int:
+    from vgc.meta import pool
+
+    reg = _reg(args)
+    teams = pool.build_pool(reg)
+    path = pool.save_pool(reg, teams)
+    print(f"{len(teams)} distinct legal teams ({sum(t.count for t in teams)} sheets) → {path}")
+    return 0
+
+
+# --- sim ------------------------------------------------------------------------------
+
+def _print_run(s: dict) -> None:
+    lo, hi = s["a_win_rate_95ci"]
+    print(f"{s['battles']} battles, {s['errors']} errors, {s['ties']} ties, {s['invalid_choices']} invalid choices")
+    print(f"A win rate {s['a_win_rate']:.1%} (95% CI {lo:.1%}–{hi:.1%}), mean {s['mean_turns']} turns")
+    print(f"{s['wall_seconds']}s on {s['workers']} workers = {s['battles_per_second']} battles/s · digest {s['outcome_digest']}")
+    print(f"logs: {s['out_dir']}")
+
+
+def cmd_sim_battle(args: argparse.Namespace) -> int:
+    from vgc.sim.selfplay import Matchup, run
+
+    a, b = Path(args.team_a).read_text(), Path(args.team_b).read_text()
+    ms = [Matchup(a, b, args.policy_a, args.policy_b, Path(args.team_a).stem, Path(args.team_b).stem, swap_sides=bool(i % 2))
+          for i in range(args.n)]
+    _print_run(run(ms, reg_id=args.regulation, seed=args.seed, workers=args.workers, run_id=args.run_id))
+    return 0
+
+
+def cmd_sim_selfplay(args: argparse.Namespace) -> int:
+    from vgc.meta.pool import load_pool
+    from vgc.sim.selfplay import gauntlet_matchups, run
+
+    reg = _reg(args)
+    teams = [(f"pool{i}", t.text) for i, t in enumerate(load_pool(reg))]
+    ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed)
+    _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=args.run_id))
+    return 0
+
+
 # --- parser ---------------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
@@ -190,6 +250,34 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--defender-boosts", help="e.g. def=1")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_calc)
+
+    meta = sub.add_parser("meta", help="replays and team pools").add_subparsers(dest="meta_cmd", required=True)
+    p = with_reg(meta.add_parser("scrape", help="cache recent public replays (gzipped, data/replays/)"))
+    p.add_argument("--pages", type=int, default=4, help="50 replays per page, newest first")
+    p.add_argument("--format", choices=["bo3", "bo1", "both"], default="bo3", help="Bo3 games always carry team sheets")
+    p.set_defaults(func=cmd_meta_scrape)
+    p = with_reg(meta.add_parser("pool", help="build a dated team pool from cached replays' team sheets"))
+    p.set_defaults(func=cmd_meta_pool)
+
+    simp = sub.add_parser("sim", help="seeded, parallel battles").add_subparsers(dest="sim_cmd", required=True)
+    policies = ["heuristic", "random"]
+
+    def with_run(p: argparse.ArgumentParser) -> argparse.ArgumentParser:
+        with_reg(p)
+        p.add_argument("--n", type=int, default=100)
+        p.add_argument("--policy-a", choices=policies, default="heuristic")
+        p.add_argument("--policy-b", choices=policies, default="heuristic")
+        p.add_argument("--seed", type=int, default=0)
+        p.add_argument("--workers", type=int, default=4)
+        p.add_argument("--run-id")
+        return p
+
+    p = with_run(simp.add_parser("battle", help="team A vs team B, sides alternating"))
+    p.add_argument("--team-a", required=True)
+    p.add_argument("--team-b", required=True)
+    p.set_defaults(func=cmd_sim_battle)
+    p = with_run(simp.add_parser("selfplay", help="random pairs from the latest team pool"))
+    p.set_defaults(func=cmd_sim_selfplay)
     return ap
 
 

@@ -8,6 +8,7 @@ __pycache__/
 # Generated / large data (regenerated or downloaded; keep out of git)
 data/replays/
 data/matrices/
+data/selfplay/
 *.onnx
 *.npz
 checkpoints/
