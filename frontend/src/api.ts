@@ -88,6 +88,71 @@ export type SimResult = {
   timeline: SimTurn[];
 };
 
+/** One held-out human game the in-battle model called at 90%+ before it ended.
+ *  `side` is the side it favoured, `wp` its confidence at the last decision point, and `correct`
+ *  whether that side went on to win — the whole point of the set. */
+export type Endgame = {
+  replay: string; format: string; url: string;
+  players: { p1: string; p2: string };
+  rating: number | null;
+  turns: number; ended_by: "normal" | "forfeit";
+  winner: "p1" | "p2"; side: "p1" | "p2";
+  wp: number; correct: boolean;
+  points: number; locked_point: number; locked_turn: number;
+  left: { p1: number; p2: number };
+};
+
+export type EndgameIndex = {
+  built: string | null;
+  version?: string;
+  criteria?: { min_wp: number; hold: number; min_turns: number; held_out: boolean; ots: boolean; human_only: boolean };
+  counts?: { cached: number; eligible: number; unfinished: number; too_short: number; selected: number };
+  gates?: Gates;
+  correct?: number;
+  /** `total` is the whole set, `matched` what the filter kept, `games` what fitted in the
+   *  response — three different numbers, and the header shows all three when they differ. */
+  total?: number;
+  matched: number;
+  games: Endgame[];
+  /** Present only when the index has never been built: what to run. */
+  hint?: string;
+};
+
+export type BoardMon = {
+  species: string; forme: string;
+  state: "active" | "bench" | "fainted" | "unrevealed" | "not_brought";
+  position: number | null; hp: number; status: string | null;
+  boosts: Record<string, number>;
+};
+
+export type BoardSide = { left: number; mons: BoardMon[]; conditions: string[] };
+
+/** One decision point: the position, what the model thought of it, and what happened next.
+ *  The trailing step has `kind: "end"` and no WP — it is the finish, not a position to judge. */
+export type EndgameStep = {
+  point: number | null;
+  kind: "preview" | "turn" | "switch" | "end";
+  turn: number;
+  wp_p1: number | null;
+  events: SimEvent[];
+  board: { p1: BoardSide; p2: BoardSide };
+  weather: string | null;
+  terrain: string | null;
+};
+
+export type SheetMon = { species: string; item: string | null; ability: string | null; moves: string[] };
+
+export type EndgameDetail = {
+  replay: string; format: string; url: string;
+  players: { p1: string; p2: string };
+  rating: number | null;
+  winner: "p1" | "p2" | null; turns: number; ended_by: string;
+  version: string; wp_error: string | null;
+  gates: Gates;
+  sheets: { p1: SheetMon[]; p2: SheetMon[] };
+  steps: EndgameStep[];
+};
+
 export class ApiError extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -121,6 +186,10 @@ export const api = {
     team_a: string; team_b: string; seed: number;
     policy_a: string; policy_b: string; regulation: string;
   }) => call<SimResult>("/api/simulate", { method: "POST", body: JSON.stringify(body) }),
+  endgames: (reg: string, only: "all" | "played_out" | "misses" = "all") =>
+    call<EndgameIndex>(`/api/endgames?regulation=${reg}&only=${only}`),
+  endgame: (replay: string, reg: string) =>
+    call<EndgameDetail>(`/api/endgames/${encodeURIComponent(replay)}?regulation=${reg}`),
   /** Give `their_team` for an open sheet, or `their_species` (six) for a closed one. */
   preview: (
     my_team: string,

@@ -112,6 +112,12 @@ collect:
 gates:
 	@$(VGC) wp registry
 
+# The browsable set behind the web app's Endgames page: held-out human games the in-battle model
+# called at 90%+ before they ended, and how often that call was right. Reads every cached replay,
+# so about a minute.
+endgames:
+	$(VGC) wp endgames --regulation $(REG)
+
 # --- checks -----------------------------------------------------------------------------------
 
 test:

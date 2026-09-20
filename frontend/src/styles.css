@@ -1,3 +1,10 @@
+/* Bootstrap goes into its own cascade layer so that everything in this file wins a name
+   collision outright, whatever the specificities are. The two share `.row`, and Bootstrap's grid
+   rule `.row > * { width: 100% }` would otherwise turn every control row in the app into a
+   stack of full-width blocks. Unlayered rules beat layered ones, so nothing below needs to know. */
+@layer bootstrap;
+@import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
+
 :root {
   --bg: #12141a;
   --panel: #1b1e26;
@@ -67,7 +74,11 @@ button.ghost { background: transparent; color: var(--text); border: 1px solid va
 button.danger { background: transparent; color: var(--bad); border: 1px solid var(--line); font-weight: 500; }
 button.link { background: none; border: 0; color: var(--accent); padding: 0; font-weight: 500; }
 
-.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+/* Bootstrap's grid claims `.row` too. Being unlayered, everything here outranks it, but its
+   `.row > *` rule has no counterpart to lose to — so the width it forces on every child is
+   cancelled here, and its gutter is zeroed at the source rather than fought per property. */
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; --bs-gutter-x: 0; --bs-gutter-y: 0; }
+.row > * { width: auto; max-width: none; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .split { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
 @media (max-width: 800px) {
@@ -193,3 +204,57 @@ select.form-select { max-width: 260px; }
 .wp-chip { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
 .wp-track { display: block; width: 88px; height: 6px; background: #0e1015; border-radius: 3px; overflow: hidden; }
 .wp-track > i { display: block; height: 100%; background: var(--accent); }
+
+/* --- endgame browser ------------------------------------------------------------------ */
+.hint-block {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; margin: 0; font: 12px/1.45 ui-monospace, Menlo, monospace;
+}
+
+.game-list { max-height: 560px; overflow-y: auto; padding: 6px; }
+.game-row {
+  display: grid; grid-template-columns: 7px 1fr auto; gap: 4px 8px; align-items: center;
+  width: 100%; text-align: left; background: transparent; border: 1px solid transparent;
+  border-radius: 8px; padding: 7px 8px; color: var(--text); font-weight: 500;
+}
+.game-row:hover { background: var(--panel-2); }
+.game-row[aria-current="true"] { border-color: var(--accent); background: var(--panel-2); }
+.game-who { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game-wp { font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 650; }
+.game-meta { grid-column: 2 / 4; }
+
+/* Side colours are used as a running identity — the tag, the WP bar, the scrubber ticks. */
+.side-tag { font-weight: 650; }
+.side-tag.p1 { color: var(--accent); }
+.side-tag.p2 { color: #e0a74a; }
+
+.scrub { display: flex; gap: 2px; align-items: flex-end; height: 48px; margin-top: 12px; }
+.scrub-tick {
+  flex: 1; min-width: 4px; height: 100%; padding: 0; background: #0e1015; border: 0;
+  border-radius: 2px; display: flex; align-items: flex-end; outline-offset: 2px;
+}
+.scrub-tick[aria-current="true"] { background: #2c3040; box-shadow: inset 0 0 0 1px var(--text); }
+.scrub-tick > i { display: block; width: 100%; border-radius: 2px; }
+.tick-p1 { background: var(--accent); }
+.tick-p2 { background: #e0a74a; }
+.tick-end { height: 100%; background: var(--dim); }
+
+.wp-split { height: 12px; background: #e0a74a; border-radius: 6px; overflow: hidden; }
+.wp-split-p1 { display: block; height: 100%; background: var(--accent); }
+
+.board { display: flex; flex-direction: column; gap: 5px; }
+.board-mon {
+  display: grid; grid-template-columns: 1fr 64px 34px; gap: 8px; align-items: center;
+  font-size: 13px; padding: 3px 0;
+}
+.board-mon.bench { color: var(--dim); }
+.board-mon.fainted { color: var(--dim); text-decoration: line-through; opacity: .6; }
+.board-mon.active .board-name { font-weight: 650; }
+.board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-status { font-size: 9px; padding: .2em .45em; margin-left: 6px; vertical-align: 1px; }
+.board-hp { display: block; height: 6px; background: #0e1015; border-radius: 3px; overflow: hidden; }
+.board-hp > i { display: block; height: 100%; }
+.hp-ok { background: var(--good); }
+.hp-low { background: var(--warn); }
+.hp-crit { background: var(--bad); }
+.board-pct { text-align: right; font-variant-numeric: tabular-nums; }

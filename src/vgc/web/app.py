@@ -95,21 +95,6 @@ def gate_summary(version: str) -> dict[str, Any]:
             "headline": entry.get("headline", {}).get("human_spectator", {})}
 
 
-def in_battle_version(regulation: str) -> str | None:
-    """The model to draw a WP number with during a battle.
-
-    Prefers one whose in-battle gates pass over the newest set encoder, because that is the claim
-    being made when a percentage is put on screen mid-battle. Today that is the GBT baseline: it
-    beats the constant in every turn bucket and holds ECE < 0.03 throughout, while the set encoder
-    misses on the last bucket and on games played to the end.
-    """
-    listed = models(regulation)
-    passing = [r for r in listed["models"] if r.get("in_battle_pass")]
-    if passing:
-        return sorted(passing, key=lambda r: r.get("created") or "")[-1]["version"]
-    return listed["default"]
-
-
 app = FastAPI(title="VGC battle companion", version="0.1")
 
 
@@ -165,14 +150,11 @@ def health(regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.get("/api/models")
 def models(regulation: str = "reg_mc") -> dict[str, Any]:
-    from vgc.wp.models import REGISTRY
+    from vgc.wp.models import default_version, registered
 
-    entries = json.loads(REGISTRY.read_text())["wp"] if REGISTRY.exists() else []
     out = [gate_summary(e["version"]) | {"kind": e["kind"], "created": e["created"]}
-           for e in entries if e["regulation"] == regulation]
-    # Default to the newest set model: it is the only kind with a bring head.
-    sets = [e for e in entries if e["regulation"] == regulation and e["kind"] == "set"]
-    return {"models": out, "default": sets[-1]["version"] if sets else None}
+           for e in registered(regulation)]
+    return {"models": out, "default": default_version(regulation)}
 
 
 @app.post("/api/validate")
@@ -290,6 +272,63 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
             "inferred_sets": inferred}
 
 
+@app.get("/api/endgames")
+def endgame_index(regulation: str = "reg_mc", only: str = "all", limit: int = 200) -> dict[str, Any]:
+    """Held-out human games the in-battle model called at 90%+ before they finished.
+
+    The index is built offline (`vgc wp endgames`) because it reads every cached replay. The
+    response carries the selection criteria and the drop counts as well as the games, because
+    "the model was right 239 times" is only a claim if you can see what the 239 were drawn from.
+
+    `only`: `all`, `played_out` (no forfeits — someone had to actually finish the job), or
+    `misses` (the games the confident side went on to lose, which are the ones worth reading).
+    """
+    from vgc.web import endgames
+
+    reg = _reg(regulation)
+    index = endgames.load_index(reg)
+    if index is None:
+        # Not an error: the app is fine, the index has simply never been built. Say what to run.
+        return {"built": None, "games": [], "matched": 0, "total": 0,
+                "hint": "no endgame index yet — build it with `vgc wp endgames`"}
+    games = index["games"]
+    if only == "played_out":
+        games = [g for g in games if g["ended_by"] == "normal"]
+    elif only == "misses":
+        games = [g for g in games if not g["correct"]]
+    elif only != "all":
+        raise HTTPException(422, "only must be one of: all, played_out, misses")
+    # `matched` is the filter's answer and `games` is what fits in one response: the UI has to be
+    # able to say "200 of 240", not quietly imply the set is smaller than it is.
+    return {"built": index["built"], "version": index["version"], "criteria": index["criteria"],
+            "counts": index["counts"], "gates": gate_summary(index["version"]),
+            "correct": index["correct"], "total": len(index["games"]),
+            "matched": len(games), "games": games[:limit]}
+
+
+@app.get("/api/endgames/{replay_id}")
+def endgame_detail(replay_id: str, regulation: str = "reg_mc", version: str = "") -> dict[str, Any]:
+    """One of those games, position by position: the board, what happened next, and the WP.
+
+    Scored on demand from the cached replay rather than read from the index, so stepping through
+    a game always shows what the named model says *now*, not what it said when the index was cut.
+    """
+    from vgc.web import endgames
+    from vgc.wp.models import in_battle_version
+
+    reg = _reg(regulation)
+    chosen = version or (in_battle_version(regulation) or "")
+    if not chosen:
+        raise HTTPException(400, "no WP model is registered for this regulation")
+    try:
+        result = endgames.detail(reg, replay_id, chosen)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
+    return result | {"gates": gate_summary(chosen)}
+
+
 BUILD_HINT = """<!doctype html><meta charset="utf-8"><title>VGC Companion</title>
 <body style="font:15px/1.6 system-ui;background:#12141a;color:#e6e8ee;padding:40px;max-width:44em;margin:auto">
 <h1 style="font-size:18px">The frontend has not been built</h1>
@@ -313,6 +352,8 @@ def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
     from vgc.web.simulate import simulate
 
     reg = _reg(body.regulation)
+    from vgc.wp.models import in_battle_version
+
     # The WP track here is entirely in-battle, so it uses the model that passes the in-battle
     # gates rather than the newest set encoder.
     version = body.version or (in_battle_version(body.regulation) or "")

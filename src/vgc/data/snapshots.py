@@ -164,28 +164,53 @@ def player_view(obs: dict[str, Any], sid: str, brought: list[str]) -> dict[str, 
     return obs
 
 
-def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    """Snapshots for one public replay (spectator, plus approximate player views where a
-    side's full 4 appeared)."""
-    log = replay["log"].split("\n")
+def human_decision_points(replay: dict, reg: Regulation) -> tuple[Observer, list[dict[str, Any]], bool]:
+    """Walk a public replay once: the spectator observer, its decision points, and whether
+    someone forfeited.
+
+    Every point carries the protocol `lines` consumed since the previous one, so a caller that
+    wants to *show* the replay (the endgame browser) reads the same points, in the same places,
+    as the caller that turns them into training snapshots. The trigger rules live here and only
+    here — two copies of "what counts as a decision point" would drift.
+    """
     o = Observer("spectator", reg.dex)
-    pending: list[tuple[str, str | None, list[str], dict]] = []
+    points: list[dict[str, Any]] = []
+    buffer: list[str] = []
     started = False
     forfeit = False
-    for line in log:
+
+    def point(kind: str, phase: str | None, deciding: list[str]) -> None:
+        nonlocal buffer
+        points.append({"kind": kind, "phase": phase, "deciding": deciding,
+                       "obs": o.observation(), "lines": buffer})
+        buffer = []
+
+    for line in replay["log"].split("\n"):
         kind = line.split("|")[1] if line.startswith("|") and line.count("|") >= 1 else ""
         if kind == "start" and not started:
             started = True
-            pending.append(("preview", None, ["p1", "p2"], o.observation()))
+            point("preview", None, ["p1", "p2"])  # before |start|: the lines so far are the sheets
         if kind == "-message" and "forfeited" in line:
             forfeit = True
+        buffer.append(line)
         o.feed(line)
         if kind == "turn":
-            pending.append(("turn", None, ["p1", "p2"], o.observation()))
+            point("turn", None, ["p1", "p2"])
         elif kind == "upkeep" and not o.ended:
             need = [sid for sid in ("p1", "p2") if o.empty_slot_needs_switch(sid)]
             if need:
-                pending.append(("switch", "end", need, o.observation()))
+                point("switch", "end", need)
+    if buffer:  # whatever followed the last decision point: the KO, the win line
+        points.append({"kind": "end", "phase": None, "deciding": [],
+                       "obs": o.observation(), "lines": buffer})
+    return o, points, forfeit
+
+
+def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    """Snapshots for one public replay (spectator, plus approximate player views where a
+    side's full 4 appeared)."""
+    o, walked, forfeit = human_decision_points(replay, reg)
+    pending = [(p["kind"], p["phase"], p["deciding"], p["obs"]) for p in walked if p["kind"] != "end"]
     appeared = {sid: [m.species for m in o.sides[sid].mons if m.state != "unrevealed"] for sid in ("p1", "p2")}
     first_turn = next((obs for kind, _, _, obs in pending if kind == "turn"), None)
     leads = {sid: [m["species"] for m in sorted((m for m in first_turn["sides"][sid]["mons"] if m["state"] == "active"),

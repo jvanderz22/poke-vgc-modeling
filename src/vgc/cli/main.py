@@ -527,6 +527,43 @@ def cmd_wp_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wp_endgames(args: argparse.Namespace) -> int:
+    """Build the browsable set of decided endgames, and report how often the call was right."""
+    from vgc import paths
+    from vgc.web import endgames
+    from vgc.wp.models import in_battle_version
+
+    reg = _reg(args)
+    version = args.version or in_battle_version(reg.id)
+    if not version:
+        print("no WP model is registered for this regulation", file=sys.stderr)
+        return 1
+
+    def progress(seen: int, kept: int) -> None:
+        if seen % 250 == 0:
+            print(f"\r  {seen} replays read, {kept} selected", end="", file=sys.stderr, flush=True)
+
+    result = endgames.scan(reg, version, min_wp=args.min_wp, hold=args.hold,
+                           min_turns=args.min_turns, progress=None if args.quiet else progress)
+    print("\r" + " " * 48 + "\r", end="", file=sys.stderr)
+    path = endgames.write_index(reg, result)
+    c, games = result["counts"], result["games"]
+    print(f"{version}: {c['selected']} endgames at {args.min_wp:.0%}+ held for the last {args.hold} "
+          f"decision points, out of {c['eligible']} held-out human OTS games "
+          f"({c['cached']} replays cached)")
+    if games:
+        correct, n = result["correct"], len(games)
+        print(f"  the favoured side went on to win {correct}/{n} ({correct / n:.1%})")
+        played_out = [g for g in games if g["ended_by"] == "normal"]
+        print(f"  {len(played_out)} played to a KO, {n - len(played_out)} ended in a forfeit")
+        for g in games[:5]:
+            mark = "ok " if g["correct"] else "MISS"
+            print(f"  {mark} {g['wp']:6.1%} {g['side']} · {g['players']['p1']} vs {g['players']['p2']} · "
+                  f"{g['turns']} turns · {g['replay']}")
+    print(f"  wrote {path.relative_to(paths.ROOT)}")
+    return 0
+
+
 def cmd_web(args: argparse.Namespace) -> int:
     try:
         from vgc.web.app import serve
@@ -726,6 +763,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("replay")
     p.add_argument("--version", default="wp-v1-set")
     p.set_defaults(func=cmd_wp_replay)
+    p = with_reg(wp.add_parser("endgames", help="held-out human games the model called at 90%%+ before the end"))
+    p.add_argument("--version", default="", help="default: the model whose in-battle gates pass")
+    p.add_argument("--min-wp", type=float, default=0.90, help="the confidence the call has to reach")
+    p.add_argument("--hold", type=int, default=3, help="decision points it must hold that confidence for")
+    p.add_argument("--min-turns", type=int, default=4, help="skip games too short to have an endgame")
+    p.add_argument("--quiet", action="store_true")
+    p.set_defaults(func=cmd_wp_endgames)
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)
     p = sub.add_parser("web", help="battle-companion web app on localhost")

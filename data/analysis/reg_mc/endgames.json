@@ -1,0 +1,5543 @@
+{
+ "regulation": "reg_mc",
+ "version": "wp-v1-gbt",
+ "built": "2026-09-20T15:44:35",
+ "criteria": {
+  "min_wp": 0.9,
+  "hold": 3,
+  "min_turns": 4,
+  "held_out": true,
+  "ots": true,
+  "human_only": true
+ },
+ "counts": {
+  "cached": 8300,
+  "eligible": 1114,
+  "unfinished": 0,
+  "too_short": 105,
+  "selected": 240
+ },
+ "correct": 239,
+ "games": [
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682643305",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682643305",
+   "players": {
+    "p1": "sparrow-senator",
+    "p2": "vossangus"
+   },
+   "rating": 1044,
+   "turns": 11,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p1",
+   "wp": 0.9245,
+   "correct": false,
+   "points": 15,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683035378",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683035378",
+   "players": {
+    "p1": "Snorlaxums",
+    "p2": "Tyleeto"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9997,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683764620",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683764620",
+   "players": {
+    "p1": "rainloverrrr",
+    "p2": "gohan92"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9997,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683788374",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683788374",
+   "players": {
+    "p1": "NoitUK_VGC",
+    "p2": "tokerr"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9996,
+   "correct": true,
+   "points": 7,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682855088",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682855088",
+   "players": {
+    "p1": "BonnieSSR",
+    "p2": "azureferno"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9995,
+   "correct": true,
+   "points": 12,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682952831",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682952831",
+   "players": {
+    "p1": "zamazentaismart",
+    "p2": "Descugi"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9995,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682955506",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682955506",
+   "players": {
+    "p1": "zamazentaismart",
+    "p2": "Descugi"
+   },
+   "rating": 1038,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9994,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 7,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682988954",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682988954",
+   "players": {
+    "p1": "HushVGC",
+    "p2": "Gordon Frutero"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9994,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683402116",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683402116",
+   "players": {
+    "p1": "FLAT JUICE",
+    "p2": "ucsa"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9994,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683993926",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683993926",
+   "players": {
+    "p1": "enrique132132",
+    "p2": "NotEquipped"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9994,
+   "correct": true,
+   "points": 10,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684300371",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684300371",
+   "players": {
+    "p1": "enztau7",
+    "p2": "AxolotlChamp"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9994,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683903748",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683903748",
+   "players": {
+    "p1": "jimmy_fwc268",
+    "p2": "bosilek"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9993,
+   "correct": true,
+   "points": 6,
+   "locked_point": 2,
+   "locked_turn": 1,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684114008",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684114008",
+   "players": {
+    "p1": "Pablopazos500",
+    "p2": "2BStellar"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9993,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684150500",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684150500",
+   "players": {
+    "p1": "TheRealEmilyRose",
+    "p2": "solarflare11821"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9993,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682693280",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682693280",
+   "players": {
+    "p1": "rito buff zed",
+    "p2": "meikh_neiht"
+   },
+   "rating": null,
+   "turns": 15,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 18,
+   "locked_point": 11,
+   "locked_turn": 10,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682725558",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682725558",
+   "players": {
+    "p1": "tangarang27",
+    "p2": "km.json"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682758878",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682758878",
+   "players": {
+    "p1": "meikh_neiht",
+    "p2": "huffingpuffmaster"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 6,
+   "locked_point": 2,
+   "locked_turn": 1,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683092841",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683092841",
+   "players": {
+    "p1": "SPIFlorida",
+    "p2": "aym92"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683344854",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683344854",
+   "players": {
+    "p1": "meiko41",
+    "p2": "lgodoy"
+   },
+   "rating": 1027,
+   "turns": 10,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 13,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683354553",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683354553",
+   "players": {
+    "p1": "marcusquinn",
+    "p2": "odaatgamblingaware"
+   },
+   "rating": 1269,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9991,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682756823",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682756823",
+   "players": {
+    "p1": "meikh_neiht",
+    "p2": "huffingpuffmaster"
+   },
+   "rating": null,
+   "turns": 11,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.999,
+   "correct": true,
+   "points": 14,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683220307",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683220307",
+   "players": {
+    "p1": "Valdaftw",
+    "p2": "YaNoSeTio"
+   },
+   "rating": 1155,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.999,
+   "correct": true,
+   "points": 12,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683731197",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683731197",
+   "players": {
+    "p1": "Gogo's Crazy Bones",
+    "p2": "NeburRL"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.999,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682726010",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682726010",
+   "players": {
+    "p1": "FidelizZ34",
+    "p2": "Doc Pain"
+   },
+   "rating": 1082,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9989,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682979111",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682979111",
+   "players": {
+    "p1": "floatingskull",
+    "p2": "Gordon Frutero"
+   },
+   "rating": 1000,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9989,
+   "correct": true,
+   "points": 6,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682441087",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682441087",
+   "players": {
+    "p1": "matildoshow",
+    "p2": "aym92"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9988,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682653234",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682653234",
+   "players": {
+    "p1": "deuds",
+    "p2": "bailable"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9988,
+   "correct": true,
+   "points": 12,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683327055",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683327055",
+   "players": {
+    "p1": "acemphd",
+    "p2": "ameliabees"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9988,
+   "correct": true,
+   "points": 7,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683342163",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683342163",
+   "players": {
+    "p1": "meiko41",
+    "p2": "lgodoy"
+   },
+   "rating": null,
+   "turns": 11,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9987,
+   "correct": true,
+   "points": 15,
+   "locked_point": 12,
+   "locked_turn": 9,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683886659",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683886659",
+   "players": {
+    "p1": "saucemcfloss2",
+    "p2": "EDolan"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9987,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684205237",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684205237",
+   "players": {
+    "p1": "Sukzre",
+    "p2": "ReanSchwarzer_VGC"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9987,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683198175",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683198175",
+   "players": {
+    "p1": "macrameee",
+    "p2": "Quill86"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9986,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683806170",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683806170",
+   "players": {
+    "p1": "blackkobraVGC",
+    "p2": "ayayacalling"
+   },
+   "rating": 1113,
+   "turns": 12,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9986,
+   "correct": true,
+   "points": 16,
+   "locked_point": 12,
+   "locked_turn": 10,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683019640",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683019640",
+   "players": {
+    "p1": "OssiGT",
+    "p2": "GrovyleSSJ"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9985,
+   "correct": true,
+   "points": 12,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683558295",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683558295",
+   "players": {
+    "p1": "xo89o0",
+    "p2": "Mr.1000Bo3s"
+   },
+   "rating": 1252,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9985,
+   "correct": true,
+   "points": 9,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682655677",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682655677",
+   "players": {
+    "p1": "thelostsaint",
+    "p2": "FidelizZ34"
+   },
+   "rating": 1076,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9984,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683054790",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683054790",
+   "players": {
+    "p1": "Dissasterpiece",
+    "p2": "sarapocalypse0"
+   },
+   "rating": 1036,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9984,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683739218",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683739218",
+   "players": {
+    "p1": "Mumblingg",
+    "p2": "NoitUK_VGC"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9984,
+   "correct": true,
+   "points": 8,
+   "locked_point": 2,
+   "locked_turn": 1,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682612947",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682612947",
+   "players": {
+    "p1": "jumpluffsunenjoyer",
+    "p2": "nessie123"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9983,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683023797",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683023797",
+   "players": {
+    "p1": "liketheherb",
+    "p2": "KCLord"
+   },
+   "rating": 1226,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9983,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683217740",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683217740",
+   "players": {
+    "p1": "Llubarro",
+    "p2": "galargiant"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9983,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683819106",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683819106",
+   "players": {
+    "p1": "koa1014",
+    "p2": "PeterLimGoHome"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9982,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684263532",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684263532",
+   "players": {
+    "p1": "Ujan_Ujon",
+    "p2": "zeranogamer147"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9981,
+   "correct": true,
+   "points": 12,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682726808",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682726808",
+   "players": {
+    "p1": "Ninjaloki",
+    "p2": "coolieman"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.998,
+   "correct": true,
+   "points": 12,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683851976",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683851976",
+   "players": {
+    "p1": "zachlobbed",
+    "p2": "NoobMasterBrad182"
+   },
+   "rating": 1058,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.998,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682577042",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682577042",
+   "players": {
+    "p1": "psyspammer67",
+    "p2": "Tamma1504"
+   },
+   "rating": 1255,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9979,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682944561",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682944561",
+   "players": {
+    "p1": "3ChrisTresTigres",
+    "p2": "majinbart"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9978,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683789097",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683789097",
+   "players": {
+    "p1": "l Nova Nick l",
+    "p2": "geardox"
+   },
+   "rating": 1095,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9977,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682542927",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682542927",
+   "players": {
+    "p1": "camala64",
+    "p2": "Carrielis"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9976,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683765300",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683765300",
+   "players": {
+    "p1": "GrovyleSSJ",
+    "p2": "supdecul"
+   },
+   "rating": 1091,
+   "turns": 10,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9975,
+   "correct": true,
+   "points": 14,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682401587",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682401587",
+   "players": {
+    "p1": "JT Zimmerman",
+    "p2": "jonen"
+   },
+   "rating": 1209,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9974,
+   "correct": true,
+   "points": 8,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682603806",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682603806",
+   "players": {
+    "p1": "darkhelm145",
+    "p2": "nessie123"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9973,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683175671",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683175671",
+   "players": {
+    "p1": "pyrose44",
+    "p2": "oscilobatiente"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9973,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683129958",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683129958",
+   "players": {
+    "p1": "JohnnyBoy015",
+    "p2": "dontlookatme19"
+   },
+   "rating": 1246,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9971,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684083789",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684083789",
+   "players": {
+    "p1": "volt676",
+    "p2": "thiiandradee"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9971,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683177780",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683177780",
+   "players": {
+    "p1": "ZakyVGC",
+    "p2": "latios66"
+   },
+   "rating": 1101,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.997,
+   "correct": true,
+   "points": 10,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682563561",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682563561",
+   "players": {
+    "p1": "dimplewiskers",
+    "p2": "Corvi_Enjoyer"
+   },
+   "rating": 1131,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9969,
+   "correct": true,
+   "points": 7,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682752089",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682752089",
+   "players": {
+    "p1": "keegangriff",
+    "p2": "Cdghhjjj"
+   },
+   "rating": null,
+   "turns": 12,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9969,
+   "correct": true,
+   "points": 17,
+   "locked_point": 13,
+   "locked_turn": 10,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684232023",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684232023",
+   "players": {
+    "p1": "diaspirateza",
+    "p2": "Tay6262"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9969,
+   "correct": true,
+   "points": 12,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682489856",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682489856",
+   "players": {
+    "p1": "yinobo",
+    "p2": "sun goes wrong"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9968,
+   "correct": true,
+   "points": 12,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682724867",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682724867",
+   "players": {
+    "p1": "FidelizZ34",
+    "p2": "Doc Pain"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9968,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683141772",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683141772",
+   "players": {
+    "p1": "themeestermoofin",
+    "p2": "Kahizar"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9968,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683300101",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683300101",
+   "players": {
+    "p1": "singaporedeeznuts",
+    "p2": "langer stock"
+   },
+   "rating": 1229,
+   "turns": 11,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9966,
+   "correct": true,
+   "points": 15,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682688705",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682688705",
+   "players": {
+    "p1": "tangarang27",
+    "p2": "Quill86"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9965,
+   "correct": true,
+   "points": 6,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683688112",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683688112",
+   "players": {
+    "p1": "gnbjkasnvkla",
+    "p2": "Tinkaton Ludopata"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9965,
+   "correct": true,
+   "points": 12,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683793390",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683793390",
+   "players": {
+    "p1": "yoskrildropithard",
+    "p2": "zio_gelato"
+   },
+   "rating": 1120,
+   "turns": 9,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9965,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684321277",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684321277",
+   "players": {
+    "p1": "enztau7",
+    "p2": "Jauminx"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9964,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683186951",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683186951",
+   "players": {
+    "p1": "enigmapopstarisfun",
+    "p2": "macrameee"
+   },
+   "rating": 1136,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9963,
+   "correct": true,
+   "points": 13,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684153653",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684153653",
+   "players": {
+    "p1": "ToastedArt",
+    "p2": "Akwam"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9963,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682699485",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682699485",
+   "players": {
+    "p1": "mr. bigodon",
+    "p2": "KaZac"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9961,
+   "correct": true,
+   "points": 6,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683904615",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683904615",
+   "players": {
+    "p1": "cbninjask4uber",
+    "p2": "QueenoftheAndes"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.996,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682739016",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682739016",
+   "players": {
+    "p1": "ChestnutsRoastin",
+    "p2": "kurumi1006"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9959,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683129488",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683129488",
+   "players": {
+    "p1": "beni_9",
+    "p2": "tlowmills"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9959,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683149195",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683149195",
+   "players": {
+    "p1": "AverageNuzlocker",
+    "p2": "Adri 2026"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9958,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683858687",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683858687",
+   "players": {
+    "p1": "palistallion00",
+    "p2": "Let's Get Juicey"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9958,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682523002",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682523002",
+   "players": {
+    "p1": "failandimprove3",
+    "p2": "Yoyohvgc"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9957,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683270223",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683270223",
+   "players": {
+    "p1": "Mhirai",
+    "p2": "shucklestrats"
+   },
+   "rating": 1190,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9957,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682338343",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682338343",
+   "players": {
+    "p1": "farewell-friend",
+    "p2": "holgerd"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9956,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684208503",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684208503",
+   "players": {
+    "p1": "mavrickbfr",
+    "p2": "valiant_fent"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9956,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683652956",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683652956",
+   "players": {
+    "p1": "sole excption 1",
+    "p2": "aqawa"
+   },
+   "rating": 1000,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9953,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683664297",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683664297",
+   "players": {
+    "p1": "ayayacalling",
+    "p2": "deuds"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9953,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683698954",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683698954",
+   "players": {
+    "p1": "Saicam16",
+    "p2": "SoundsHurt"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9953,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684217068",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684217068",
+   "players": {
+    "p1": "eiffelhit",
+    "p2": "Yinzo"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9953,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682654319",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682654319",
+   "players": {
+    "p1": "The_Faintsmile",
+    "p2": "FidelizZ34"
+   },
+   "rating": 1035,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9952,
+   "correct": true,
+   "points": 9,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682911199",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682911199",
+   "players": {
+    "p1": "TheMochiMan",
+    "p2": "GS Leal"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9952,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682349448",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682349448",
+   "players": {
+    "p1": "jt zimmerman",
+    "p2": "DaviDXrt"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9949,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683183514",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683183514",
+   "players": {
+    "p1": "learcherr",
+    "p2": "BasedRen"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9948,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683718017",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683718017",
+   "players": {
+    "p1": "Star407",
+    "p2": "Gogo's Crazy Bones"
+   },
+   "rating": null,
+   "turns": 13,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9948,
+   "correct": true,
+   "points": 17,
+   "locked_point": 14,
+   "locked_turn": 11,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683599071",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683599071",
+   "players": {
+    "p1": "TomNumbers",
+    "p2": "PaquitoElBollito"
+   },
+   "rating": 1077,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9947,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683902112",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683902112",
+   "players": {
+    "p1": "Armored Dragunov",
+    "p2": "owbd"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9947,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682607435",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682607435",
+   "players": {
+    "p1": "wangggggg",
+    "p2": "FedeReturns"
+   },
+   "rating": 1000,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9946,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683293220",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683293220",
+   "players": {
+    "p1": "kotamager35",
+    "p2": "Frijol Divorciado"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9946,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683734872",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683734872",
+   "players": {
+    "p1": "sun goes wrong",
+    "p2": "sixivs"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9946,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683148729",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683148729",
+   "players": {
+    "p1": "4nye",
+    "p2": "beni_9"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9945,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683881853",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683881853",
+   "players": {
+    "p1": "Glaxx",
+    "p2": "saucemcfloss2"
+   },
+   "rating": 1062,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9945,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683471329",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683471329",
+   "players": {
+    "p1": "sawstep",
+    "p2": "gbaromsenjoyer"
+   },
+   "rating": null,
+   "turns": 15,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9943,
+   "correct": true,
+   "points": 19,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683748244",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683748244",
+   "players": {
+    "p1": "pi7.muri",
+    "p2": "Tristan Colossal"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9942,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683657687",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683657687",
+   "players": {
+    "p1": "Rezeptritter",
+    "p2": "northyliam"
+   },
+   "rating": null,
+   "turns": 12,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9941,
+   "correct": true,
+   "points": 17,
+   "locked_point": 13,
+   "locked_turn": 10,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683815151",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683815151",
+   "players": {
+    "p1": "MarshInTheDark",
+    "p2": "magikarpwithlegs"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9938,
+   "correct": true,
+   "points": 14,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682616190",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682616190",
+   "players": {
+    "p1": "13th Nu",
+    "p2": "brian47337"
+   },
+   "rating": null,
+   "turns": 12,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9937,
+   "correct": true,
+   "points": 17,
+   "locked_point": 12,
+   "locked_turn": 9,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683147937",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683147937",
+   "players": {
+    "p1": "enztau7",
+    "p2": "Descugi"
+   },
+   "rating": 1082,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9935,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683895214",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683895214",
+   "players": {
+    "p1": "chessguru101",
+    "p2": "titsydude"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9933,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683364237",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683364237",
+   "players": {
+    "p1": "Sygard",
+    "p2": "SL Dragapult"
+   },
+   "rating": null,
+   "turns": 13,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9928,
+   "correct": true,
+   "points": 17,
+   "locked_point": 13,
+   "locked_turn": 10,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683621888",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683621888",
+   "players": {
+    "p1": "Navizz0",
+    "p2": "Reubz123"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9928,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683803870",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683803870",
+   "players": {
+    "p1": "blackkobraVGC",
+    "p2": "ayayacalling"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9928,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683305125",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683305125",
+   "players": {
+    "p1": "HalibaC",
+    "p2": "pokemage343"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9927,
+   "correct": true,
+   "points": 6,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682732836",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682732836",
+   "players": {
+    "p1": "KaizoNKH",
+    "p2": "4ooty"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9926,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683910094",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683910094",
+   "players": {
+    "p1": "redemption22",
+    "p2": "owbd"
+   },
+   "rating": 1181,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9926,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 8,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683508867",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683508867",
+   "players": {
+    "p1": "SimonStork",
+    "p2": "Tubbar"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9925,
+   "correct": true,
+   "points": 7,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682738169",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682738169",
+   "players": {
+    "p1": "ChestnutsRoastin",
+    "p2": "W1LL665"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.992,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 4,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683912394",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683912394",
+   "players": {
+    "p1": "oidepusscuss",
+    "p2": "bosilek"
+   },
+   "rating": 1133,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9919,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682512108",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682512108",
+   "players": {
+    "p1": "Clawara",
+    "p2": "julienfrost1"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9918,
+   "correct": true,
+   "points": 14,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682620639",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682620639",
+   "players": {
+    "p1": "aggiorn",
+    "p2": "ramennoodsz"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9918,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684298905",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684298905",
+   "players": {
+    "p1": "parchesin",
+    "p2": "BabaYama"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9918,
+   "correct": true,
+   "points": 9,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684049085",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684049085",
+   "players": {
+    "p1": "GlitchXDGOAT",
+    "p2": "mainaccount264"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9914,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683042258",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683042258",
+   "players": {
+    "p1": "RoboGhett",
+    "p2": "lebeggar"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9913,
+   "correct": true,
+   "points": 9,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684158314",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684158314",
+   "players": {
+    "p1": "merkita",
+    "p2": "Yato1226"
+   },
+   "rating": 1305,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9913,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682687406",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682687406",
+   "players": {
+    "p1": "rpr1020",
+    "p2": "Jakz"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9909,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683805080",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683805080",
+   "players": {
+    "p1": "mainaccount264",
+    "p2": "KatKraydel"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9909,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682601167",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682601167",
+   "players": {
+    "p1": "HopeAddict",
+    "p2": "mr. bigodon"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9907,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683730347",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683730347",
+   "players": {
+    "p1": "MrMrvz",
+    "p2": "15376X"
+   },
+   "rating": 1083,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9907,
+   "correct": true,
+   "points": 13,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683022995",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683022995",
+   "players": {
+    "p1": "OssiGT",
+    "p2": "GrovyleSSJ"
+   },
+   "rating": 1202,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9901,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683228790",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683228790",
+   "players": {
+    "p1": "magnuschase2115",
+    "p2": "kotamager35"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9901,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682883881",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682883881",
+   "players": {
+    "p1": "boo453",
+    "p2": "Test2ng"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.99,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683761676",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683761676",
+   "players": {
+    "p1": "rainloverrrr",
+    "p2": "gohan92"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.99,
+   "correct": true,
+   "points": 15,
+   "locked_point": 11,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684233894",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684233894",
+   "players": {
+    "p1": "SoyOmeka",
+    "p2": "VGCsanti"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.99,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682565032",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682565032",
+   "players": {
+    "p1": "tooon",
+    "p2": "ryoelsombrio"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9899,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683736586",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683736586",
+   "players": {
+    "p1": "Mumblingg",
+    "p2": "NoitUK_VGC"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9899,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683736669",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683736669",
+   "players": {
+    "p1": "ahbutcocnut",
+    "p2": "MrUnlucky77"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9897,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683797003",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683797003",
+   "players": {
+    "p1": "dambro222",
+    "p2": "AbsorbePies"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9897,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682436943",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682436943",
+   "players": {
+    "p1": "trgoblin",
+    "p2": "rayjgingerhead"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9894,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683513446",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683513446",
+   "players": {
+    "p1": "Tamejo",
+    "p2": "Marcelouu"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9891,
+   "correct": true,
+   "points": 13,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683365573",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683365573",
+   "players": {
+    "p1": "GlitchXDGOAT",
+    "p2": "x5414"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.989,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684255559",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684255559",
+   "players": {
+    "p1": "Junction7",
+    "p2": "beni_9"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9887,
+   "correct": true,
+   "points": 11,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682746680",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682746680",
+   "players": {
+    "p1": "Zanzen Kazeloc",
+    "p2": "j304m"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9879,
+   "correct": true,
+   "points": 14,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684061537",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684061537",
+   "players": {
+    "p1": "Raidum",
+    "p2": "Lorido"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9879,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682642085",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682642085",
+   "players": {
+    "p1": "NeatoIsNeat",
+    "p2": "pulidios"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9877,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682701678",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682701678",
+   "players": {
+    "p1": "chainspkmn",
+    "p2": "furretusedpunch"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9877,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684301543",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684301543",
+   "players": {
+    "p1": "tobben06",
+    "p2": "emoolew"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9874,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682539202",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682539202",
+   "players": {
+    "p1": "knifelord86",
+    "p2": "whoachienandalusia"
+   },
+   "rating": 1000,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9869,
+   "correct": true,
+   "points": 10,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682614954",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682614954",
+   "players": {
+    "p1": "thiiandradee",
+    "p2": "mamaue"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9866,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682505608",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682505608",
+   "players": {
+    "p1": "Manthis",
+    "p2": "singaporedeeznuts"
+   },
+   "rating": 1157,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9862,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683722240",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683722240",
+   "players": {
+    "p1": "Star407",
+    "p2": "Gogo's Crazy Bones"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9856,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682564618",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682564618",
+   "players": {
+    "p1": "mugiwaralux",
+    "p2": "donnie darko irl"
+   },
+   "rating": 1330,
+   "turns": 12,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9854,
+   "correct": true,
+   "points": 15,
+   "locked_point": 12,
+   "locked_turn": 10,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682725528",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682725528",
+   "players": {
+    "p1": "Ninjaloki",
+    "p2": "coolieman"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9853,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683107450",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683107450",
+   "players": {
+    "p1": "Pauliii23",
+    "p2": "TobiYume"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9849,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683855258",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683855258",
+   "players": {
+    "p1": "echelon33",
+    "p2": "Let's Get Juicey"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9847,
+   "correct": true,
+   "points": 8,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683829315",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683829315",
+   "players": {
+    "p1": "lazarett",
+    "p2": "march57"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9843,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683321077",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683321077",
+   "players": {
+    "p1": "Iserjiano",
+    "p2": "khordyvgc"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9836,
+   "correct": true,
+   "points": 14,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682569508",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682569508",
+   "players": {
+    "p1": "Benny0000",
+    "p2": "Nibbonzo"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9834,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683738508",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683738508",
+   "players": {
+    "p1": "ahbutcocnut",
+    "p2": "MrUnlucky77"
+   },
+   "rating": null,
+   "turns": 12,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9832,
+   "correct": true,
+   "points": 16,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683268834",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683268834",
+   "players": {
+    "p1": "privatepurelove",
+    "p2": "KingDrizzleRJ"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9829,
+   "correct": true,
+   "points": 14,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683379933",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683379933",
+   "players": {
+    "p1": "nic0nic0nii",
+    "p2": "KopeensHobbyShop"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9829,
+   "correct": true,
+   "points": 13,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682759605",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682759605",
+   "players": {
+    "p1": "meikh_neiht",
+    "p2": "huffingpuffmaster"
+   },
+   "rating": 1031,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9826,
+   "correct": true,
+   "points": 12,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683666199",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683666199",
+   "players": {
+    "p1": "ayayacalling",
+    "p2": "deuds"
+   },
+   "rating": 1007,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9826,
+   "correct": true,
+   "points": 14,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683993943",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683993943",
+   "players": {
+    "p1": "DrManbeast",
+    "p2": "Hanfris"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9825,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683776837",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683776837",
+   "players": {
+    "p1": "asterisguy",
+    "p2": "naronxx"
+   },
+   "rating": null,
+   "turns": 11,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9814,
+   "correct": true,
+   "points": 15,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682568371",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682568371",
+   "players": {
+    "p1": "dontlookatme19",
+    "p2": "look like my mama"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.981,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683909396",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683909396",
+   "players": {
+    "p1": "oidepusscuss",
+    "p2": "bosilek"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9803,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683157116",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683157116",
+   "players": {
+    "p1": "natsukivgc",
+    "p2": "SwervePR"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9802,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683071381",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683071381",
+   "players": {
+    "p1": "regifannumber1",
+    "p2": "USAPFUD"
+   },
+   "rating": 1115,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.98,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682633548",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682633548",
+   "players": {
+    "p1": "100bo3norobot",
+    "p2": "gusbert 5"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9799,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683222216",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683222216",
+   "players": {
+    "p1": "Llubarro",
+    "p2": "galargiant"
+   },
+   "rating": 1088,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9791,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684116055",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684116055",
+   "players": {
+    "p1": "speedt1er",
+    "p2": "astonzin"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9789,
+   "correct": true,
+   "points": 7,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684256103",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684256103",
+   "players": {
+    "p1": "bosilek",
+    "p2": "a60069009"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9786,
+   "correct": true,
+   "points": 10,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683395203",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683395203",
+   "players": {
+    "p1": "JTisFAST",
+    "p2": "kakatski"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.978,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682871767",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682871767",
+   "players": {
+    "p1": "GuitarCrunch",
+    "p2": "gbaromsenjoyer"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9778,
+   "correct": true,
+   "points": 13,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682495514",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682495514",
+   "players": {
+    "p1": "KrystalKiwii",
+    "p2": "GeorgeBushGaming"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9776,
+   "correct": true,
+   "points": 13,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 4,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683340943",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683340943",
+   "players": {
+    "p1": "meiko41",
+    "p2": "lgodoy"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9774,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682487113",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682487113",
+   "players": {
+    "p1": "just spamming",
+    "p2": "brian47337"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9771,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682548333",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682548333",
+   "players": {
+    "p1": "queenghidorah12",
+    "p2": "Bomduif"
+   },
+   "rating": 1033,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.977,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683846837",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683846837",
+   "players": {
+    "p1": "MaxTrickroom",
+    "p2": "edhen"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9765,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684261833",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684261833",
+   "players": {
+    "p1": "ToastedArt",
+    "p2": "BinkPlayz"
+   },
+   "rating": 1033,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9751,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683322268",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683322268",
+   "players": {
+    "p1": "abadanriyi92",
+    "p2": "yomdillivcg"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9746,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682638635",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682638635",
+   "players": {
+    "p1": "sparrow-senator",
+    "p2": "vossangus"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9735,
+   "correct": true,
+   "points": 14,
+   "locked_point": 11,
+   "locked_turn": 8,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682727659",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682727659",
+   "players": {
+    "p1": "Frijol Divorciado",
+    "p2": "Tinkaton Carinoso"
+   },
+   "rating": 1107,
+   "turns": 9,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9731,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 8,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683740801",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683740801",
+   "players": {
+    "p1": "Mumblingg",
+    "p2": "NoitUK_VGC"
+   },
+   "rating": 1037,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9723,
+   "correct": true,
+   "points": 10,
+   "locked_point": 4,
+   "locked_turn": 2,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682545620",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682545620",
+   "players": {
+    "p1": "GS Barnabe",
+    "p2": "Tanisha"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9721,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682672523",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682672523",
+   "players": {
+    "p1": "ryounn",
+    "p2": "goob tilt"
+   },
+   "rating": 1024,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9717,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682613799",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682613799",
+   "players": {
+    "p1": "zturchan",
+    "p2": "Cxmbi"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9716,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683047836",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683047836",
+   "players": {
+    "p1": "EDJPP",
+    "p2": "alienextra421"
+   },
+   "rating": 1040,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9713,
+   "correct": true,
+   "points": 12,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682505346",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682505346",
+   "players": {
+    "p1": "SiniVGC",
+    "p2": "spodermees"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9711,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 6,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683118476",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683118476",
+   "players": {
+    "p1": "Pokecraft15",
+    "p2": "ultraclaw1"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9697,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684272418",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684272418",
+   "players": {
+    "p1": "PeterLimGoHome",
+    "p2": "eskyur"
+   },
+   "rating": 1073,
+   "turns": 14,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9694,
+   "correct": true,
+   "points": 17,
+   "locked_point": 12,
+   "locked_turn": 11,
+   "left": {
+    "p1": 4,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683500723",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683500723",
+   "players": {
+    "p1": "The_AG_Is_Real",
+    "p2": "chawieeee"
+   },
+   "rating": 1248,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9687,
+   "correct": true,
+   "points": 6,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 4,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683785157",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683785157",
+   "players": {
+    "p1": "Volumish",
+    "p2": "SupaJello"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9684,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684346614",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684346614",
+   "players": {
+    "p1": "brenomfs",
+    "p2": "Mega Gyattrados"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9681,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683134561",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683134561",
+   "players": {
+    "p1": "GalarianPsycho",
+    "p2": "oscilobatiente"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9678,
+   "correct": true,
+   "points": 7,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 4,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682739613",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682739613",
+   "players": {
+    "p1": "furretusedpunch",
+    "p2": "Jaden_Copeland"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9677,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683085348",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683085348",
+   "players": {
+    "p1": "starling01",
+    "p2": "grgadin"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.967,
+   "correct": true,
+   "points": 8,
+   "locked_point": 2,
+   "locked_turn": 1,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684301601",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684301601",
+   "players": {
+    "p1": "parchesin",
+    "p2": "BabaYama"
+   },
+   "rating": 1130,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9668,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682481811",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682481811",
+   "players": {
+    "p1": "burnpoke",
+    "p2": "9snpc"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9652,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683749018",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683749018",
+   "players": {
+    "p1": "albertomf15",
+    "p2": "btb0811"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9652,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684140554",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684140554",
+   "players": {
+    "p1": "bogging",
+    "p2": "emma grande"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9649,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684050118",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684050118",
+   "players": {
+    "p1": "GlitchXDGOAT",
+    "p2": "mainaccount264"
+   },
+   "rating": null,
+   "turns": 14,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9637,
+   "correct": true,
+   "points": 18,
+   "locked_point": 15,
+   "locked_turn": 12,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683362804",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683362804",
+   "players": {
+    "p1": "Nueldo",
+    "p2": "bmsomega"
+   },
+   "rating": 1083,
+   "turns": 13,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9632,
+   "correct": true,
+   "points": 16,
+   "locked_point": 13,
+   "locked_turn": 11,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684115290",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684115290",
+   "players": {
+    "p1": "speedt1er",
+    "p2": "astonzin"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9631,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682549573",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682549573",
+   "players": {
+    "p1": "GS Barnabe",
+    "p2": "Tanisha"
+   },
+   "rating": 1247,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.963,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682547892",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682547892",
+   "players": {
+    "p1": "GS Barnabe",
+    "p2": "Tanisha"
+   },
+   "rating": null,
+   "turns": 4,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9624,
+   "correct": true,
+   "points": 7,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683200411",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683200411",
+   "players": {
+    "p1": "macrameee",
+    "p2": "Quill86"
+   },
+   "rating": 1164,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9624,
+   "correct": true,
+   "points": 13,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684230289",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684230289",
+   "players": {
+    "p1": "SoyOmeka",
+    "p2": "VGCsanti"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9621,
+   "correct": true,
+   "points": 14,
+   "locked_point": 11,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682728298",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682728298",
+   "players": {
+    "p1": "Ninjaloki",
+    "p2": "coolieman"
+   },
+   "rating": 1265,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9612,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683304974",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683304974",
+   "players": {
+    "p1": "lynx05",
+    "p2": "veemon30"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9602,
+   "correct": true,
+   "points": 14,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683038710",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683038710",
+   "players": {
+    "p1": "porrygon2",
+    "p2": "ginopollo"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9592,
+   "correct": true,
+   "points": 13,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683167570",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683167570",
+   "players": {
+    "p1": "htownrocketsDURANT",
+    "p2": "silverbandit66"
+   },
+   "rating": 1013,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9581,
+   "correct": true,
+   "points": 12,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683154458",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683154458",
+   "players": {
+    "p1": "natsukivgc",
+    "p2": "SwervePR"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9565,
+   "correct": true,
+   "points": 13,
+   "locked_point": 10,
+   "locked_turn": 7,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683111629",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683111629",
+   "players": {
+    "p1": "azuseal",
+    "p2": "Sawadaburner"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9563,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684114972",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684114972",
+   "players": {
+    "p1": "Pablopazos500",
+    "p2": "2BStellar"
+   },
+   "rating": 1148,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.956,
+   "correct": true,
+   "points": 12,
+   "locked_point": 9,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682856370",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682856370",
+   "players": {
+    "p1": "BonnieSSR",
+    "p2": "azureferno"
+   },
+   "rating": 1000,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9559,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 4,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684069964",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684069964",
+   "players": {
+    "p1": "tunezalcuadrado",
+    "p2": "Kripo405"
+   },
+   "rating": 1069,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9558,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682749460",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682749460",
+   "players": {
+    "p1": "Zanzen Kazeloc",
+    "p2": "j304m"
+   },
+   "rating": 1071,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9549,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 3,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683252766",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683252766",
+   "players": {
+    "p1": "kinganon",
+    "p2": "htownrocketsDURANT"
+   },
+   "rating": null,
+   "turns": 10,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9528,
+   "correct": true,
+   "points": 14,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683480761",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683480761",
+   "players": {
+    "p1": "upinhuu",
+    "p2": "never high roll"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9528,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682589373",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682589373",
+   "players": {
+    "p1": "Sassyflygon2",
+    "p2": "budster16"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9519,
+   "correct": true,
+   "points": 12,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684248645",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684248645",
+   "players": {
+    "p1": "Jirachi 67",
+    "p2": "Goonz"
+   },
+   "rating": 1000,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9505,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683784434",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683784434",
+   "players": {
+    "p1": "l Nova Nick l",
+    "p2": "geardox"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9499,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683251761",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683251761",
+   "players": {
+    "p1": "minor symphony",
+    "p2": "NahIllFuckYouUp"
+   },
+   "rating": 1146,
+   "turns": 5,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9494,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 3,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683464748",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683464748",
+   "players": {
+    "p1": "juno48",
+    "p2": "LandoraTheExplorer"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9491,
+   "correct": true,
+   "points": 11,
+   "locked_point": 6,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682652692",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682652692",
+   "players": {
+    "p1": "The_Faintsmile",
+    "p2": "FidelizZ34"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9468,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684162429",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684162429",
+   "players": {
+    "p1": "browt111",
+    "p2": "2BStellar"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.945,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683822906",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683822906",
+   "players": {
+    "p1": "Austinboy2008",
+    "p2": "SoleilCiel9"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9446,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683544341",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683544341",
+   "players": {
+    "p1": "GrovyleSSJ",
+    "p2": "TorneoDelleRegioni"
+   },
+   "rating": 1175,
+   "turns": 4,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9429,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 2,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683169223",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683169223",
+   "players": {
+    "p1": "ultraclaw1",
+    "p2": "sbhaga34"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.94,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684079124",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684079124",
+   "players": {
+    "p1": "crystalpalkiafc",
+    "p2": "Sylviana GL"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9355,
+   "correct": true,
+   "points": 9,
+   "locked_point": 5,
+   "locked_turn": 4,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683736220",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683736220",
+   "players": {
+    "p1": "Gogo's Crazy Bones",
+    "p2": "NeburRL"
+   },
+   "rating": 1061,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9334,
+   "correct": true,
+   "points": 10,
+   "locked_point": 6,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684323132",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684323132",
+   "players": {
+    "p1": "enztau7",
+    "p2": "Jauminx"
+   },
+   "rating": null,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.933,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 2,
+    "p2": 4
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683994895",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683994895",
+   "players": {
+    "p1": "enrique132132",
+    "p2": "NotEquipped"
+   },
+   "rating": 1030,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9306,
+   "correct": true,
+   "points": 9,
+   "locked_point": 6,
+   "locked_turn": 3,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683247208",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683247208",
+   "players": {
+    "p1": "beigegorilla",
+    "p2": "learcherr"
+   },
+   "rating": null,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9303,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682735579",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682735579",
+   "players": {
+    "p1": "KaizoNKH",
+    "p2": "4ooty"
+   },
+   "rating": 1147,
+   "turns": 8,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9268,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682392528",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682392528",
+   "players": {
+    "p1": "ovm baby",
+    "p2": "tomo05"
+   },
+   "rating": 1211,
+   "turns": 11,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.925,
+   "correct": true,
+   "points": 15,
+   "locked_point": 12,
+   "locked_turn": 9,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684306165",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684306165",
+   "players": {
+    "p1": "hugoggg",
+    "p2": "emoolew"
+   },
+   "rating": null,
+   "turns": 9,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9242,
+   "correct": true,
+   "points": 13,
+   "locked_point": 9,
+   "locked_turn": 7,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2682449195",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2682449195",
+   "players": {
+    "p1": "jonathan kuminchia",
+    "p2": "AvalosPutero"
+   },
+   "rating": 1334,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9231,
+   "correct": true,
+   "points": 11,
+   "locked_point": 7,
+   "locked_turn": 4,
+   "left": {
+    "p1": 1,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684080919",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684080919",
+   "players": {
+    "p1": "crystalpalkiafc",
+    "p2": "Sylviana GL"
+   },
+   "rating": 1030,
+   "turns": 6,
+   "ended_by": "forfeit",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9231,
+   "correct": true,
+   "points": 9,
+   "locked_point": 4,
+   "locked_turn": 3,
+   "left": {
+    "p1": 3,
+    "p2": 3
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683812941",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683812941",
+   "players": {
+    "p1": "dmac55",
+    "p2": "kapieelektross"
+   },
+   "rating": 1000,
+   "turns": 6,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9212,
+   "correct": true,
+   "points": 10,
+   "locked_point": 3,
+   "locked_turn": 2,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683666235",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683666235",
+   "players": {
+    "p1": "kiznaivers",
+    "p2": "Menthalas"
+   },
+   "rating": null,
+   "turns": 14,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9182,
+   "correct": true,
+   "points": 18,
+   "locked_point": 15,
+   "locked_turn": 12,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683717545",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683717545",
+   "players": {
+    "p1": "Gengcor",
+    "p2": "orsame"
+   },
+   "rating": null,
+   "turns": 11,
+   "ended_by": "forfeit",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9182,
+   "correct": true,
+   "points": 15,
+   "locked_point": 11,
+   "locked_turn": 9,
+   "left": {
+    "p1": 2,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683482414",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683482414",
+   "players": {
+    "p1": "upinhuu",
+    "p2": "never high roll"
+   },
+   "rating": 1114,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9174,
+   "correct": true,
+   "points": 10,
+   "locked_point": 7,
+   "locked_turn": 5,
+   "left": {
+    "p1": 2,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2683711428",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2683711428",
+   "players": {
+    "p1": "DrLuca935",
+    "p2": "Volumish"
+   },
+   "rating": 1119,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9056,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 5,
+   "left": {
+    "p1": 1,
+    "p2": 1
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684082387",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684082387",
+   "players": {
+    "p1": "Pochba",
+    "p2": "donpapas33"
+   },
+   "rating": null,
+   "turns": 7,
+   "ended_by": "normal",
+   "winner": "p1",
+   "side": "p1",
+   "wp": 0.9029,
+   "correct": true,
+   "points": 11,
+   "locked_point": 8,
+   "locked_turn": 6,
+   "left": {
+    "p1": 3,
+    "p2": 2
+   }
+  },
+  {
+   "replay": "gen9championsvgc2026regmcbo3-2684237906",
+   "format": "gen9championsvgc2026regmcbo3",
+   "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2684237906",
+   "players": {
+    "p1": "Ercoleeeee",
+    "p2": "bosilek"
+   },
+   "rating": null,
+   "turns": 5,
+   "ended_by": "normal",
+   "winner": "p2",
+   "side": "p2",
+   "wp": 0.9017,
+   "correct": true,
+   "points": 8,
+   "locked_point": 5,
+   "locked_turn": 3,
+   "left": {
+    "p1": 2,
+    "p2": 3
+   }
+  }
+ ]
+}

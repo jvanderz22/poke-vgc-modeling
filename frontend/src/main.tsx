@@ -1,8 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./styles.css";
+import "./styles.css";  // imports Bootstrap into its own cascade layer first
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

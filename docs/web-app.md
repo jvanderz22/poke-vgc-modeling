@@ -29,7 +29,7 @@ Python app — run `vgc web` alongside it.
 
 Stop it with ctrl-c.
 
-## Two pages
+## The pages
 
 ### Teams
 
@@ -62,6 +62,46 @@ showing the best lead for each set of four, plus which four the opponent is like
 
 Both sheets go through the real simulator's validator, so an illegal one comes back with
 Showdown's own message naming the offending Pokémon.
+
+### Endgames
+
+A set of real human games the WP model called at **90%+ before they ended**, to click through.
+It exists to be argued with: a 90% number is worth showing only if roughly 90 of every 100 such
+positions are actually won, and the way to check that is to look at them.
+
+Every game in the set is:
+
+- **human vs human** — both accounts are people, not the scripted ladder alts, and both teams are
+  ones those people built;
+- **held out** — the replay's group falls on the held-out side of the frozen split, recomputed
+  from `data/splits/<reg>.json` rather than trusted from any file, so the model never trained on
+  the game or its series;
+- **open team sheets** — every WP model is an OTS model, so a closed-sheet game would be scored
+  on inputs it was never given;
+- **decided** — it ended with a winner, and the model held 90%+ on one side for the last three
+  decision points. A single spike does not qualify; a sustained call does.
+
+The header carries the hit rate *and* what it was drawn from, because "239 out of 240" means
+nothing without "out of the 1,114 held-out games that could have qualified". **Model was wrong**
+filters to the games the favoured side went on to lose — the ones actually worth reading — and
+**Played out** drops the forfeits, where nobody made the winner finish the job.
+
+Picking a game opens it at the decision point where it stopped being in doubt. Each step shows
+the board (who is out, at what HP, who has fainted), the model's win probability, and the log of
+what happened next; ← and → walk it, and the last step is the finish itself, which has no WP
+because there is nothing left to predict. The scrubber is the whole game at a glance: tick height
+is p1's win probability, and the colour flips at 50%.
+
+The set is built offline, because it reads every cached replay:
+
+```bash
+vgc wp endgames                            # → data/analysis/<reg>/endgames.json
+vgc wp endgames --min-wp 0.95 --hold 5     # a stricter set
+```
+
+It uses the model that passes the *in-battle* gates, which is not necessarily the app's default
+(see the banner section below) — today that is the GBT baseline, not the newest set encoder.
+Until it has been run, the page says so and prints the command instead of showing an empty list.
 
 ## What "Closed" actually does
 
@@ -128,6 +168,9 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `GET/POST /api/teams`, `DELETE /api/teams/{id}` | The saved team library (`data/library/<reg>.json`) |
 | `GET /api/pool` | Legal species ordered by usage, plus items, moves and natures |
 | `POST /api/compose` | Six species → a legal team, each with its most common set and that set's share |
+| `POST /api/simulate` | Two teams → one seeded battle, narrated turn by turn with spectator WP |
+| `GET /api/endgames` | The decided-endgame set: games, criteria, what they were drawn from, gate verdicts. `only=all\|played_out\|misses` |
+| `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
 
 Validation is recomputed whenever a team is saved and never trusted from the file: the
 regulation's legality snapshot can change under a team that was legal when it was written.

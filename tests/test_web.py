@@ -152,22 +152,64 @@ def test_simulate_rejects_an_illegal_team(client, teams):
     assert r.status_code == 422
 
 
+def test_endgames_index_is_served_with_what_it_was_drawn_from(client):
+    """The page leads with a hit rate, so the response has to carry the denominator and the
+    criteria alongside it — otherwise the UI is free to show "239/240" with nothing behind it."""
+    r = client.get("/api/endgames").json()
+    if not r["built"]:
+        assert "vgc wp endgames" in r["hint"]  # never a bare 404: the app is fine, the index is absent
+        pytest.skip("no endgame index built")
+    assert r["criteria"]["min_wp"] >= 0.9 and r["criteria"]["human_only"]
+    assert len(r["games"]) <= r["matched"] <= r["total"] <= r["counts"]["eligible"]
+    assert 0 <= r["correct"] <= r["total"]
+    assert r["gates"]["version"] == r["version"]  # the model's gate verdicts travel with its claims
+
+
+def test_endgame_filters_narrow_the_same_set(client):
+    full = client.get("/api/endgames").json()
+    if not full["built"]:
+        pytest.skip("no endgame index built")
+    misses = client.get("/api/endgames?only=misses").json()
+    assert all(g["correct"] is False for g in misses["games"])
+    assert misses["matched"] <= full["matched"]
+    assert misses["total"] == full["total"]  # the denominator does not move when the view does
+    played = client.get("/api/endgames?only=played_out").json()
+    assert all(g["ended_by"] == "normal" for g in played["games"])
+    assert client.get("/api/endgames?only=nonsense").status_code == 422
+
+
+def test_endgame_detail_walks_one_game(client):
+    index = client.get("/api/endgames").json()
+    if not index["built"]:
+        pytest.skip("no endgame index built")
+    game = index["games"][0]
+    d = client.get(f"/api/endgames/{game['replay']}").json()
+    assert [s["kind"] for s in d["steps"]][0] == "preview"
+    assert d["steps"][-1]["kind"] == "end"
+    assert d["players"] == game["players"] and d["winner"] == game["winner"]
+    assert d["gates"]["version"] == d["version"]
+
+
+def test_a_replay_that_is_not_cached_is_a_404(client):
+    assert client.get("/api/endgames/gen9championsvgc2026regmcbo3-1").status_code == 404
+
+
 def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
     """Drawing a WP number on a battle in progress is a claim about in-battle calibration, so the
     choice follows that gate — not "newest set encoder". Today the GBT baseline is the model that
     passes it and the set encoder is not, and the app has to be able to say so."""
-    from vgc.web import app as web
+    from vgc.wp import models as wp_models
 
-    rows = {"models": [
-        {"version": "old-gbt", "in_battle_pass": True, "created": "2026-01-01"},
-        {"version": "new-gbt", "in_battle_pass": True, "created": "2026-02-01"},
-        {"version": "shiny-set", "in_battle_pass": False, "created": "2026-03-01"},
-    ], "default": "shiny-set"}
-    monkeypatch.setattr(web, "models", lambda reg: rows)
-    assert web.in_battle_version("reg_mc") == "new-gbt"  # newest that passes, not newest overall
+    rows = [
+        {"version": "old-gbt", "kind": "gbt", "created": "2026-01-01", "gates": {"in_battle_pass": True}},
+        {"version": "new-gbt", "kind": "gbt", "created": "2026-02-01", "gates": {"in_battle_pass": True}},
+        {"version": "shiny-set", "kind": "set", "created": "2026-03-01", "gates": {"in_battle_pass": False}},
+    ]
+    monkeypatch.setattr(wp_models, "registered", lambda reg: rows)
+    assert wp_models.in_battle_version("reg_mc") == "new-gbt"  # newest that passes, not newest overall
+    assert wp_models.default_version("reg_mc") == "shiny-set"  # bring ranking still wants a set model
 
     # Nothing passes: fall back to the default rather than refusing to show a battle at all.
-    none_pass = {"models": [dict(r, in_battle_pass=False) for r in rows["models"]],
-                 "default": "shiny-set"}
-    monkeypatch.setattr(web, "models", lambda reg: none_pass)
-    assert web.in_battle_version("reg_mc") == "shiny-set"
+    monkeypatch.setattr(wp_models, "registered",
+                        lambda reg: [dict(r, gates={"in_battle_pass": False}) for r in rows])
+    assert wp_models.in_battle_version("reg_mc") == "shiny-set"

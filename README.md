@@ -55,12 +55,14 @@ vgc wp featurize --manifest wp-v1-train          # feature arrays from a checked
 vgc wp train --kind set --epochs 12              # (baselines: --kind logistic | gbt)
 vgc wp eval --version <v> --baseline wp-v1-gbt   # held-out human games; writes gate verdicts
 vgc wp registry                                  # every model, with the gates it failed
+vgc wp endgames                                  # held-out human games it called at 90%+ before the end
 
 vgc web                                          # battle companion on localhost:8001
 ```
 
 `make` wraps the pipeline: `make data` (scrape → pool → self-play → snapshots → features),
-`make models`, `make sweep` (free Kaggle GPU), `make gates`, `make sim-validity`, `make test`.
+`make models`, `make sweep` (free Kaggle GPU), `make gates`, `make endgames`, `make sim-validity`,
+`make test`.
 
 Team files use Showdown's export format. In Champions, the `EVs:` line holds **Stat Points**
 (66 total, 32 max per stat, 1 SP = +1 stat at level 50). `SPs:` is accepted as an alias.

@@ -2,13 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { api, type Health, type ModelRow, type SavedTeam, type Species } from "./api";
 import { BattlePanel } from "./components/BattlePanel";
 import { BattleSession, startSession, type Session } from "./components/BattleSession";
+import { EndgamesPanel } from "./components/EndgamesPanel";
 import { SimulatePanel } from "./components/SimulatePanel";
 import { TeamLibrary } from "./components/TeamLibrary";
 
 const REG = "reg_mc";
 const LAST_TEAM = `vgc:${REG}:lastTeam`;
 
-type Tab = "battle" | "session" | "simulate" | "teams";
+type Tab = "battle" | "session" | "simulate" | "endgames" | "teams";
 
 /** Which team you used last, remembered across reloads.
  *
@@ -68,9 +69,9 @@ export default function App() {
             : "backend unreachable — is `vgc web` running?"}
         </span>
         <nav className="tabs">
-          {(["battle", "session", "simulate", "teams"] as Tab[]).map((t) => (
+          {(["battle", "session", "simulate", "endgames", "teams"] as Tab[]).map((t) => (
             <button key={t} className="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-              {{ battle: "Preview", session: "Battle", simulate: "Simulate", teams: "Teams" }[t]}
+              {{ battle: "Preview", session: "Battle", simulate: "Simulate", endgames: "Endgames", teams: "Teams" }[t]}
               {t === "session" && session && <span className="tab-dot" aria-hidden="true" />}
             </button>
           ))}
@@ -98,6 +99,7 @@ export default function App() {
           <BattleSession session={session} onBack={() => setTab("battle")} />
         )}
         {tab === "simulate" && <SimulatePanel reg={REG} teams={teams} />}
+        {tab === "endgames" && <EndgamesPanel reg={REG} />}
         {tab === "teams" && (
           <TeamLibrary
             reg={REG} health={health} teams={teams}

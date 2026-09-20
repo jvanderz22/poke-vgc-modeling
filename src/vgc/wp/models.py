@@ -146,6 +146,31 @@ class SetModel(WPModel):
         return sig(np.concatenate(wp) / self._temperatures(d["glob"])), sig(np.concatenate(br))
 
 
+def registered(reg_id: str) -> list[dict[str, Any]]:
+    return [e for e in (json.loads(REGISTRY.read_text())["wp"] if REGISTRY.exists() else [])
+            if e["regulation"] == reg_id]
+
+
+def default_version(reg_id: str) -> str | None:
+    """The newest set model: the only kind with a bring head, so the only one that can rank brings."""
+    sets = [e for e in registered(reg_id) if e["kind"] == "set"]
+    return sets[-1]["version"] if sets else None
+
+
+def in_battle_version(reg_id: str) -> str | None:
+    """The model to draw a WP with *during* a battle.
+
+    Prefers one whose in-battle gates pass over the newest set encoder, because that is the claim
+    being made when a percentage is put on screen mid-battle. Today that is the GBT baseline: it
+    beats the constant in every turn bucket and holds ECE < 0.03 throughout, while the set encoder
+    misses on the last bucket and on games played to the end.
+    """
+    passing = [e for e in registered(reg_id) if (e.get("gates") or {}).get("in_battle_pass")]
+    if passing:
+        return sorted(passing, key=lambda e: e.get("created") or "")[-1]["version"]
+    return default_version(reg_id)
+
+
 def load_model(reg_id: str, version: str) -> WPModel:
     if version == "constant":
         return ConstantModel()
