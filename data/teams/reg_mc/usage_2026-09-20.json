@@ -11,6 +11,73 @@
  "distinct_teams": 3347,
  "rated_sheets": 5480,
  "min_rating": null,
+ "traits": {
+  "spread_move": {
+   "sheets": 14296,
+   "share": 0.9512909236092627,
+   "per_team": 2.271559755123769
+  },
+  "priority_attack": {
+   "sheets": 13389,
+   "share": 0.8909369177535268,
+   "per_team": 2.188248602608464
+  },
+  "terrain": {
+   "sheets": 12019,
+   "share": 0.7997737556561086,
+   "per_team": 0.8202688315145062
+  },
+  "fake_out": {
+   "sheets": 11139,
+   "share": 0.7412163960606867,
+   "per_team": 1.2933856800638808
+  },
+  "intimidate": {
+   "sheets": 10044,
+   "share": 0.6683524088368379,
+   "per_team": 0.7623768964599414
+  },
+  "tailwind": {
+   "sheets": 8807,
+   "share": 0.5860393931328187,
+   "per_team": 0.603007718924674
+  },
+  "redirection": {
+   "sheets": 6404,
+   "share": 0.4261378759648656,
+   "per_team": 0.45275485759914824
+  },
+  "trick_room": {
+   "sheets": 5138,
+   "share": 0.3418951290923609,
+   "per_team": 0.4531541123236625
+  },
+  "weather": {
+   "sheets": 4498,
+   "share": 0.29930795847750863,
+   "per_team": 0.3029012509981368
+  },
+  "helping_hand": {
+   "sheets": 3909,
+   "share": 0.2601144530210274,
+   "per_team": 0.2778147458078254
+  },
+  "speed_drop": {
+   "sheets": 2873,
+   "share": 0.19117647058823528,
+   "per_team": 0.19803034335906308
+  },
+  "taunt": {
+   "sheets": 474,
+   "share": 0.03154112323662497,
+   "per_team": 0.03293851477242481
+  },
+  "ally_switch": {
+   "sheets": 53,
+   "share": 0.003526750066542454,
+   "per_team": 0.003526750066542454
+  }
+ },
  "species": {
   "rillaboom": {
    "species": "Rillaboom",

@@ -149,3 +149,38 @@ def test_top_species_orders_by_the_denominator_it_is_asked_for(report):
 def test_round_trips_through_disk(reg, report, tmp_path):
     path = usage.save(reg, report, tmp_path / "usage_2026-01-01.json")
     assert usage.load(reg, path) == report
+
+
+# --- team traits ----------------------------------------------------------------------
+
+def test_traits_are_counted_per_team_not_per_species(reg, corpus, report):
+    """The reason traits live in the report at all.
+
+    Summing a move's per-species shares double-counts a team that brings two setters, so the sum
+    is not the team rate: in the real corpus Trick Room is 0.45 setters per team and 34.2% of
+    teams. `per_team` may exceed `share`; `share` may never exceed 1.
+    """
+    for name, t in report["traits"].items():
+        assert 0 <= t["share"] <= 1, name
+        assert t["per_team"] >= t["share"], name
+        assert t["sheets"] <= report["sheets"], name
+
+
+def test_derived_traits_come_from_the_dex(reg):
+    derived = usage._derived_traits(reg)
+    moves = derived["priority_attack"]["moves"]
+    assert {"fakeout", "grassyglide", "suckerpunch"} <= moves
+    assert "protect" not in moves and "trickroom" not in moves  # priority, but no base power
+    spread = derived["spread_move"]["moves"]
+    assert {"earthquake", "heatwave", "rockslide"} <= spread
+    assert "closecombat" not in spread
+
+
+def test_a_trait_counts_the_slot_that_carries_it(reg):
+    from vgc.teams import parse_team
+
+    table = usage.TRAITS | usage._derived_traits(reg)
+    team = parse_team((FIXTURES / "teams" / "valid_basic.txt").read_text())
+    traits = usage._team_traits(team, table)
+    assert traits["fake_out"] == sum("fakeout" in {to_id(x) for x in m.moves} for m in team)
+    assert all(0 <= v <= len(team) for v in traits.values())

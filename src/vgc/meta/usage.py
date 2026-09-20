@@ -95,6 +95,61 @@ def _counts(counter: Counter, total: int) -> list[dict[str, Any]]:
             for name, n in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))]
 
 
+# Structural traits, as a team either carries one or it does not. A weakness report needs these
+# at the *team* level — "45% of the teams you face carry Trick Room" is not recoverable from
+# per-species move shares, because it is a question about the six together. Two of them are read
+# off the dex rather than listed, so a new priority move or spread move is picked up for free.
+TRAITS: dict[str, dict[str, set[str]]] = {
+    "trick_room": {"moves": {"trickroom"}},
+    "tailwind": {"moves": {"tailwind"}},
+    "speed_drop": {"moves": {"icywind", "electroweb", "bulldoze", "rocktomb", "stringshot",
+                             "thunderwave", "glaciate", "scaryface", "cottonspore"}},
+    "redirection": {"moves": {"followme", "ragepowder", "spotlight"},
+                    "abilities": {"lightningrod", "stormdrain"}},
+    "fake_out": {"moves": {"fakeout"}},
+    "intimidate": {"abilities": {"intimidate"}},
+    "ally_switch": {"moves": {"allyswitch"}},
+    "taunt": {"moves": {"taunt"}},
+    "helping_hand": {"moves": {"helpinghand"}},
+    "terrain": {"abilities": {"grassysurge", "psychicsurge", "electricsurge", "mistysurge"}},
+    "weather": {"abilities": {"drizzle", "drought", "sandstream", "snowwarning",
+                              "orichalcumpulse", "hadronengine"}},
+}
+
+SPREAD_TARGETS = {"allAdjacentFoes", "allAdjacent"}
+
+# Moves whose priority the dex's `priority` field understates because it is conditional, and the
+# pinned build applies the condition in an `onModifyPriority` hook the export does not carry.
+# Grassy Glide is +1 under Grassy Terrain, and it is the *only* such move: grep finds exactly one
+# `onModifyPriority` in `vendor/pokemon-showdown/data/moves.ts`. Missing it would be a bad miss —
+# it is on 56% of sheets, and Grassy Surge is on 56% too, so the condition is usually met.
+CONDITIONAL_PRIORITY = {"grassyglide": "grassy terrain"}
+
+
+def _derived_traits(reg: Regulation) -> dict[str, dict[str, set[str]]]:
+    """`priority_attack` and `spread_move` are defined by what the dex says, not by a list."""
+    moves = reg.dex.moves
+    return {
+        "priority_attack": {"moves": {mid for mid, m in moves.items()
+                                      if ((m.get("priority") or 0) > 0 or mid in CONDITIONAL_PRIORITY)
+                                      and (m.get("basePower") or 0) > 0}},
+        "spread_move": {"moves": {mid for mid, m in moves.items()
+                                  if m.get("target") in SPREAD_TARGETS and (m.get("basePower") or 0) > 0}},
+    }
+
+
+def _team_traits(team: Team, table: dict[str, dict[str, set[str]]]) -> dict[str, int]:
+    """How many of the six carry each trait (0 means the team has no answer of that kind)."""
+    out = {}
+    for name, spec in table.items():
+        want_m, want_a = spec.get("moves", set()), spec.get("abilities", set())
+        out[name] = sum(
+            bool({to_id(m) for m in mon.moves} & want_m) or to_id(mon.ability or "") in want_a
+            for mon in team
+        )
+    return out
+
+
 @dataclass
 class _Species:
     name: str = ""
@@ -121,6 +176,9 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
     n_sheets = n_rated = 0
     n_replays: set[str] = set()
     teams: Counter = Counter()
+    table = TRAITS | _derived_traits(reg)
+    trait_sheets: Counter = Counter()  # sheets carrying it at all
+    trait_slots: Counter = Counter()   # how many of the six, summed over sheets
 
     for sheet in sheets(reg, source):
         if min_rating is not None and (sheet.rating or 0) < min_rating:
@@ -130,6 +188,9 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
         n_replays.add(sheet.replay_id)
         all_players.add(sheet.player)
         teams[replays.team_key(sheet.team)] += 1
+        for name, n in _team_traits(sheet.team, table).items():
+            trait_sheets[name] += n > 0
+            trait_slots[name] += n
         ids = [m.species_id for m in sheet.team]
         for mon in sheet.team:
             s = per.setdefault(mon.species_id, _Species(name=mon.species))
@@ -173,6 +234,12 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
         "distinct_teams": len(teams),
         "rated_sheets": n_rated,
         "min_rating": min_rating,
+        "traits": {
+            name: {"sheets": trait_sheets[name],
+                   "share": trait_sheets[name] / max(n_sheets, 1),
+                   "per_team": trait_slots[name] / max(n_sheets, 1)}
+            for name in sorted(table, key=lambda k: -trait_sheets[k])
+        },
         "species": out_species,
     }
 

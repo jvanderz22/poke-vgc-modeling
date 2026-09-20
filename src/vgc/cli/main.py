@@ -207,7 +207,13 @@ def cmd_meta_usage(args: argparse.Namespace) -> int:
     print(f"\n{'species':24} {'per game':>9} {'per player':>11}  {'':12}")
     for s in usage.top_species(report, args.top):
         print(f"{s['species']:24} {s['share']:>9.1%} {s['player_share']:>11.1%}  {_bar(s['share'])}")
+    print(f"\n{'trait':20} {'of teams':>9} {'per team':>9}")
+    for name, t in report["traits"].items():
+        print(f"{name:20} {t['share']:>9.1%} {t['per_team']:>9.2f}  {_bar(t['share'])}")
+
     print("\nper game weights a player by how much they played; per player counts each name once.")
+    print("a trait's team rate is not the sum of its species shares: 0.45 Trick Room setters per")
+    print("team is 34.2% of teams, because some teams bring two.")
     print("no spread column: sheets do not carry Stat Points. `--species NAME` for the detail.")
     return 0
 
