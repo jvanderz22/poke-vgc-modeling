@@ -3,8 +3,13 @@
 # notebook on a GPU, wait, pull the models back, and evaluate every one of them locally.
 #
 #   scripts/cloud/kaggle_sweep.sh [regulation] [dataset]
+#   scripts/cloud/kaggle_sweep.sh [regulation] [dataset] --collect   # skip to step 4
 #
-# Costs nothing: Kaggle gives 30 GPU-hours a week and this sweep uses about 0.3 of one. There is
+# `--collect` fetches and evaluates the output of a kernel that has already run. Use it when the
+# wait timed out, or when you stopped the script and the notebook kept going: the kernel lives on
+# Kaggle, not in this process, so nothing is lost by walking away from it.
+#
+# Costs nothing: Kaggle gives 30 GPU-hours a week and this sweep uses about 3 of one. There is
 # no balance to manage and nothing to shut down, which is why PLAN.md's spend controls say to try
 # this before renting anything.
 #
@@ -22,15 +27,39 @@ cd "$(dirname "$0")/../.."
 
 REG="${1:-reg_mc}"
 DATASET="${2:-wp-v1}"
+COLLECT_ONLY=""
+for a in "$@"; do [ "$a" = "--collect" ] && COLLECT_ONLY=1; done
 DIR="data/features/$REG/$DATASET"
 WORK="${WORK:-/tmp/kaggle-sweep}"
 POLL_SECONDS="${POLL_SECONDS:-60}"
-MAX_MINUTES="${MAX_MINUTES:-90}"
+# The notebook trains eight models at roughly 25 minutes each, so a 90-minute budget abandons a
+# healthy run two thirds of the way through. Kaggle's own ceiling is 12h; sit well inside it and
+# let the deadline mean "something is wrong", not "this is taking as long as it always takes".
+MAX_MINUTES="${MAX_MINUTES:-360}"
+KERNEL="vgc-wp-sweep"
 
 KAGGLE="${KAGGLE:-kaggle}"
 VGC="${VGC:-vgc}"
 command -v "$KAGGLE" >/dev/null || { echo "kaggle CLI not found — pip install kaggle" >&2; exit 1; }
 [ -d "$DIR" ] || { echo "no dataset at $DIR (run: vgc wp featurize)" >&2; exit 1; }
+
+# Only one copy at a time. Two runs share a kernel slug, a staging dir and models/wp/$REG: a
+# relaunch leaves the previous watcher polling the same kernel, and if that kernel completes
+# before the older watcher's deadline, both unpack into models/wp/$REG and evaluate at once, and
+# no gate verdict can be attributed to the run that produced it. Three stale watchers accumulated
+# that way in one evening; they timed out before the kernel finished, so the race stayed hypothetical.
+LOCK="$WORK.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  OTHER=$(cat "$LOCK/pid" 2>/dev/null || echo "?")
+  if [ "$OTHER" != "?" ] && kill -0 "$OTHER" 2>/dev/null; then
+    echo "another sweep is running (pid $OTHER) — wait for it, or kill it and retry" >&2; exit 1
+  fi
+  echo "==> clearing a stale lock from pid $OTHER"
+  rm -rf "$LOCK"; mkdir "$LOCK"
+fi
+echo $$ > "$LOCK/pid"
+trap 'rm -rf "$LOCK"' EXIT
+
 # `config view` is the only thing that knows the username: the KGAT_ token doesn't carry it.
 KUSER=$("$KAGGLE" config view 2>/dev/null | awk '/^- username:/{print $3}')
 [ -n "$KUSER" ] && [ "$KUSER" != "None" ] || {
@@ -40,6 +69,7 @@ KUSER=$("$KAGGLE" config view 2>/dev/null | awk '/^- username:/{print $3}')
   echo "token rejected on an authenticated call — regenerate it at kaggle.com/settings" >&2; exit 1; }
 echo "==> authenticated as $KUSER"
 
+if [ -z "$COLLECT_ONLY" ]; then
 # --- 1. features -----------------------------------------------------------------------------
 # Only what the trainer reads. eval_*.npz are several times larger and must not leave the laptop.
 echo "==> staging features"
@@ -86,7 +116,6 @@ wait_for vgc-wp-features train.npz
 wait_for vgc-set-torch set_torch.py
 
 # --- 2. the notebook -------------------------------------------------------------------------
-KERNEL="vgc-wp-sweep"
 cp scripts/cloud/kaggle_train_wp.ipynb "$WORK/nb/$KERNEL.ipynb"
 cat > "$WORK/nb/kernel-metadata.json" <<JSON
 {
@@ -114,14 +143,22 @@ while :; do
     *complete*) echo "==> complete"; break ;;
     *error*|*cancel*) echo "$STATUS" >&2; echo "see https://kaggle.com/$KUSER/$KERNEL" >&2; exit 1 ;;
   esac
-  [ "$(date +%s)" -gt "$DEADLINE" ] && { echo "still running after ${MAX_MINUTES}m — check the notebook" >&2; exit 1; }
+  if [ "$(date +%s)" -gt "$DEADLINE" ]; then
+    # The kernel is Kaggle's, not ours. Giving up on watching it does not stop it, so say how to
+    # pick the results up rather than implying the GPU time is gone.
+    echo "still running after ${MAX_MINUTES}m — the kernel keeps going without us." >&2
+    echo "watch it at https://kaggle.com/$KUSER/$KERNEL, then collect with:" >&2
+    echo "  bash scripts/cloud/kaggle_sweep.sh $REG $DATASET --collect" >&2
+    exit 1
+  fi
   echo "    $STATUS"
   sleep "$POLL_SECONDS"
 done
+fi  # end of the push-and-wait phase
 
 # --- 4. bring the models home ------------------------------------------------------------------
 echo "==> downloading"
-mkdir -p "$WORK/out"
+rm -rf "$WORK/out"; mkdir -p "$WORK/out"   # a stale zip here would be unpacked in preference
 "$KAGGLE" kernels output "$KUSER/$KERNEL" -p "$WORK/out"
 ZIP=$(ls "$WORK/out"/*.zip 2>/dev/null | head -1) || true
 [ -n "${ZIP:-}" ] && unzip -qo "$ZIP" -d "$WORK/out/models"

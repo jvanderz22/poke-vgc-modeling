@@ -3,6 +3,7 @@
 #   make data          scrape → pool → self-play → extract → manifest → featurize
 #   make models        the three WP models, calibrated and evaluated against each other
 #   make sweep         the same models, but trained on a free Kaggle GPU (see scripts/cloud/)
+#   make collect       fetch + evaluate a Kaggle run that finished without us watching
 #   make gates         print every model's gate verdicts
 #   make test          the suite, in both venvs
 #
@@ -38,11 +39,11 @@ HUMAN     := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
 MANIFILE  := data/snapshots/$(REG)/manifests/$(MANIFEST).json
 FEATURES  := data/features/$(REG)/$(DATASET)/info.json
 
-.PHONY: data models sweep gates test clean-derived help
+.PHONY: data models sweep collect gates test clean-derived help
 .DEFAULT_GOAL := help
 
 help:
-	@sed -n '1,14p' Makefile | sed 's/^# \{0,1\}//'
+	@sed -n '1,15p' Makefile | sed 's/^# \{0,1\}//'
 
 data: $(FEATURES)
 
@@ -97,6 +98,11 @@ evaluate:
 
 sweep: $(FEATURES)
 	KAGGLE=$(VENV)/kaggle VGC=$(VGC) bash scripts/cloud/kaggle_sweep.sh $(REG) $(DATASET)
+
+# Fetch and evaluate a kernel that has already run — after a timeout, or after walking away from
+# one. The kernel is Kaggle's; losing the local watcher does not lose the models.
+collect:
+	KAGGLE=$(VENV)/kaggle VGC=$(VGC) bash scripts/cloud/kaggle_sweep.sh $(REG) $(DATASET) --collect
 
 gates:
 	@$(VGC) wp registry
