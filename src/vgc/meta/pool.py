@@ -74,12 +74,14 @@ def sampling_weights(pool: list[PoolTeam], alpha: float = 0.7, floor: float = 0.
     return [(1 - floor) * w / total + (floor / n if w > 0 else 0.0) for w in raw]
 
 
-def pool_path(reg: Regulation, date: dt.date | None = None) -> Path:
-    return TEAMS / reg.id / f"ots_pool_{(date or dt.date.today()).isoformat()}.json"
+def pool_path(reg: Regulation, date: dt.date | None = None, tag: str = "") -> Path:
+    """Pools are dated; `tag` keeps an earlier build of the same date (results recorded against it
+    stay reproducible). `load_pool` takes the last by name, so tags sort after the untagged file."""
+    return TEAMS / reg.id / f"ots_pool_{(date or dt.date.today()).isoformat()}{'_' + tag if tag else ''}.json"
 
 
-def save_pool(reg: Regulation, pool: list[PoolTeam], path: Path | None = None) -> Path:
-    path = path or pool_path(reg)
+def save_pool(reg: Regulation, pool: list[PoolTeam], path: Path | None = None, tag: str = "") -> Path:
+    path = path or pool_path(reg, tag=tag)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({
         "regulation": reg.id,

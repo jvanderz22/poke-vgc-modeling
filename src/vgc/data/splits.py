@@ -133,18 +133,25 @@ def build_manifest(files: list[Path], reg: Regulation, purpose: str = "train") -
     """Everything a training run will read: files (with hashes) and every battle in them."""
     battles: dict[str, dict[str, Any]] = {}
     entries = []
+    versions: set[int] = set()
     for path in sorted(files):
         n = 0
         for rec in read_shard(path):
             n += 1
+            versions.add(rec.get("v"))
             battles.setdefault(rec["battle"], {
                 "battle": rec["battle"], "source": rec["source"],
                 "teams": sorted(t for t in rec["meta"]["teams"].values() if t), "group": rec["meta"].get("group"),
             })
         entries.append({"path": str(path.resolve().relative_to(paths.ROOT)), "sha256": _sha256(path), "records": n})
+    # Snapshot semantics change when the observer does; shards from different versions describe
+    # different things, so training on a mixture silently averages them.
+    if len(versions) > 1:
+        raise ValueError(f"snapshot versions {sorted(versions)} in one manifest — re-extract the older shards")
     return {
         "regulation": reg.id, "purpose": purpose, "created": dt.datetime.now().isoformat(timespec="seconds"),
-        "split_file_sha256": _sha256(split_path(reg)), "files": entries,
+        "split_file_sha256": _sha256(split_path(reg)), "snapshot_version": versions.pop() if versions else None,
+        "files": entries,
         "battles": sorted(battles.values(), key=lambda b: b["battle"]),
     }
 

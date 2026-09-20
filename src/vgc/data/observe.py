@@ -325,6 +325,24 @@ class Observer:
     _on_switch = _switch_in
     _on_drag = _switch_in
 
+    def _on_swap(self, a: list[str]) -> None:
+        """`|swap|POKEMON|newPosition` — Ally Switch and friends: two actives trade slots. Nothing
+        else in the protocol restates their positions, so missing this leaves the side's slots
+        crossed for the rest of the battle (and every target/speed read after it wrong)."""
+        side = self.sides[a[0].split(":")[0][:2]]
+        m = self._mon(a[0])
+        try:
+            new = int(a[1])
+        except (IndexError, ValueError):
+            return
+        old = m.position
+        if old is None or old == new:
+            return
+        other = next((x for x in side.mons if x is not m and x.position == new and x.state == "active"), None)
+        m.position = new
+        if other is not None:
+            other.position = old
+
     def _on_replace(self, a: list[str]) -> None:  # Illusion broken: the slot's real occupant
         pos = a[0].split(":")[0]
         side, slot = self.sides[pos[:2]], "ab".index(pos[2])

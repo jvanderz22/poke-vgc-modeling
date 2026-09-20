@@ -225,7 +225,10 @@ def _register(card: dict, out: Path) -> None:
     reg["wp"] = [e for e in reg["wp"] if not (e["version"] == card["version"] and e["regulation"] == card["regulation"])]
     reg["wp"].append({"version": card["version"], "regulation": card["regulation"], "kind": card["kind"],
                       "created": card["created"], "path": str(out.relative_to(paths.ROOT)),
-                      "headline": card.get("headline", {})})
+                      "headline": card.get("headline", {}), "gates": card.get("gates", {}),
+                      # A dataset name is reused when its contents are rebuilt, so the name alone
+                      # doesn't say two models were scored on the same rows. The manifest hash does.
+                      "manifest_sha256": card.get("training_manifest", {}).get("sha256")})
     reg["wp"].sort(key=lambda e: (e["regulation"], e["created"]))
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY.write_text(json.dumps(reg, indent=1) + "\n")

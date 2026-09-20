@@ -170,7 +170,7 @@ def cmd_meta_pool(args: argparse.Namespace) -> int:
 
     reg = _reg(args)
     teams = pool.build_pool(reg)
-    path = pool.save_pool(reg, teams)
+    path = pool.save_pool(reg, teams, tag=args.tag)
     print(f"{len(teams)} distinct legal teams ({sum(t.count for t in teams)} sheets) → {path}")
     return 0
 
@@ -435,7 +435,16 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
         out = models.model_dir(reg.id, args.version)
         (out / "eval.json").write_text(json.dumps({"dataset": args.dataset, "results": main_r,
                                                    "baselines": all_results}, indent=1) + "\n")
-        models.update_card(reg.id, args.version, headline=evaluate.headline(main_r))
+        pv = out / "preview_vs_sim.json"
+        g = evaluate.gates(main_r, all_results, json.loads(pv.read_text()) if pv.exists() else None)
+        models.update_card(reg.id, args.version, headline=evaluate.headline(main_r), gates=g)
+        failed = [k for k, v in g.items() if isinstance(v, dict) and v.get("pass") is False]
+        print(f"gates: {'all pass' if g['all_pass'] else 'FAILED ' + ', '.join(failed)}")
+    # Baselines were just scored on these same rows; record it, or the registry shows the model
+    # we are actually beaten by as "(not evaluated)".
+    for bname, bres in all_results.items():
+        if bname != "constant":
+            models.update_card(reg.id, bname, headline=evaluate.headline(bres))
     return 0
 
 
@@ -498,9 +507,19 @@ def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
     reg = json.loads(REGISTRY.read_text()) if REGISTRY.exists() else {"wp": []}
+    # Log losses from different manifests are not comparable; mark everything not on the newest one.
+    current = max((e.get("manifest_sha256") for e in reg["wp"] if e.get("manifest_sha256")),
+                  key=lambda s: max(e["created"] for e in reg["wp"] if e.get("manifest_sha256") == s), default=None)
     for e in reg["wp"]:
         h = e.get("headline", {}).get("human_spectator", {})
         tail = f"human spectator logloss {h['logloss']:.4f} ece {h['ece']:.4f}" if h else "(not evaluated)"
+        # Gate status, so nobody reads a good-looking log loss and assumes the model is usable.
+        g = e.get("gates")
+        if g:
+            failed = [k for k, v in g.items() if isinstance(v, dict) and v.get("pass") is False]
+            tail += "  gates: all pass" if g.get("all_pass") else f"  gates: FAIL ({', '.join(failed)})"
+        if h and current and e.get("manifest_sha256") != current:
+            tail += "  [scored on an earlier dataset — not comparable]"
         print(f"{e['regulation']:7} {e['version']:24} {e['kind']:9} {e['created']}  {tail}")
     return 0
 
@@ -556,6 +575,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", choices=["bo3", "bo1", "both"], default="bo3", help="Bo3 games always carry team sheets")
     p.set_defaults(func=cmd_meta_scrape)
     p = with_reg(meta.add_parser("pool", help="build a dated team pool from cached replays' team sheets"))
+    p.add_argument("--tag", default="", help="suffix, to keep an earlier pool of the same date")
     p.set_defaults(func=cmd_meta_pool)
 
     simp = sub.add_parser("sim", help="seeded, parallel battles").add_subparsers(dest="sim_cmd", required=True)

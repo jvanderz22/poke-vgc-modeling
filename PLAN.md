@@ -664,6 +664,54 @@ the hidden-information handling is broken). Preview WP agrees with a direct simu
 pairings (an independent estimate of the same quantity). The bring head beats a usage-frequency baseline at
 predicting the brought 4.
 
+#### Status 2026-09-19: built, gates not all passing
+
+Everything in the phase is built and runs end to end. The data behind it was rebuilt once, mid-phase, after the
+first round of gates failed on preview: the team pool went from 263 teams to **3,347** (15,028 sheets, 236/293
+species, 153/166 items), human Bo3 games from 467 to **4,585**, and self-play from random pairings to **3,000
+pairings played 20 times each** (60,000 battles, 0 errors, 0 invalid choices, side bias 0.496). The training
+manifest is 42,705 battles / 1,304,032 snapshots → 637,508 thinned training rows. The held-out human set grew
+~10×, to 30,699 spectator rows, which is what makes the verdicts below trustworthy rather than noise.
+
+Gate results for `wp-v1-set-full` (d=64, 2 layers, id-dropout 0.5, human-weight 4, epoch 2 of 12 selected on
+human validation rows), on held-out human OTS games. All baselines refit on identical rows:
+
+| Gate | Result | |
+| --- | --- | --- |
+| Beats 50% and logistic baselines | 0.5636 vs 0.6932 and 0.5720 | ✅ |
+| — but the GBT baseline | 0.5444, **better than the set model** | ⚠️ |
+| ECE < 0.03, spectator | 0.0237 | ✅ |
+| ECE < 0.03, player | 0.0433 | ❌ |
+| Player view beats spectator | 0.5808 vs 0.5822 same-orientation; loses to symmetrized 0.5803 | ⚠️ |
+| Bring head beats usage | top-4 overlap 0.7012 vs 0.6643 (chance 0.6667); exact-4 0.1088 vs 0.0528 | ✅ |
+| Preview WP tracks simulation | corr 0.138 overall, **−0.021 on held-out teams** | ❌ |
+
+**The finding that matters is structural, not a tuning miss.** Identity dropout — masking a Pokémon's
+species/item/ability/moves so the model cannot memorise "this exact pairing lost" — is the only thing that stops
+the encoder overfitting the 3,000 repeated self-play pairings, and raising it from 0.2 to 0.5 is what fixed the
+spectator ECE and the bring head. But team identity is the *only* information that exists at team preview, so the
+same knob destroys the preview gate: predicted WP spread collapses to sd 0.146 against a simulated spread of
+sd 0.419, and held-out-team correlation goes to zero. At id-dropout 0.2 preview scored corr 0.326 while the
+spectator ECE and bring gates failed. No single value passes both ends.
+
+Two further observations, recorded so the next attempt doesn't rediscover them:
+
+- **Self-play and human play conflict during training.** Human-row validation loss turns upward after epoch 1–2 in
+  every configuration tried, while self-play validation keeps improving for several more epochs. Checkpoint
+  selection on human rows (`set_torch.py`, `human_weight > 1`) resolves it by truncating training, which is why the
+  set model is undertrained and loses to GBT. Weighting human rows 4× did not change the epoch it turns.
+- **The simulated preview spread is partly a policy artifact.** 67% of pairings land ≥85/15 under heuristic-vs-
+  heuristic play, which measures the heuristic's blind spots as much as the matchup. A model matching that spread
+  exactly may be fitting the policy, not the game — so this gate should be re-read once Phase 6's stronger policy
+  exists.
+
+_Next attempt (not yet done):_ separate the two jobs instead of tuning one knob between them — a preview/bring path
+that sees identities intact, and an in-battle path trained with heavy identity dropout; or pretrain on self-play for
+the full schedule and fine-tune on human rows at low learning rate, rather than training on the mixture and stopping
+early. Until a model passes, **`wp-v1-gbt` is the strongest thing on the headline set** and the set model's
+advantages are the bring head and the player perspective. Per the rule below, the failing gates are recorded in the
+model card and the CLI/app must not present this model as calibrated.
+
 ### Phase 5 — Win probability v2: closed sheets, player mode
 
 _New 2026-09-19._ Set prior from the replay corpus and usage data. Belief tracker with hard reveals plus a damage-roll

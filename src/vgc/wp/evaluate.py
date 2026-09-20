@@ -153,6 +153,66 @@ def _mean(xs: list[float]) -> float | None:
     return round(float(np.mean(xs)), 4) if xs else None
 
 
+ECE_GATE = 0.03
+PREVIEW_CORR_GATE = 0.5
+
+
+def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
+          preview: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Phase 4's verification, as pass/fail. A model that misses a gate is not presented as
+    calibrated by the CLI, the app or search, so the verdict belongs in the card next to the
+    numbers that produced it — not in a commit message someone has to go looking for.
+
+    `preview` is the contents of preview_vs_sim.json when `vgc wp check-preview` has been run;
+    without it that gate reads "not run" rather than passing by omission.
+    """
+    h = results.get("human_ots_all", {})
+    persp = h.get("perspectives", {})
+    out: dict[str, Any] = {}
+
+    def verdict(name, passed, **detail):
+        out[name] = {"pass": None if passed is None else bool(passed)} | detail
+
+    spec = persp.get("spectator", {}).get("all")
+    if spec:
+        beaten = {b: r.get("human_ots_all", {}).get("perspectives", {}).get("spectator", {}).get("all", {}).get("logloss")
+                  for b, r in (baselines or {}).items()}
+        required = {b: ll for b, ll in beaten.items() if b in ("constant", "wp-v1-logistic") and ll is not None}
+        verdict("beats_baselines", all(spec["logloss"] < ll for ll in required.values()) if required else None,
+                logloss=spec["logloss"], baselines=beaten)
+        verdict("ece_spectator", spec["ece"] < ECE_GATE, ece=spec["ece"], threshold=ECE_GATE)
+    player = persp.get("player_approx", {}).get("all") or persp.get("player", {}).get("all")
+    if player:
+        verdict("ece_player", player["ece"] < ECE_GATE, ece=player["ece"], threshold=ECE_GATE)
+
+    pvs = next(iter(h.get("player_vs_spectator", {}).values()), None)
+    if pvs:
+        # The spectator's symmetrized score is the honest comparison: averaging its two orientations
+        # removes a side bias the player rows don't get to cancel, so beating the raw number is easy.
+        verdict("player_beats_spectator", pvs["player_logloss"] < pvs["spectator_symmetrized_logloss"],
+                player=pvs["player_logloss"], spectator=pvs["spectator_logloss"],
+                spectator_symmetrized=pvs["spectator_symmetrized_logloss"])
+    bring = h.get("bring")
+    if bring:
+        verdict("bring_beats_usage", bring["model_top4_overlap"] > bring["usage_top4_overlap"],
+                model=bring["model_top4_overlap"], usage=bring["usage_top4_overlap"],
+                chance=bring["chance_top4_overlap"])
+
+    if preview:
+        # Held-out teams are the real test: on training teams the model can recall the pairing.
+        a, ht = preview.get("all", {}), preview.get("heldout_team", {})
+        ok = (a.get("corr") is not None and a["corr"] >= PREVIEW_CORR_GATE
+              and a.get("mae", 1) < a.get("mae_constant_0.5", 0))
+        verdict("preview_tracks_sim", ok, corr=a.get("corr"), corr_heldout_team=ht.get("corr"),
+                mae=a.get("mae"), mae_constant=a.get("mae_constant_0.5"),
+                wp_spread_sd=a.get("wp_spread_sd"), sim_spread_sd=a.get("sim_spread_sd"),
+                threshold=PREVIEW_CORR_GATE)
+    else:
+        verdict("preview_tracks_sim", None, note="vgc wp check-preview has not been run")
+    out["all_pass"] = all(g["pass"] for g in out.values() if isinstance(g, dict) and "pass" in g)
+    return out
+
+
 def headline(results: dict[str, Any]) -> dict[str, Any]:
     """The numbers that matter: held-out human OTS games."""
     h = results.get("human_ots_all", {}).get("perspectives", {})

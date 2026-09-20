@@ -2,7 +2,7 @@
  "version": "wp-v1-gbt",
  "kind": "gbt",
  "regulation": "reg_mc",
- "created": "2026-09-19T17:11:19",
+ "created": "2026-09-19T20:11:45",
  "perspectives": [
   "spectator",
   "player"
@@ -12,38 +12,51 @@
   "name": "wp-v1",
   "regulation": "reg_mc",
   "manifest": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
-  "manifest_battles": 27958,
-  "n_num": 105,
+  "manifest_battles": 42705,
+  "n_num": 150,
   "n_glob": 42,
   "rows": {
-   "train": 347786,
-   "val": 17934,
-   "eval_human_ots": 2999,
-   "eval_human_ots_team": 10491,
-   "eval_selfplay_battle": 122764,
-   "eval_selfplay_team": 612874
+   "train": 637508,
+   "val": 32625,
+   "eval_human_ots": 35536,
+   "eval_human_ots_team": 84822,
+   "eval_selfplay_battle": 395774,
+   "eval_selfplay_team": 1856406
   },
   "val_rate": 0.05,
-  "seconds": 459.0
+  "seconds": 1344.5
  },
  "training_manifest": {
   "path": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
-  "sha256": "2f04bf300a02ded1ed97a732f2e45068f599f17f038bff71a8f21305d4fd2e4b"
+  "sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
  },
  "training_data": {
   "files": [
    "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
-   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s1-n6000/train.jsonl.gz",
-   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s2-n40000/train.jsonl.gz"
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
   ],
   "battles_by_source": {
-   "selfplay": 27491,
-   "human": 467
+   "selfplay": 38145,
+   "human": 4560
   }
  },
  "git": {
-  "sha": "d547b653c5f6ca7e89ab211812d563724f5324cd",
+  "sha": "a7154caf48807a7adf44af041fd6c8060d3b8a78",
   "dirty": true
  },
- "val_wp_logloss": 0.56071
+ "val_wp_logloss": 0.54465,
+ "headline": {
+  "human_spectator": {
+   "n": 30699,
+   "logloss": 0.54444,
+   "brier": 0.18676,
+   "ece": 0.01247
+  },
+  "human_player_approx": {
+   "n": 58960,
+   "logloss": 0.5707,
+   "brier": 0.19731,
+   "ece": 0.01284
+  }
+ }
 }

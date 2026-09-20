@@ -1,22 +1,6 @@
 {
  "wp": [
   {
-   "version": "wp-v1-logistic",
-   "regulation": "reg_mc",
-   "kind": "logistic",
-   "created": "2026-09-19T17:09:22",
-   "path": "models/wp/reg_mc/wp-v1-logistic",
-   "headline": {}
-  },
-  {
-   "version": "wp-v1-gbt",
-   "regulation": "reg_mc",
-   "kind": "gbt",
-   "created": "2026-09-19T17:11:19",
-   "path": "models/wp/reg_mc/wp-v1-gbt",
-   "headline": {}
-  },
-  {
    "version": "wp-v1-set",
    "regulation": "reg_mc",
    "kind": "set",
@@ -35,7 +19,9 @@
      "brier": 0.20182,
      "ece": 0.03311
     }
-   }
+   },
+   "gates": {},
+   "manifest_sha256": "2f04bf300a02ded1ed97a732f2e45068f599f17f038bff71a8f21305d4fd2e4b"
   },
   {
    "version": "wp-v1-set-small",
@@ -56,7 +42,9 @@
      "brier": 0.19431,
      "ece": 0.0291
     }
-   }
+   },
+   "gates": {},
+   "manifest_sha256": "2f04bf300a02ded1ed97a732f2e45068f599f17f038bff71a8f21305d4fd2e4b"
   },
   {
    "version": "wp-v1-set-iddrop",
@@ -77,7 +65,121 @@
      "brier": 0.21102,
      "ece": 0.08682
     }
-   }
+   },
+   "gates": {},
+   "manifest_sha256": "2f04bf300a02ded1ed97a732f2e45068f599f17f038bff71a8f21305d4fd2e4b"
+  },
+  {
+   "version": "wp-v1-logistic",
+   "regulation": "reg_mc",
+   "kind": "logistic",
+   "created": "2026-09-19T20:09:21",
+   "path": "models/wp/reg_mc/wp-v1-logistic",
+   "headline": {
+    "human_spectator": {
+     "n": 30699,
+     "logloss": 0.57205,
+     "brier": 0.19677,
+     "ece": 0.01398
+    },
+    "human_player_approx": {
+     "n": 58960,
+     "logloss": 0.59557,
+     "brier": 0.20638,
+     "ece": 0.02824
+    }
+   },
+   "gates": {},
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+  },
+  {
+   "version": "wp-v1-gbt",
+   "regulation": "reg_mc",
+   "kind": "gbt",
+   "created": "2026-09-19T20:11:45",
+   "path": "models/wp/reg_mc/wp-v1-gbt",
+   "headline": {
+    "human_spectator": {
+     "n": 30699,
+     "logloss": 0.54444,
+     "brier": 0.18676,
+     "ece": 0.01247
+    },
+    "human_player_approx": {
+     "n": 58960,
+     "logloss": 0.5707,
+     "brier": 0.19731,
+     "ece": 0.01284
+    }
+   },
+   "gates": {},
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+  },
+  {
+   "version": "wp-v1-set-full",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-19T20:36:46",
+   "path": "models/wp/reg_mc/wp-v1-set-full",
+   "headline": {
+    "human_spectator": {
+     "n": 30699,
+     "logloss": 0.56365,
+     "brier": 0.19379,
+     "ece": 0.02367
+    },
+    "human_player_approx": {
+     "n": 58960,
+     "logloss": 0.5901,
+     "brier": 0.20441,
+     "ece": 0.04332
+    }
+   },
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.56365,
+     "baselines": {
+      "wp-v1-gbt": 0.54444,
+      "wp-v1-logistic": 0.57205,
+      "constant": 0.69315
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.02367,
+     "threshold": 0.03
+    },
+    "ece_player": {
+     "pass": false,
+     "ece": 0.04332,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": false,
+     "player": 0.58083,
+     "spectator": 0.58218,
+     "spectator_symmetrized": 0.58034
+    },
+    "bring_beats_usage": {
+     "pass": true,
+     "model": 0.7012,
+     "usage": 0.6643,
+     "chance": 0.6667
+    },
+    "preview_tracks_sim": {
+     "pass": false,
+     "corr": 0.138,
+     "corr_heldout_team": -0.021,
+     "mae": 0.3849,
+     "mae_constant": 0.393,
+     "wp_spread_sd": 0.1457,
+     "sim_spread_sd": 0.4194,
+     "threshold": 0.5
+    },
+    "all_pass": false
+   },
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
   }
  ]
 }

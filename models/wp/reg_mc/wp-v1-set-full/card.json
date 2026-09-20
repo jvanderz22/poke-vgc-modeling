@@ -1,0 +1,133 @@
+{
+ "version": "wp-v1-set-full",
+ "kind": "set",
+ "regulation": "reg_mc",
+ "created": "2026-09-19T20:36:46",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
+  "manifest_battles": 42705,
+  "n_num": 150,
+  "n_glob": 42,
+  "rows": {
+   "train": 637508,
+   "val": 32625,
+   "eval_human_ots": 35536,
+   "eval_human_ots_team": 84822,
+   "eval_selfplay_battle": 395774,
+   "eval_selfplay_team": 1856406
+  },
+  "val_rate": 0.05,
+  "seconds": 1344.5
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1-train.json",
+  "sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 38145,
+   "human": 4560
+  }
+ },
+ "git": {
+  "sha": "a7154caf48807a7adf44af041fd6c8060d3b8a78",
+  "dirty": true
+ },
+ "training": {
+  "hyperparams": {
+   "d": 64,
+   "layers": 2,
+   "heads": 4,
+   "dropout": 0.3,
+   "epochs": 12,
+   "bs": 512,
+   "lr": 0.0002,
+   "bring_weight": 0.3,
+   "seed": 0,
+   "weight_decay": 0.1,
+   "id_dropout": 0.5,
+   "human_weight": 4.0
+  },
+  "best_epoch": 2,
+  "val_wp_logloss": 0.55066,
+  "selection_metric": 0.56419,
+  "selected_on": "human",
+  "temperature": 1.1887,
+  "val_wp_logloss_calibrated": 0.54774,
+  "val_wp_logloss_human": 0.56419,
+  "parameters": 153746,
+  "torch": "2.2.2",
+  "device": "cpu",
+  "train_rows": 637508,
+  "val_rows": 32625
+ },
+ "headline": {
+  "human_spectator": {
+   "n": 30699,
+   "logloss": 0.56365,
+   "brier": 0.19379,
+   "ece": 0.02367
+  },
+  "human_player_approx": {
+   "n": 58960,
+   "logloss": 0.5901,
+   "brier": 0.20441,
+   "ece": 0.04332
+  }
+ },
+ "gates": {
+  "beats_baselines": {
+   "pass": true,
+   "logloss": 0.56365,
+   "baselines": {
+    "wp-v1-gbt": 0.54444,
+    "wp-v1-logistic": 0.57205,
+    "constant": 0.69315
+   }
+  },
+  "ece_spectator": {
+   "pass": true,
+   "ece": 0.02367,
+   "threshold": 0.03
+  },
+  "ece_player": {
+   "pass": false,
+   "ece": 0.04332,
+   "threshold": 0.03
+  },
+  "player_beats_spectator": {
+   "pass": false,
+   "player": 0.58083,
+   "spectator": 0.58218,
+   "spectator_symmetrized": 0.58034
+  },
+  "bring_beats_usage": {
+   "pass": true,
+   "model": 0.7012,
+   "usage": 0.6643,
+   "chance": 0.6667
+  },
+  "preview_tracks_sim": {
+   "pass": false,
+   "corr": 0.138,
+   "corr_heldout_team": -0.021,
+   "mae": 0.3849,
+   "mae_constant": 0.393,
+   "wp_spread_sd": 0.1457,
+   "sim_spread_sd": 0.4194,
+   "threshold": 0.5
+  },
+  "all_pass": false
+ }
+}

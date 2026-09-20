@@ -32,7 +32,7 @@ from typing import Any, Iterator
 from vgc.data.observe import PERSPECTIVES, Observer, dumps
 from vgc.regulation import Regulation
 
-VERSION = 2
+VERSION = 3
 
 
 def _short(text: str) -> str:
