@@ -13,7 +13,7 @@
 | 6 — Expected WP, BC + search | —             | driven by expected win probability per action                                          |
 | 7 — Team evaluation         | —              | was 3; now judged by the Phase 6 battle stack                                          |
 | 8 — Team building           | —              | was 4                                                                                  |
-| 9 — Interface               | 🟡 W2 started 2026-09-19 | `vgc web`: team library, validation, and all 90 bring/lead options ranked with the model's gate verdicts shown. Open sheets only |
+| 9 — Interface               | 🟡 W1–W2 started 2026-09-19 | `vgc web` (React): team library on disk, validation, all 90 bring/lead options ranked with the model's gate verdicts shown, opponent by open sheet or by species with usage-filled sets |
 
 _Order changed 2026-09-19: battle strength first (3–6), then team evaluation and building (7–8) on top of it._
 
@@ -779,6 +779,20 @@ early and grows with the model. With battles first, the in-battle companion arri
 | **W3** | Phase 5 | Belief panel for closed-sheet games; manual belief corrections |
 | **W4** | Phase 6 | Expected-WP action table with intervals and worst-case replies (determinized over the belief); state-reconstruction parity checks; post-game review |
 | **W5** | Phase 8 | Team tools in the library: weakness report, complete-my-team, moveset/SP suggestions |
+
+**Done 2026-09-19 (W1–W2, partial).** `vgc web` serves a React app with two pages: a team library
+stored at `data/library/<reg>.json` (validated on every save, never trusted from the file), and a
+battle page that ranks all 90 bring/lead options. Your team comes from the library or a paste; the
+opponent's from an open sheet or, with the format toggle, from six species.
+
+Still missing from W1: pokepast.es fetching, the calc panel, per-turn input and the WP timeline.
+
+**A stopgap ran ahead of W3.** Closed-sheet input needs a complete team before the simulator will
+accept anything, so `web/prior.py` fills each species with its most common set from the pool
+(15,028 sheets). That is not Phase 5's prior: the model evaluates one guessed team with full
+confidence instead of integrating over a belief, so a wrong item is wrong rather than uncertain.
+The app reports each guess's share (Incineroar's most common set is 15% of its 4,895 sheets) and
+flags weak ones. W3 replaces it; the share display is what should survive.
 
 _Web app verification:_ replay 20 held-out self-play battles through the app's input forms, entering only public
 information from the player's perspective. The reconstructed states must pass parity (same legal actions and calc
