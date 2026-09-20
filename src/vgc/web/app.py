@@ -201,7 +201,7 @@ if STATIC.exists():
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
-def serve(host: str = "127.0.0.1", port: int = 8000, reload: bool = False) -> None:
+def serve(host: str = "127.0.0.1", port: int = 8001, reload: bool = False) -> None:
     import uvicorn
 
     uvicorn.run("vgc.web.app:app" if reload else app, host=host, port=port, reload=reload)

@@ -691,7 +691,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_wp_registry)
     p = sub.add_parser("web", help="battle-companion web app on localhost")
     p.add_argument("--host", default="127.0.0.1", help="127.0.0.1 keeps it on this machine")
-    p.add_argument("--port", type=int, default=8000)
+    p.add_argument("--port", type=int, default=8001, help="8001, not 8000: `vgc server start` uses 8000")
     p.add_argument("--reload", action="store_true", help="reload on source changes (development)")
     p.set_defaults(func=cmd_web)
     return ap

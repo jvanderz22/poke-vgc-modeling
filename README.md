@@ -3,7 +3,10 @@
 Team-building and battle advice for Pokémon Champions VGC (currently **Regulation M-C**),
 backed by a pinned local Pokémon Showdown as ground truth. See [PLAN.md](PLAN.md) for the
 roadmap and progress, and [docs/phase0-findings.md](docs/phase0-findings.md) for the
-environment decisions.
+environment decisions. The local battle companion is documented in
+[docs/web-app.md](docs/web-app.md); retraining for a new regulation is
+[docs/regulation-change.md](docs/regulation-change.md), and renting hardware is
+[docs/cloud-compute.md](docs/cloud-compute.md).
 
 ## Setup
 
@@ -46,7 +49,17 @@ vgc data human                                   # snapshots from cached human r
 vgc data manifest --name wp-v1-train             # training manifest, refused if it touches held-out data
 vgc data parity --n 50                           # snapshots vs what poke-env showed live
 vgc data stats
+
+vgc wp featurize --manifest wp-v1-train          # feature arrays from a checked manifest
+vgc wp train --kind set --epochs 12              # (baselines: --kind logistic | gbt)
+vgc wp eval --version <v> --baseline wp-v1-gbt   # held-out human games; writes gate verdicts
+vgc wp registry                                  # every model, with the gates it failed
+
+vgc web                                          # battle companion on localhost:8001
 ```
+
+`make` wraps the pipeline: `make data` (scrape → pool → self-play → snapshots → features),
+`make models`, `make sweep` (free Kaggle GPU), `make gates`, `make test`.
 
 Team files use Showdown's export format. In Champions, the `EVs:` line holds **Stat Points**
 (66 total, 32 max per stat, 1 SP = +1 stat at level 50). `SPs:` is accepted as an alias.

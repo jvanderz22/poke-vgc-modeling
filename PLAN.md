@@ -8,12 +8,12 @@
 | 1 — Foundation              | ✅ Done 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; 42 tests; calc = simulator on 4 scenarios |
 | 2 — Battle layer, tier 1    | ✅ Done 2026-09-19 | heuristic 98.4% vs random (500, CI 96.9–99.2%); seeded runner, identical across worker counts; 52 tests |
 | 3 — Battle data             | ✅ Done 2026-09-19 | 134k training snapshots (6k self-play + 1.6k human games); parity exact on 3,089 live decisions; split frozen; 63 tests |
-| 4 — Win probability v1 (OTS) | ⏳ Next       | **new** — spectator + player perspectives, from team preview on                        |
-| 5 — Win probability v2 (closed sheets) | —   | **new** — belief over opponent sets in player mode                                     |
+| 4 — Win probability v1 (OTS) | ⚠️ Built, gates failing 2026-09-19 | 3,347-team pool, 1.30M snapshots, 637k rows; bring head and spectator ECE pass, **preview, player ECE and player-vs-spectator fail** — see the phase's status block |
+| 5 — Win probability v2 (closed sheets) | ⏳ Next |  **new** — belief over opponent sets in player mode; also what unblocks closed-sheet bring advice in the app |
 | 6 — Expected WP, BC + search | —             | driven by expected win probability per action                                          |
 | 7 — Team evaluation         | —              | was 3; now judged by the Phase 6 battle stack                                          |
 | 8 — Team building           | —              | was 4                                                                                  |
-| 9 — Interface               | —              | CLI/MCP **plus the battle-companion web app** (staged W1–W5)                           |
+| 9 — Interface               | 🟡 W2 started 2026-09-19 | `vgc web`: team library, validation, and all 90 bring/lead options ranked with the model's gate verdicts shown. Open sheets only |
 
 _Order changed 2026-09-19: battle strength first (3–6), then team evaluation and building (7–8) on top of it._
 
