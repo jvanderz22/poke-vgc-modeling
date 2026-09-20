@@ -110,3 +110,21 @@ def test_metrics():
     calibrated = metrics(p, (rng.uniform(size=20000) < p).astype(float))
     assert calibrated["ece"] < 0.02
     assert metrics(np.clip(p + 0.2, 0, 1), (rng.uniform(size=20000) < p).astype(float))["ece"] > 0.1
+
+
+def test_onnx_export_works_on_this_torch(tmp_path):
+    """The export must not depend on which torch is installed.
+
+    torch >= 2.6 defaults to the dynamo exporter, which needs `onnxscript`; a Kaggle GPU image has
+    neither it nor the internet to fetch it. A cloud sweep discovered this after 25 minutes of
+    training, so `train()` now probes the export before the first epoch — and this test covers the
+    probe itself on whatever torch is present.
+    """
+    torch = pytest.importorskip("torch")
+    from vgc.wp.set_torch import SetWP, _export
+
+    model = SetWP({"species": 50, "items": 20, "abilities": 20, "moves": 60}, 150, 42, d=32, layers=1).eval()
+    sample = (torch.randint(2, 20, (2, 12, 8)), torch.rand(2, 12, 150), torch.rand(2, 42))
+    out = tmp_path / "m.onnx"
+    _export(model, sample, out)
+    assert out.stat().st_size > 1000

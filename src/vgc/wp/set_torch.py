@@ -25,6 +25,7 @@ identity at random so the generic numbers have to carry the prediction.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import math
 import time
@@ -127,6 +128,24 @@ def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str =
     return [cat, num.float(), glob, y, bring, w]
 
 
+def _export(model: SetWP, sample: tuple, path: Path) -> None:
+    """Write the ONNX artifact.
+
+    torch >= 2.6 routes `torch.onnx.export` through the dynamo exporter, which needs `onnxscript`
+    — absent from a Kaggle GPU image and uninstallable there with internet off. Asking for the
+    legacy TorchScript exporter keeps one trainer producing the same artifact on the laptop
+    (torch 2.2.2) and on a cloud box.
+    """
+    args = dict(
+        input_names=["cat", "num", "glob"], output_names=["wp_logit", "bring_logit"],
+        dynamic_axes={k: {0: "batch"} for k in ("cat", "num", "glob", "wp_logit", "bring_logit")},
+        opset_version=17,
+    )
+    if "dynamo" in inspect.signature(torch.onnx.export).parameters:
+        args["dynamo"] = False
+    torch.onnx.export(model, sample, str(path), **args)
+
+
 def _losses(model: SetWP, batch: list[torch.Tensor], bring_weight: float) -> tuple[torch.Tensor, torch.Tensor]:
     cat, num, glob, y, bring, w = batch
     wp_logit, bring_logit = model(cat, num, glob)
@@ -188,6 +207,11 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     steps = epochs * math.ceil(len(tr[0]) / bs)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=lr, total_steps=steps, pct_start=0.1)
     out.mkdir(parents=True, exist_ok=True)
+    # Export once, now, and throw it away. An export that cannot run here cannot run in an hour
+    # either, and finding that out after training is how a 25-minute cloud run produces nothing.
+    probe = out / ".export-probe.onnx"
+    _export(SetWP(sizes, info["n_num"], info["n_glob"], **hp).eval(), tuple(_batch(tr, slice(0, 2))[:3]), probe)
+    probe.unlink(missing_ok=True)
     history, best, bad = [], (1e9, -1), 0
     t0 = time.perf_counter()
     for ep in range(epochs):
@@ -223,12 +247,7 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     model.temperature.fill_(temp)
     val_t, _ = _eval(model, va, device=device)
     model.eval().to("cpu")  # export from CPU: the artifact must not depend on where it trained
-    n = 2
-    torch.onnx.export(
-        model, tuple(_batch(tr, slice(0, n))[:3]), str(out / "model.onnx"),
-        input_names=["cat", "num", "glob"], output_names=["wp_logit", "bring_logit"],
-        dynamic_axes={k: {0: "batch"} for k in ("cat", "num", "glob", "wp_logit", "bring_logit")}, opset_version=17,
-    )
+    _export(model, tuple(_batch(tr, slice(0, 2))[:3]), out / "model.onnx")
     (out / "best.pt").unlink()
     result = {"hyperparams": hp | {"epochs": epochs, "bs": bs, "lr": lr, "bring_weight": bring_weight, "seed": seed,
                                    "weight_decay": weight_decay, "id_dropout": id_dropout,
