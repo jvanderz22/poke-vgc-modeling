@@ -23,6 +23,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0.0",
+  "httpx2",          # starlette's TestClient (tests/test_web.py)
+]
+cloud = [
+  "kaggle>=2.2.4",   # scripts/cloud/kaggle_sweep.sh; 2.2.4+ speaks the KGAT_ token auth
 ]
 web = [
   "fastapi>=0.110",

@@ -70,7 +70,22 @@ Notes:
   human games, and the preview gate is not in the validation loss at all. Bring the top few
   candidates home and run `vgc wp eval` and `vgc wp check-preview` on each.
 
-**Kaggle variant (free, and the one to try first):** use
+**Fully automated (one command):**
+
+```bash
+pip install -e '.[cloud]'                       # the kaggle CLI
+# Kaggle → Settings → API → Create New Token, then:
+mkdir -p ~/.kaggle && echo 'KGAT_…' > ~/.kaggle/access_token && chmod 600 ~/.kaggle/access_token
+make sweep                                       # push data, run on GPU, download, evaluate locally
+```
+
+`scripts/cloud/kaggle_sweep.sh` uploads only `train.npz`, `val.npz` and two small JSON files
+(~66 MB) — the held-out sets never leave the machine, so nothing in the cloud can influence a gate
+verdict. It then runs every returned model through `vgc wp card`, `calibrate`, `check-preview` and
+`eval`, and prints the gate table. Kaggle replaced the old username+key `kaggle.json` with a
+`KGAT_` token; `kaggle config view` should say `auth_method: ACCESS_TOKEN`.
+
+**Kaggle variant, by hand:** use
 [`scripts/cloud/kaggle_train_wp.ipynb`](../scripts/cloud/kaggle_train_wp.ipynb). Upload
 `data/features/<reg>/<dataset>` and `src/vgc/wp/set_torch.py` as two private Datasets, set the
 accelerator to GPU, and run it. Its sweep tests `--id-dropout-preview` against uniform
