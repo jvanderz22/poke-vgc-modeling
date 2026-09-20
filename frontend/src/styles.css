@@ -250,6 +250,10 @@ select.form-select { max-width: 260px; }
 .board-mon.bench { color: var(--dim); }
 .board-mon.fainted { color: var(--dim); text-decoration: line-through; opacity: .6; }
 .board-mon.active .board-name { font-weight: 650; }
+/* Not seen yet: it may or may not be in this game, so it gets an empty track rather than a bar
+   at some HP nobody has been shown. */
+.board-mon.unknown { color: var(--dim); opacity: .65; }
+.board-hp.unknown { background: transparent; border: 1px dashed var(--line); }
 .board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-status { font-size: 9px; padding: .2em .45em; margin-left: 6px; vertical-align: 1px; }
 .board-hp { display: block; height: 6px; background: #0e1015; border-radius: 3px; overflow: hidden; }
@@ -258,3 +262,27 @@ select.form-select { max-width: 260px; }
 .hp-low { background: var(--warn); }
 .hp-crit { background: var(--bad); }
 .board-pct { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* The settled result: hollow, because it is the one tick on the track the model did not produce. */
+.scrub-tick.result { box-shadow: inset 0 0 0 1px var(--line); }
+.scrub-tick.result > i { opacity: .7; }
+.wp-split.settled { outline: 1px solid var(--line); outline-offset: 2px; }
+
+/* Side badges on turn-summary lines, in the two colours the WP bar uses. */
+.ev-side {
+  display: inline-block; min-width: 18px; text-align: center; border-radius: 999px;
+  font-size: 10px; font-weight: 700; padding: .18em .5em; flex: none; color: #07101f;
+}
+.ev-side.p1 { background: var(--accent); }
+.ev-side.p2 { background: #e0a74a; }
+
+/* End-of-turn slots: a switch puts what left and what came in on one line. */
+.slots-after { display: flex; flex-direction: column; gap: 6px; }
+.slot-row { display: flex; align-items: baseline; gap: 8px; font-size: 13px; min-width: 0; }
+.slot-mon { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1; }
+.slot-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot-pct { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; flex: none; }
+.slot-mon.active .slot-name { font-weight: 650; }
+.slot-mon.bench { color: var(--dim); }
+.slot-mon.fainted { color: var(--dim); text-decoration: line-through; opacity: .6; }
+.slot-arrow { color: var(--dim); font-size: 12px; flex: none; }

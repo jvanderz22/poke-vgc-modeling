@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   api, ApiError,
-  type Endgame, type EndgameDetail, type EndgameIndex, type EndgameStep,
+  type BoardMon, type BoardSide, type Endgame, type EndgameDetail, type EndgameIndex,
+  type EndgameStep,
+  type Slot as SlotRow,
 } from "../api";
 
 type Filter = "all" | "played_out" | "misses";
 
-const FILTERS: { id: Filter; label: string; hint: string }[] = [
-  { id: "all", label: "All", hint: "every game in the set" },
-  { id: "played_out", label: "Played out", hint: "no forfeits — someone had to finish the job" },
-  { id: "misses", label: "Model was wrong", hint: "the favoured side went on to lose" },
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "played_out", label: "Played out" },
+  { id: "misses", label: "Model was wrong" },
 ];
 
 /** Decided endgames: real human games the model called at 90%+ before they finished.
@@ -45,9 +47,6 @@ export function EndgamesPanel({ reg }: { reg: string }) {
     return (
       <div className="panel">
         <h2>No endgame set yet</h2>
-        <p className="small dim" style={{ margin: "0 0 10px" }}>
-          The set is built offline because it reads every cached replay — about a minute.
-        </p>
         <pre className="hint-block">vgc wp endgames</pre>
       </div>
     );
@@ -61,7 +60,7 @@ export function EndgamesPanel({ reg }: { reg: string }) {
         {selected
           ? <GameStepper key={selected} replay={selected} reg={reg}
                          minWp={index.criteria?.min_wp ?? 0.9} />
-          : <div className="panel"><p className="empty">Pick a game to step through it.</p></div>}
+          : <div className="panel"><p className="empty">Pick a game.</p></div>}
       </div>
     </>
   );
@@ -85,28 +84,21 @@ function SetHeader({ index, filter, onFilter }: {
       </div>
 
       <p className="small dim" style={{ margin: "8px 0 0" }}>
-        {c && <>
-          Human vs human, open team sheets, and the model held {(c.min_wp * 100).toFixed(0)}%+ on
-          one side for the last {c.hold} decision points.{" "}
-        </>}
-        {counts && <>
-          Drawn from {counts.eligible.toLocaleString()} held-out games
-          ({counts.cached.toLocaleString()} replays cached) — games{" "}
-          <strong>{index.version}</strong> never trained on, so this is not the model marking its
-          own homework.
-        </>}
+        {c && <>held {(c.min_wp * 100).toFixed(0)}%+ for the last {c.hold} decision points · </>}
+        human vs human · open sheets · held out
+        {counts && <> · from {counts.eligible.toLocaleString()} eligible games</>}
+        {" · "}<strong>{index.version}</strong>
       </p>
       {index.gates?.in_battle_pass === false && (
         <p className="small err" style={{ margin: "6px 0 0" }}>
-          Note: {index.version} does not pass its in-battle gates. Read these numbers as a
-          demonstration, not a calibrated claim.
+          {index.version} fails its in-battle gates.
         </p>
       )}
 
       <div className="row" style={{ marginTop: 10 }}>
         <div className="toggle">
           {FILTERS.map((f) => (
-            <button key={f.id} className="seg" title={f.hint}
+            <button key={f.id} className="seg"
                     aria-pressed={filter === f.id} onClick={() => onFilter(f.id)}>
               {f.label}
             </button>
@@ -185,7 +177,7 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
   }, [step]);
 
   if (error) return <div className="panel"><p className="err small">{error}</p></div>;
-  if (!game) return <div className="panel"><p className="empty">Loading the replay…</p></div>;
+  if (!game) return <div className="panel"><p className="empty">Loading…</p></div>;
 
   const cur = game.steps[i];
   const wonBy = game.winner ? game.players[game.winner] : "nobody";
@@ -213,21 +205,19 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
         <div className="row" style={{ marginTop: 10 }}>
           <button className="ghost" onClick={() => step(-1)} disabled={i === 0}>← Back</button>
           <button className="ghost" onClick={() => step(1)} disabled={i === last}>Next →</button>
-          <span className="tiny dim">
-            {cur.kind === "preview" ? "team preview"
-              : cur.kind === "end" ? "the finish"
-              : cur.kind === "switch" ? `turn ${cur.turn}, forced switch` : `turn ${cur.turn}`}
-            {" · "}step {i + 1} of {last + 1} · arrow keys work
-          </span>
+          <span className="tiny dim">{label(cur)} · step {i + 1} of {last + 1}</span>
           {game.wp_error && <span className="err tiny">WP unavailable: {game.wp_error}</span>}
         </div>
       </div>
 
+      {/* The position the model was asked about, and its answer. Everything below this panel is
+          what happened afterwards, so the order on screen is the order it happened in. */}
       <div className="panel">
-        <WpBar wp={cur.wp_p1} players={game.players} />
-        <div className="grid2" style={{ marginTop: 12 }}>
-          <Board side="p1" name={game.players.p1} board={cur.board.p1} />
-          <Board side="p2" name={game.players.p2} board={cur.board.p2} />
+        {cur.wp_p1 != null && <WpBar wp={cur.wp_p1} players={game.players} />}
+        <h2 style={{ margin: "14px 0 10px" }}>{start(cur)}</h2>
+        <div className="grid2">
+          <Board side="p1" name={game.players.p1} board={cur.before.p1} />
+          <Board side="p2" name={game.players.p2} board={cur.before.p2} />
         </div>
         {(cur.weather || cur.terrain) && (
           <p className="tiny dim" style={{ margin: "10px 0 0" }}>
@@ -237,29 +227,111 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
       </div>
 
       <div className="panel turn">
-        <h2>
-          {cur.kind === "preview" ? "Both sheets are on the table"
-            : cur.kind === "end" ? "How it finished"
-            : "What happened next"}
-        </h2>
+        <h2>Turn summary</h2>
         {cur.events.length === 0
-          ? <p className="empty">Nothing worth narrating.</p>
+          ? <p className="empty">—</p>
           : (
             <ul className="events">
               {cur.events.map((e, n) => (
                 <li key={n} className={e.side ? `ev ev-${e.side}` : "ev"}>
-                  {e.side && (
-                    <span className="badge rounded-pill text-bg-dark ev-side">
-                      {e.side === "p1" ? "1" : "2"}
-                    </span>
-                  )}
+                  {e.side && <SideBadge side={e.side} players={game.players} />}
                   <span>{e.text}</span>
                 </li>
               ))}
             </ul>
           )}
       </div>
+
+      <div className="panel">
+        <h2>{cur.final ? "Final position" : finish(cur)}</h2>
+        {cur.wp_after != null && (
+          <div style={{ marginBottom: 12 }}>
+            <WpBar wp={cur.wp_after} players={game.players} outcome={cur.outcome} />
+          </div>
+        )}
+        <div className="grid2">
+          <Slots side="p1" name={game.players.p1} rows={cur.slots.p1} left={cur.after.p1.left} />
+          <Slots side="p2" name={game.players.p2} rows={cur.slots.p2} left={cur.after.p2.left} />
+        </div>
+      </div>
     </div>
+  );
+}
+
+/** How a step is named. Team preview and a forced switch are decisions too, but they are not
+ *  turns, so they are not called one. */
+function label(s: EndgameStep): string {
+  if (s.kind === "preview") return "team preview";
+  return s.kind === "switch" ? `turn ${s.turn}, forced switch` : `turn ${s.turn}`;
+}
+
+function start(s: EndgameStep): string {
+  if (s.kind === "preview") return "Team preview";
+  return s.kind === "switch" ? `Turn ${s.turn} · replacement` : `Start of turn ${s.turn}`;
+}
+
+function finish(s: EndgameStep): string {
+  if (s.kind === "preview") return "Leads";
+  return s.kind === "switch" ? "After the replacement" : `End of turn ${s.turn}`;
+}
+
+/** Which side an event belongs to, in the colour the win-probability bar uses for it. The bar,
+ *  the player names and these badges are the same two colours throughout, so the side is never
+ *  something to work out. */
+function SideBadge({ side, players }: { side: "p1" | "p2"; players: { p1: string; p2: string } }) {
+  return (
+    <span className={`ev-side ${side}`} title={players[side]}>
+      {side === "p1" ? "1" : "2"}
+    </span>
+  );
+}
+
+/** The two active slots at the end of a step: who was standing there, and who is now.
+ *
+ *  A switch — chosen mid-turn, or forced after a faint — puts both on one line, because that is
+ *  one event to a reader. A Pokémon that fainted with nothing yet sent in its place shows alone:
+ *  the replacement is the *next* step's decision, not this one's outcome.
+ *
+ *  No HP bars here. Four names have to fit across the panel on a switch line, and the bars are
+ *  already on the full board above; the number alone carries the same thing in a third the room.
+ */
+function Slots({ side, name, rows, left }: {
+  side: "p1" | "p2"; name: string; rows: SlotRow[]; left: number;
+}) {
+  return (
+    <div>
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+        <span className={`side-tag ${side}`}>{name}</span>
+        <span className="tiny dim">{left} left</span>
+      </div>
+      <div className="slots-after">
+        {rows.length === 0 && <p className="empty" style={{ padding: 0 }}>—</p>}
+        {rows.map((r) => (
+          <div key={r.slot} className="slot-row">
+            {r.changed && r.started && r.ended ? (
+              <>
+                <SlotMon mon={r.started} muted />
+                <span className="slot-arrow" aria-label="replaced by">→</span>
+                <SlotMon mon={r.ended} />
+              </>
+            ) : (
+              (r.ended ?? r.started) && <SlotMon mon={(r.ended ?? r.started)!} muted={!r.ended} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SlotMon({ mon, muted = false }: { mon: BoardMon; muted?: boolean }) {
+  const ko = mon.state === "fainted";
+  return (
+    <span className={`slot-mon ${ko ? "fainted" : muted ? "bench" : "active"}`}>
+      <span className="slot-name">{mon.forme}</span>
+      {mon.status && !ko && <span className="board-status">{mon.status.toUpperCase()}</span>}
+      <span className="slot-pct">{ko ? "KO" : `${Math.round(mon.hp * 100)}%`}</span>
+    </span>
   );
 }
 
@@ -269,52 +341,71 @@ function confident(s: EndgameStep, minWp: number): boolean {
 }
 
 /** Every decision point as a tick, tall for p1 and short for p2, so the shape of the game reads
- *  at a glance: where it turned, and how long the call held before the end. */
+ *  at a glance: where it turned, and how long the call held before the end.
+ *
+ *  The last tick is the result, which is why the trajectory is allowed to finish at the top or
+ *  the bottom of the track. It is drawn hollow because it is the one tick that is not a model
+ *  output; clicking it goes to the step the game ended on. */
 function Scrubber({ steps, at, onPick, p1 }: {
   steps: EndgameStep[]; at: number; onPick: (i: number) => void; p1: string;
 }) {
+  const last = steps[steps.length - 1];
+  const settled = last?.outcome && last.wp_after != null ? last.wp_after : null;
   return (
     <div className="scrub" role="group" aria-label="decision points">
       {steps.map((s, i) => {
         const wp = s.wp_p1;
-        const label = wp == null
-          ? "the finish"
-          : `${s.kind === "preview" ? "preview" : `turn ${s.turn}`}: ${p1} ${(wp * 100).toFixed(0)}%`;
+        if (wp == null) return <span key={i} className="scrub-tick" aria-hidden="true" />;
+        const label = `${s.kind === "preview" ? "preview" : `turn ${s.turn}`}: ${p1} ${(wp * 100).toFixed(0)}%`;
         return (
           <button key={i} className="scrub-tick" aria-current={i === at} title={label}
                   aria-label={label} onClick={() => onPick(i)}>
-            <i style={wp == null ? undefined : { height: `${Math.max(6, wp * 100)}%` }}
-               className={wp == null ? "tick-end" : wp >= 0.5 ? "tick-p1" : "tick-p2"} />
+            <i style={{ height: `${Math.max(6, wp * 100)}%` }}
+               className={wp >= 0.5 ? "tick-p1" : "tick-p2"} />
           </button>
         );
       })}
+      {settled != null && (
+        <button className="scrub-tick result" title={`result: ${p1} ${(settled * 100).toFixed(0)}%`}
+                aria-label={`result: ${p1} ${(settled * 100).toFixed(0)}%`}
+                onClick={() => onPick(steps.length - 1)}>
+          <i style={{ height: `${Math.max(10, settled * 100)}%` }}
+             className={settled >= 0.5 ? "tick-p1" : "tick-p2"} />
+        </button>
+      )}
     </div>
   );
 }
 
-function WpBar({ wp, players }: { wp: number | null; players: { p1: string; p2: string } }) {
-  if (wp == null) {
-    return <p className="small dim" style={{ margin: 0 }}>The game is over — there is nothing left to predict.</p>;
-  }
+/** The win-probability split. `outcome` marks the one case where the number is not a prediction
+ *  at all: the game has finished, and 100/0 is the result. Saying so is the difference between
+ *  showing the model being right and showing what happened. */
+function WpBar({ wp, players, outcome = false }: {
+  wp: number; players: { p1: string; p2: string }; outcome?: boolean;
+}) {
   const pct = wp * 100;
   return (
     <div>
-      <div className="wp-split" title={`${players.p1} ${pct.toFixed(1)}%`}>
+      <div className={`wp-split${outcome ? " settled" : ""}`} title={`${players.p1} ${pct.toFixed(1)}%`}>
         <i className="wp-split-p1" style={{ width: `${pct}%` }} />
       </div>
       <div className="row" style={{ justifyContent: "space-between", marginTop: 6 }}>
         <span className="small"><span className="side-tag p1">{players.p1}</span> {pct.toFixed(0)}%</span>
+        {outcome && <span className="tiny dim">result</span>}
         <span className="small">{(100 - pct).toFixed(0)}% <span className="side-tag p2">{players.p2}</span></span>
       </div>
     </div>
   );
 }
 
-const SHOWN = new Set(["active", "bench", "fainted"]);
-
-function Board({ side, name, board }: {
-  side: "p1" | "p2"; name: string; board: { left: number; mons: { species: string; forme: string; state: string; hp: number; status: string | null; position: number | null }[]; conditions: string[] };
-}) {
+/** One side's sheet, as much of it as is still worth showing.
+ *
+ *  All six at team preview, because that is all anyone knows then, and they thin out as the game
+ *  reveals which four are in it. A Pokémon nobody has seen is `unknown` — it may still come in —
+ *  until the fourth of the four appears, at which point the two left over are known to be sitting
+ *  this one out and there is no reason to keep them on screen. */
+function Board({ side, name, board }: { side: "p1" | "p2"; name: string; board: BoardSide }) {
+  const shown = board.mons.filter((m) => m.state !== "unselected");
   return (
     <div>
       <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
@@ -322,21 +413,27 @@ function Board({ side, name, board }: {
         <span className="tiny dim">{board.left} left</span>
       </div>
       <div className="board">
-        {board.mons.filter((m) => SHOWN.has(m.state)).map((m) => (
-          <div key={m.species} className={`board-mon ${m.state}`}>
-            <span className="board-name">
-              {m.forme}
-              {m.status && <span className="badge rounded-pill text-bg-dark board-status">{m.status.toUpperCase()}</span>}
-            </span>
-            <span className="board-hp">
-              <i style={{ width: `${Math.round(m.hp * 100)}%` }}
-                 className={m.hp > 0.5 ? "hp-ok" : m.hp > 0.2 ? "hp-low" : "hp-crit"} />
-            </span>
-            <span className="tiny dim board-pct">
-              {m.state === "fainted" ? "KO" : `${Math.round(m.hp * 100)}%`}
-            </span>
-          </div>
-        ))}
+        {shown.map((m) => {
+          const ko = m.state === "fainted";
+          const unknown = m.state === "unknown";
+          return (
+            <div key={m.species} className={`board-mon ${m.state}`}>
+              <span className="board-name">
+                {m.forme}
+                {m.status && !ko && <span className="board-status">{m.status.toUpperCase()}</span>}
+              </span>
+              <span className={`board-hp${unknown ? " unknown" : ""}`}>
+                {!unknown && (
+                  <i style={{ width: `${Math.round(m.hp * 100)}%` }}
+                     className={m.hp > 0.5 ? "hp-ok" : m.hp > 0.2 ? "hp-low" : "hp-crit"} />
+                )}
+              </span>
+              <span className="tiny dim board-pct">
+                {ko ? "KO" : unknown ? "?" : `${Math.round(m.hp * 100)}%`}
+              </span>
+            </div>
+          );
+        })}
       </div>
       {board.conditions.length > 0 && (
         <p className="tiny dim" style={{ margin: "6px 0 0" }}>{board.conditions.join(", ")}</p>

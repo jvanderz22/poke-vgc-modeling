@@ -126,16 +126,92 @@ def test_detail_scores_the_real_decision_points(index, reg):
     game = index["games"][0]
     d = endgames.detail(reg, game["replay"], index["version"])
 
-    scored = [s for s in d["steps"] if s["kind"] != "end"]
-    assert len(scored) == game["points"]
-    assert all(s["wp_p1"] is not None for s in scored), d["wp_error"]
-    assert d["steps"][-1]["kind"] == "end" and d["steps"][-1]["wp_p1"] is None
+    assert len(d["steps"]) == game["points"]  # one step per decision point, and no others
+    assert all(s["wp_p1"] is not None for s in d["steps"]), d["wp_error"]
     assert d["winner"] == game["winner"] and d["players"] == game["players"]
 
     # The index's headline number is the model's confidence at the last decision point; the game
     # view has to agree with it, or the list is advertising something the game does not show.
-    final = scored[-1]["wp_p1"]
+    final = d["steps"][-1]["wp_p1"]
     assert round(final if game["side"] == "p1" else 1 - final, 4) == pytest.approx(game["wp"], abs=5e-4)
+
+
+def test_a_step_runs_from_the_position_to_what_it_produced(index, reg):
+    """Each step is anchored on the decision, so `before` is what the WP describes and `after` is
+    the consequence. Chaining them has to reproduce the game: one step's `after` is the next
+    step's `before`."""
+    d = endgames.detail(reg, index["games"][0]["replay"], index["version"])
+    for a, b in zip(d["steps"], d["steps"][1:]):
+        assert a["after"] == b["before"]
+        assert a["wp_after"] == pytest.approx(b["wp_p1"])
+    assert d["steps"][-1]["final"] is True
+
+
+def test_the_last_turn_resolves_to_the_result(index, reg):
+    """The model is never asked about a finished game, so the track has to end on the outcome —
+    otherwise a turn that swung from 8% to a win reads as if it never resolved. It is flagged as
+    an outcome so the page can say it is one rather than pass it off as a prediction."""
+    game = next(g for g in index["games"] if not g["correct"])  # the miss: 92% and then lost
+    d = endgames.detail(reg, game["replay"], index["version"])
+    last = d["steps"][-1]
+    assert last["outcome"] is True
+    assert last["wp_after"] == (1.0 if d["winner"] == "p1" else 0.0)
+    # The favoured side led going in and lost: that whole reversal is the point of this game.
+    assert max(last["wp_p1"], 1 - last["wp_p1"]) >= index["criteria"]["min_wp"]
+    assert (last["wp_p1"] > 0.5) != (last["wp_after"] > 0.5)
+    assert all(s["outcome"] is False for s in d["steps"][:-1])
+
+
+def test_a_switch_puts_what_left_and_what_arrived_on_one_entry(index, reg):
+    """A slot whose occupant changed is one event to a reader, and `started` carries the leaver's
+    state at the end of the step, so a Pokémon that was knocked out reads as knocked out."""
+    d = endgames.detail(reg, index["games"][0]["replay"], index["version"])
+    changes = [(s, sid, r) for s in d["steps"] for sid in ("p1", "p2")
+               for r in s["slots"][sid] if r["changed"]]
+    assert changes, "no switch anywhere in the game"
+    for step, sid, row in changes:
+        assert row["started"]["species"] != row["ended"]["species"]
+        # Whoever arrived is standing there at the end of the step, by definition.
+        active = {m["species"] for m in step["after"][sid]["mons"] if m["state"] == "active"}
+        assert row["ended"]["species"] in active
+        assert row["started"]["species"] not in active
+
+    # A faint with no replacement yet: the slot empties, and filling it is the *next* decision.
+    emptied = [r for s in d["steps"] for sid in ("p1", "p2") for r in s["slots"][sid]
+               if r["ended"] is None]
+    assert all(r["started"]["state"] == "fainted" for r in emptied)
+
+
+def test_the_board_says_only_what_a_spectator_knows(index, reg):
+    """Five states, and the one that matters is the boundary between the last two: a Pokémon
+    nobody has seen is *unknown* — it may still come in — and only becomes *unselected* once the
+    fourth of its side's four has appeared. Collapsing the two would either invent information
+    early or throw it away late."""
+    d = endgames.detail(reg, index["games"][0]["replay"], index["version"])
+    seen = {"active", "bench", "fainted"}
+
+    for sid in ("p1", "p2"):
+        # Team preview: the sheets are open, but nothing has been selected in public yet.
+        preview = d["steps"][0]["before"][sid]
+        assert len(preview["mons"]) == 6
+        assert {m["state"] for m in preview["mons"]} == {"unknown"}
+        assert preview["brought_known"] is False
+
+        for step in d["steps"]:
+            board = step["before"][sid]
+            revealed = [m for m in board["mons"] if m["state"] in seen]
+            assert len(revealed) <= 4, "a side cannot reveal more than the four it brought"
+            # `unselected` is a claim that the Pokémon is not in this game, so it may only be
+            # made once the four that are have all shown themselves — never before.
+            unselected = [m for m in board["mons"] if m["state"] == "unselected"]
+            assert board["brought_known"] == (len(revealed) == 4)
+            assert bool(unselected) == board["brought_known"]
+            assert len(revealed) + len(unselected) + \
+                sum(m["state"] == "unknown" for m in board["mons"]) == 6
+
+    # By the end both sides have committed, so every sheet resolves.
+    for sid in ("p1", "p2"):
+        assert d["steps"][-1]["after"][sid]["brought_known"] is True
 
 
 def test_detail_shows_both_open_sheets_and_a_shrinking_board(index, reg):
@@ -144,10 +220,10 @@ def test_detail_shows_both_open_sheets_and_a_shrinking_board(index, reg):
     for sid in ("p1", "p2"):
         assert len(d["sheets"][sid]) == 6
         assert all(m["moves"] for m in d["sheets"][sid])  # open team sheets: the moves are known
-    left = [s["board"][game["winner"]]["left"] for s in d["steps"]]
+    left = [s["before"][game["winner"]]["left"] for s in d["steps"]]
     assert left[0] == 4 and min(left) >= 1  # the winner never runs out
     loser = "p2" if game["winner"] == "p1" else "p1"
-    assert d["steps"][-1]["board"][loser]["left"] == 0
+    assert d["steps"][-1]["after"][loser]["left"] == 0
 
 
 def test_an_uncached_replay_is_a_clear_miss_not_a_crash(reg):

@@ -185,7 +185,7 @@ def test_endgame_detail_walks_one_game(client):
     game = index["games"][0]
     d = client.get(f"/api/endgames/{game['replay']}").json()
     assert [s["kind"] for s in d["steps"]][0] == "preview"
-    assert d["steps"][-1]["kind"] == "end"
+    assert d["steps"][-1]["final"] is True  # the finish is the last turn, not a step of its own
     assert d["players"] == game["players"] and d["winner"] == game["winner"]
     assert d["gates"]["version"] == d["version"]
 

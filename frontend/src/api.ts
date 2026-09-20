@@ -118,26 +118,53 @@ export type EndgameIndex = {
   hint?: string;
 };
 
+/** What a spectator knows about one of the six on a sheet:
+ *  `active` on the field · `bench` selected, off the field · `fainted` selected, knocked out ·
+ *  `unknown` not seen yet, so it may or may not have been selected · `unselected` known to be
+ *  sitting the game out, which only becomes knowable once the other four have shown themselves. */
 export type BoardMon = {
   species: string; forme: string;
-  state: "active" | "bench" | "fainted" | "unrevealed" | "not_brought";
+  state: "active" | "bench" | "fainted" | "unknown" | "unselected";
   position: number | null; hp: number; status: string | null;
   boosts: Record<string, number>;
 };
 
-export type BoardSide = { left: number; mons: BoardMon[]; conditions: string[] };
+/** `brought_known` is true once all four selected Pokémon have appeared — at which point the
+ *  other two are `unselected` and drop off the board entirely. */
+export type BoardSide = { left: number; mons: BoardMon[]; brought_known: boolean; conditions: string[] };
 
-/** One decision point: the position, what the model thought of it, and what happened next.
- *  The trailing step has `kind: "end"` and no WP — it is the finish, not a position to judge. */
+/** What stood in one active slot when a step began and when it ended. `started` is the one that
+ *  was there, carrying its state at the *end* of the step, so a Pokémon that got knocked out
+ *  reads as knocked out; `ended` is whatever is standing there now. They differ on a switch —
+ *  chosen or forced — and the UI puts both on one line. */
+export type Slot = {
+  slot: number;
+  started: BoardMon | null;
+  ended: BoardMon | null;
+  changed: boolean;
+};
+
+/** One decision point: the position the model was asked about, its answer, and what followed.
+ *  The step is anchored before the action, so `before`/`wp_p1` are the position and the call,
+ *  and `events`/`after`/`slots` are what happened. `final` marks the step the game ended on —
+ *  that is still just a turn, and its `after` is the final board. */
 export type EndgameStep = {
-  point: number | null;
-  kind: "preview" | "turn" | "switch" | "end";
+  point: number;
+  kind: "preview" | "turn" | "switch";
   turn: number;
   wp_p1: number | null;
+  before: { p1: BoardSide; p2: BoardSide };
   events: SimEvent[];
-  board: { p1: BoardSide; p2: BoardSide };
+  after: { p1: BoardSide; p2: BoardSide };
+  slots: { p1: Slot[]; p2: Slot[] };
   weather: string | null;
   terrain: string | null;
+  final: boolean;
+  /** The number on the far side of the step: the model's call at the next decision point, or —
+   *  on the step the game ended on — what actually happened. */
+  wp_after: number | null;
+  /** True when `wp_after` is the settled result rather than a prediction. */
+  outcome: boolean;
 };
 
 export type SheetMon = { species: string; item: string | null; ability: string | null; moves: string[] };

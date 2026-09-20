@@ -86,11 +86,22 @@ nothing without "out of the 1,114 held-out games that could have qualified". **M
 filters to the games the favoured side went on to lose — the ones actually worth reading — and
 **Played out** drops the forfeits, where nobody made the winner finish the job.
 
-Picking a game opens it at the decision point where it stopped being in doubt. Each step shows
-the board (who is out, at what HP, who has fainted), the model's win probability, and the log of
-what happened next; ← and → walk it, and the last step is the finish itself, which has no WP
-because there is nothing left to predict. The scrubber is the whole game at a glance: tick height
-is p1's win probability, and the colour flips at 50%.
+Picking a game opens it at the decision point where it stopped being in doubt. A step is one
+decision, anchored *before* the action: the position the model was asked about and its answer,
+then the turn's log, then the position that produced. ← and → walk it.
+
+Both boards are shown because the interesting part is usually the difference. The start-of-turn
+board is the whole sheet, thinning out as the game reveals it — at team preview all six are
+unknown, and a Pokémon stays unknown until it appears or until the fourth of its side's four
+does, at which point the two left over are known to be sitting the game out and drop off. The
+end-of-turn board is the active slots only, and a slot whose occupant changed puts what left and
+what came in on one line, since a switch is one event rather than two.
+
+The finish is not a separate step: it is the turn the game ended on, and that turn's closing
+number is the result, 100% or 0%, flagged as an outcome rather than passed off as a prediction.
+Without it a game that swung from 8% to a win would read as though it never resolved. The
+scrubber is the whole game at a glance — tick height is p1's win probability, the colour flips at
+50%, and the hollow last tick is the result.
 
 The set is built offline, because it reads every cached replay:
 
