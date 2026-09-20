@@ -10,7 +10,9 @@ DATASET="${2:-wp-v1}"
 DIR="data/features/$REG/$DATASET"
 [ -d "$DIR" ] || { echo "no dataset at $DIR (run: vgc wp featurize)" >&2; exit 1; }
 OUT="/tmp/wp-train-$REG-$DATASET.tgz"
-tar czf "$OUT" "$DIR" src/vgc/wp/set_torch.py scripts/cloud/run_training.sh
+# The trainer reads exactly these four files. The eval_*.npz sets are several times larger and are
+# never uploaded: evaluation runs locally against the frozen split, and that is the point.
+tar czf "$OUT" --exclude='eval_*.npz' "$DIR" src/vgc/wp/set_torch.py scripts/cloud/run_training.sh
 echo "$OUT"
 du -h "$OUT" | cut -f1
 echo "upload it, then on the box:  tar xzf $(basename "$OUT") && bash scripts/cloud/run_training.sh $REG $DATASET"

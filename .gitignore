@@ -21,3 +21,8 @@ data/features/
 models/**/*.pkl
 models/**/*.pt
 models/**/vocab.json
+
+# Kaggle API credentials — never commit
+.kaggle-token
+kaggle.json
+access_token

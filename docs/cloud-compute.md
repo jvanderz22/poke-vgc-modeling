@@ -62,12 +62,21 @@ Notes:
 - Cloud boxes have modern torch; the local `.venv-train` is pinned to 2.2.2 only because this Mac is
   Intel. Opset 17 is compatible either way. The card records the torch version and device used.
 - A sweep is just several `run_training.sh` calls with different flags and `--out` names; run them
-  sequentially on one box and compare `val_wp_logloss` in each `train.json`.
+  sequentially on one box and compare **`val_wp_logloss_human`** in each `train.json` — not
+  `val_wp_logloss`. Validation is ~89% self-play, and the two diverge: on Reg M-C the epoch that
+  minimised overall validation loss scored 0.638 on human rows where the previous epoch scored
+  0.581. Pass `--human-weight 4` so `set_torch` also selects its checkpoint that way.
+- **No validation number decides a model.** The gates are measured locally on the frozen held-out
+  human games, and the preview gate is not in the validation loss at all. Bring the top few
+  candidates home and run `vgc wp eval` and `vgc wp check-preview` on each.
 
 **Kaggle variant (free, and the one to try first):** use
 [`scripts/cloud/kaggle_train_wp.ipynb`](../scripts/cloud/kaggle_train_wp.ipynb). Upload
 `data/features/<reg>/<dataset>` and `src/vgc/wp/set_torch.py` as two private Datasets, set the
-accelerator to GPU, and run it. It has a single-run cell and a sweep cell that ranks configurations
+accelerator to GPU, and run it. Its sweep tests `--id-dropout-preview` against uniform
+`--id-dropout` controls: identity dropout is what stops the encoder memorising repeated self-play
+pairings, but team identity is the only input that exists at preview, so one uniform rate cannot
+serve both (see PLAN.md Phase 4 status). It has a single-run cell and a sweep cell that ranks configurations
 by validation log loss. Results download as a zip; import them with `vgc wp card`.
 
 ## B. CPU: generating self-play battles

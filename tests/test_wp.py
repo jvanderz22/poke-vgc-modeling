@@ -81,6 +81,26 @@ def test_spectator_symmetrization(fz, records):
     assert np.allclose(symmetrize(d, ConstantModel().predict(d)[0])["p"], 0.5)
 
 
+def test_identity_dropout_can_spare_preview_rows():
+    """Identity dropout stops the encoder memorising repeated self-play pairings, but before the
+    battle starts the teams are the whole input, so masking there only destroys the preview signal.
+    Omitting the flag must leave the old uniform behaviour untouched."""
+    torch = pytest.importorskip("torch")
+    from vgc.wp.set_torch import UNK, _batch, _tensors
+
+    n, rng = 4000, np.random.default_rng(0)
+    kind = np.repeat([0, 1, 2, 3], n // 4)  # preview, bring, turn, switch
+    data = _tensors({"cat": rng.integers(2, 50, size=(n, 12, 8)), "num": rng.random((n, 12, 150)).astype(np.float16),
+                     "glob": rng.random((n, 42)).astype(np.float32), "y": rng.random(n).astype(np.float32),
+                     "bring": np.full((n, 12), -1, np.float32), "source": rng.integers(0, 2, n), "kind": kind})
+    idx = np.arange(n)
+    spared = _batch(data, idx, id_dropout=0.5, id_dropout_preview=0.0)[0].numpy()[..., 0]
+    assert (spared[kind <= 1] == UNK).mean() == 0
+    assert 0.45 < (spared[kind >= 2] == UNK).mean() < 0.55
+    uniform = _batch(data, idx, id_dropout=0.5)[0].numpy()[..., 0]
+    assert 0.45 < (uniform[kind <= 1] == UNK).mean() < 0.55
+
+
 def test_metrics():
     y = np.array([1, 0, 1, 0], float)
     m = metrics(np.full(4, 0.5), y)

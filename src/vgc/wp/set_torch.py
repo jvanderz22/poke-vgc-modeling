@@ -35,6 +35,9 @@ import torch
 from torch import nn
 
 UNK = 1
+# features.KINDS = ("preview", "bring", "turn", "switch"); 0 and 1 are the pre-battle rows, where
+# the teams are the only input there is.
+KIND_BRING = 1
 
 
 class Block(nn.Module):
@@ -89,7 +92,7 @@ class SetWP(nn.Module):
 
 def _load(path: Path) -> dict[str, np.ndarray]:
     with np.load(path) as z:
-        return {k: z[k] for k in ("cat", "num", "glob", "y", "bring", "source")}
+        return {k: z[k] for k in ("cat", "num", "glob", "y", "bring", "source", "kind")}
 
 
 def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.Tensor]:
@@ -99,17 +102,27 @@ def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.
     w = np.where(d["source"] == 1, human_weight, 1.0).astype(np.float32)
     return [torch.from_numpy(d["cat"].astype(np.int16)), torch.from_numpy(d["num"].astype(np.float16)),
             torch.from_numpy(d["glob"]), torch.from_numpy(d["y"]), torch.from_numpy(d["bring"]),
-            torch.from_numpy(w), torch.from_numpy(d["source"].astype(np.int64))]
+            torch.from_numpy(w), torch.from_numpy(d["source"].astype(np.int64)),
+            torch.from_numpy(d["kind"].astype(np.int64))]
 
 
-def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str = "cpu") -> list[torch.Tensor]:
+def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str = "cpu",
+           id_dropout_preview: float | None = None) -> list[torch.Tensor]:
     cat, num, glob, y, bring, w = (t[idx].to(device, non_blocking=True) for t in data[:6])
     cat = cat.long()
-    if id_dropout > 0:
+    rate = max(id_dropout, id_dropout_preview or 0.0)
+    if rate > 0:
         # Hide a Pokémon's identity (species/forme/item/ability/moves → UNK) at random, so the
         # model can't memorise "this exact team pairing lost" and has to use the generic numbers
         # (base stats, types, move summary) that describe the position.
-        hide = torch.rand(cat.shape[:2], device=cat.device) < id_dropout
+        rates = torch.full(cat.shape[:2], id_dropout, device=cat.device)
+        if id_dropout_preview is not None and len(data) > 7:
+            # At preview and bring there is no board yet — identity is the whole input, so hiding
+            # it there teaches nothing and costs the matchup signal the preview gate measures.
+            # Turn/switch rows still need heavy masking to stop pairing memorisation.
+            is_preview = (data[7][idx].to(device) <= KIND_BRING).unsqueeze(-1)
+            rates = torch.where(is_preview, torch.full_like(rates, id_dropout_preview), rates)
+        hide = torch.rand(cat.shape[:2], device=cat.device) < rates
         cat = torch.where(hide.unsqueeze(-1), torch.full_like(cat, UNK), cat)
     return [cat, num.float(), glob, y, bring, w]
 
@@ -159,7 +172,7 @@ def _fit_temperature(logits: np.ndarray, y: np.ndarray) -> float:
 def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float = 3e-4, d: int = 128, layers: int = 3,
           heads: int = 4, dropout: float = 0.1, bring_weight: float = 0.3, seed: int = 0, patience: int = 2,
           threads: int = 6, weight_decay: float = 0.05, id_dropout: float = 0.0, device: str = "auto",
-          human_weight: float = 1.0) -> dict:
+          human_weight: float = 1.0, id_dropout_preview: float | None = None) -> dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.set_num_threads(threads)
@@ -183,7 +196,7 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
         total = 0.0
         for i in range(0, len(perm), bs):
             idx = perm[i : i + bs]
-            wp_loss, loss = _losses(model, _batch(tr, idx, id_dropout, device), bring_weight)
+            wp_loss, loss = _losses(model, _batch(tr, idx, id_dropout, device, id_dropout_preview), bring_weight)
             opt.zero_grad()
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -219,6 +232,7 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     (out / "best.pt").unlink()
     result = {"hyperparams": hp | {"epochs": epochs, "bs": bs, "lr": lr, "bring_weight": bring_weight, "seed": seed,
                                    "weight_decay": weight_decay, "id_dropout": id_dropout,
+                                   "id_dropout_preview": id_dropout_preview,
                                    "human_weight": human_weight},
               "best_epoch": best[1], "val_wp_logloss": round(val["all"], 5), "selection_metric": round(best[0], 5),
               "selected_on": "human" if human_weight > 1 else "all", "temperature": round(temp, 4),
@@ -245,12 +259,17 @@ def main() -> None:
     ap.add_argument("--bs", type=int, default=512)
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
     ap.add_argument("--human-weight", type=float, default=1.0, help="weight on human rows (they are ~3% of the data)")
+    ap.add_argument("--id-dropout-preview", type=float, default=None,
+                    help="identity dropout for preview/bring rows only (default: same as --id-dropout). "
+                         "Team identity is the whole input before the battle starts, so masking it there "
+                         "costs the preview signal without preventing any memorisation.")
     ap.add_argument("--weight-decay", type=float, default=0.05)
     ap.add_argument("--id-dropout", type=float, default=0.0, help="chance of hiding a Pokémon's identity in training")
     a = ap.parse_args()
     r = train(a.data, a.out, epochs=a.epochs, bs=a.bs, d=a.d, layers=a.layers, lr=a.lr, dropout=a.dropout,
               bring_weight=a.bring_weight, seed=a.seed, threads=a.threads, weight_decay=a.weight_decay,
-              id_dropout=a.id_dropout, device=a.device, human_weight=a.human_weight)
+              id_dropout=a.id_dropout, device=a.device, human_weight=a.human_weight,
+              id_dropout_preview=a.id_dropout_preview)
     print(json.dumps({k: v for k, v in r.items() if k != "history"}))
 
 
