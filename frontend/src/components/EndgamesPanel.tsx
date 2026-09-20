@@ -5,8 +5,10 @@ import {
   type EndgameStep,
   type Slot as SlotRow,
 } from "../api";
+import { linkProps, type EndgameFilter as Filter, type Navigate, type Route } from "../router";
 
-type Filter = "all" | "played_out" | "misses";
+/** The endgames page's slice of the route: which game, which step, which filter. */
+type EndgameRoute = Extract<Route, { tab: "endgames" }>;
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -21,11 +23,12 @@ const FILTERS: { id: Filter; label: string }[] = [
  *  (held out by the frozen split), between two people playing teams they built, with both open
  *  team sheets on the table — and the header says how often the call was right. Step through one
  *  and the same model is re-run at every decision point of the real log. */
-export function EndgamesPanel({ reg }: { reg: string }) {
-  const [filter, setFilter] = useState<Filter>("all");
+export function EndgamesPanel({ reg, route, navigate }: {
+  reg: string; route: EndgameRoute; navigate: Navigate;
+}) {
   const [index, setIndex] = useState<EndgameIndex | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const { filter, replay: selected } = route;
 
   useEffect(() => {
     let live = true;
@@ -35,10 +38,13 @@ export function EndgamesPanel({ reg }: { reg: string }) {
     return () => { live = false; };
   }, [reg, filter]);
 
-  // A game that the current filter hides is no longer the selection.
+  // A game the current filter hides is no longer the selection. Replacing rather than pushing:
+  // the selection was dropped by a filter change that is already in history.
   useEffect(() => {
-    if (index && selected && !index.games.some((g) => g.replay === selected)) setSelected(null);
-  }, [index, selected]);
+    if (index?.built && selected && !index.games.some((g) => g.replay === selected)) {
+      navigate({ ...route, replay: null, step: null }, { replace: true });
+    }
+  }, [index, selected, route, navigate]);
 
   if (error) return <div className="banner bad">{error}</div>;
   if (!index) return <div className="panel"><p className="empty">Loading…</p></div>;
@@ -54,21 +60,22 @@ export function EndgamesPanel({ reg }: { reg: string }) {
 
   return (
     <>
-      <SetHeader index={index} filter={filter} onFilter={setFilter} />
+      <SetHeader index={index} route={route} navigate={navigate} />
       <div className="split">
-        <GameList games={index.games} selected={selected} onSelect={setSelected} />
+        <GameList games={index.games} route={route} navigate={navigate} />
         {selected
-          ? <GameStepper key={selected} replay={selected} reg={reg}
-                         minWp={index.criteria?.min_wp ?? 0.9} />
+          ? <GameStepper key={selected} replay={selected} reg={reg} route={route}
+                         navigate={navigate} minWp={index.criteria?.min_wp ?? 0.9} />
           : <div className="panel"><p className="empty">Pick a game.</p></div>}
       </div>
     </>
   );
 }
 
-function SetHeader({ index, filter, onFilter }: {
-  index: EndgameIndex; filter: Filter; onFilter: (f: Filter) => void;
+function SetHeader({ index, route, navigate }: {
+  index: EndgameIndex; route: EndgameRoute; navigate: Navigate;
 }) {
+  const filter = route.filter;
   const c = index.criteria, counts = index.counts;
   const correct = index.correct ?? 0, total = index.total ?? 0;
   return (
@@ -98,10 +105,10 @@ function SetHeader({ index, filter, onFilter }: {
       <div className="row" style={{ marginTop: 10 }}>
         <div className="toggle">
           {FILTERS.map((f) => (
-            <button key={f.id} className="seg"
-                    aria-pressed={filter === f.id} onClick={() => onFilter(f.id)}>
+            <a key={f.id} className="seg" aria-pressed={filter === f.id}
+               {...linkProps({ ...route, filter: f.id }, navigate)}>
               {f.label}
-            </button>
+            </a>
           ))}
         </div>
         <span className="tiny dim">
@@ -114,15 +121,16 @@ function SetHeader({ index, filter, onFilter }: {
   );
 }
 
-function GameList({ games, selected, onSelect }: {
-  games: Endgame[]; selected: string | null; onSelect: (id: string) => void;
+function GameList({ games, route, navigate }: {
+  games: Endgame[]; route: EndgameRoute; navigate: Navigate;
 }) {
   if (!games.length) return <div className="panel"><p className="empty">Nothing matches this filter.</p></div>;
   return (
     <div className="panel game-list">
       {games.map((g) => (
-        <button key={g.replay} className="game-row" aria-current={g.replay === selected}
-                onClick={() => onSelect(g.replay)}>
+        // A game is the thing worth linking to, so each row is a real link to its own URL.
+        <a key={g.replay} className="game-row" aria-current={g.replay === route.replay}
+           {...linkProps({ ...route, replay: g.replay, step: null }, navigate)}>
           <span className={`dot ${g.correct ? "ok" : "bad"}`}
                 title={g.correct ? "the favoured side won" : "the favoured side lost"} />
           <span className="game-who">
@@ -134,34 +142,46 @@ function GameList({ games, selected, onSelect }: {
             {g.ended_by === "forfeit" && " · ff"}
             {g.rating != null && ` · ${g.rating}`}
           </span>
-        </button>
+        </a>
       ))}
     </div>
   );
 }
 
-function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minWp: number }) {
+function GameStepper({ replay, reg, route, navigate, minWp }: {
+  replay: string; reg: string; route: EndgameRoute; navigate: Navigate; minWp: number;
+}) {
   const [game, setGame] = useState<EndgameDetail | null>(null);
   const [error, setError] = useState("");
-  const [i, setI] = useState(0);
 
   useEffect(() => {
     let live = true;
-    setGame(null); setError(""); setI(0);
+    setGame(null); setError("");
     api.endgame(replay, reg)
-      .then((d) => {
-        if (!live) return;
-        setGame(d);
-        // Open on the moment the game stopped being in doubt, not on turn 1: that is the position
-        // the set is making a claim about, and scrolling back to it every time is friction.
-        setI(Math.max(0, d.steps.findIndex((s) => confident(s, minWp))));
-      })
+      .then((d) => { if (live) setGame(d); })
       .catch((e) => { if (live) setError(e instanceof ApiError ? e.message : String(e)); });
     return () => { live = false; };
-  }, [replay, reg, minWp]);
+  }, [replay, reg]);
 
-  const last = (game?.steps.length ?? 1) - 1;
-  const step = useCallback((d: number) => setI((n) => Math.min(last, Math.max(0, n + d))), [last]);
+  // The result is a view of its own, one past the last turn: the whole point of clicking it is to
+  // see where the game ended up, without the position and the turn that got there above it.
+  const settled = game && game.steps.length > 0 && game.steps[game.steps.length - 1].outcome;
+  const views = (game?.steps.length ?? 0) + (settled ? 1 : 0);
+
+  // Which view is on screen is the URL's business. Without a step in it, open on the moment the
+  // game stopped being in doubt — that is the position the set is making a claim about, and
+  // winding forward to it every time is friction.
+  const fallback = game ? Math.max(0, game.steps.findIndex((s) => confident(s, minWp))) : 0;
+  const i = route.step != null ? Math.min(route.step - 1, views - 1) : fallback;
+
+  const go = useCallback((n: number, replace = true) => {
+    // Stepping refines the game you are already looking at, so it replaces rather than pushes:
+    // the turn stays linkable without the back button becoming a rewind key.
+    navigate({ ...route, step: Math.max(1, n + 1) }, { replace });
+  }, [navigate, route]);
+  const step = useCallback((d: number) => {
+    if (i + d >= 0 && i + d < views) go(i + d);
+  }, [go, i, views]);
 
   // ← / → walk the game. Only this panel is on screen when it is mounted, but a text field
   // anywhere still owns its own arrow keys, so a focused input opts out.
@@ -179,7 +199,9 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
   if (error) return <div className="panel"><p className="err small">{error}</p></div>;
   if (!game) return <div className="panel"><p className="empty">Loading…</p></div>;
 
-  const cur = game.steps[i];
+  const last = views - 1;
+  const isResult = i >= game.steps.length;
+  const cur = game.steps[Math.min(i, game.steps.length - 1)];
   const wonBy = game.winner ? game.players[game.winner] : "nobody";
 
   return (
@@ -200,16 +222,44 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
           </span>
         </div>
 
-        <Scrubber steps={game.steps} at={i} onPick={setI} p1={game.players.p1} />
+        <Scrubber steps={game.steps} at={i} onPick={go} p1={game.players.p1} settled={!!settled} />
 
         <div className="row" style={{ marginTop: 10 }}>
           <button className="ghost" onClick={() => step(-1)} disabled={i === 0}>← Back</button>
           <button className="ghost" onClick={() => step(1)} disabled={i === last}>Next →</button>
-          <span className="tiny dim">{label(cur)} · step {i + 1} of {last + 1}</span>
+          <span className="tiny dim">
+            {isResult ? "result" : label(cur)} · step {i + 1} of {last + 1}
+          </span>
           {game.wp_error && <span className="err tiny">WP unavailable: {game.wp_error}</span>}
+          {/* What the step did to the number, beside the controls so it is on screen whichever
+              panel you have scrolled to. On the last step the right-hand pair is the result. */}
+          {cur.wp_p1 != null && (
+            <span className="step-wp">
+              <Pair wp={cur.wp_p1} title="at this position" />
+              {cur.wp_after != null && (
+                <>
+                  <span className="dim" aria-label="becomes">→</span>
+                  <Pair wp={cur.wp_after} title={cur.outcome ? "the result" : "after this step"} />
+                </>
+              )}
+            </span>
+          )}
         </div>
       </div>
 
+      {isResult ? (
+        <div className="panel">
+          {cur.wp_after != null && (
+            <WpBar wp={cur.wp_after} players={game.players} outcome={cur.outcome} />
+          )}
+          <h2 style={{ margin: "14px 0 10px" }}>Final position</h2>
+          <div className="grid2">
+            <Board side="p1" name={game.players.p1} board={cur.after.p1} />
+            <Board side="p2" name={game.players.p2} board={cur.after.p2} />
+          </div>
+        </div>
+      ) : (
+      <>
       {/* The position the model was asked about, and its answer. Everything below this panel is
           what happened afterwards, so the order on screen is the order it happened in. */}
       <div className="panel">
@@ -254,6 +304,8 @@ function GameStepper({ replay, reg, minWp }: { replay: string; reg: string; minW
           <Slots side="p2" name={game.players.p2} rows={cur.slots.p2} left={cur.after.p2.left} />
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
@@ -340,17 +392,22 @@ function confident(s: EndgameStep, minWp: number): boolean {
   return s.wp_p1 != null && Math.max(s.wp_p1, 1 - s.wp_p1) >= minWp;
 }
 
-/** Every decision point as a tick, tall for p1 and short for p2, so the shape of the game reads
- *  at a glance: where it turned, and how long the call held before the end.
+/** Every decision point as a tick split between the two sides: p1 grows up from the bottom, p2
+ *  down from the top, and together they always fill it.
  *
- *  The last tick is the result, which is why the trajectory is allowed to finish at the top or
- *  the bottom of the track. It is drawn hollow because it is the one tick that is not a model
- *  output; clicking it goes to the step the game ended on. */
-function Scrubber({ steps, at, onPick, p1 }: {
-  steps: EndgameStep[]; at: number; onPick: (i: number) => void; p1: string;
+ *  Both colours are always drawn, which is the point. A single bar whose height was p1's win
+ *  probability but whose colour flipped at 50% meant a short orange tick read as "orange is
+ *  losing" when it said the opposite; splitting it removes the ambiguity, because each side's
+ *  share of the tick is its own number and nothing else.
+ *
+ *  The last tick is the result, which is why the trajectory is allowed to finish flush against
+ *  one end. It is outlined because it is the one tick that is not a model output; clicking it
+ *  opens the final position on its own. */
+function Scrubber({ steps, at, onPick, p1, settled }: {
+  steps: EndgameStep[]; at: number; onPick: (i: number) => void; p1: string; settled: boolean;
 }) {
   const last = steps[steps.length - 1];
-  const settled = last?.outcome && last.wp_after != null ? last.wp_after : null;
+  const result = settled && last?.wp_after != null ? last.wp_after : null;
   return (
     <div className="scrub" role="group" aria-label="decision points">
       {steps.map((s, i) => {
@@ -360,20 +417,39 @@ function Scrubber({ steps, at, onPick, p1 }: {
         return (
           <button key={i} className="scrub-tick" aria-current={i === at} title={label}
                   aria-label={label} onClick={() => onPick(i)}>
-            <i style={{ height: `${Math.max(6, wp * 100)}%` }}
-               className={wp >= 0.5 ? "tick-p1" : "tick-p2"} />
+            <Split wp={wp} />
           </button>
         );
       })}
-      {settled != null && (
-        <button className="scrub-tick result" title={`result: ${p1} ${(settled * 100).toFixed(0)}%`}
-                aria-label={`result: ${p1} ${(settled * 100).toFixed(0)}%`}
-                onClick={() => onPick(steps.length - 1)}>
-          <i style={{ height: `${Math.max(10, settled * 100)}%` }}
-             className={settled >= 0.5 ? "tick-p1" : "tick-p2"} />
+      {result != null && (
+        <button className="scrub-tick result" title={`result: ${p1} ${(result * 100).toFixed(0)}%`}
+                aria-label={`result: ${p1} ${(result * 100).toFixed(0)}%`}
+                aria-current={at >= steps.length} onClick={() => onPick(steps.length)}>
+          <Split wp={result} />
         </button>
       )}
     </div>
+  );
+}
+
+/** A win probability as both sides' shares, in the colours they carry everywhere else. */
+function Pair({ wp, title }: { wp: number; title: string }) {
+  return (
+    <span className="wp-pair" title={title}>
+      <span className="side-tag p1">{(wp * 100).toFixed(0)}%</span>
+      <span className="dim">/</span>
+      <span className="side-tag p2">{((1 - wp) * 100).toFixed(0)}%</span>
+    </span>
+  );
+}
+
+/** One tick's two segments: p2 from the top, p1 from the bottom, meeting at the split. */
+function Split({ wp }: { wp: number }) {
+  return (
+    <>
+      <i className="tick-p2" style={{ height: `${(1 - wp) * 100}%` }} />
+      <i className="tick-p1" style={{ height: `${wp * 100}%` }} />
+    </>
   );
 }
 
@@ -398,14 +474,22 @@ function WpBar({ wp, players, outcome = false }: {
   );
 }
 
-/** One side's sheet, as much of it as is still worth showing.
+const MARKS: Record<BoardMon["state"], string> = {
+  active: "on the field",
+  bench: "brought, off the field",
+  fainted: "brought, knocked out",
+  unknown: "not seen yet — may or may not have been brought",
+  unselected: "not brought",
+};
+
+/** One side's whole sheet, all six, with a marker for what is known about each.
  *
- *  All six at team preview, because that is all anyone knows then, and they thin out as the game
- *  reveals which four are in it. A Pokémon nobody has seen is `unknown` — it may still come in —
- *  until the fourth of the four appears, at which point the two left over are known to be sitting
- *  this one out and there is no reason to keep them on screen. */
+ *  Nothing is dropped: the two that were left behind are part of reading the game, because what
+ *  someone chose not to bring against this opponent is a decision as much as what they did. The
+ *  marker carries the distinction the sheet cannot — `?` for a Pokémon nobody has seen, which may
+ *  still come in, and `O` once the fourth of the four has appeared and the rest are known to be
+ *  sitting this one out. */
 function Board({ side, name, board }: { side: "p1" | "p2"; name: string; board: BoardSide }) {
-  const shown = board.mons.filter((m) => m.state !== "unselected");
   return (
     <div>
       <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
@@ -413,23 +497,26 @@ function Board({ side, name, board }: { side: "p1" | "p2"; name: string; board: 
         <span className="tiny dim">{board.left} left</span>
       </div>
       <div className="board">
-        {shown.map((m) => {
+        {board.mons.map((m) => {
           const ko = m.state === "fainted";
-          const unknown = m.state === "unknown";
+          // Neither of these has an HP bar to draw: one has not been seen, the other is not in
+          // the game. An empty track keeps the rows aligned without inventing a number.
+          const noBar = m.state === "unknown" || m.state === "unselected";
           return (
             <div key={m.species} className={`board-mon ${m.state}`}>
               <span className="board-name">
                 {m.forme}
                 {m.status && !ko && <span className="board-status">{m.status.toUpperCase()}</span>}
               </span>
-              <span className={`board-hp${unknown ? " unknown" : ""}`}>
-                {!unknown && (
+              <span className={`board-hp${noBar ? " empty" : ""}`}>
+                {!noBar && (
                   <i style={{ width: `${Math.round(m.hp * 100)}%` }}
                      className={m.hp > 0.5 ? "hp-ok" : m.hp > 0.2 ? "hp-low" : "hp-crit"} />
                 )}
               </span>
-              <span className="tiny dim board-pct">
-                {ko ? "KO" : unknown ? "?" : `${Math.round(m.hp * 100)}%`}
+              <span className="tiny dim board-pct" title={MARKS[m.state]}>
+                {ko ? "KO" : m.state === "unknown" ? "?" : m.state === "unselected" ? "O"
+                  : `${Math.round(m.hp * 100)}%`}
               </span>
             </div>
           );

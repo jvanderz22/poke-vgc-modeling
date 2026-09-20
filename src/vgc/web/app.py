@@ -376,6 +376,18 @@ STATIC.mkdir(parents=True, exist_ok=True)  # so the mount survives a fresh check
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
+# Declared last, so it only sees what nothing above claimed. The frontend routes on real paths
+# (`/endgames/<replay>/9`), which exist only in the browser — without this, reloading one or
+# pasting it to someone else would 404 and the URLs would be decorative.
+@app.get("/{client_route:path}", include_in_schema=False)
+def spa(client_route: str):
+    # An unmatched API path is a missing endpoint and must say so. Returning the page instead
+    # would hand a caller 200 and a lump of HTML for a typo'd route, which is far worse to debug.
+    if client_route.startswith(("api/", "static/")):
+        raise HTTPException(404, f"no such endpoint: /{client_route}")
+    return index()
+
+
 def serve(host: str = "127.0.0.1", port: int = 8001, reload: bool = False) -> None:
     import uvicorn
 

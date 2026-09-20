@@ -5,11 +5,14 @@ import { BattleSession, startSession, type Session } from "./components/BattleSe
 import { EndgamesPanel } from "./components/EndgamesPanel";
 import { SimulatePanel } from "./components/SimulatePanel";
 import { TeamLibrary } from "./components/TeamLibrary";
+import { linkProps, TABS, tabRoute, useRoute, type Tab } from "./router";
 
 const REG = "reg_mc";
 const LAST_TEAM = `vgc:${REG}:lastTeam`;
 
-type Tab = "battle" | "session" | "simulate" | "endgames" | "teams";
+const TITLES: Record<Tab, string> = {
+  preview: "Preview", battle: "Battle", simulate: "Simulate", endgames: "Endgames", teams: "Teams",
+};
 
 /** Which team you used last, remembered across reloads.
  *
@@ -24,7 +27,7 @@ function writeLastTeam(id: string | null) {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>("battle");
+  const [route, navigate] = useRoute();
   const [health, setHealth] = useState<Health | null>(null);
   const [models, setModels] = useState<{ models: ModelRow[]; default: string | null } | null>(null);
   const [pool, setPool] = useState<Species[]>([]);
@@ -69,11 +72,13 @@ export default function App() {
             : "backend unreachable — is `vgc web` running?"}
         </span>
         <nav className="tabs">
-          {(["battle", "session", "simulate", "endgames", "teams"] as Tab[]).map((t) => (
-            <button key={t} className="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-              {{ battle: "Preview", session: "Battle", simulate: "Simulate", endgames: "Endgames", teams: "Teams" }[t]}
-              {t === "session" && session && <span className="tab-dot" aria-hidden="true" />}
-            </button>
+          {TABS.map((t) => (
+            // Real links, so a tab can be opened in a new tab or copied like any other URL.
+            <a key={t} className="tab" aria-selected={route.tab === t}
+               {...linkProps(tabRoute(t), navigate)}>
+              {TITLES[t]}
+              {t === "battle" && session && <span className="tab-dot" aria-hidden="true" />}
+            </a>
           ))}
         </nav>
       </header>
@@ -85,26 +90,26 @@ export default function App() {
           </div>
         )}
 
-        {tab === "battle" && (
+        {route.tab === "preview" && (
           <BattlePanel
             reg={REG} health={health} pool={pool}
             teams={teams} active={active} onActive={setActive}
             onStart={(result, option, teamText) => {
               setSession(startSession(result, option, active, teamText));
-              setTab("session");
+              navigate(tabRoute("battle"));
             }}
           />
         )}
-        {tab === "session" && (
-          <BattleSession session={session} onBack={() => setTab("battle")} />
+        {route.tab === "battle" && (
+          <BattleSession session={session} onBack={() => navigate(tabRoute("preview"))} />
         )}
-        {tab === "simulate" && <SimulatePanel reg={REG} teams={teams} />}
-        {tab === "endgames" && <EndgamesPanel reg={REG} />}
-        {tab === "teams" && (
+        {route.tab === "simulate" && <SimulatePanel reg={REG} teams={teams} />}
+        {route.tab === "endgames" && <EndgamesPanel reg={REG} route={route} navigate={navigate} />}
+        {route.tab === "teams" && (
           <TeamLibrary
-            reg={REG} health={health} teams={teams}
+            reg={REG} health={health} teams={teams} route={route} navigate={navigate}
             onChanged={refreshTeams}
-            onUse={(t) => { setActive(t); setTab("battle"); }}
+            onUse={(t) => { setActive(t); navigate(tabRoute("preview")); }}
           />
         )}
 

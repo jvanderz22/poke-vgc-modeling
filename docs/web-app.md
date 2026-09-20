@@ -88,20 +88,54 @@ filters to the games the favoured side went on to lose — the ones actually wor
 
 Picking a game opens it at the decision point where it stopped being in doubt. A step is one
 decision, anchored *before* the action: the position the model was asked about and its answer,
-then the turn's log, then the position that produced. ← and → walk it.
+then the turn's log, then the position that produced. ← and → walk it, and the controls carry
+what the step did to the number — `92% / 8% → 0% / 100%` on the turn that decided this one.
 
 Both boards are shown because the interesting part is usually the difference. The start-of-turn
-board is the whole sheet, thinning out as the game reveals it — at team preview all six are
-unknown, and a Pokémon stays unknown until it appears or until the fourth of its side's four
-does, at which point the two left over are known to be sitting the game out and drop off. The
-end-of-turn board is the active slots only, and a slot whose occupant changed puts what left and
-what came in on one line, since a switch is one event rather than two.
+board is the whole sheet, all six, with a marker for what is known about each:
+
+| | |
+| --- | --- |
+| `55%` | on the field, or brought and waiting — bold when it is out |
+| `KO` | brought, knocked out |
+| `?` | not seen yet, so it may or may not have been brought |
+| `O` | not brought — knowable only once the other four have appeared |
+
+Nothing is dropped, because what someone chose to leave behind against this opponent is a
+decision as much as what they brought. At team preview every row is a `?`; they resolve as the
+game reveals them. The end-of-turn board is the active slots only, and a slot whose occupant
+changed puts what left and what came in on one line, since a switch is one event rather than two.
 
 The finish is not a separate step: it is the turn the game ended on, and that turn's closing
 number is the result, 100% or 0%, flagged as an outcome rather than passed off as a prediction.
 Without it a game that swung from 8% to a win would read as though it never resolved. The
-scrubber is the whole game at a glance — tick height is p1's win probability, the colour flips at
-50%, and the hollow last tick is the result.
+scrubber is the whole game at a glance — every tick is split between the two sides, p1 growing up
+from the bottom and p2 down from the top, and the outlined tick on the end is the result. Click
+it and you get the final position on its own, without the turn that produced it above it.
+
+## URLs
+
+Every view has one, so a position can be linked, bookmarked, reloaded or sent to someone.
+
+| | |
+| --- | --- |
+| `/preview` | rank your brings |
+| `/battle` | the in-battle companion |
+| `/simulate` | play two teams against each other |
+| `/endgames` | the decided-endgame set — `?filter=played_out` or `?filter=misses` |
+| `/endgames/<replay>` | one game, opened where it stopped being in doubt |
+| `/endgames/<replay>/<step>` | one game at a given step, counted as the stepper counts it |
+| `/teams` | the library |
+| `/teams/<id>` | one team, open for editing |
+
+Anything else resolves to `/preview`, and the address bar is rewritten to match rather than left
+describing a page that is not on screen. Stepping through a game replaces the history entry
+instead of pushing one, so a turn stays linkable without the back button turning into a rewind
+key — Back leaves the game you are in.
+
+The Python app serves the built page for any path it does not own itself, which is what makes a
+deep link survive a reload. An unmatched `/api/…` path is still a 404, because handing a caller
+200 and a page of HTML for a misspelled endpoint is worse than a plain miss.
 
 The set is built offline, because it reads every cached replay:
 

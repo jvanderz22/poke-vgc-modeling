@@ -194,6 +194,27 @@ def test_a_replay_that_is_not_cached_is_a_404(client):
     assert client.get("/api/endgames/gen9championsvgc2026regmcbo3-1").status_code == 404
 
 
+def test_client_routes_are_served_the_app_so_a_deep_link_survives_a_reload(client):
+    """The frontend routes on real paths, which exist only in the browser. Reloading one, or
+    pasting it to someone else, has to reach the app rather than a 404 — otherwise every URL in
+    the address bar is decorative."""
+    for path in ("/endgames", "/endgames/gen9championsvgc2026regmcbo3-2682643305/9",
+                 "/teams/abc123", "/simulate", "/preview"):
+        r = client.get(path)
+        # 503 is the honest answer when the frontend has not been built; either way it is the
+        # page's response and not a missing route.
+        assert r.status_code in (200, 503), path
+        assert "text/html" in r.headers["content-type"], path
+
+
+def test_an_unknown_api_path_is_still_a_404(client):
+    """The fallback must not swallow API typos: handing a caller 200 and a page of HTML for a
+    misspelled endpoint is far worse to debug than a plain 404."""
+    r = client.get("/api/endgame")  # singular: not an endpoint
+    assert r.status_code == 404
+    assert "text/html" not in r.headers["content-type"]
+
+
 def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
     """Drawing a WP number on a battle in progress is a claim about in-battle calibration, so the
     choice follows that gate — not "newest set encoder". Today the GBT baseline is the model that
