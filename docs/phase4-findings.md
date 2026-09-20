@@ -119,6 +119,12 @@ Read the outcome as a fork:
 
 Either way the answer is worth more than any further sweep.
 
+> **Answered 2026-09-20: the second branch.** All 3,372 pairings were simulated 15 times each and
+> scored against the human results. AUC 0.5119 (95% CI [0.4948, 0.5296]) on 4,579 played-out games
+> spanning 2,684 independent series; 0.0003 nats after out-of-fold rescaling. The corpus count above
+> also needed a correction — the repeated pairings are Bo3 repetition, and only 44 recur across two
+> distinct series. See [phase6-findings.md](phase6-findings.md).
+
 ## 3. The corpus is the wrong population for the stated goal
 
 Counted over all 8,300 cached replays:

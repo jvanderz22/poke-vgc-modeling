@@ -68,7 +68,7 @@ Notes:
   0.581. Pass `--human-weight 4` so `set_torch` also selects its checkpoint that way.
 - **No validation number decides a model.** The gates are measured locally on the frozen held-out
   human games, and the preview gate is not in the validation loss at all. Bring the top few
-  candidates home and run `vgc wp eval` and `vgc wp check-preview` on each.
+  candidates home and run `vgc wp eval` on each.
 
 **Fully automated (one command):**
 
@@ -81,8 +81,8 @@ make sweep                                       # push data, run on GPU, downlo
 
 `scripts/cloud/kaggle_sweep.sh` uploads only `train.npz`, `val.npz` and two small JSON files
 (~66 MB) — the held-out sets never leave the machine, so nothing in the cloud can influence a gate
-verdict. It then runs every returned model through `vgc wp card`, `calibrate`, `check-preview` and
-`eval`, and prints the gate table. Kaggle replaced the old username+key `kaggle.json` with a
+verdict. It then runs every returned model through `vgc wp card`, `calibrate` and `eval`, and
+prints the gate table. Kaggle replaced the old username+key `kaggle.json` with a
 `KGAT_` token; `kaggle config view` should say `auth_method: ACCESS_TOKEN`.
 
 **Kaggle variant, by hand:** use

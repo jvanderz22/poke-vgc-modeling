@@ -39,7 +39,7 @@ HUMAN     := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
 MANIFILE  := data/snapshots/$(REG)/manifests/$(MANIFEST).json
 FEATURES  := data/features/$(REG)/$(DATASET)/info.json
 
-.PHONY: data models sweep collect gates test clean-derived help
+.PHONY: data models sweep sim-validity collect gates test clean-derived help
 .DEFAULT_GOAL := help
 
 help:
@@ -91,10 +91,15 @@ models: $(FEATURES)
 	$(MAKE) evaluate VERSION=$(DATASET)-set
 
 evaluate:
-	$(VGC) wp calibrate     --regulation $(REG) --version $(VERSION) --dataset $(DATASET)
-	$(VGC) wp check-preview --regulation $(REG) --version $(VERSION)
-	$(VGC) wp eval          --regulation $(REG) --version $(VERSION) --dataset $(DATASET) \
+	$(VGC) wp calibrate --regulation $(REG) --version $(VERSION) --dataset $(DATASET)
+	$(VGC) wp eval      --regulation $(REG) --version $(VERSION) --dataset $(DATASET) \
 	    --baseline $(DATASET)-gbt --baseline $(DATASET)-logistic --baseline constant
+
+# Does heuristic self-play predict real human results? Not about any model — it is the standing
+# check that the simulator measures the game rather than the bot, and it re-runs whenever the
+# policy changes. ~50k battles, about 40 minutes on this laptop.
+sim-validity:
+	$(VGC) sim validate --regulation $(REG) --workers $(WORKERS)
 
 sweep: $(FEATURES)
 	KAGGLE=$(VENV)/kaggle VGC=$(VGC) bash scripts/cloud/kaggle_sweep.sh $(REG) $(DATASET)

@@ -46,6 +46,34 @@ def metrics(p: np.ndarray, y: np.ndarray, bins: int = 10) -> dict[str, Any]:
     }
 
 
+def vs_constant(p: np.ndarray, y: np.ndarray, battle: np.ndarray) -> dict[str, Any]:
+    """How much this model beats a 0.5 constant by, with an interval — clustered by battle.
+
+    Gate rule 3: a verdict needs its power stated, not just its point estimate. The constant's loss
+    is exactly log 2 on every row, so the comparison is a one-sample test on the per-row differences
+    and needs no bootstrap; what it does need is clustering by battle, because a battle contributes
+    several decision points and the label is the same winner at every one of them. On the held-out
+    human set that widens the interval by 1.3× at t1–2 and 2.1× at t7+. At preview it changes
+    nothing — `symmetrize` has already collapsed the two orientations, so each row is its own
+    battle — which is why the preview gate turns on n rather than on correlation between rows.
+
+    Negative `delta` is better than the constant. `beats` is true only when the whole interval is.
+    """
+    if len(p) == 0:
+        return {"n": 0}
+    p = np.clip(p.astype(np.float64), 1e-6, 1 - 1e-6)
+    d = -(y * np.log(p) + (1 - y) * np.log(1 - p)) - np.log(2)
+    n = len(d)
+    mean = float(d.mean())
+    # CR0 sandwich: sum the within-cluster totals of the centred differences.
+    _, inv = np.unique(battle, return_inverse=True)
+    per_cluster = np.bincount(inv, weights=d - mean)
+    se = float(np.sqrt((per_cluster ** 2).sum())) / n if n else float("nan")
+    lo, hi = mean - 1.96 * se, mean + 1.96 * se
+    return {"n": n, "battles": int(len(per_cluster)), "delta": round(mean, 5),
+            "se": round(se, 5), "delta_95ci": [round(lo, 5), round(hi, 5)], "beats": bool(hi < 0)}
+
+
 def _bucket(kind: np.ndarray, turn: np.ndarray) -> np.ndarray:
     out = np.empty(len(kind), dtype=object)
     out[:] = "t7+"
@@ -75,6 +103,8 @@ def evaluate_set(model: WPModel, d: dict[str, np.ndarray], usage: np.ndarray | N
             mb = m & (buckets == b)
             if mb.any():
                 entry["by_turn"][b] = {k: v for k, v in metrics(s["p"][mb], y[mb]).items() if k != "reliability"}
+                # Every "beats the constant" claim carries the interval behind it.
+                entry["by_turn"][b]["vs_constant"] = vs_constant(s["p"][mb], y[mb], s["battle"][mb])
         if s["source"][m].any():
             for ended, flag in (("normal", 0), ("forfeit", 1)):
                 me = m & (s["forfeit"] == flag)
@@ -154,18 +184,13 @@ def _mean(xs: list[float]) -> float | None:
 
 
 ECE_GATE = 0.03
-PREVIEW_CORR_GATE = 0.5
 IN_BATTLE_BUCKETS = ("t1-2", "t3-4", "t5-6", "t7+")
 
 
-def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
-          preview: dict[str, Any] | None = None) -> dict[str, Any]:
+def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> dict[str, Any]:
     """Phase 4's verification, as pass/fail. A model that misses a gate is not presented as
     calibrated by the CLI, the app or search, so the verdict belongs in the card next to the
     numbers that produced it — not in a commit message someone has to go looking for.
-
-    `preview` is the contents of preview_vs_sim.json when `vgc wp check-preview` has been run;
-    without it that gate reads "not run" rather than passing by omission.
     """
     h = results.get("human_ots_all", {})
     persp = h.get("perspectives", {})
@@ -192,11 +217,13 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
                 .get("perspectives", {}).get("spectator", {}).get("by_turn") or {})
     have = [b for b in IN_BATTLE_BUCKETS if (by.get(b) or {}).get("logloss") is not None]
     if have:
-        losing = [b for b in have if (const_by.get(b) or {}).get("logloss") is not None
-                  and by[b]["logloss"] >= const_by[b]["logloss"]]
+        # "Beats the constant" means the whole interval does. The point estimate alone is what
+        # gate rule 3 forbids, and in-battle these deltas clear it by 0.05–0.26 nats anyway.
+        losing = [b for b in have if not (by[b].get("vs_constant") or {}).get("beats")]
         verdict("in_battle_beats_constant", (not losing) if const_by else None,
                 logloss={b: by[b]["logloss"] for b in have},
                 constant={b: (const_by.get(b) or {}).get("logloss") for b in have},
+                delta_95ci={b: (by[b].get("vs_constant") or {}).get("delta_95ci") for b in have},
                 losing_buckets=losing)
         worst = max(have, key=lambda b: by[b]["ece"])
         verdict("in_battle_ece", by[worst]["ece"] < ECE_GATE, worst_bucket=worst,
@@ -226,17 +253,30 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
                 model=bring["model_top4_overlap"], usage=bring["usage_top4_overlap"],
                 chance=bring["chance_top4_overlap"])
 
-    if preview:
-        # Held-out teams are the real test: on training teams the model can recall the pairing.
-        a, ht = preview.get("all", {}), preview.get("heldout_team", {})
-        ok = (a.get("corr") is not None and a["corr"] >= PREVIEW_CORR_GATE
-              and a.get("mae", 1) < a.get("mae_constant_0.5", 0))
-        verdict("preview_tracks_sim", ok, corr=a.get("corr"), corr_heldout_team=ht.get("corr"),
-                mae=a.get("mae"), mae_constant=a.get("mae_constant_0.5"),
-                wp_spread_sd=a.get("wp_spread_sd"), sim_spread_sd=a.get("sim_spread_sd"),
-                threshold=PREVIEW_CORR_GATE)
-    else:
-        verdict("preview_tracks_sim", None, note="vgc wp check-preview has not been run")
+    # What `preview_tracks_sim` used to ask, asked on rows that can answer it. The old gate scored
+    # the model's preview WP against a simulated win rate over 30 pairings, 15 of them held out;
+    # a correlation on n=15 has a 95% interval near ±0.5 and was being compared to a threshold of
+    # 0.5, so it could not tell "no signal" from "passing" (gate rule 3). The same question —
+    # is anything known before turn 1 worth showing? — is settled by the preview bucket of the
+    # held-out human set, which has 2,899 rows and a constant to beat. `vgc sim validate` now owns
+    # the separate question of whether the *simulator* tracks human results.
+    prev = (by or {}).get("preview")
+    const_prev = (const_by or {}).get("preview")
+    vc = (prev or {}).get("vs_constant") or {}
+    if prev and const_prev and const_prev.get("logloss") is not None and vc:
+        # The margin here is the whole question. `wp-v1-set-full` beats the constant by 0.004 nats
+        # on 2,899 preview rows, which are two orientations of ~1,450 battles — a point estimate
+        # well inside its own interval. Finding 1 says every model family lands within 0.004 of the
+        # constant at preview, so a gate that reads the point estimate would flip on noise, which is
+        # precisely how `preview_tracks_sim` came to be trusted. Clustered by battle, with the
+        # interval recorded next to the verdict.
+        verdict("preview_beats_constant", vc["beats"], n=prev["n"], battles=vc["battles"],
+                logloss=prev["logloss"], constant=const_prev["logloss"], ece=prev["ece"],
+                delta=vc["delta"], delta_95ci=vc["delta_95ci"])
+    elif prev:
+        verdict("preview_beats_constant", None, n=prev["n"], logloss=prev["logloss"],
+                note="no constant baseline in this evaluation")
+
     def group(keys: tuple[str, ...]) -> bool | None:
         vals = [out[k]["pass"] for k in keys if k in out]
         return None if (not vals or None in vals) else all(vals)

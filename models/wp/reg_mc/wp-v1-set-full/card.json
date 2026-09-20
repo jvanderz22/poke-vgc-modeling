@@ -115,6 +115,24 @@
     "t5-6": 0.69315,
     "t7+": 0.69315
    },
+   "delta_95ci": {
+    "t1-2": [
+     -0.05797,
+     -0.03566
+    ],
+    "t3-4": [
+     -0.15286,
+     -0.11835
+    ],
+    "t5-6": [
+     -0.22504,
+     -0.18169
+    ],
+    "t7+": [
+     -0.2554,
+     -0.19097
+    ]
+   },
    "losing_buckets": []
   },
   "in_battle_ece": {
@@ -153,15 +171,18 @@
    "usage": 0.6643,
    "chance": 0.6667
   },
-  "preview_tracks_sim": {
+  "preview_beats_constant": {
    "pass": false,
-   "corr": 0.138,
-   "corr_heldout_team": -0.021,
-   "mae": 0.3849,
-   "mae_constant": 0.393,
-   "wp_spread_sd": 0.1457,
-   "sim_spread_sd": 0.4194,
-   "threshold": 0.5
+   "n": 2899,
+   "battles": 2899,
+   "logloss": 0.68928,
+   "constant": 0.69315,
+   "ece": 0.02042,
+   "delta": -0.00387,
+   "delta_95ci": [
+    -0.00951,
+    0.00177
+   ]
   },
   "in_battle_pass": false,
   "all_pass": false
@@ -175,6 +196,6 @@
    "eval_selfplay_team.npz": "e6aa1ca65532384a"
   },
   "dataset": "wp-v1",
-  "at": "2026-09-20T13:05:07"
+  "at": "2026-09-20T15:13:56"
  }
 }

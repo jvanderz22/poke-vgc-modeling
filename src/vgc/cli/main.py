@@ -206,6 +206,36 @@ def cmd_sim_selfplay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sim_validate(args: argparse.Namespace) -> int:
+    from vgc.sim.validity import save, validate_simulator
+
+    reg = _reg(args)
+    r = validate_simulator(reg, pairs=args.pairs, n=args.n, seed=args.seed, workers=args.workers,
+                           order=args.order, boots=args.bootstrap, run_id=args.run_id)
+    c, run = r["corpus"], r["run"]
+    print(f"corpus: {c['human_games']} human games, {c['distinct_pairings']} pairings, {c['groups']} groups "
+          f"({c['pairings_in_2plus_groups']} pairings recur across series)")
+    print(f"sim:    {run['battles']} battles, {run['errors']} errors, {run['battles_per_second']}/s, "
+          f"{run['wall_seconds']}s, digest {run['outcome_digest']}")
+    sp = r["simulated_wp_spread"]
+    print(f"spread: sd {sp['sd']}, median {sp['quantiles']['p50']}, {sp['share_beyond_85_15']:.0%} of pairings beyond 85/15")
+    head = f"{'subset':34} {'games':>6} {'groups':>6} {'logloss':>8} {'const':>8} {'delta':>8} {'95% ci':>18} {'auc':>6}"
+    print(head)
+    for s in r["subsets"] + [r["recalibrated"]]:
+        ci = s.get("logloss_delta_95ci") or [float("nan")] * 2
+        auc = f"{s['auc']:.4f}" if s.get("auc") is not None else "n/a"
+        interval = f"[{ci[0]:+.4f}, {ci[1]:+.4f}]"
+        print(f"{s['subset']:34} {s['games']:6} {s['groups']:6} {s['logloss']:8.5f} {s['logloss_constant']:8.5f} "
+              f"{s['logloss_delta']:+8.5f} {interval:>18} {auc:>6}")
+    v = r["verdict"]
+    print(f"\nverdict on {v['scored_on']} (n={v['games']} games / {v['groups']} groups): "
+          f"PASS={v['pass']}  orders_correctly={v['orders_correctly']}  "
+          f"recalibrated_beats_constant={v['recalibrated_beats_constant']}  usable_as_is={v['usable_as_is']}")
+    print(f"  → {v['reading']}")
+    print(f"→ {save(reg, r, tag=args.tag)}")
+    return 0
+
+
 # --- data -----------------------------------------------------------------------------
 
 def cmd_data_freeze(args: argparse.Namespace) -> int:
@@ -435,8 +465,7 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
         out = models.model_dir(reg.id, args.version)
         (out / "eval.json").write_text(json.dumps({"dataset": args.dataset, "results": main_r,
                                                    "baselines": all_results}, indent=1) + "\n")
-        pv = out / "preview_vs_sim.json"
-        g = evaluate.gates(main_r, all_results, json.loads(pv.read_text()) if pv.exists() else None)
+        g = evaluate.gates(main_r, all_results)
         fp = models.eval_fingerprint(sorted(base.glob("eval_*.npz"))) | {
             "dataset": args.dataset, "at": __import__("datetime").datetime.now().isoformat(timespec="seconds")}
         models.update_card(reg.id, args.version, headline=evaluate.headline(main_r), gates=g,
@@ -495,18 +524,6 @@ def cmd_wp_replay(args: argparse.Namespace) -> int:
         bar = "█" * round(20 * t["wp_p1"])
         print(f"  {t['kind']:7} t{t['turn']:<2} {t['wp_p1']:6.1%} {bar:20}  {t['left']['p1']}v{t['left']['p2']}  "
               f"{' / '.join(t['active']['p1'])}  vs  {' / '.join(t['active']['p2'])}")
-    return 0
-
-
-def cmd_wp_check_preview(args: argparse.Namespace) -> int:
-    from vgc.wp.tools import preview_vs_sim
-
-    r = preview_vs_sim(_reg(args), args.version, pairs=args.pairs, n=args.n, seed=args.seed, workers=args.workers)
-    for key in ("all", "train_teams", "heldout_team"):
-        print(f"{key:13} {json.dumps(r[key])}")
-    out = Path(f"models/wp/{args.regulation}/{args.version}/preview_vs_sim.json")
-    out.write_text(json.dumps(r, indent=1) + "\n")
-    print(f"→ {out}")
     return 0
 
 
@@ -626,6 +643,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_sim_battle)
     p = with_run(simp.add_parser("selfplay", help="random pairs from the latest team pool"))
     p.set_defaults(func=cmd_sim_selfplay)
+    p = with_reg(simp.add_parser("validate", help="does heuristic self-play predict real human results?"))
+    p.add_argument("--pairs", type=int, default=0, help="real-meta pairings to simulate (0 = all)")
+    p.add_argument("--n", type=int, default=15, help="battles per pairing")
+    p.add_argument("--order", choices=["random", "most_played"], default="random",
+                   help="random is unbiased; most_played selects close Bo3 series (see the module docstring)")
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--workers", type=int, default=6)
+    p.add_argument("--bootstrap", type=int, default=2000, help="cluster-bootstrap reps over Bo3 groups")
+    p.add_argument("--tag", default="", help="keep this result alongside the untagged one")
+    p.add_argument("--run-id")
+    p.set_defaults(func=cmd_sim_validate)
 
     data = sub.add_parser("data", help="battle snapshots, held-out splits, manifests").add_subparsers(dest="data_cmd", required=True)
     p = with_reg(data.add_parser("freeze", help="freeze the held-out split (once per regulation)"))
@@ -698,13 +726,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("replay")
     p.add_argument("--version", default="wp-v1-set")
     p.set_defaults(func=cmd_wp_replay)
-    p = with_reg(wp.add_parser("check-preview", help="preview WP vs simulated win rate for team pairings"))
-    p.add_argument("--version", required=True)
-    p.add_argument("--pairs", type=int, default=30)
-    p.add_argument("--n", type=int, default=200)
-    p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--workers", type=int, default=6)
-    p.set_defaults(func=cmd_wp_check_preview)
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)
     p = sub.add_parser("web", help="battle-companion web app on localhost")

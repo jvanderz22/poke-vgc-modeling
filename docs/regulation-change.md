@@ -125,8 +125,8 @@ vgc wp train -r reg_md --kind logistic
 vgc wp train -r reg_md --kind gbt
 vgc wp train -r reg_md --kind set --epochs 20
 vgc wp eval  -r reg_md --version wp-v1-set --baseline wp-v1-gbt --baseline wp-v1-logistic --baseline constant
-vgc wp check-preview -r reg_md --version wp-v1-set
 vgc wp registry
+vgc sim validate -r reg_md          # does self-play predict human results in the new regulation?
 ```
 
 **Gates** (the same as Phase 4's verification). On held-out human open-sheet games:

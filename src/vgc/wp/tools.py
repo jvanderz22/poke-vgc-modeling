@@ -1,21 +1,16 @@
-"""User-facing WP tools: team-preview advice, replay trajectories, and the preview-vs-simulation
-check.
+"""User-facing WP tools: team-preview advice and replay trajectories.
 
   preview(my_team, their_team)   the player's view at team preview (open team sheets): WP for
                                  all 15 brings × 6 lead pairs, plus the bring head's guess at
                                  which 4 the opponent brings
   replay_trajectory(replay)      spectator WP for p1 at every decision point of a human replay
-  preview_vs_sim(...)            preview WP for team pairings vs their simulated win rate
 """
 
 from __future__ import annotations
 
 import itertools
 import json
-import random
 from typing import Any
-
-import numpy as np
 
 from vgc.data.observe import Observer
 from vgc.data.snapshots import bring_view
@@ -109,56 +104,3 @@ def replay_trajectory(reg: Regulation, replay: dict, version: str) -> list[dict[
         out.append({"point": rec["point"], "kind": rec["kind"], "turn": rec["obs"]["turn"], "wp_p1": float(wp),
                     "left": left, "active": active})
     return out
-
-
-def preview_vs_sim(reg: Regulation, version: str, pairs: int = 30, n: int = 200, seed: int = 0,
-                   workers: int = 6) -> dict[str, Any]:
-    """Preview WP (spectator, heuristic-play context) for team pairings vs a direct simulated
-    heuristic-vs-heuristic win rate, an independent estimate of the same quantity. Half the
-    pairings use two training teams; the other half include a held-out team."""
-    from vgc.data.snapshots import trace_snapshots
-    from vgc.data.splits import load_rules
-    from vgc.engine.runner import BattleRunner
-    from vgc.meta.pool import load_pool
-    from vgc.sim.selfplay import Matchup, load_battles, run, wilson
-
-    rules = load_rules(reg)
-    pool = load_pool(reg)
-    rng = random.Random(seed)
-    train = [t for t in pool if not rules.team_heldout(t.id)]
-    held = [t for t in pool if rules.team_heldout(t.id)]
-    chosen = [tuple(rng.sample(train, 2)) for _ in range(pairs // 2)]
-    chosen += [(rng.choice(held), rng.choice(train)) for _ in range(pairs - pairs // 2)]
-    ms = [Matchup(a.text, b.text, "heuristic", "heuristic", a.id, b.id, swap_sides=bool(i % 2))
-          for a, b in chosen for i in range(n)]
-    run_id = f"wpcheck-{version}-s{seed}-p{pairs}-n{n}"
-    summary = run(ms, reg_id=reg.id, seed=seed, workers=workers, run_id=run_id)
-    rows = load_battles(__import__("pathlib").Path(summary["out_dir"]))
-    model, fz = _load(reg, version)
-    results = []
-    with BattleRunner() as runner:
-        for k, (a, b) in enumerate(chosen):
-            block = rows[k * n : (k + 1) * n]
-            ok = [r for r in block if "error" not in r and r["a_won"] is not None]
-            wins = sum(r["a_won"] for r in ok)
-            first = block[0]  # A as p1
-            trace = runner.request({"op": "trace", "id": first["battle_id"], "inputLog": first["input_log"], "ots": first["ots"]})
-            rec = next(r for r in trace_snapshots(trace, first, reg) if r["kind"] == "preview" and r["obs"]["perspective"] == "spectator")
-            d = featurize([rec], fz)
-            wp = float(symmetrize(d, model.predict(d)[0])["p"][0])
-            lo, hi = wilson(wins, len(ok))
-            results.append({"a": a.id, "b": b.id, "heldout": rules.team_heldout(a.id) or rules.team_heldout(b.id),
-                            "wp": round(wp, 4), "sim": round(wins / len(ok), 4), "ci": [round(lo, 4), round(hi, 4)], "n": len(ok)})
-    wp = np.array([r["wp"] for r in results])
-    sim = np.array([r["sim"] for r in results])
-
-    def stats(mask: np.ndarray) -> dict[str, Any]:
-        w, s = wp[mask], sim[mask]
-        return {"pairs": int(mask.sum()), "corr": round(float(np.corrcoef(w, s)[0, 1]), 3) if mask.sum() > 2 else None,
-                "mae": round(float(np.abs(w - s).mean()), 4), "mae_constant_0.5": round(float(np.abs(0.5 - s).mean()), 4),
-                "within_ci": round(float(np.mean([(r["ci"][0] <= r["wp"] <= r["ci"][1]) for r, m in zip(results, mask) if m])), 3),
-                "sim_spread_sd": round(float(s.std()), 4), "wp_spread_sd": round(float(w.std()), 4)}
-
-    held_mask = np.array([r["heldout"] for r in results])
-    return {"version": version, "run_id": run_id, "battles_per_pair": n, "all": stats(np.ones(len(results), bool)),
-            "train_teams": stats(~held_mask), "heldout_team": stats(held_mask), "pairs": results}

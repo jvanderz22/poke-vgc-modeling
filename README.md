@@ -41,6 +41,7 @@ vgc meta scrape --format both --pages 8          # cache public replays (data/re
 vgc meta pool                                    # dated team pool from open team sheets
 vgc sim battle --team-a a.txt --team-b b.txt --n 50   # seeded, parallel; win rate with 95% CI
 vgc sim selfplay --n 500 --policy-a heuristic --policy-b random
+vgc sim validate                                 # does self-play predict real human results?
 
 vgc data freeze                                  # freeze held-out teams/battles/replays (once)
 vgc data generate --n 6000 --workers 7           # heuristic self-play, then snapshots
@@ -59,7 +60,7 @@ vgc web                                          # battle companion on localhost
 ```
 
 `make` wraps the pipeline: `make data` (scrape → pool → self-play → snapshots → features),
-`make models`, `make sweep` (free Kaggle GPU), `make gates`, `make test`.
+`make models`, `make sweep` (free Kaggle GPU), `make gates`, `make sim-validity`, `make test`.
 
 Team files use Showdown's export format. In Champions, the `EVs:` line holds **Stat Points**
 (66 total, 32 max per stat, 1 SP = +1 stat at level 50). `SPs:` is accepted as an alias.
@@ -83,6 +84,7 @@ src/vgc/                 regulation · engine · teams · policy · meta · sim 
 - [PLAN-v2.md](PLAN-v2.md): the live plan — phases, gates, what is deferred and why
 - [PLAN.md](PLAN.md): superseded archive — the research and architecture behind the stack
 - [docs/phase4-findings.md](docs/phase4-findings.md): what the WP corpus does and doesn't support
+- [docs/phase6-findings.md](docs/phase6-findings.md): whether the simulator predicts human outcomes
 - [docs/phase0-findings.md](docs/phase0-findings.md): environment spike results
 - [docs/regulation-change.md](docs/regulation-change.md): runbook for moving to a new regulation and retraining
 - [docs/cloud-compute.md](docs/cloud-compute.md): when renting hardware pays off, and the spend controls

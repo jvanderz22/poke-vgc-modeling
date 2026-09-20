@@ -192,7 +192,6 @@ for name in "${FOUND[@]}"; do
   echo; echo "===== $name ====="
   "$VGC" wp card         --regulation "$REG" --version "$name" --dataset "$DATASET"
   "$VGC" wp calibrate    --regulation "$REG" --version "$name" --dataset "$DATASET"
-  "$VGC" wp check-preview --regulation "$REG" --version "$name"
   "$VGC" wp eval         --regulation "$REG" --version "$name" --dataset "$DATASET" \
       --baseline wp-v1-gbt --baseline wp-v1-logistic --baseline constant | tail -5
 done

@@ -30,9 +30,9 @@ export function GateBanner({ gates }: { gates: Gates | null }) {
       <b>{gates.version}</b> fails: {(gates.failed ?? []).join(", ")}.{" "}
       {previewBad ? (
         <>
-          <b>The preview gate is one of them.</b> On teams it has not seen, this model orders bring
-          options no better than chance, and its win probabilities are bunched near 50%. Use the
-          ranking below to explore, not to decide.
+          <b>The preview gate is one of them.</b> Before turn 1 this model does not beat answering
+          50%, on the 2,899 held-out preview rows it was scored on — and no model has, from this
+          corpus. Use the ranking below to explore, not to decide.
         </>
       ) : (
         <>The failing gates are not the preview gate, but read the ranking as approximate.</>

@@ -84,8 +84,10 @@ def gate_summary(version: str) -> dict[str, Any]:
     failed = [k for k, v in gates.items() if isinstance(v, dict) and v.get("pass") is False]
     return {"version": version, "known": True, "evaluated": bool(gates),
             "all_pass": gates.get("all_pass"), "failed": failed,
-            # The gate that decides whether ranked bring options are trustworthy.
-            "preview_gate": gates.get("preview_tracks_sim", {}).get("pass"),
+            # The gate that decides whether ranked bring options are trustworthy. Scored on the
+            # 2,899 held-out preview rows against a 0.5 constant, which replaced a correlation over
+            # 30 simulated pairings that could not tell signal from noise.
+            "preview_gate": gates.get("preview_beats_constant", {}).get("pass"),
             "bring_gate": gates.get("bring_beats_usage", {}).get("pass"),
             # Separate verdict for a battle in progress: a model can be trustworthy turn by turn
             # and useless at preview, which is exactly where Reg M-C stands today.
@@ -242,8 +244,8 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
 
     Both sheets are required and both are validated by the real simulator, exactly as a Bo3 game
     would present them. The response carries the model's gate verdicts: when `preview_gate` is
-    false these numbers order your options no better than chance on unseen teams, and the caller
-    is expected to say so rather than render a confident list.
+    false the model does not beat answering 50% before turn 1, and the caller is expected to say so
+    rather than render a confident list.
     """
     from vgc.engine.runner import RunnerError
     from vgc.wp.tools import preview as run_preview

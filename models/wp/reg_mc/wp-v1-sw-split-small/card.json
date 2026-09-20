@@ -102,6 +102,59 @@
    "ece": 0.01993,
    "threshold": 0.03
   },
+  "in_battle_beats_constant": {
+   "pass": true,
+   "logloss": {
+    "t1-2": 0.6457,
+    "t3-4": 0.55657,
+    "t5-6": 0.49269,
+    "t7+": 0.47587
+   },
+   "constant": {
+    "t1-2": 0.69315,
+    "t3-4": 0.69315,
+    "t5-6": 0.69315,
+    "t7+": 0.69315
+   },
+   "delta_95ci": {
+    "t1-2": [
+     -0.05757,
+     -0.03732
+    ],
+    "t3-4": [
+     -0.15257,
+     -0.12059
+    ],
+    "t5-6": [
+     -0.22176,
+     -0.17916
+    ],
+    "t7+": [
+     -0.25188,
+     -0.18267
+    ]
+   },
+   "losing_buckets": []
+  },
+  "in_battle_ece": {
+   "pass": false,
+   "worst_bucket": "t7+",
+   "ece": 0.03176,
+   "threshold": 0.03,
+   "by_bucket": {
+    "t1-2": 0.01748,
+    "t3-4": 0.02008,
+    "t5-6": 0.02256,
+    "t7+": 0.03176
+   }
+  },
+  "ece_spectator_played_out": {
+   "pass": true,
+   "ece": 0.02978,
+   "logloss": 0.57594,
+   "n": 20312,
+   "threshold": 0.03
+  },
   "ece_player": {
    "pass": false,
    "ece": 0.03206,
@@ -119,16 +172,31 @@
    "usage": 0.6643,
    "chance": 0.6667
   },
-  "preview_tracks_sim": {
+  "preview_beats_constant": {
    "pass": false,
-   "corr": 0.111,
-   "corr_heldout_team": -0.042,
-   "mae": 0.3927,
-   "mae_constant": 0.393,
-   "wp_spread_sd": 0.1531,
-   "sim_spread_sd": 0.4194,
-   "threshold": 0.5
+   "n": 2899,
+   "battles": 2899,
+   "logloss": 0.69078,
+   "constant": 0.69315,
+   "ece": 0.03742,
+   "delta": -0.00236,
+   "delta_95ci": [
+    -0.00853,
+    0.0038
+   ]
   },
+  "in_battle_pass": false,
   "all_pass": false
+ },
+ "eval_dataset": {
+  "sha256": "f6fdbdb0797df9f9aa634dd709606149961108527424ffec0af46d9d9a75ba21",
+  "files": {
+   "eval_human_ots.npz": "16e6cc5c9624ba8f",
+   "eval_human_ots_team.npz": "53f303612fd1d078",
+   "eval_selfplay_battle.npz": "714726f82583504a",
+   "eval_selfplay_team.npz": "e6aa1ca65532384a"
+  },
+  "dataset": "wp-v1",
+  "at": "2026-09-20T15:21:56"
  }
 }

@@ -7,8 +7,14 @@ learning rather than computation.
 
 v2 exists because Phase 4 produced a measurement that invalidates the plan's spine: **the quantity
 Phases 7 and 8 were going to be built on cannot be estimated from this corpus, and the simulator's
-version of it has never been checked against reality.** The evidence is in
+version of it had never been checked against reality.** The evidence is in
 [docs/phase4-findings.md](docs/phase4-findings.md); the consequences are here.
+
+**It has since been checked, and it failed** ([docs/phase6-findings.md](docs/phase6-findings.md)).
+Heuristic-vs-heuristic win rate is a precise measurement — split-half reliability 0.96 — of something
+that does not predict who wins the real game: AUC 0.5119 over 2,684 independent series, and 0.0003
+nats after the best out-of-fold rescaling. So the quantity is not merely unestimated from the corpus;
+the simulator's substitute for it does not exist either. That is what reorders the phases below.
 
 ---
 
@@ -22,12 +28,12 @@ version of it has never been checked against reality.** The evidence is in
 | 3 — Battle data | ✅ 2026-09-19 | snapshots for every perspective; parity exact on 3,089 live decisions; split frozen |
 | 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](docs/phase4-findings.md) |
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
-| 6 — Simulator validity | ⏳ Next | the fork in the road; ~25 min of laptop time |
-| 7 — Deterministic team tools | — | weakness report + usage report; no model, no gate |
+| 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
+| 7 — Deterministic team tools | ⏳ Next | weakness report + usage report; no model, no gate — and unaffected by Phase 6 |
 | 8 — Closed-sheet belief | — | was Phase 5; the regime the product actually runs in |
-| 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning |
-| 10 — Matchup evaluation | — | was Phase 7; form depends on Phase 6's answer |
-| 11 — Team building | — | was Phase 8 |
+| 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
+| 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
+| 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
 | 12 — Interface / MCP | — | was Phase 9 |
 | 🟡 Web app | W1–W2 partial | see the staging table at the end |
 
@@ -46,8 +52,8 @@ v2's ordering rule is narrower and testable:
 
 All three clauses come from evidence, not taste. The first because the analytic tools were always
 buildable and are still unbuilt. The second because a 637k-row training set is matched by its 178k
-human rows alone (§3 below). The third because the one transfer test that has been run came back
-*negative* (§2).
+human rows alone (§3 below). The third because both tests that have been run came back *negative*:
+the transfer test in §2, and then Phase 6's direct check, which is the one the rule was written for.
 
 ---
 
@@ -56,18 +62,19 @@ human rows alone (§3 below). The third because the one transfer test that has b
 | | Question | Status under v2 |
 | --- | --- | --- |
 | 1 | Given 6 Pokémon, what are my weaknesses? | **Phase 7, analytically. No model.** Type coverage, speed tiers, calcs vs the top-30 threats. Buildable now. |
-| 2 | Given 4 Pokémon, which 2 complete the team? | **Blocked on Phase 6.** Needs a team-strength signal; the two candidate sources are unvalidated (simulator) or absent (corpus). |
+| 2 | Given 4 Pokémon, which 2 complete the team? | **Blocked behind Phase 9.** Needs a team-strength signal; Phase 6 measured both candidate sources and neither exists — the corpus has none, and the simulator's is uncorrelated with real results. |
 | 3 | What moves should each Pokémon run? | **Partly Phase 7** (legal movepool, coverage gaps, breakpoints are analytic); ranking by win rate is blocked with Q2. |
-| 4 | What do I bring, lead, and click? | **Phases 9–10.** Bring/lead is on-demand simulation of *this* matchup, not a learned function. |
-| 5 | Win probability | **In-battle: works, ship it (Phase 5). At preview: does not exist** and is retired as a target until Phase 6 says otherwise. |
+| 4 | What do I bring, lead, and click? | **Phases 9–10.** Bring/lead is on-demand simulation of *this* matchup, not a learned function — but Phase 6 means the simulation has to be run by a policy stronger than the heuristic to mean anything. |
+| 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. |
 | 6 | All of the above in a web app during a real game | Staged; W2 lands with Phase 5, and **closed-sheet support (Phase 8) is the real unlock** — see the regime note in §5. |
 
 ---
 
 ## What the evidence changed
 
-Six findings, each measured on the frozen split. Full detail and the scripts:
-[docs/phase4-findings.md](docs/phase4-findings.md), [`scripts/analysis/`](scripts/analysis/).
+Seven findings, each measured on the frozen split. Full detail and the scripts:
+[docs/phase4-findings.md](docs/phase4-findings.md), [docs/phase6-findings.md](docs/phase6-findings.md),
+[`scripts/analysis/`](scripts/analysis/).
 
 **1. Pre-battle win probability is not learnable from this corpus, at any scale it can reach.**
 Bradley-Terry over team composition: 0.6900 against a 0.6931 constant. The learning curve says why
@@ -80,7 +87,7 @@ a fix for it.*
 **2. Self-play transfers negatively at team level.** A team-strength model fit on 108,918 self-play
 preview rows scores **0.7327 on held-out human preview — worse than answering 0.5** — at 49.0%
 accuracy. *Consequence: v1's Phase 7 (build the matchup matrix under a heuristic policy, derive team
-evaluation from it) is blocked, not caveated, until Phase 6 returns.*
+evaluation from it) is blocked, not caveated. Finding 7 closed it.*
 
 **3. The self-play corpus adds nothing to the model that does work.** Same GBT recipe, three training
 sets, scored on held-out human: mixture (637,508 rows) 0.5533 / ECE 0.0198, **human only (178,339
@@ -106,6 +113,15 @@ silently. Corrected in the archive by 4f2150b, which also records the misread te
 quota still showing 0.00h used was taken as good news about failed runs. *Consequence: this project
 has no demonstrated GPU path; the 30 GPU-hours/week are unspent; the check is `train.json: device`,
 not the kernel metadata, which records only what was requested.*
+
+**7. The simulator does not measure the game. It measures the bot.** 3,372 real-meta pairings, 15
+heuristic-vs-heuristic battles each, scored against the human result of those same 7,455 games. On
+played-out games — 4,579, spanning 2,684 independent series — simulated win rate orders the outcome
+at **AUC 0.5119, 95% CI [0.4948, 0.5296]**, and after the best out-of-fold rescaling it is worth
+**0.0003 nats, 95% CI [−0.0010, +0.0004]**. This is not a sampling problem: the simulated win rate's
+own split-half reliability is **0.96**, so the quantity is measured precisely and is simply the wrong
+quantity. *Consequence: the fork below takes its second branch — Phase 10's matrix is dead, Phase 9
+becomes the prerequisite, self-play generation stays paused. [Findings](docs/phase6-findings.md).*
 
 ---
 
@@ -177,42 +193,61 @@ _Closed 2026-09-20._ The five stale claims about corpus composition are correcte
 `set_torch.py` (×3), `kaggle_train_wp.ipynb` and `docs/cloud-compute.md`: human rows are 28.0% of
 train and val, not "~3%"/"a few percent", and validation is 72% self-play, not ~89%.
 
-### Phase 6 — Simulator validity: the fork in the road
+### Phase 6 — Simulator validity: the fork in the road ✅ _negative_
 
-**The single highest-value experiment available, and it gates four phases.** Everything downstream of
-L3 assumes heuristic-vs-heuristic matchup win rate reflects real play. That has never been tested, and
-finding 2 is a reason to doubt it.
+**Done 2026-09-20 — and it forked the roadmap.** [docs/phase6-findings.md](docs/phase6-findings.md);
+result in [`data/analysis/reg_mc/sim_validity.json`](data/analysis/reg_mc/sim_validity.json); re-run
+with `make sim-validity`.
 
-The data is already on disk and better powered than anyone assumed:
+Every human battle whose two open sheets resolve to the pool gives a real-meta pairing. All 3,372 of
+them were played 15 times under the heuristic, sides alternating, and the simulated win rate scored
+as a predictor of who won the human game — log loss and AUC against a 0.5 constant, with cluster
+bootstraps over Bo3 series.
 
 ```
-8,252 human battles with a preview snapshot
-7,455 with both team sheets resolvable to the pool   (vgc.meta.replays.team_id)
-3,372 distinct real-meta pairings, 2,796 seen ≥2 times, max 12
+7,455 human games · 3,372 pairings · 3,431 series · 50,580 battles · 0 errors · 30 min
 ```
 
-Simulate each pairing under the heuristic for N battles; score simulated WP as a predictor of the
-*actual* human result of those games — **log loss and AUC against a 0.5 constant**, not a Pearson
-correlation. At 1,000 pairings × 50 battles and ~35 battles/s that is ~25 minutes.
+| on played-out games (n=4,579 / 2,684 series) | | |
+| --- | --- | --- |
+| AUC | **0.5119** | 95% CI [0.4948, 0.5296] |
+| log loss vs constant | +0.40831 | 95% CI [+0.374, +0.441] |
+| after out-of-fold rescaling | **−0.00027** | 95% CI [−0.0010, +0.0004] |
+| split-half reliability of the simulated win rate | **0.961** | it is a precise measurement of the wrong thing |
 
-This replaces `vgc wp check-preview`, which decides the same question on 30 pairings, 15 held out — a
-correlation whose 95% interval is roughly ±0.5, applied against a gate of 0.5. It cannot distinguish
-"no signal" from "passing signal" and should not be used for a verdict again.
+Two verdicts rather than one, because they have different consumers. `pass` turns on the scale-free
+evidence (AUC and the recalibrated log loss), since a matchup matrix is consumed for *ranking* and a
+pure scale error could be fitted out downstream. `usable_as_is` is the stricter question of whether
+the raw number can be shown to a user; the simulator fails that too, and for a reason the first
+verdict deliberately looks past — 55.8% of pairings land beyond 85/15 while the human games they
+produced are coin flips.
 
-_Verification, as a fork:_
+_Two corrections to this plan's own sketch of the experiment, both from measuring first:_
 
-- **Simulated WP beats the constant** → the simulator is a valid team evaluator. Phase 10 proceeds,
-  self-play generation resumes with coverage over replication (`--per-pair 1`, ~60,000 distinct
-  matchups for the same wall clock; label pairings with continuous simulated WP and regress, rather
-  than emitting 20 binary rows per input).
-- **It does not** → Phase 10's matrix form is dead and so is any team-strength model distilled from
-  it. Phase 9 (a stronger policy) becomes the prerequisite, and the experiment re-runs against that
-  policy before anything is built on it.
+- **The power was overstated.** "2,796 pairings seen ≥2 times" is almost all Bo3 repetition — only
+  **44 pairings recur across two distinct series**, and a series shares both teams *and both
+  players*. The unit of independence is the series, and every interval above is a cluster bootstrap
+  over the 3,431 of them.
+- **1,000 pairings × 50 battles was the wrong allocation.** Outcome-side precision is linear in
+  series covered; extra battles per pairing only shrink predictor noise, and the split-half number
+  shows how little of that there was. All pairings × 15 covers every game in the corpus for the same
+  wall clock and is worth about 1.7× the power.
+
+_The fork, resolved:_ **it does not beat the constant.** Phase 10's matrix form is dead and so is any
+team-strength model distilled from it. Phase 9 becomes the prerequisite, and this check re-runs
+against that policy before anything is built on it. Self-play generation stays paused — finding 3
+took away its training justification, and this takes away the other one.
+
+This also replaced `vgc wp check-preview`, which decided the same question on 30 pairings, 15 held
+out — a correlation whose 95% interval is roughly ±0.5, applied against a gate of 0.5. It and the
+`preview_tracks_sim` gate are removed; the substantive question it asked is now
+`preview_beats_constant`, scored on the 2,899 held-out preview rows against the constant with its n
+recorded. The last readings of the retired check are kept in the Phase 6 findings.
 
 Re-run this against every new policy. It is the project's standing check that the simulator measures
-the game rather than the bot.
+the game rather than the bot, and it has now earned that description.
 
-### Phase 7 — Deterministic team tools _(independent of Phase 6)_
+### Phase 7 — Deterministic team tools ⏳ _next; independent of Phase 6, which is why it survived it_
 
 v1 opened Phase 8 with "analytic weakness report first (no model, immediately useful)" and then put
 four phases of ML in front of it. It moves here, alongside a second tool the corpus already supports.
@@ -248,7 +283,7 @@ calibration: the true item and nature land in the belief's 80% set ~80% of the t
 closed-sheet sample size on every verdict** — 779 battles is small, and a gate that ignores that will
 mislead.
 
-### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC)_
+### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC — now the prerequisite for 10 and 11)_
 
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`, with exact transitions from a serialized Showdown
 state, common random numbers across actions, both sides pruned to top-k by the policy prior, and
@@ -264,25 +299,26 @@ Record battles/s — Phase 10 has to afford it.
 
 Then **re-run Phase 6 against this policy**, before Phase 10 uses it.
 
-### Phase 10 — Matchup evaluation _(was Phase 7)_
+### Phase 10 — Matchup evaluation ⛔ _(was Phase 7; blocked behind Phase 9)_
 
-Form depends on Phase 6.
+**Phase 6 decided the form: on-demand only, and not yet.**
 
-**Default — on-demand, no generalization.** The app faces one matchup at a time. Simulate *that*
-pairing across all 90 bring/lead combinations under the strongest affordable policy, with the racing
-allocator and common random numbers. Exact under the policy, needs no learned team function, and
-answers Q4's "what do I bring" with a number and an interval. v1 listed this as a fallback; findings
-1 and 2 make it the primary.
+**The precomputed matrix is cancelled.** Dated meta gauntlet, `winrate(A, B)` over the pool, racing
+allocator, successive halving — all of it rests on heuristic-vs-heuristic win rate being a valid
+team-strength signal, and finding 7 measured that at AUC 0.512 with a reliability of 0.96. There is
+nothing to precompute.
 
-**Only if Phase 6 passes — the precomputed matrix.** Dated meta gauntlet, `winrate(A, B)` over the
-pool, racing allocator, successive halving. Keep v1's policy-artifact check: compute a subset of cells
-under two policies and compare rankings.
+**On-demand evaluation survives, behind Phase 9.** The app faces one matchup at a time, so simulating
+*that* pairing across all 90 bring/lead combinations needs no generalization and no learned team
+function. But it inherits finding 7 exactly: run under the heuristic, those 90 numbers describe what
+the bot would do. It waits on a policy whose version of Phase 6 comes back positive.
 
-_Verification:_ bring/lead recommendations carry intervals and the number of battles behind them;
-rankings correlate positively with real-world results; top-usage and tournament-winning teams land in
-the upper half. Do not build Phase 11 on a matrix that fails.
+_Verification:_ re-run Phase 6 against the policy first — that is the gate, not an afterthought.
+Then: bring/lead recommendations carry intervals and the number of battles behind them; rankings
+correlate positively with real-world results; top-usage and tournament-winning teams land in the
+upper half.
 
-### Phase 11 — Team building _(was Phase 8)_
+### Phase 11 — Team building ⛔ _(was Phase 8; blocked behind Phase 10)_
 
 Q2 and the ranking half of Q3, on top of whatever Phase 10 produced. Surrogate regressor over team
 embeddings for breadth, real simulation for the top ~15, never a surrogate number shown as an answer.
@@ -307,10 +343,18 @@ Phase 4 failed its gates for reasons the gates could not express. These rules ar
 2. **`ended_normal` is reported separately from forfeits.** 38.4% of human games end in a forfeit and
    the model scores better on them; pooling flatters every number.
 3. **State the power before the threshold.** No verdict from a statistic that cannot distinguish the
-   outcomes — the n=15 correlation against a 0.5 gate is the standing example. A gate records its n
-   and the interval of its statistic.
+   outcomes — the n=15 correlation against a 0.5 gate is the standing example, and it has now been
+   removed rather than left in place. A gate records its n and the interval of its statistic, and
+   **"beats X" means the whole interval does**. Its replacement needed this applied to it too: the
+   first version compared two preview log losses as point estimates and passed `wp-v1-set-full` on
+   0.004 nats, which finding 1 says is the width of the whole field. Every `beats_constant` gate now
+   carries a battle-clustered interval (`vs_constant`).
 4. **Simulator-derived quantities are validated against human outcomes before use.** Phase 6 is the
-   instance; the rule is general, and re-runs whenever the policy changes.
+   instance; the rule is general, and re-runs whenever the policy changes. It has been run once and
+   came back negative, so the rule is currently *blocking*, not advisory.
+4b. **Count the independent units, not the rows.** Three games of one Bo3 series share both teams and
+   both players. Phase 6's intervals are cluster bootstraps over series, because resampling games
+   would have claimed precision the corpus does not have. (Finding 7.)
 5. **Strength gates include a held-out opponent.** Beating the fixed prior you trained against is not
    evidence of strength.
 6. **A failing gate is recorded in the model card and the UI refuses to present that number.** Carried
@@ -324,11 +368,12 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 
 | Deferred | Unblocked by |
 | --- | --- |
-| **Learned preview / team-strength WP** | A corpus three-plus orders of magnitude larger, or Phase 6 passing so the simulator can be the target instead of human games. (Findings 1, 2.) |
+| **Learned preview / team-strength WP** | A corpus three-plus orders of magnitude larger. The second route — Phase 6 passing, so the simulator could be the target instead of human games — is closed: it failed. (Findings 1, 2, 7.) |
 | **Behaviour cloning** | A higher-rated corpus. VGC-Bench's BC worked on 700,000 logs from *high-rating* players; this corpus is 58% unrated, median 1101. (Finding 5.) |
-| **Self-play generation for WP training** | Phase 6. The rows are not paying for themselves. (Finding 3.) |
+| **Self-play generation for WP training** | A policy that passes Phase 6. The rows do not pay for themselves in training (finding 3), and finding 7 removed the other justification. Generating more under *this* policy buys nothing. |
 | **Hyperparameter sweeps on the set encoder** | Nothing — closed off. Every config selected epoch 1 or 2 of 12; the constraint is coverage, not regularization. GPU time is better spent elsewhere. |
 | **PPO self-play fine-tuning** | Nothing. Optional-and-last in v1 for technical reasons; cost and the paper's results both confirm it. |
+| **The precomputed 30×30 matchup matrix** | Cancelled outright, not deferred. Finding 7 removed the quantity it would have been made of. |
 | **Regulation-portable models** (global vocabulary, pretrain on M-B, fine-tune) | Was "do after the Phase 4 gates pass". Now: do after there is a model worth porting. The M-B transfer measurement is still worth having before the 2026-12-02 rotation. |
 
 ---
@@ -346,7 +391,8 @@ v1's nine practices stand. Four are amended or added by the evidence:
 6. **Budget variance before compute.** _(unchanged.)_
 7. **Watch for policy-induced artifacts** — _amended:_ and *measure* them against human outcomes
    rather than noting them. v1 recorded the heuristic's 85/15 spread as a caveat for eight weeks; one
-   afternoon of measurement turned it into a blocker.
+   afternoon of measurement turned it into a blocker. Phase 6 then found the spread was not even the
+   main problem — the *ordering* was chance too.
 8. **Tag every artifact with its regulation id.** _(unchanged.)_
 9. **Log battles in a replayable format from day one.** _(unchanged.)_
 10. **New — measure what a data source buys before scaling it.** A three-way ablation costs an hour
@@ -355,6 +401,9 @@ v1's nine practices stand. Four are amended or added by the evidence:
     distribution, participant concentration, how games end. All three changed the reading here.
 12. **New — assert on the environment you think you are paying for.** The sweep ran on CPU for hours
     with `enable_gpu: true` set and nothing checking.
+13. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
+    reliability of 0.96 is what makes its negative a statement about the simulator rather than about
+    a 15-battle budget. A null result from an unmeasured predictor says nothing.
 
 ---
 
@@ -362,9 +411,10 @@ v1's nine practices stand. Four are amended or added by the evidence:
 
 | Risk | Handling |
 | --- | --- |
-| **Phase 6 returns negative and the simulator does not predict human outcomes** | The product falls back to the deterministic stack — calc, weakness report, usage report, in-battle WP, closed-sheet belief. Still a real tool. Phase 9 then becomes the route back, not a rewrite. |
+| ~~Phase 6 returns negative~~ **— it did** | **Realized 2026-09-20.** The handling stands as written: the product falls back to the deterministic stack — calc, weakness report, usage report, in-battle WP, closed-sheet belief. Still a real tool, and Phases 7 and 8 are untouched. Phase 9 is the route back, not a rewrite. |
 | **The closed-sheet corpus (779 battles) is too small to gate Phase 8** | Report n on every verdict; widen with continued scraping of the Bo1 format; treat belief calibration as directional until the sample grows. |
-| Policy too weak → meaningless team rankings | Phase 6 is now the hard stop, and it runs *before* the matrix rather than as a check inside it. |
+| Policy too weak → meaningless team rankings | **Confirmed, not a risk any more.** Phase 6 is the hard stop and it runs *before* the matrix; it has already stopped it once. Nothing ranks teams until a policy clears it. |
+| Phase 9 produces a stronger policy that still fails Phase 6 | Possible — VGC-Bench's agents are "approximately 100% exploitable", so strength against a fixed opponent need not mean realism. The deterministic stack is the floor either way, and the failure would be cheap to detect because the check is already built. |
 | Not enough Reg M-C replays | Established: more replays do not fix preview (finding 1). They still help in-battle WP and the closed-sheet regime, which is where scraping effort should go. |
 | Reg M-C rotates 2026-12-02 | L0 spine is the mitigation; [docs/regulation-change.md](docs/regulation-change.md). Note that the deterministic tools (Phase 7) port with the dex and need no retrain — another reason to build them first. |
 | 19 GB free disk | Finding 3 helps: 412 MB of self-play snapshots are not earning their keep for training. |
@@ -377,8 +427,10 @@ v1's nine practices stand. Four are amended or added by the evidence:
 Unchanged from PLAN.md and still **$0–5 total**, with one correction: the free Kaggle quota was never
 actually consumed (finding 6), so the training budget is fully intact. The standing advice holds — for
 this project **CPU-hours are worth more than GPU-hours**, which is the opposite of most ML work.
-Phases 6, 9 and 10 are CPU-bound simulation; a 32-core box for a few hours (~$1–3) is the rental that
-would actually help, not a GPU.
+Phases 9 and 10 are CPU-bound simulation; a 32-core box for a few hours (~$1–3) is the rental that
+would actually help, not a GPU. Phase 6 cost 30 minutes on this laptop at 27.8 battles/s and needed
+no rental at all — and it is worth re-reading that against the seven CPU-hours the sweep spent on a
+GPU that was never there.
 
 Spend controls unchanged: prepay, no auto-refill, develop locally first, never leave a pod idle,
 Kaggle before paid.
@@ -391,9 +443,9 @@ Kaggle before paid.
 | --- | --- | --- |
 | W1 | Phase 3 ✅ partial | `vgc web`, team library, validation, active team, bring/lead ranking. **Still missing:** pokepast.es fetching, calc panel, per-turn input, WP timeline |
 | **W2** | **Phase 5** 🟡 | In-battle WP routed to a gate-passing model and banner-flagged ✅; **left:** the per-turn WP timeline |
-| W2b | Phase 7 | Weakness report and usage report in the library |
+| **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — **the next web work**, and Phase 6 made it the next *useful* work too |
 | W3 | Phase 8 | Belief panel for closed-sheet games; manual corrections; the stopgap's share display survives |
-| W4 | Phases 9–10 | EWP action table with intervals and worst-case replies; on-demand bring/lead simulation; state-reconstruction parity checks; post-game review |
+| W4 | Phases 9–10 | EWP action table with intervals and worst-case replies; on-demand bring/lead simulation; state-reconstruction parity checks; post-game review. Gated on Phase 6 passing against the Phase 9 policy — an app that ranks brings under a policy that fails it would be presenting the bot's opinion as the game's |
 | W5 | Phase 11 | Complete-my-team and moveset/SP suggestions |
 
 _Verification (unchanged):_ replay 20 held-out self-play battles through the app's forms using only
@@ -409,7 +461,9 @@ PLAN.md is the archive and stays in the repo. It holds what v2 does not repeat:
 - the L0–L5b architecture detail, which v2 amends but does not restate;
 - the phase 0–4 completion notes and the deviations recorded against each;
 - the Phase 4 sweep post-mortem, which reached the coverage-not-regularization diagnosis that
-  [docs/phase4-findings.md](docs/phase4-findings.md) then measured.
+  [docs/phase4-findings.md](docs/phase4-findings.md) then measured;
+- PLAN.md's observation that "67% of pairings land ≥85/15 under heuristic-vs-heuristic", which is the
+  caveat [docs/phase6-findings.md](docs/phase6-findings.md) finally turned into a measurement.
 
 Read v2 for what to do next. Read PLAN.md for why the stack is built the way it is.
 
@@ -422,4 +476,4 @@ Read v2 for what to do next. Read PLAN.md for why the stack is built the way it 
 - [vbbjandrade/pokemon-champions-data](https://github.com/vbbjandrade/pokemon-champions-data) (CC BY 4.0)
 - [poke-env](https://github.com/hsahovic/poke-env) · [smogon/damage-calc](https://github.com/smogon/damage-calc) · [ychen022/VGCHelper](https://github.com/ychen022/VGCHelper) (unlicensed — reference only)
 - [MetaVGC Reg M-C](https://metavgc.com/regulations/regulationm-c) · [Victory Road](https://victoryroad.pro/champions-regulations/) · [Pikalytics Reg M-C](https://www.pikalytics.com/pokedex/gen9championsvgc2026regmc) · [ChampDex Stat Points](https://champdex.com/guides/stat-points)
-- In-repo: [docs/phase4-findings.md](docs/phase4-findings.md) · [docs/phase0-findings.md](docs/phase0-findings.md) · [docs/cloud-compute.md](docs/cloud-compute.md) · [docs/regulation-change.md](docs/regulation-change.md) · [docs/web-app.md](docs/web-app.md)
+- In-repo: [docs/phase6-findings.md](docs/phase6-findings.md) · [docs/phase4-findings.md](docs/phase4-findings.md) · [docs/phase0-findings.md](docs/phase0-findings.md) · [docs/cloud-compute.md](docs/cloud-compute.md) · [docs/regulation-change.md](docs/regulation-change.md) · [docs/web-app.md](docs/web-app.md)
