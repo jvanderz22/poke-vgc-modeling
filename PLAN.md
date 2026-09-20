@@ -1,5 +1,12 @@
 # VGC Reg M-C Model & Advisor — Implementation Plan
 
+> **Superseded by [PLAN-v2.md](PLAN-v2.md) on 2026-09-20.** This file is the archive. It remains the
+> reference for *why the stack is built the way it is* — the original research, the L0–L5b
+> architecture detail, the phase 0–4 completion notes and deviations, the Phase 4 sweep post-mortem
+> and the 2026-09-20 CPU correction. It is **not** the current roadmap: the phase order, the gate
+> definitions and the expectations of the WP model all changed after
+> [docs/phase4-findings.md](docs/phase4-findings.md). Read PLAN-v2.md for what to do next.
+
 ## Progress
 
 | Phase                       | Status         | Notes                                                                                  |
