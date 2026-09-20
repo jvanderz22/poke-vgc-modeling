@@ -24,6 +24,10 @@ dependencies = [
 dev = [
   "pytest>=8.0.0",
 ]
+web = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+]
 
 [project.scripts]
 vgc = "vgc.cli.main:main"

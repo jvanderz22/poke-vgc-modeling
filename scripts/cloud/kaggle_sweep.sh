@@ -52,15 +52,16 @@ du -sh "$WORK/features" | cut -f1
 
 push_dataset() {  # dir, slug, title
   local dir="$1" slug="$2" title="$3"
+  # Written for both paths: `datasets version` reads the id from this file, and fetching it with
+  # `datasets metadata` is an extra failure mode when we already know what it should contain.
+  cat > "$dir/dataset-metadata.json" <<JSON
+{"title": "$title", "id": "$KUSER/$slug", "licenses": [{"name": "unknown"}]}
+JSON
   if "$KAGGLE" datasets status "$KUSER/$slug" >/dev/null 2>&1; then
     echo "==> updating dataset $slug"
-    "$KAGGLE" datasets metadata -p "$dir" "$KUSER/$slug" >/dev/null
     "$KAGGLE" datasets version -p "$dir" -m "$(git rev-parse --short HEAD) $(date -u +%FT%TZ)" --dir-mode zip
   else
     echo "==> creating private dataset $slug"
-    cat > "$dir/dataset-metadata.json" <<JSON
-{"title": "$title", "id": "$KUSER/$slug", "licenses": [{"name": "unknown"}]}
-JSON
     "$KAGGLE" datasets create -p "$dir" --dir-mode zip
   fi
 }
@@ -69,9 +70,20 @@ push_dataset "$WORK/features" vgc-wp-features "VGC WP features"
 cp src/vgc/wp/set_torch.py "$WORK/src/"
 push_dataset "$WORK/src" vgc-set-torch "VGC set encoder trainer"
 
-# Kaggle needs a moment before a just-pushed dataset version is attachable.
+# A just-pushed version is not attachable until Kaggle finishes processing it, and a kernel that
+# attaches too early sees the previous version's files. Wait for the content, not for a clock.
+wait_for() {  # slug, filename
+  local slug="$1" want="$2" i
+  for i in $(seq 1 40); do
+    "$KAGGLE" datasets files "$KUSER/$slug" 2>/dev/null | grep -q "^$want" && return 0
+    sleep 15
+  done
+  echo "$want never appeared in $slug — see https://kaggle.com/$KUSER/datasets" >&2
+  return 1
+}
 echo "==> waiting for datasets to finish processing"
-sleep 30
+wait_for vgc-wp-features train.npz
+wait_for vgc-set-torch set_torch.py
 
 # --- 2. the notebook -------------------------------------------------------------------------
 KERNEL="vgc-wp-sweep"

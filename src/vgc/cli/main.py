@@ -503,6 +503,17 @@ def cmd_wp_check_preview(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_web(args: argparse.Namespace) -> int:
+    try:
+        from vgc.web.app import serve
+    except ImportError as e:
+        print(f"the web app needs its extras: pip install -e '.[web]'  ({e})", file=sys.stderr)
+        return 1
+    print(f"http://{args.host}:{args.port}  (ctrl-c to stop)")
+    serve(host=args.host, port=args.port, reload=args.reload)
+    return 0
+
+
 def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
@@ -678,6 +689,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_wp_check_preview)
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)
+    p = sub.add_parser("web", help="battle-companion web app on localhost")
+    p.add_argument("--host", default="127.0.0.1", help="127.0.0.1 keeps it on this machine")
+    p.add_argument("--port", type=int, default=8000)
+    p.add_argument("--reload", action="store_true", help="reload on source changes (development)")
+    p.set_defaults(func=cmd_web)
     return ap
 
 

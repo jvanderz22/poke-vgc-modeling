@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 ROOT = Path(os.environ.get("VGC_ROOT", Path(__file__).resolve().parents[2]))
+DATA = ROOT / "data"
 CONFIGS = ROOT / "configs" / "regulations"
 REGULATION_DATA = ROOT / "data" / "regulations"
 CHAMPIONS_DATA = ROOT / "data" / "champions-data"
