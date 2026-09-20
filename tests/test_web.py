@@ -75,3 +75,45 @@ def test_illegal_team_is_a_client_error_not_a_crash(client, teams):
     r = client.post("/api/preview", json={"my_team": "Pikachu @ Light Ball\nAbility: Static\n- Thunderbolt",
                                           "their_team": teams[1]})
     assert r.status_code == 422
+
+
+def test_pool_is_ordered_by_usage(client):
+    p = client.get("/api/pool").json()
+    assert len(p["species"]) > 250 and p["items"] and p["moves"] and len(p["natures"]) == 25
+    seen = [s["seen"] for s in p["species"]]
+    assert seen == sorted(seen, reverse=True)  # an empty search box shows what people play
+    assert all(not s.get("battleOnly") for s in p["species"])
+
+
+def test_compose_builds_a_legal_team_from_species_alone(client, teams):
+    del teams  # only needed for the pool fixture's skip
+    names = ["Incineroar", "Rillaboom", "Gholdengo", "Sylveon", "Staraptor", "Raichu"]
+    r = client.post("/api/compose", json={"species": names}).json()
+    assert [s["species"] for s in r["sets"]] == names
+    # The share is the honest part: a guessed set is one of many, and the UI must be able to say so.
+    assert all(s["share"] is None or 0 < s["share"] <= 1 for s in r["sets"])
+    ok = client.post("/api/validate", json={"text": r["text"]}).json()
+    assert ok["legal"], [p["message"] for p in ok["problems"] if p["severity"] == "error"]
+
+
+def test_compose_rejects_an_illegal_species(client):
+    assert client.post("/api/compose", json={"species": ["Flutter Mane"]}).status_code == 422
+
+
+@pytest.mark.showdown
+def test_closed_sheet_preview_needs_a_full_team(client, teams):
+    body = {"my_team": teams[0], "their_species": ["Incineroar"]}
+    assert client.post("/api/preview", json=body).status_code == 422
+
+
+@pytest.mark.showdown
+def test_closed_sheet_preview_reports_what_it_guessed(client, teams):
+    names = ["Incineroar", "Rillaboom", "Gholdengo", "Sylveon", "Staraptor", "Raichu"]
+    r = client.post("/api/preview", json={"my_team": teams[0], "their_species": names, "limit": 3})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert len(d["best_by_bring"]) == 3
+    assert d["inferred_sets"] and len(d["inferred_sets"]) == 6
+    # An open sheet is not a guess, so it must not claim to be one.
+    open_sheet = client.post("/api/preview", json={"my_team": teams[0], "their_team": teams[1], "limit": 1}).json()
+    assert open_sheet["inferred_sets"] is None

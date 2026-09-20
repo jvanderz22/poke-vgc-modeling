@@ -26,3 +26,13 @@ models/**/vocab.json
 .kaggle-token
 kaggle.json
 access_token
+
+# Your saved teams: personal state, not part of the tool. Plain JSON — back it up or un-ignore
+# this line if you want version history for your teams.
+data/library/
+
+# Built frontend (npm --prefix frontend run build). Source lives in frontend/.
+src/vgc/web/static/
+
+# TypeScript incremental build state
+*.tsbuildinfo

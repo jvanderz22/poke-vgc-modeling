@@ -114,3 +114,19 @@ parity:
 # and polite not to), the team pool and the frozen split alone.
 clean-derived:
 	rm -rf data/features/$(REG) data/snapshots/$(REG)/selfplay data/snapshots/$(REG)/human
+
+# --- web app ------------------------------------------------------------------------------------
+
+frontend/node_modules:
+	npm --prefix frontend install
+
+# The React source in frontend/ compiles into src/vgc/web/static, which `vgc web` serves.
+web-build: frontend/node_modules
+	npm --prefix frontend run build
+
+web: web-build
+	$(VGC) web
+
+# Hot reload: vite on :5173 proxies /api to the Python app, so run `vgc web` alongside it.
+web-dev: frontend/node_modules
+	npm --prefix frontend run dev

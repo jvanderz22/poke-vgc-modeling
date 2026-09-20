@@ -2,10 +2,12 @@
 
 Scope, honestly stated, because the UI has to say the same thing:
 
-* **Open team sheets only.** Every WP model is trained with the opponent's items, abilities,
-  moves and spreads visible (`info_regime: "ots"`), which is a Bo3 game. Closed sheets need the
-  set prior from Phase 5 — you know six species and nothing else, and there is no team to hand
-  the simulator. `/api/preview` therefore requires the opponent's full sheet.
+* **The models are open-sheet models.** Every WP model is trained with the opponent's items,
+  abilities, moves and spreads visible (`info_regime: "ots"`), which is a Bo3 game.
+  `/api/preview` accepts a closed-sheet opponent as six species and fills each with its most
+  common real set (`prior.py`), because the simulator needs *a* team. That is a point estimate
+  over one guess, not an expectation over what they might be holding — Phase 5's belief tracker
+  is what makes it the latter, and until then closed-sheet answers are weaker than open ones.
 * **Bring recommendations carry their model's gate verdicts.** `vgc wp eval` records which of
   Phase 4's gates a model passed; the preview gate is the one that says whether ranked bring
   options mean anything. Responses include it so the UI can show a guess as a guess.
@@ -21,14 +23,18 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from vgc.regulation import load_regulation
+from vgc.regulation import load_regulation, to_id
 from vgc.web import library
 
 STATIC = Path(__file__).parent / "static"
+
+NATURES = ["Adamant", "Bashful", "Bold", "Brave", "Calm", "Careful", "Docile", "Gentle", "Hardy",
+           "Hasty", "Impish", "Jolly", "Lax", "Lonely", "Mild", "Modest", "Naive", "Naughty",
+           "Quiet", "Quirky", "Rash", "Relaxed", "Sassy", "Serious", "Timid"]
 
 
 def _reg(reg_id: str):
@@ -103,11 +109,18 @@ class SaveTeam(BaseModel):
 
 class PreviewRequest(BaseModel):
     my_team: str = Field(description="your team as Showdown text")
-    their_team: str = Field(description="the opponent's open team sheet as Showdown text")
+    their_team: str = Field(default="", description="their open team sheet as Showdown text")
+    their_species: list[str] = Field(default_factory=list,
+                                     description="closed sheets: their six species, sets inferred from usage")
     version: str = ""
     regulation: str = "reg_mc"
     context: str = "human"
     limit: int = 15
+
+
+class ComposeRequest(BaseModel):
+    species: list[str]
+    regulation: str = "reg_mc"
 
 
 @app.get("/api/health")
@@ -135,6 +148,43 @@ def models(regulation: str = "reg_mc") -> dict[str, Any]:
 @app.post("/api/validate")
 def validate(body: TeamText) -> dict[str, Any]:
     return _validate(body.text, _reg(body.regulation))
+
+
+@app.get("/api/pool")
+def pool(regulation: str = "reg_mc") -> dict[str, Any]:
+    """Everything the hand-entry pickers need: what is legal, and what people actually use.
+
+    `species` is ordered by usage so the names you will actually type are at the top of an empty
+    search box, and each carries the number of sheets it appeared in.
+    """
+    reg = _reg(regulation)
+    from vgc.web.prior import usage
+
+    seen = {sid: v["seen"] for sid, v in usage(reg.id).items()}
+    species = [{"name": s["name"], "id": to_id(s["name"]), "types": s["types"],
+                "abilities": list((s.get("abilities") or {}).values()),
+                "is_mega": bool(s.get("isMega")), "seen": seen.get(to_id(s["name"]), 0)}
+               for s in reg.dex.species.values() if not s.get("battleOnly")]
+    species.sort(key=lambda s: (-s["seen"], s["name"]))
+    return {"species": species,
+            "items": sorted({i["name"] for i in reg.dex.items.values()}),
+            "moves": sorted({m["name"] for m in reg.dex.moves.values()}),
+            "natures": NATURES}
+
+
+@app.post("/api/compose")
+def compose_team(body: ComposeRequest) -> dict[str, Any]:
+    """Six species → a legal team, each Pokémon given its most common real set.
+
+    `share` per Pokémon is how often that set was the one used: 0.15 means the guess is one of
+    many, and the caller should say so rather than present the result as the opponent's team.
+    """
+    from vgc.web.prior import compose
+
+    try:
+        return compose(body.species, _reg(body.regulation))
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
 
 
 @app.get("/api/teams")
@@ -174,8 +224,24 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
     version = body.version or (models(body.regulation)["default"] or "")
     if not version:
         raise HTTPException(400, "no WP model is registered for this regulation")
+
+    their_team, inferred = body.their_team, None
+    if not their_team:
+        # Closed sheets: we know six species. Fill each with its most common real set so there is
+        # a team to simulate. The result is a point estimate over one guess, not an expectation
+        # over what they might have — Phase 5 is what turns this into the latter.
+        if len(body.their_species) != reg.team_size:
+            raise HTTPException(422, f"give the opponent's full sheet, or exactly {reg.team_size} species")
+        from vgc.web.prior import compose
+
+        try:
+            built = compose(body.their_species, reg)
+        except ValueError as e:
+            raise HTTPException(422, str(e)) from e
+        their_team, inferred = built["text"], built["sets"]
+
     try:
-        result = run_preview(reg, body.my_team, body.their_team, version, context=body.context)
+        result = run_preview(reg, body.my_team, their_team, version, context=body.context)
     except (ValueError, RunnerError) as e:
         # Showdown's own validator rejected a sheet. That is the user's input being wrong, not a
         # server fault, and its message names the offending Pokémon — so pass it straight through.
@@ -189,16 +255,32 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
             "preview_wp_player": result.get("preview_wp_player"),
             "preview_wp_spectator": result.get("preview_wp_spectator"),
             "their_likely_bring": result.get("their_bring"),
-            "mine": result.get("mine"), "theirs": result.get("theirs")}
+            "mine": result.get("mine"), "theirs": result.get("theirs"),
+            # Present only for closed sheets: which sets were guessed, and how common each was.
+            "inferred_sets": inferred}
+
+
+BUILD_HINT = """<!doctype html><meta charset="utf-8"><title>VGC Companion</title>
+<body style="font:15px/1.6 system-ui;background:#12141a;color:#e6e8ee;padding:40px;max-width:44em;margin:auto">
+<h1 style="font-size:18px">The frontend has not been built</h1>
+<p>The React app lives in <code>frontend/</code> and is compiled into this package. It is generated,
+so it is not in git.</p>
+<pre style="background:#1b1e26;border:1px solid #2c3040;border-radius:8px;padding:12px">npm --prefix frontend install
+npm --prefix frontend run build</pre>
+<p>Then reload. <code>make web</code> does both. The API is already running —
+see <a style="color:#6aa9ff" href="/docs">/docs</a>.</p>"""
 
 
 @app.get("/")
-def index() -> FileResponse:
-    return FileResponse(STATIC / "index.html")
+def index():
+    """The built app, or instructions for building it — never a bare 404, because the build step
+    is easy to miss and the API being up makes it look like the app is broken instead."""
+    page = STATIC / "index.html"
+    return FileResponse(page) if page.exists() else HTMLResponse(BUILD_HINT, status_code=503)
 
 
-if STATIC.exists():
-    app.mount("/static", StaticFiles(directory=STATIC), name="static")
+STATIC.mkdir(parents=True, exist_ok=True)  # so the mount survives a fresh checkout
+app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
 def serve(host: str = "127.0.0.1", port: int = 8001, reload: bool = False) -> None:
