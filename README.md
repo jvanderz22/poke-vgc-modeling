@@ -39,6 +39,8 @@ vgc server start | status | stop                 # local Showdown on :8000, --no
 
 vgc meta scrape --format both --pages 8          # cache public replays (data/replays/)
 vgc meta pool                                    # dated team pool from open team sheets
+vgc meta usage                                   # what the corpus brings: species, items, abilities, natures, moves, partners
+vgc meta usage --species Rillaboom               # the full detail for one species
 vgc sim battle --team-a a.txt --team-b b.txt --n 50   # seeded, parallel; win rate with 95% CI
 vgc sim selfplay --n 500 --policy-a heuristic --policy-b random
 vgc sim validate                                 # does self-play predict real human results?
@@ -74,7 +76,7 @@ configs/regulations/     regulation configs (L0): reg_mc.yaml, reg_mb.yaml
 data/regulations/<id>/   legality snapshot exported from the pinned Showdown (vgc regulation export)
 data/champions-data/     vbbjandrade/pokemon-champions-data (CC BY 4.0) — mechanics docs, cross-check
 vendor/pokemon-showdown/ smogon/pokemon-showdown (MIT), pinned
-data/teams/<id>/         team pools built from open team sheets
+data/teams/<id>/         team pools and usage reports built from open team sheets
 data/splits/<id>.json    the frozen held-out split (tracked; never re-rolled)
 data/selfplay/, data/snapshots/, data/replays/   generated / cached, not tracked
 sidecar/                 Node helpers: calc server, Showdown dex export, damage sampler, battle runner

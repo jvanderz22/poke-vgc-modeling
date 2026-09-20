@@ -29,7 +29,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](docs/phase4-findings.md) |
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
-| 7 — Deterministic team tools | ⏳ Next | weakness report + usage report; no model, no gate — and unaffected by Phase 6 |
+| 7 — Deterministic team tools | 🟡 In progress | **usage report done** (`vgc meta usage`, 15,028 sheets); weakness report next. No model, no gate |
 | 8 — Belief over hidden sets | — | was Phase 5. **Rescoped:** open sheets hide Stat Points too, so this is not closed-sheet-only (finding 8) |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
@@ -271,7 +271,7 @@ recorded. The last readings of the retired check are kept in the Phase 6 finding
 Re-run this against every new policy. It is the project's standing check that the simulator measures
 the game rather than the bot, and it has now earned that description.
 
-### Phase 7 — Deterministic team tools ⏳ _next; independent of Phase 6, which is why it survived it_
+### Phase 7 — Deterministic team tools 🟡 _in progress; independent of Phase 6, which is why it survived it_
 
 v1 opened Phase 8 with "analytic weakness report first (no model, immediately useful)" and then put
 four phases of ML in front of it. It moves here, alongside a second tool the corpus already supports.
@@ -281,13 +281,30 @@ Room, and real damage calcs against the top-30 meta threats: "nothing on your te
 three of your six", "you lose to Trick Room", "no answer to redirection". Deterministic, explainable,
 every number traceable to the pinned calc.
 
-**Usage report.** 15,028 open team sheets already cached: species usage, item and ability
-distributions, move frequencies, common partners, imputed spread clusters. Descriptive and correct by
-construction. This appears to be the only corpus of its kind for Champions, and it is what players
-get from Pikalytics in other formats.
+**Usage report ✅** (`vgc meta usage`, `vgc.meta.usage`). 15,028 sheets from 7,514 replays, 2,523
+players, 3,347 distinct teams: species usage, item / ability / nature distributions, move frequencies
+and partners with lift. Descriptive and correct by construction. This appears to be the only corpus
+of its kind for Champions, and it is what players get from Pikalytics in other formats. Three
+counting decisions, each measured rather than assumed:
+
+- **It counts the replay sheets, not the pool.** `pool.team_key` is species + item + moves and
+  ignores ability and nature, so sheets differing only in a Modest/Timid choice collapse into one
+  entry with a single representative. Against the sheets that representative mis-assigns nature on
+  1.78% of Pokémon rows and ability on 0.57%, touching 9.8% of sheets. Fine for a pool of teams to
+  play; wrong for a distribution. (`web/prior.py` counts from the pool and inherits this; it is a
+  stopgap Phase 8 replaces, so it is recorded here rather than patched.)
+- **Two denominators, both reported.** Per game (a player who played 115 games counts 115 times)
+  and per player (each name once). They disagree enough to matter — Basculegion 17.9% vs 22.2%,
+  Garchomp 15.7% vs 19.3% — and they reorder the top five, so neither is called "usage" alone.
+- **No spread clusters**, which is what v1 listed here. Finding 8: sheets do not carry Stat Points,
+  and the pool's spreads are `impute_sp`'s deterministic function of nature and moves. Clustering
+  them would publish our own guess as a measurement of what people play. Nature is on the sheet, so
+  nature is counted; the spread belongs to Phase 8, which infers it rather than assuming it.
 
 _Verification:_ every claim in a weakness report resolves to a calc or a dex lookup, checked against
-the simulator on a sample; usage numbers reconcile to sheet counts; both run offline with no model.
+the simulator on a sample; usage numbers reconcile to sheet counts (`tests/test_usage.py` — species
+counts sum to 6 × sheets, every distribution sums to its species, partner counts are symmetric); both
+run offline with no model.
 
 ### Phase 8 — Belief over hidden set information _(was Phase 5; "closed-sheet belief")_
 

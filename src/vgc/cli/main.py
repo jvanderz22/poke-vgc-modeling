@@ -175,6 +175,65 @@ def cmd_meta_pool(args: argparse.Namespace) -> int:
     return 0
 
 
+def _bar(share: float, width: int = 12) -> str:
+    return "█" * round(share * width) + "·" * (width - round(share * width))
+
+
+def cmd_meta_usage(args: argparse.Namespace) -> int:
+    from vgc.meta import usage
+
+    reg = _reg(args)
+    if args.reuse:
+        report = usage.load(reg)
+        path = None
+    else:
+        report = usage.build(reg, min_rating=args.min_rating)
+        path = usage.save(reg, report)
+
+    if args.json:
+        print(json.dumps(report if not args.species else _species_entry(report, args.species), indent=1))
+        return 0
+
+    rated = report["rated_sheets"]
+    print(f"{report['sheets']} sheets from {report['replays']} replays · {report['players']} players · "
+          f"{report['distinct_teams']} distinct teams · {rated} rated ({rated / max(report['sheets'], 1):.0%})"
+          + (f" · min rating {report['min_rating']}" if report["min_rating"] else ""))
+    print(f"built {report['built']}" + (f" → {path}" if path else " (cached)"))
+
+    if args.species:
+        _print_species(_species_entry(report, args.species), args.top)
+        return 0
+
+    print(f"\n{'species':24} {'per game':>9} {'per player':>11}  {'':12}")
+    for s in usage.top_species(report, args.top):
+        print(f"{s['species']:24} {s['share']:>9.1%} {s['player_share']:>11.1%}  {_bar(s['share'])}")
+    print("\nper game weights a player by how much they played; per player counts each name once.")
+    print("no spread column: sheets do not carry Stat Points. `--species NAME` for the detail.")
+    return 0
+
+
+def _species_entry(report: dict, name: str) -> dict:
+    from vgc.regulation import to_id
+
+    entry = report["species"].get(to_id(name))
+    if entry is None:
+        raise SystemExit(f"{name!r} does not appear in {report['sheets']} sheets")
+    return entry
+
+
+def _print_species(s: dict, top: int) -> None:
+    print(f"\n{s['species']}: {s['sheets']} sheets ({s['share']:.1%} per game), "
+          f"{s['players']} players ({s['player_share']:.1%} per player)")
+    for label, key in (("item", "items"), ("ability", "abilities"), ("nature", "natures"), ("move", "moves")):
+        print(f"\n  {label}")
+        for row in s[key][:top]:
+            print(f"    {row['name']:26} {row['share']:>6.1%} {_bar(row['share'])}")
+    print("\n  partner (lift = how much more often than that partner's overall rate)")
+    for row in s["partners"][:top]:
+        lift = f"{row['lift']:.2f}×" if row["lift"] else "—"
+        print(f"    {row['species']:26} {row['share']:>6.1%} {lift:>7}")
+
+
 # --- sim ------------------------------------------------------------------------------
 
 def _print_run(s: dict) -> None:
@@ -660,6 +719,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = with_reg(meta.add_parser("pool", help="build a dated team pool from cached replays' team sheets"))
     p.add_argument("--tag", default="", help="suffix, to keep an earlier pool of the same date")
     p.set_defaults(func=cmd_meta_pool)
+    p = with_reg(meta.add_parser("usage", help="what the corpus brings: species, items, abilities, natures, moves, partners"))
+    p.add_argument("--species", help="the full detail for one species instead of the table")
+    p.add_argument("--top", type=int, default=30, help="rows per table")
+    p.add_argument("--min-rating", type=int, help="only sheets from replays rated at least this (ratings are sparse)")
+    p.add_argument("--reuse", action="store_true", help="print the last saved report instead of recounting")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_meta_usage)
 
     simp = sub.add_parser("sim", help="seeded, parallel battles").add_subparsers(dest="sim_cmd", required=True)
     policies = ["heuristic", "random"]

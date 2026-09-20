@@ -39,7 +39,7 @@ HUMAN     := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
 MANIFILE  := data/snapshots/$(REG)/manifests/$(MANIFEST).json
 FEATURES  := data/features/$(REG)/$(DATASET)/info.json
 
-.PHONY: data models sweep sim-validity collect gates test clean-derived help
+.PHONY: data models sweep sim-validity collect gates test clean-derived usage help
 .DEFAULT_GOAL := help
 
 help:
@@ -55,6 +55,10 @@ $(REPLAYS):
 
 pool: $(REPLAYS)
 	$(VGC) meta pool --regulation $(REG) --tag $(POOL_TAG)
+
+# Counts the cached sheets directly, so it needs the replays and not the pool. ~10s for 15k sheets.
+usage: $(REPLAYS)
+	$(VGC) meta usage --regulation $(REG)
 
 # Self-play is the expensive step (~26 min for 60k on 8 cores), so it is keyed on the run id:
 # changing SEED, BATTLES or PER_PAIR produces a new run rather than overwriting one. The replay
