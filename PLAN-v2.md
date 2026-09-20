@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ⏳ Next | weakness report + usage report; no model, no gate — and unaffected by Phase 6 |
-| 8 — Closed-sheet belief | — | was Phase 5; the regime the product actually runs in |
+| 8 — Belief over hidden sets | — | was Phase 5. **Rescoped:** open sheets hide Stat Points too, so this is not closed-sheet-only (finding 8) |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -65,14 +65,14 @@ the transfer test in §2, and then Phase 6's direct check, which is the one the 
 | 2 | Given 4 Pokémon, which 2 complete the team? | **Blocked behind Phase 9.** Needs a team-strength signal; Phase 6 measured both candidate sources and neither exists — the corpus has none, and the simulator's is uncorrelated with real results. |
 | 3 | What moves should each Pokémon run? | **Partly Phase 7** (legal movepool, coverage gaps, breakpoints are analytic); ranking by win rate is blocked with Q2. |
 | 4 | What do I bring, lead, and click? | **Phases 9–10.** Bring/lead is on-demand simulation of *this* matchup, not a learned function — but Phase 6 means the simulation has to be run by a policy stronger than the heuristic to mean anything. |
-| 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. |
-| 6 | All of the above in a web app during a real game | Staged; W2 lands with Phase 5, and **closed-sheet support (Phase 8) is the real unlock** — see the regime note in §5. |
+| 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. In-battle still improves on closed sheets (0.693 → 0.475 by t5–6) but calibrates worse, and finding 8 says why: it has never been trained through an unknown. |
+| 6 | All of the above in a web app during a real game | Staged; W2 lands with Phase 5, and **Phase 8 is the real unlock** — not only for closed sheets: finding 8 shows the spread is hidden at open sheets too, so speed and damage inference pay in every game. |
 
 ---
 
 ## What the evidence changed
 
-Seven findings, each measured on the frozen split. Full detail and the scripts:
+Eight findings, each measured on the frozen split. Full detail and the scripts:
 [docs/phase4-findings.md](docs/phase4-findings.md), [docs/phase6-findings.md](docs/phase6-findings.md),
 [`scripts/analysis/`](scripts/analysis/).
 
@@ -122,6 +122,21 @@ at **AUC 0.5119, 95% CI [0.4948, 0.5296]**, and after the best out-of-fold resca
 own split-half reliability is **0.96**, so the quantity is measured precisely and is simply the wrong
 quantity. *Consequence: the fork below takes its second branch — Phase 10's matrix is dead, Phase 9
 becomes the prerequisite, self-play generation stays paused. [Findings](docs/phase6-findings.md).*
+
+**8. An open team sheet is not full information, and the pipeline treats it as if it were.** The
+sheet carries species, item, ability, moves and nature — and **not the 66 Stat Points**
+(`unpack_sheet`: "no stats: sheets don't carry them"; the pool records spreads as *imputed*). Measured
+on the opponent's in-battle rows: nature known **1.000**, exact stats known **0.000**, in training
+and in the held-out set alike. So their speed order and their exact damage are undetermined at OTS,
+exactly as they are at closed sheets — and nothing infers either. `_move_summary` is documented as
+"independent of move order" and no who-moved-first feature exists; `_on_damage` records the
+defender's new HP and draws no conclusion about the attacker. Separately, the opponent's
+item/ability/move known-flags are **1.000 / 1.000 / 1.000** over 433,052 in-battle training rows
+against **0.454 / 0.417 / 0.348** on closed-sheet games, so those flags are constant in training and
+the model has never had the chance to learn what "unknown" means. *Consequence: Phase 8 is rescoped
+— belief over hidden sets is needed in **both** regimes, and its Stat-Point half can be gated on the
+7,459-battle open-sheet shard rather than the 779 closed-sheet one. The training mix gains a reason
+to include closed sheets that is independent of the closed-sheet product.*
 
 ---
 
@@ -233,6 +248,15 @@ _Two corrections to this plan's own sketch of the experiment, both from measurin
   shows how little of that there was. All pairings × 15 covers every game in the corpus for the same
   wall clock and is worth about 1.7× the power.
 
+_A caveat finding 8 adds, recorded rather than argued away:_ the pool's spreads are **imputed**
+from nature and moves, because the sheets do not carry Stat Points. So the pairings were simulated
+with guessed allocations, not the ones those players actually ran. The result is therefore about the
+simulator as it can actually be run against this corpus — the true spreads are not recoverable from
+a replay, so no version of this experiment can control for it. It is a reason to expect the measured
+signal to be an underestimate, not a reason to read the verdict differently: a split-half reliability
+of 0.96 says the imputed-spread matchup is being measured precisely, and it is uncorrelated with the
+outcome.
+
 _The fork, resolved:_ **it does not beat the constant.** Phase 10's matrix form is dead and so is any
 team-strength model distilled from it. Phase 9 becomes the prerequisite, and this check re-runs
 against that policy before anything is built on it. Self-play generation stays paused — finding 3
@@ -265,23 +289,53 @@ get from Pikalytics in other formats.
 _Verification:_ every claim in a weakness report resolves to a calc or a dex lookup, checked against
 the simulator on a sample; usage numbers reconcile to sheet counts; both run offline with no model.
 
-### Phase 8 — Closed-sheet belief _(was Phase 5)_
+### Phase 8 — Belief over hidden set information _(was Phase 5; "closed-sheet belief")_
 
-Moves up because of finding 5: the model and every eval set cover **open** sheets (7,459 battles), and
-the game the product is used in runs **closed** (779 battles). The app's current stopgap fills each
-species with its most common set and evaluates one guessed team at full confidence — a wrong item is
-wrong, not uncertain.
+Moved up by finding 5, and **rescoped by finding 8: this is not a closed-sheet feature.** An Open
+Team Sheet carries species, item, ability, moves and nature — and *not* the 66 Stat Points. So in
+both regimes the opponent's speed order and exact damage output are unknown, and in both regimes
+nothing in the pipeline infers them. The difference between the regimes is how much else is hidden,
+not whether anything is.
 
-Build: set prior from the sheet corpus and usage (`P(item, ability, moves, nature | species)`); belief
-updated by hard reveals and by a calc-based damage likelihood; K complete-set particles per opponent
-Pokémon; `WP_v2(o) = E_belief[WP_v1(o completed by particle)]`, reusing the in-battle model as the
-inner model.
+Two information channels, neither of which exists today, and both of which are pure computation
+against the pinned calc rather than anything learned:
 
-_Verification:_ on held-out closed-sheet games, v2 log loss sits between v1-with-oracle-sets (lower
-bound) and v1-with-prior-only (upper bound), and moves toward the oracle as sets reveal. Belief
-calibration: the true item and nature land in the belief's 80% set ~80% of the time. **Report the
-closed-sheet sample size on every verdict** — 779 battles is small, and a gate that ignores that will
-mislead.
+- **Turn order → a bound on speed.** Observing that their Pokémon moved first, given both base
+  stats, the natures on the sheet, known items and the field's speed modifiers, constrains their
+  speed SP to a range. Observing it repeatedly, or against different modifiers, tightens it. A speed
+  tie is itself informative. This is arithmetic, and today the featurizer explicitly throws it away:
+  `_move_summary` is documented as "independent of move order" and there is no who-moved-first
+  feature anywhere.
+- **Damage magnitude → a likelihood over spread and item.** A move that did 71% to a known defender
+  narrows the attacker's offensive SP and item jointly, through the same calc the rest of the stack
+  treats as ground truth. `_on_damage` currently writes the defender's new HP and nothing else.
+  PLAN-v2 already listed "a calc-based damage likelihood" in this phase; finding 8 says it applies at
+  open sheets too, which is where the model is actually trained and gated.
+
+Build, in the order the evidence supports:
+
+1. **SP belief, open sheets.** Everything but the spread is on the sheet, so the belief is over one
+   object: the allocation of 66 points, ≤32 per stat. Prior from `impute_sp` and the sheet corpus,
+   updated by the two channels above. This is the piece that can be gated on **7,459 battles**.
+2. **Full-set belief, closed sheets.** Set prior from the sheet corpus and usage
+   (`P(item, ability, moves, nature | species)`), updated by hard reveals *and* the same two
+   channels; K complete-set particles per opponent Pokémon.
+3. `WP_v2(o) = E_belief[WP_v1(o completed by particle)]`, reusing the in-battle model as the inner
+   model. The app's current stopgap — fill each species with its most common set and evaluate one
+   guessed team at full confidence — is replaced; a wrong item becomes uncertain rather than wrong.
+
+_Verification:_ v2 log loss sits between v1-with-oracle-sets (lower bound) and v1-with-prior-only
+(upper bound), and moves toward the oracle as information arrives. Belief calibration: the true
+value lands in the belief's 80% set ~80% of the time — for SP on open sheets, where the truth is
+*not* recoverable from the replay, calibrate instead on self-play, where it is. **Report the sample
+size on every verdict**; the closed-sheet half has 779 battles and a gate that ignores that will
+mislead, while the SP half has 7,459 and does not have that problem.
+
+_A prerequisite this phase inherits:_ the training mix has to stop being degenerate first. Finding 8
+measures the opponent's item/ability/move known-flags at **1.000** across 433,052 in-battle training
+rows, so the model has never seen an unknown and cannot have learned what one means. Adding the
+closed-sheet shard, and self-play generated with `ots=False`, comes before the belief layer is
+evaluated on top of it.
 
 ### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC — now the prerequisite for 10 and 11)_
 
@@ -401,7 +455,10 @@ v1's nine practices stand. Four are amended or added by the evidence:
     distribution, participant concentration, how games end. All three changed the reading here.
 12. **New — assert on the environment you think you are paying for.** The sweep ran on CPU for hours
     with `enable_gpu: true` set and nothing checking.
-13. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
+13. **New — check what a format actually reveals before calling it full information.** "Open team
+    sheet" reveals five of six things; the sixth is the spread, and the whole speed-and-damage layer
+    of the game hangs off it. Eight phases of plan treated OTS as though nothing were hidden.
+14. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
     reliability of 0.96 is what makes its negative a statement about the simulator rather than about
     a 15-battle budget. A null result from an unmeasured predictor says nothing.
 
@@ -412,7 +469,7 @@ v1's nine practices stand. Four are amended or added by the evidence:
 | Risk | Handling |
 | --- | --- |
 | ~~Phase 6 returns negative~~ **— it did** | **Realized 2026-09-20.** The handling stands as written: the product falls back to the deterministic stack — calc, weakness report, usage report, in-battle WP, closed-sheet belief. Still a real tool, and Phases 7 and 8 are untouched. Phase 9 is the route back, not a rewrite. |
-| **The closed-sheet corpus (779 battles) is too small to gate Phase 8** | Report n on every verdict; widen with continued scraping of the Bo1 format; treat belief calibration as directional until the sample grows. |
+| **The closed-sheet corpus (779 battles) is too small to gate Phase 8** | Partly relieved by finding 8: the Stat-Point half of the belief is needed at open sheets too and gates on 7,459 battles. For the closed-sheet half, report n on every verdict, widen by scraping Bo1, and treat belief calibration as directional until the sample grows. |
 | Policy too weak → meaningless team rankings | **Confirmed, not a risk any more.** Phase 6 is the hard stop and it runs *before* the matrix; it has already stopped it once. Nothing ranks teams until a policy clears it. |
 | Phase 9 produces a stronger policy that still fails Phase 6 | Possible — VGC-Bench's agents are "approximately 100% exploitable", so strength against a fixed opponent need not mean realism. The deterministic stack is the floor either way, and the failure would be cheap to detect because the check is already built. |
 | Not enough Reg M-C replays | Established: more replays do not fix preview (finding 1). They still help in-battle WP and the closed-sheet regime, which is where scraping effort should go. |
@@ -444,7 +501,7 @@ Kaggle before paid.
 | W1 | Phase 3 ✅ partial | `vgc web`, team library, validation, active team, bring/lead ranking. **Still missing:** pokepast.es fetching, calc panel, per-turn input, WP timeline |
 | **W2** | **Phase 5** 🟡 | In-battle WP routed to a gate-passing model and banner-flagged ✅; **left:** the per-turn WP timeline |
 | **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — **the next web work**, and Phase 6 made it the next *useful* work too |
-| W3 | Phase 8 | Belief panel for closed-sheet games; manual corrections; the stopgap's share display survives |
+| W3 | Phase 8 | Belief panel — **for open-sheet games too**, where the unknown is the spread: inferred speed ranges and damage-implied SP, with manual corrections. The stopgap's share display survives |
 | W4 | Phases 9–10 | EWP action table with intervals and worst-case replies; on-demand bring/lead simulation; state-reconstruction parity checks; post-game review. Gated on Phase 6 passing against the Phase 9 policy — an app that ranks brings under a policy that fails it would be presenting the bot's opinion as the game's |
 | W5 | Phase 11 | Complete-my-team and moveset/SP suggestions |
 

@@ -148,3 +148,20 @@ Team ids come from `|showteam|`, so every game scored here is **open-sheet Bo3 l
 rating near 1100, 58% of the corpus unrated (Phase 4 finding 5). The result says the current
 heuristic does not predict *that* population. It does not establish what a stronger policy would do —
 that is exactly what re-running this against Phase 9's policy is for.
+
+**The spreads are imputed, and cannot not be.** An open team sheet carries species, item, ability,
+moves and nature; it does not carry the 66 Stat Points (`unpack_sheet`: "no stats: sheets don't carry
+them"). The pool therefore stores a spread inferred from nature and moves by `impute_sp`, and these
+50,580 battles were played with those guesses rather than with what the two players actually ran.
+Two real teams with identical sheets and different speed investments are one pairing here.
+
+This is a limit on the experiment that no version of the experiment can remove — the truth is not in
+the replay. It is a reason to treat the measured signal as a floor rather than a point estimate. It
+is not a reason to read the verdict differently: §3's split-half reliability of 0.96 says the
+imputed-spread matchup is being measured very precisely, and §1 says that precisely-measured quantity
+is uncorrelated with who won. An attenuation argument would have to close a gap between AUC 0.512 and
+something worth building on, starting from a predictor whose own noise is already accounted for.
+
+It does, separately, sharpen what Phase 8 is for. The hidden Stat Points mean speed order and exact
+damage are unknown to a player at *open* sheets, not only at closed ones, and nothing in the pipeline
+infers either — see PLAN-v2 finding 8.
