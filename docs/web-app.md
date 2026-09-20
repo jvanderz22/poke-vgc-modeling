@@ -89,7 +89,9 @@ filters to the games the favoured side went on to lose — the ones actually wor
 Picking a game opens it at the decision point where it stopped being in doubt. A step is one
 decision, anchored *before* the action: the position the model was asked about and its answer,
 then the turn's log, then the position that produced. ← and → walk it, and the controls carry
-what the step did to the number — `92% / 8% → 0% / 100%` on the turn that decided this one.
+what the step did to the number — `42% / 58% → 40% / 60%`. The turn the game ended on shows the
+result alone, because an arrow from the model's last call to it would read as the model updating
+to 0%, and it did not: the game finished, which is not a prediction it made.
 
 Both boards are shown because the interesting part is usually the difference. The start-of-turn
 board is the whole sheet, all six, with a marker for what is known about each:
@@ -111,7 +113,8 @@ number is the result, 100% or 0%, flagged as an outcome rather than passed off a
 Without it a game that swung from 8% to a win would read as though it never resolved. The
 scrubber is the whole game at a glance — every tick is split between the two sides, p1 growing up
 from the bottom and p2 down from the top, and the outlined tick on the end is the result. Click
-it and you get the final position on its own, without the turn that produced it above it.
+it and you get the final position on its own, without the turn that produced it above it, and
+the number alone rather than the change: it is the end state, not a step.
 
 ## URLs
 

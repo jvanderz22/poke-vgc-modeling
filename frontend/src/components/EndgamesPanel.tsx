@@ -232,14 +232,21 @@ function GameStepper({ replay, reg, route, navigate, minWp }: {
           </span>
           {game.wp_error && <span className="err tiny">WP unavailable: {game.wp_error}</span>}
           {/* What the step did to the number, beside the controls so it is on screen whichever
-              panel you have scrolled to. On the last step the right-hand pair is the result. */}
+              panel you have scrolled to. The result view is the exception: it is the end state,
+              not a step, so it shows where the game landed and not how it got there. */}
           {cur.wp_p1 != null && (
             <span className="step-wp">
-              <Pair wp={cur.wp_p1} title="at this position" />
-              {cur.wp_after != null && (
+              {isResult && cur.wp_after != null ? (
+                <Pair wp={cur.wp_after} title="the result" />
+              ) : (
                 <>
-                  <span className="dim" aria-label="becomes">→</span>
-                  <Pair wp={cur.wp_after} title={cur.outcome ? "the result" : "after this step"} />
+                  <Pair wp={cur.wp_p1} title="at this position" />
+                  {cur.wp_after != null && (
+                    <>
+                      <span className="dim" aria-label="becomes">→</span>
+                      <Pair wp={cur.wp_after} title="after this step" />
+                    </>
+                  )}
                 </>
               )}
             </span>
