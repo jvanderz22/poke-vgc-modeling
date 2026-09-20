@@ -47,16 +47,16 @@
  "val_wp_logloss": 0.58244,
  "headline": {
   "human_spectator": {
-   "n": 30699,
-   "logloss": 0.57205,
-   "brier": 0.19677,
-   "ece": 0.01398
+   "n": 30698,
+   "logloss": 0.57193,
+   "brier": 0.19671,
+   "ece": 0.01396
   },
   "human_player_approx": {
-   "n": 58960,
-   "logloss": 0.59557,
-   "brier": 0.20638,
-   "ece": 0.02824
+   "n": 58958,
+   "logloss": 0.59545,
+   "brier": 0.20633,
+   "ece": 0.02822
   }
  }
 }

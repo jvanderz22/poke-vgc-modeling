@@ -74,43 +74,78 @@
  },
  "headline": {
   "human_spectator": {
-   "n": 30699,
-   "logloss": 0.56365,
-   "brier": 0.19379,
-   "ece": 0.02367
+   "n": 30698,
+   "logloss": 0.56343,
+   "brier": 0.1937,
+   "ece": 0.02328
   },
   "human_player_approx": {
-   "n": 58960,
-   "logloss": 0.5901,
-   "brier": 0.20441,
-   "ece": 0.04332
+   "n": 58958,
+   "logloss": 0.58988,
+   "brier": 0.20431,
+   "ece": 0.04301
   }
  },
  "gates": {
   "beats_baselines": {
    "pass": true,
-   "logloss": 0.56365,
+   "logloss": 0.56343,
    "baselines": {
-    "wp-v1-gbt": 0.54444,
-    "wp-v1-logistic": 0.57205,
+    "wp-v1-gbt": 0.54428,
+    "wp-v1-logistic": 0.57193,
     "constant": 0.69315
    }
   },
   "ece_spectator": {
    "pass": true,
-   "ece": 0.02367,
+   "ece": 0.02328,
+   "threshold": 0.03
+  },
+  "in_battle_beats_constant": {
+   "pass": true,
+   "logloss": {
+    "t1-2": 0.64633,
+    "t3-4": 0.55754,
+    "t5-6": 0.48978,
+    "t7+": 0.46996
+   },
+   "constant": {
+    "t1-2": 0.69315,
+    "t3-4": 0.69315,
+    "t5-6": 0.69315,
+    "t7+": 0.69315
+   },
+   "losing_buckets": []
+  },
+  "in_battle_ece": {
+   "pass": false,
+   "worst_bucket": "t7+",
+   "ece": 0.03099,
+   "threshold": 0.03,
+   "by_bucket": {
+    "t1-2": 0.02534,
+    "t3-4": 0.02567,
+    "t5-6": 0.0249,
+    "t7+": 0.03099
+   }
+  },
+  "ece_spectator_played_out": {
+   "pass": false,
+   "ece": 0.03802,
+   "logloss": 0.57721,
+   "n": 20312,
    "threshold": 0.03
   },
   "ece_player": {
    "pass": false,
-   "ece": 0.04332,
+   "ece": 0.04301,
    "threshold": 0.03
   },
   "player_beats_spectator": {
    "pass": false,
-   "player": 0.58083,
-   "spectator": 0.58218,
-   "spectator_symmetrized": 0.58034
+   "player": 0.58058,
+   "spectator": 0.58193,
+   "spectator_symmetrized": 0.58009
   },
   "bring_beats_usage": {
    "pass": true,
@@ -128,6 +163,18 @@
    "sim_spread_sd": 0.4194,
    "threshold": 0.5
   },
+  "in_battle_pass": false,
   "all_pass": false
+ },
+ "eval_dataset": {
+  "sha256": "f6fdbdb0797df9f9aa634dd709606149961108527424ffec0af46d9d9a75ba21",
+  "files": {
+   "eval_human_ots.npz": "16e6cc5c9624ba8f",
+   "eval_human_ots_team.npz": "53f303612fd1d078",
+   "eval_selfplay_battle.npz": "714726f82583504a",
+   "eval_selfplay_team.npz": "e6aa1ca65532384a"
+  },
+  "dataset": "wp-v1",
+  "at": "2026-09-20T13:05:07"
  }
 }

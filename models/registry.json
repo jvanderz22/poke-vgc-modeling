@@ -77,20 +77,22 @@
    "path": "models/wp/reg_mc/wp-v1-logistic",
    "headline": {
     "human_spectator": {
-     "n": 30699,
-     "logloss": 0.57205,
-     "brier": 0.19677,
-     "ece": 0.01398
+     "n": 30698,
+     "logloss": 0.57193,
+     "brier": 0.19671,
+     "ece": 0.01396
     },
     "human_player_approx": {
-     "n": 58960,
-     "logloss": 0.59557,
-     "brier": 0.20638,
-     "ece": 0.02824
+     "n": 58958,
+     "logloss": 0.59545,
+     "brier": 0.20633,
+     "ece": 0.02822
     }
    },
    "gates": {},
-   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5",
+   "eval_sha256": null,
+   "eval_at": null
   },
   {
    "version": "wp-v1-gbt",
@@ -100,20 +102,88 @@
    "path": "models/wp/reg_mc/wp-v1-gbt",
    "headline": {
     "human_spectator": {
-     "n": 30699,
-     "logloss": 0.54444,
-     "brier": 0.18676,
-     "ece": 0.01247
+     "n": 30698,
+     "logloss": 0.54428,
+     "brier": 0.18669,
+     "ece": 0.01245
     },
     "human_player_approx": {
-     "n": 58960,
-     "logloss": 0.5707,
-     "brier": 0.19731,
-     "ece": 0.01284
+     "n": 58958,
+     "logloss": 0.57053,
+     "brier": 0.19724,
+     "ece": 0.01271
     }
    },
-   "gates": {},
-   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.54428,
+     "baselines": {
+      "constant": 0.69315,
+      "wp-v1-logistic": 0.57193
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.01245,
+     "threshold": 0.03
+    },
+    "in_battle_beats_constant": {
+     "pass": true,
+     "logloss": {
+      "t1-2": 0.63983,
+      "t3-4": 0.53694,
+      "t5-6": 0.46091,
+      "t7+": 0.43374
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "losing_buckets": []
+    },
+    "in_battle_ece": {
+     "pass": true,
+     "worst_bucket": "t7+",
+     "ece": 0.02252,
+     "threshold": 0.03,
+     "by_bucket": {
+      "t1-2": 0.01372,
+      "t3-4": 0.01302,
+      "t5-6": 0.01955,
+      "t7+": 0.02252
+     }
+    },
+    "ece_spectator_played_out": {
+     "pass": true,
+     "ece": 0.02013,
+     "logloss": 0.55478,
+     "n": 20312,
+     "threshold": 0.03
+    },
+    "ece_player": {
+     "pass": true,
+     "ece": 0.01271,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": false,
+     "player": 0.56031,
+     "spectator": 0.56118,
+     "spectator_symmetrized": 0.55823
+    },
+    "preview_tracks_sim": {
+     "pass": null,
+     "note": "vgc wp check-preview has not been run"
+    },
+    "in_battle_pass": true,
+    "all_pass": false
+   },
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5",
+   "eval_sha256": "f6fdbdb0797df9f9aa634dd709606149961108527424ffec0af46d9d9a75ba21",
+   "eval_at": "2026-09-20T12:59:07"
   },
   {
    "version": "wp-v1-set-full",
@@ -123,43 +193,78 @@
    "path": "models/wp/reg_mc/wp-v1-set-full",
    "headline": {
     "human_spectator": {
-     "n": 30699,
-     "logloss": 0.56365,
-     "brier": 0.19379,
-     "ece": 0.02367
+     "n": 30698,
+     "logloss": 0.56343,
+     "brier": 0.1937,
+     "ece": 0.02328
     },
     "human_player_approx": {
-     "n": 58960,
-     "logloss": 0.5901,
-     "brier": 0.20441,
-     "ece": 0.04332
+     "n": 58958,
+     "logloss": 0.58988,
+     "brier": 0.20431,
+     "ece": 0.04301
     }
    },
    "gates": {
     "beats_baselines": {
      "pass": true,
-     "logloss": 0.56365,
+     "logloss": 0.56343,
      "baselines": {
-      "wp-v1-gbt": 0.54444,
-      "wp-v1-logistic": 0.57205,
+      "wp-v1-gbt": 0.54428,
+      "wp-v1-logistic": 0.57193,
       "constant": 0.69315
      }
     },
     "ece_spectator": {
      "pass": true,
-     "ece": 0.02367,
+     "ece": 0.02328,
+     "threshold": 0.03
+    },
+    "in_battle_beats_constant": {
+     "pass": true,
+     "logloss": {
+      "t1-2": 0.64633,
+      "t3-4": 0.55754,
+      "t5-6": 0.48978,
+      "t7+": 0.46996
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "losing_buckets": []
+    },
+    "in_battle_ece": {
+     "pass": false,
+     "worst_bucket": "t7+",
+     "ece": 0.03099,
+     "threshold": 0.03,
+     "by_bucket": {
+      "t1-2": 0.02534,
+      "t3-4": 0.02567,
+      "t5-6": 0.0249,
+      "t7+": 0.03099
+     }
+    },
+    "ece_spectator_played_out": {
+     "pass": false,
+     "ece": 0.03802,
+     "logloss": 0.57721,
+     "n": 20312,
      "threshold": 0.03
     },
     "ece_player": {
      "pass": false,
-     "ece": 0.04332,
+     "ece": 0.04301,
      "threshold": 0.03
     },
     "player_beats_spectator": {
      "pass": false,
-     "player": 0.58083,
-     "spectator": 0.58218,
-     "spectator_symmetrized": 0.58034
+     "player": 0.58058,
+     "spectator": 0.58193,
+     "spectator_symmetrized": 0.58009
     },
     "bring_beats_usage": {
      "pass": true,
@@ -177,9 +282,78 @@
      "sim_spread_sd": 0.4194,
      "threshold": 0.5
     },
+    "in_battle_pass": false,
     "all_pass": false
    },
-   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5"
+   "manifest_sha256": "cd73a220343cc2765711dde51717a9d4534d78df598d575130a5c151389e35e5",
+   "eval_sha256": "f6fdbdb0797df9f9aa634dd709606149961108527424ffec0af46d9d9a75ba21",
+   "eval_at": "2026-09-20T13:05:07"
+  },
+  {
+   "version": "wp-v1-sw-split-small",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-20T12:13:25",
+   "path": "models/wp/reg_mc/wp-v1-sw-split-small",
+   "headline": {
+    "human_spectator": {
+     "n": 30698,
+     "logloss": 0.5648,
+     "brier": 0.19418,
+     "ece": 0.01993
+    },
+    "human_player_approx": {
+     "n": 58958,
+     "logloss": 0.59084,
+     "brier": 0.20503,
+     "ece": 0.03206
+    }
+   },
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.5648,
+     "baselines": {
+      "wp-v1-gbt": 0.54428,
+      "wp-v1-logistic": 0.57193,
+      "constant": 0.69315
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.01993,
+     "threshold": 0.03
+    },
+    "ece_player": {
+     "pass": false,
+     "ece": 0.03206,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": false,
+     "player": 0.5817,
+     "spectator": 0.5804,
+     "spectator_symmetrized": 0.58017
+    },
+    "bring_beats_usage": {
+     "pass": true,
+     "model": 0.6711,
+     "usage": 0.6643,
+     "chance": 0.6667
+    },
+    "preview_tracks_sim": {
+     "pass": false,
+     "corr": 0.111,
+     "corr_heldout_team": -0.042,
+     "mae": 0.3927,
+     "mae_constant": 0.393,
+     "wp_spread_sd": 0.1531,
+     "sim_spread_sd": 0.4194,
+     "threshold": 0.5
+    },
+    "all_pass": false
+   },
+   "manifest_sha256": "ccde8d8217b5fb3b28e679bea3f6648a5d48c097f980ebe663dc33cce6441c14"
   }
  ]
 }
