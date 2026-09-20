@@ -117,3 +117,36 @@ def test_closed_sheet_preview_reports_what_it_guessed(client, teams):
     # An open sheet is not a guess, so it must not claim to be one.
     open_sheet = client.post("/api/preview", json={"my_team": teams[0], "their_team": teams[1], "limit": 1}).json()
     assert open_sheet["inferred_sets"] is None
+
+
+@pytest.mark.showdown
+def test_simulate_plays_a_battle_and_narrates_it(client, teams):
+    r = client.post("/api/simulate", json={"team_a": teams[0], "team_b": teams[1], "seed": 3})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["winner"] in ("p1", "p2", None) and d["turns"] > 0
+    assert d["invalid_choices"] == 0  # an invalid choice means the policy/driver is broken
+    assert d["timeline"] and all(t["events"] for t in d["timeline"])
+    assert any(e["kind"] == "move" for t in d["timeline"] for e in t["events"])
+    # WP is a spectator read on the same battle; it must not silently vanish.
+    assert d["wp_error"] is None
+    assert any(t["wp_p1"] is not None for t in d["timeline"])
+
+
+@pytest.mark.showdown
+def test_simulate_is_seeded(client, teams):
+    body = {"team_a": teams[0], "team_b": teams[1], "seed": 11}
+    a = client.post("/api/simulate", json=body).json()
+    b = client.post("/api/simulate", json=body).json()
+    # A battle is a pure function of (seed, teams, policies) — that is what makes a seed worth citing.
+    assert a["winner"] == b["winner"] and a["turns"] == b["turns"]
+    assert [t["events"] for t in a["timeline"]] == [t["events"] for t in b["timeline"]]
+    other = client.post("/api/simulate", json={**body, "seed": 12}).json()
+    assert other["battle_id"] != a["battle_id"]
+
+
+@pytest.mark.showdown
+def test_simulate_rejects_an_illegal_team(client, teams):
+    r = client.post("/api/simulate", json={"team_a": "Pikachu @ Light Ball\nAbility: Static\n- Thunderbolt",
+                                           "team_b": teams[1]})
+    assert r.status_code == 422

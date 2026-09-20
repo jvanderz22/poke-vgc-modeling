@@ -123,6 +123,16 @@ class ComposeRequest(BaseModel):
     regulation: str = "reg_mc"
 
 
+class SimulateRequest(BaseModel):
+    team_a: str
+    team_b: str
+    seed: int = 1
+    policy_a: str = "heuristic"
+    policy_b: str = "heuristic"
+    version: str = ""
+    regulation: str = "reg_mc"
+
+
 @app.get("/api/health")
 def health(regulation: str = "reg_mc") -> dict[str, Any]:
     reg = _reg(regulation)
@@ -269,6 +279,26 @@ so it is not in git.</p>
 npm --prefix frontend run build</pre>
 <p>Then reload. <code>make web</code> does both. The API is already running —
 see <a style="color:#6aa9ff" href="/docs">/docs</a>.</p>"""
+
+
+@app.post("/api/simulate")
+def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
+    """Play one battle between two teams and return it turn by turn, with spectator WP.
+
+    Seeded, so the same seed replays exactly. Both sides are driven by Phase 2's heuristic, which
+    beats random 98.4% of the time and is not strong play — a line it chooses is not evidence that
+    the line is good. Phase 6's search is what would make that claim.
+    """
+    from vgc.engine.runner import RunnerError
+    from vgc.web.simulate import simulate
+
+    reg = _reg(body.regulation)
+    version = body.version or (models(body.regulation)["default"] or "")
+    try:
+        return simulate(reg, body.team_a, body.team_b, seed=body.seed,
+                        policy_a=body.policy_a, policy_b=body.policy_b, version=version or None)
+    except (ValueError, RunnerError) as e:
+        raise HTTPException(422, str(e)) from e
 
 
 @app.get("/")

@@ -74,6 +74,18 @@ export type PreviewResult = {
   inferred_sets: InferredSet[] | null;
 };
 
+export type SimEvent = { kind: string; text: string; side: "p1" | "p2" | null };
+export type SimTurn = { turn: number; events: SimEvent[]; wp_p1: number | null };
+
+export type SimResult = {
+  battle_id: string; seed: number; format: string;
+  winner: "p1" | "p2" | null; turns: number; score: number[];
+  policies: { p1: string; p2: string };
+  invalid_choices: number; seconds: number;
+  version: string | null; wp_error: string | null;
+  timeline: SimTurn[];
+};
+
 export class ApiError extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -103,6 +115,10 @@ export const api = {
     call<{ text: string; sets: InferredSet[] }>("/api/compose", {
       method: "POST", body: JSON.stringify({ species, regulation }),
     }),
+  simulate: (body: {
+    team_a: string; team_b: string; seed: number;
+    policy_a: string; policy_b: string; regulation: string;
+  }) => call<SimResult>("/api/simulate", { method: "POST", body: JSON.stringify(body) }),
   /** Give `their_team` for an open sheet, or `their_species` (six) for a closed one. */
   preview: (
     my_team: string,
