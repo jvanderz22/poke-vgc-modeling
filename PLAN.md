@@ -712,6 +712,19 @@ early. Until a model passes, **`wp-v1-gbt` is the strongest thing on the headlin
 advantages are the bring head and the player perspective. Per the rule below, the failing gates are recorded in the
 model card and the CLI/app must not present this model as calibrated.
 
+#### Correction 2026-09-20: the Kaggle sweep never ran on a GPU
+
+The follow-up sweep (eight configurations, ~3.3h) was reported here and in conversation as having
+run on a free Kaggle GPU. It did not. Every `train.json` it produced records `device='cpu'` and
+`torch=2.10.0+cpu`, so `--device auto` had no CUDA build to select even though
+`kernel-metadata.json` sets `enable_gpu: true`. The weekly GPU quota still reading 0.00h used was
+the evidence, and it was misread at the time as "the failed runs cost nothing".
+
+The models are unaffected — a model is the same model whichever device trained it, and the sweep's
+conclusion stands on the numbers. What is not established is that this project has a working GPU
+path at all. Before the next cloud run, fix the image or the install, and verify with
+`train.json: device` rather than with the kernel metadata, which only records what was asked for.
+
 ### Phase 5 — Win probability v2: closed sheets, player mode
 
 _New 2026-09-19._ Set prior from the replay corpus and usage data. Belief tracker with hard reveals plus a damage-roll
