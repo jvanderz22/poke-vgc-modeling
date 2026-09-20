@@ -156,3 +156,26 @@ table.stats td { font-variant-numeric: tabular-nums; }
 .option.active { background: var(--panel-2); }
 
 .team-list { max-height: 230px; overflow-y: auto; }
+
+/* --- Pokémon badges (Bootstrap .badge, sized for these lists) --- */
+.mon-badges { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.mon-badge { font-size: 12px; font-weight: 600; padding: .34em .7em; }
+.mon-badge-extra { opacity: .72; margin-left: 5px; font-weight: 500; }
+.bring-sep { color: var(--dim); font-size: 12px; padding: 0 1px; }
+
+.opt .who { display: flex; }
+.btn-use { flex: none; font-size: 12px; padding: 5px 10px; }
+@media (max-width: 620px) {
+  .opt { flex-wrap: wrap; }
+  .opt .who { flex-basis: 100%; order: 3; }
+  .btn-use { order: 4; margin-top: 4px; }
+}
+
+.tab { position: relative; }
+.tab-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+}
+
+/* Bootstrap's reboot sets its own body/link colours; keep the app's palette. */
+body { background: var(--bg) !important; color: var(--text) !important; }

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { api, ApiError, type Health, type InferredSet, type PreviewResult, type SavedTeam, type Species } from "../api";
+import { api, ApiError, type BringOption, type Health, type InferredSet, type PreviewResult, type SavedTeam, type Species } from "../api";
 import { GateBanner } from "./GateBanner";
+import { BringBadges, MonBadge } from "./MonBadge";
 import { MyTeamInput } from "./MyTeamInput";
 import { OpponentInput, type SheetMode } from "./OpponentInput";
 
 /** Team preview: which four to bring, and which two to lead. */
 export function BattlePanel({
-  reg, health, teams, active, onActive, pool,
+  reg, health, teams, active, onActive, pool, onStart,
 }: {
   reg: string;
   health: Health | null;
@@ -14,6 +15,7 @@ export function BattlePanel({
   active: SavedTeam | null;
   onActive: (t: SavedTeam) => void;
   pool: Species[];
+  onStart: (result: PreviewResult, option: BringOption, teamText: string) => void;
 }) {
   const teamSize = health?.team_size ?? 6;
   const [paste, setPaste] = useState(false);
@@ -81,6 +83,25 @@ export function BattlePanel({
 
       {result && (
         <>
+          {/* What they are likely to bring comes first: it is what the ranking below is a response
+              to, and it is the part you want in your head before reading your own options. */}
+          {result.their_likely_bring && (
+            <div className="panel">
+              <h2>They are likely to bring</h2>
+              <div className="mon-badges">
+                {Object.entries(result.their_likely_bring)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([s, p], i) => (
+                    <MonBadge key={s} name={s} lead={i < (health?.bring ?? 4)} extra={`${(p * 100).toFixed(0)}%`} />
+                  ))}
+              </div>
+              <p className="tiny dim" style={{ margin: "8px 0 0" }}>
+                Per-Pokémon chance of being brought, from the bring head. The most likely{" "}
+                {health?.bring ?? 4} are highlighted.
+              </p>
+            </div>
+          )}
+
           {result.inferred_sets && <InferredNote sets={result.inferred_sets} />}
 
           <div className="panel">
@@ -90,6 +111,9 @@ export function BattlePanel({
                 <span className="dim small">overall {(result.preview_wp_player * 100).toFixed(1)}%</span>
               )}
             </div>
+            <p className="tiny dim" style={{ margin: "0 0 10px" }}>
+              Leads first, in blue.
+            </p>
 
             {/* A tight spread is the visible symptom of the failing preview gate: the model is
                 saying every choice is near-even, which is a fact about the model, not the game. */}
@@ -103,22 +127,12 @@ export function BattlePanel({
               <div className="opt" key={i}>
                 <span className="wp">{(o.wp * 100).toFixed(1)}%</span>
                 <span className="bar"><i style={{ width: `${Math.max(2, (o.wp / top) * 100)}%` }} /></span>
-                <span className="who">
-                  {o.bring.join(", ")}
-                  <br />
-                  <span className="leads">lead {o.leads.join(" + ")}</span>
-                </span>
+                <span className="who"><BringBadges leads={o.leads} back={o.back} /></span>
+                <button className="ghost btn-use" onClick={() => onStart(result, o, mine)}>
+                  Use this team
+                </button>
               </div>
             ))}
-
-            {result.their_likely_bring && (
-              <div style={{ marginTop: 16 }}>
-                <h2>They are likely to bring</h2>
-                {Object.entries(result.their_likely_bring)
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([s, p]) => <span key={s} className="mon-chip">{s} {(p * 100).toFixed(0)}%</span>)}
-              </div>
-            )}
           </div>
         </>
       )}
@@ -149,11 +163,9 @@ function InferredNote({ sets }: { sets: InferredSet[] }) {
       </p>
       {sets.map((s, i) => (
         <div className="opt" key={i}>
-          <span className="wp small">
-            {s.share != null ? `${(s.share * 100).toFixed(0)}%` : "—"}
-          </span>
+          <span className="wp small">{s.share != null ? `${(s.share * 100).toFixed(0)}%` : "—"}</span>
           <span className="who">
-            {s.species}{s.item ? <span className="dim"> @ {s.item}</span> : null}
+            <MonBadge name={s.species} extra={s.item ?? undefined} />
             <br />
             <span className="leads">
               {s.source === "default"
