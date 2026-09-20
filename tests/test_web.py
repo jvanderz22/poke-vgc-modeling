@@ -150,3 +150,24 @@ def test_simulate_rejects_an_illegal_team(client, teams):
     r = client.post("/api/simulate", json={"team_a": "Pikachu @ Light Ball\nAbility: Static\n- Thunderbolt",
                                            "team_b": teams[1]})
     assert r.status_code == 422
+
+
+def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
+    """Drawing a WP number on a battle in progress is a claim about in-battle calibration, so the
+    choice follows that gate — not "newest set encoder". Today the GBT baseline is the model that
+    passes it and the set encoder is not, and the app has to be able to say so."""
+    from vgc.web import app as web
+
+    rows = {"models": [
+        {"version": "old-gbt", "in_battle_pass": True, "created": "2026-01-01"},
+        {"version": "new-gbt", "in_battle_pass": True, "created": "2026-02-01"},
+        {"version": "shiny-set", "in_battle_pass": False, "created": "2026-03-01"},
+    ], "default": "shiny-set"}
+    monkeypatch.setattr(web, "models", lambda reg: rows)
+    assert web.in_battle_version("reg_mc") == "new-gbt"  # newest that passes, not newest overall
+
+    # Nothing passes: fall back to the default rather than refusing to show a battle at all.
+    none_pass = {"models": [dict(r, in_battle_pass=False) for r in rows["models"]],
+                 "default": "shiny-set"}
+    monkeypatch.setattr(web, "models", lambda reg: none_pass)
+    assert web.in_battle_version("reg_mc") == "shiny-set"

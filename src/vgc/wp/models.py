@@ -220,6 +220,27 @@ def _data_summary(manifest: Path) -> dict:
             "battles_by_source": {s: sum(b["source"] == s for b in m["battles"]) for s in ("selfplay", "human")}}
 
 
+def eval_fingerprint(files: list[Path]) -> dict:
+    """Identity of the rows a model was *scored* on.
+
+    The training manifest cannot answer this. It hashes the file a model was trained from, which
+    changes when the manifest is merely rebuilt (it carries a `created` timestamp) and does not
+    change when the held-out features are re-featurized underneath an old model. Comparing two
+    headline numbers is a question about the evaluation rows and nothing else, so hash those.
+    """
+    import hashlib
+
+    each, combined = {}, hashlib.sha256()
+    for p in sorted(files):
+        h = hashlib.sha256()
+        with p.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(chunk)
+        each[p.name] = h.hexdigest()[:16]
+        combined.update(p.name.encode()); combined.update(h.digest())
+    return {"sha256": combined.hexdigest(), "files": each}
+
+
 def _register(card: dict, out: Path) -> None:
     reg = json.loads(REGISTRY.read_text()) if REGISTRY.exists() else {"wp": []}
     reg["wp"] = [e for e in reg["wp"] if not (e["version"] == card["version"] and e["regulation"] == card["regulation"])]
@@ -228,7 +249,12 @@ def _register(card: dict, out: Path) -> None:
                       "headline": card.get("headline", {}), "gates": card.get("gates", {}),
                       # A dataset name is reused when its contents are rebuilt, so the name alone
                       # doesn't say two models were scored on the same rows. The manifest hash does.
-                      "manifest_sha256": card.get("training_manifest", {}).get("sha256")})
+                      "manifest_sha256": card.get("training_manifest", {}).get("sha256"),
+                      # What the headline was actually measured on — the only sound basis for
+                      # saying two rows of the registry may or may not be compared. `eval_at` is
+                      # when it was scored, which `created` (when the model was built) is not.
+                      "eval_sha256": card.get("eval_dataset", {}).get("sha256"),
+                      "eval_at": card.get("eval_dataset", {}).get("at")})
     reg["wp"].sort(key=lambda e: (e["regulation"], e["created"]))
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY.write_text(json.dumps(reg, indent=1) + "\n")

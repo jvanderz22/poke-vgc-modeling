@@ -87,7 +87,25 @@ def gate_summary(version: str) -> dict[str, Any]:
             # The gate that decides whether ranked bring options are trustworthy.
             "preview_gate": gates.get("preview_tracks_sim", {}).get("pass"),
             "bring_gate": gates.get("bring_beats_usage", {}).get("pass"),
+            # Separate verdict for a battle in progress: a model can be trustworthy turn by turn
+            # and useless at preview, which is exactly where Reg M-C stands today.
+            "in_battle_pass": gates.get("in_battle_pass"),
             "headline": entry.get("headline", {}).get("human_spectator", {})}
+
+
+def in_battle_version(regulation: str) -> str | None:
+    """The model to draw a WP number with during a battle.
+
+    Prefers one whose in-battle gates pass over the newest set encoder, because that is the claim
+    being made when a percentage is put on screen mid-battle. Today that is the GBT baseline: it
+    beats the constant in every turn bucket and holds ECE < 0.03 throughout, while the set encoder
+    misses on the last bucket and on games played to the end.
+    """
+    listed = models(regulation)
+    passing = [r for r in listed["models"] if r.get("in_battle_pass")]
+    if passing:
+        return sorted(passing, key=lambda r: r.get("created") or "")[-1]["version"]
+    return listed["default"]
 
 
 app = FastAPI(title="VGC battle companion", version="0.1")
@@ -293,7 +311,9 @@ def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
     from vgc.web.simulate import simulate
 
     reg = _reg(body.regulation)
-    version = body.version or (models(body.regulation)["default"] or "")
+    # The WP track here is entirely in-battle, so it uses the model that passes the in-battle
+    # gates rather than the newest set encoder.
+    version = body.version or (in_battle_version(body.regulation) or "")
     try:
         return simulate(reg, body.team_a, body.team_b, seed=body.seed,
                         policy_a=body.policy_a, policy_b=body.policy_b, version=version or None)

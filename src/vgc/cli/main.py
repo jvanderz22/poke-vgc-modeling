@@ -437,9 +437,16 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
                                                    "baselines": all_results}, indent=1) + "\n")
         pv = out / "preview_vs_sim.json"
         g = evaluate.gates(main_r, all_results, json.loads(pv.read_text()) if pv.exists() else None)
-        models.update_card(reg.id, args.version, headline=evaluate.headline(main_r), gates=g)
+        fp = models.eval_fingerprint(sorted(base.glob("eval_*.npz"))) | {
+            "dataset": args.dataset, "at": __import__("datetime").datetime.now().isoformat(timespec="seconds")}
+        models.update_card(reg.id, args.version, headline=evaluate.headline(main_r), gates=g,
+                           eval_dataset=fp)
         failed = [k for k, v in g.items() if isinstance(v, dict) and v.get("pass") is False]
         print(f"gates: {'all pass' if g['all_pass'] else 'FAILED ' + ', '.join(failed)}")
+        # Say the in-battle verdict out loud: a model can fail the pooled set purely on preview
+        # and still be the right thing to draw a WP number with turn by turn.
+        if g.get("in_battle_pass") is not None and not g["all_pass"]:
+            print(f"       in-battle only: {'PASS' if g['in_battle_pass'] else 'FAIL'}")
     # Baselines were just scored on these same rows; record it, or the registry shows the model
     # we are actually beaten by as "(not evaluated)".
     for bname, bres in all_results.items():
@@ -519,8 +526,13 @@ def cmd_wp_registry(args: argparse.Namespace) -> int:
 
     reg = json.loads(REGISTRY.read_text()) if REGISTRY.exists() else {"wp": []}
     # Log losses from different manifests are not comparable; mark everything not on the newest one.
-    current = max((e.get("manifest_sha256") for e in reg["wp"] if e.get("manifest_sha256")),
-                  key=lambda s: max(e["created"] for e in reg["wp"] if e.get("manifest_sha256") == s), default=None)
+    # Comparability is a question about the rows a model was *scored* on, not the manifest it was
+    # trained from: two models trained months apart and re-evaluated today are directly
+    # comparable, and the training manifest changes whenever it is merely rebuilt. Anchor on the
+    # newest evaluation fingerprint, and say "not evaluated since" when a model has none — an old
+    # card that predates the fingerprint cannot be claimed to match.
+    evaluated = [e for e in reg["wp"] if e.get("eval_sha256") and e.get("eval_at")]
+    current = max(evaluated, key=lambda e: e["eval_at"])["eval_sha256"] if evaluated else None
     for e in reg["wp"]:
         h = e.get("headline", {}).get("human_spectator", {})
         tail = f"human spectator logloss {h['logloss']:.4f} ece {h['ece']:.4f}" if h else "(not evaluated)"
@@ -529,8 +541,14 @@ def cmd_wp_registry(args: argparse.Namespace) -> int:
         if g:
             failed = [k for k, v in g.items() if isinstance(v, dict) and v.get("pass") is False]
             tail += "  gates: all pass" if g.get("all_pass") else f"  gates: FAIL ({', '.join(failed)})"
-        if h and current and e.get("manifest_sha256") != current:
-            tail += "  [scored on an earlier dataset — not comparable]"
+            # The split verdict: usable during a battle even when the pooled set fails on preview.
+            if not g.get("all_pass") and g.get("in_battle_pass"):
+                tail += "  [in-battle: PASS]"
+        if h and current:
+            if not e.get("eval_sha256"):
+                tail += "  [scored before eval fingerprints — comparability unknown]"
+            elif e["eval_sha256"] != current:
+                tail += "  [scored on different eval rows — not comparable]"
         print(f"{e['regulation']:7} {e['version']:24} {e['kind']:9} {e['created']}  {tail}")
     return 0
 

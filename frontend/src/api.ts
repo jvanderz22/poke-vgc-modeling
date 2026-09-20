@@ -40,6 +40,8 @@ export type Gates = {
   version: string; known: boolean; evaluated?: boolean;
   all_pass?: boolean | null; failed?: string[];
   preview_gate?: boolean | null; bring_gate?: boolean | null;
+  /** Separate verdict for a battle in progress — a model can pass this and fail preview. */
+  in_battle_pass?: boolean | null;
   headline?: { n?: number; logloss?: number; brier?: number; ece?: number };
 };
 

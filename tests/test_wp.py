@@ -101,6 +101,42 @@ def test_identity_dropout_can_spare_preview_rows():
     assert 0.45 < (uniform[kind <= 1] == UNK).mean() < 0.55
 
 
+def _spectator(by_turn, all_logloss=0.55, all_ece=0.01, normal_ece=0.02):
+    return {"human_ots_all": {"perspectives": {"spectator": {
+        "all": {"logloss": all_logloss, "ece": all_ece},
+        "ended_normal": {"logloss": all_logloss + 0.01, "ece": normal_ece, "n": 100},
+        "by_turn": by_turn}}}}
+
+
+def test_gates_separate_in_battle_from_preview():
+    """A model can be trustworthy turn by turn and useless at team preview — `wp-v1-gbt` is
+    exactly that, scoring the constant to five decimals at preview and beating it in every turn
+    bucket. One pooled verdict would report the working half as failing."""
+    from vgc.wp.evaluate import IN_BATTLE_BUCKETS, gates
+
+    good = {b: {"logloss": 0.60, "ece": 0.02} for b in IN_BATTLE_BUCKETS}
+    const = _spectator({b: {"logloss": 0.69315, "ece": 0.01} for b in IN_BATTLE_BUCKETS},
+                       all_logloss=0.69315)
+
+    g = gates(_spectator(good), {"constant": const}, None)
+    assert g["in_battle_pass"] is True
+    assert g["all_pass"] is False  # check-preview never ran, so the preview gate is not a pass
+
+    # One miscalibrated bucket sinks it, even though the pooled ECE is fine.
+    bad = dict(good, **{"t7+": {"logloss": 0.60, "ece": 0.05}})
+    assert gates(_spectator(bad), {"constant": const}, None)["in_battle_pass"] is False
+
+    # Losing to the constant in any single bucket sinks it, and the gate names the bucket.
+    worse = dict(good, **{"t1-2": {"logloss": 0.70, "ece": 0.02}})
+    g3 = gates(_spectator(worse), {"constant": const}, None)
+    assert g3["in_battle_beats_constant"]["pass"] is False
+    assert g3["in_battle_beats_constant"]["losing_buckets"] == ["t1-2"]
+
+    # A third of held-out rows are forfeits and they are easier, so a model that is calibrated
+    # only once they are mixed in must not pass.
+    assert gates(_spectator(good, normal_ece=0.04), {"constant": const}, None)["in_battle_pass"] is False
+
+
 def test_metrics():
     y = np.array([1, 0, 1, 0], float)
     m = metrics(np.full(4, 0.5), y)
@@ -128,3 +164,27 @@ def test_onnx_export_works_on_this_torch(tmp_path):
     out = tmp_path / "m.onnx"
     _export(model, sample, out)
     assert out.stat().st_size > 1000
+
+
+def test_eval_fingerprint_identifies_the_scored_rows(tmp_path):
+    """Comparability between two registry rows is a question about the rows they were scored on.
+
+    The training manifest cannot answer it: it carries a `created` timestamp, so rebuilding it
+    from identical data changes the hash and every model looks incomparable — which is how the
+    warning came to fire on every row at once and stop meaning anything.
+    """
+    from vgc.wp.models import eval_fingerprint
+
+    a, b = tmp_path / "eval_x.npz", tmp_path / "eval_y.npz"
+    a.write_bytes(b"rows-a"), b.write_bytes(b"rows-b")
+    first = eval_fingerprint([a, b])
+    assert first["sha256"] == eval_fingerprint([b, a])["sha256"]  # order must not matter
+
+    a.write_bytes(b"rows-a")  # rewriting identical bytes is not a change
+    assert eval_fingerprint([a, b])["sha256"] == first["sha256"]
+
+    a.write_bytes(b"rows-a!")  # different rows are
+    assert eval_fingerprint([a, b])["sha256"] != first["sha256"]
+
+    # A file appearing or vanishing changes the set that was scored.
+    assert eval_fingerprint([b])["sha256"] != first["sha256"]

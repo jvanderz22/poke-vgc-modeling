@@ -155,6 +155,7 @@ def _mean(xs: list[float]) -> float | None:
 
 ECE_GATE = 0.03
 PREVIEW_CORR_GATE = 0.5
+IN_BATTLE_BUCKETS = ("t1-2", "t3-4", "t5-6", "t7+")
 
 
 def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
@@ -181,6 +182,33 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
         verdict("beats_baselines", all(spec["logloss"] < ll for ll in required.values()) if required else None,
                 logloss=spec["logloss"], baselines=beaten)
         verdict("ece_spectator", spec["ece"] < ECE_GATE, ece=spec["ece"], threshold=ECE_GATE)
+
+    # Predicting a battle in progress and predicting a matchup at preview are different jobs, and
+    # one pooled verdict hides a working model behind a gate about the other one. `wp-v1-gbt`
+    # scores exactly the constant at preview (0.69315) and beats it in every turn bucket; calling
+    # that "failing" is not a useful thing to tell the app or the user.
+    by = persp.get("spectator", {}).get("by_turn") or {}
+    const_by = ((baselines or {}).get("constant", {}).get("human_ots_all", {})
+                .get("perspectives", {}).get("spectator", {}).get("by_turn") or {})
+    have = [b for b in IN_BATTLE_BUCKETS if (by.get(b) or {}).get("logloss") is not None]
+    if have:
+        losing = [b for b in have if (const_by.get(b) or {}).get("logloss") is not None
+                  and by[b]["logloss"] >= const_by[b]["logloss"]]
+        verdict("in_battle_beats_constant", (not losing) if const_by else None,
+                logloss={b: by[b]["logloss"] for b in have},
+                constant={b: (const_by.get(b) or {}).get("logloss") for b in have},
+                losing_buckets=losing)
+        worst = max(have, key=lambda b: by[b]["ece"])
+        verdict("in_battle_ece", by[worst]["ece"] < ECE_GATE, worst_bucket=worst,
+                ece=by[worst]["ece"], threshold=ECE_GATE, by_bucket={b: by[b]["ece"] for b in have})
+
+    # A third of the held-out rows are forfeits, and they are easier — players concede from
+    # lopsided positions, so pooling them flatters the headline. Score played-out games too.
+    played = persp.get("spectator", {}).get("ended_normal")
+    if played:
+        verdict("ece_spectator_played_out", played["ece"] < ECE_GATE, ece=played["ece"],
+                logloss=played["logloss"], n=played["n"], threshold=ECE_GATE)
+
     player = persp.get("player_approx", {}).get("all") or persp.get("player", {}).get("all")
     if player:
         verdict("ece_player", player["ece"] < ECE_GATE, ece=player["ece"], threshold=ECE_GATE)
@@ -209,6 +237,15 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None,
                 threshold=PREVIEW_CORR_GATE)
     else:
         verdict("preview_tracks_sim", None, note="vgc wp check-preview has not been run")
+    def group(keys: tuple[str, ...]) -> bool | None:
+        vals = [out[k]["pass"] for k in keys if k in out]
+        return None if (not vals or None in vals) else all(vals)
+
+    # Two verdicts, because there are two jobs. `in_battle_pass` is what the app needs to know
+    # before it draws a WP number on a battle in progress; `all_pass` still governs anything that
+    # reasons about team preview. A model can honestly be one and not the other.
+    out["in_battle_pass"] = group(("in_battle_beats_constant", "in_battle_ece",
+                                   "ece_spectator_played_out"))
     out["all_pass"] = all(g["pass"] for g in out.values() if isinstance(g, dict) and "pass" in g)
     return out
 

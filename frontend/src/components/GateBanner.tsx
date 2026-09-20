@@ -37,6 +37,13 @@ export function GateBanner({ gates }: { gates: Gates | null }) {
       ) : (
         <>The failing gates are not the preview gate, but read the ranking as approximate.</>
       )}
+      {gates.in_battle_pass && (
+        <div className="tiny" style={{ marginTop: 6 }}>
+          Once a battle is under way this is a different question, and a model that passes the
+          in-battle gates is used for it — so the WP track on the Battle and Simulate pages is not
+          covered by the warning above.
+        </div>
+      )}
     </div>
   );
 }

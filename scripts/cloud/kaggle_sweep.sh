@@ -159,19 +159,29 @@ fi  # end of the push-and-wait phase
 # --- 4. bring the models home ------------------------------------------------------------------
 echo "==> downloading"
 rm -rf "$WORK/out"; mkdir -p "$WORK/out"   # a stale zip here would be unpacked in preference
-"$KAGGLE" kernels output "$KUSER/$KERNEL" -p "$WORK/out"
+# Kaggle serves the output from a CDN that times out often enough to matter, and under `set -e` a
+# failed download killed the script mid-listing with no message at all — it read as "no models".
+for try in 1 2 3; do
+  "$KAGGLE" kernels output "$KUSER/$KERNEL" -p "$WORK/out" && break
+  echo "    download attempt $try failed — retrying in 30s" >&2
+  sleep 30
+done
 ZIP=$(ls "$WORK/out"/*.zip 2>/dev/null | head -1) || true
 [ -n "${ZIP:-}" ] && unzip -qo "$ZIP" -d "$WORK/out/models"
 SRC="$WORK/out/models"; [ -d "$SRC" ] || SRC="$WORK/out"
 
+# A config named `split-0.5/0.0` becomes a *nested* directory, so a one-level scan finds nothing.
+# Search at any depth and flatten the path into the name. Collected models are prefixed so they
+# can never overwrite a model trained by hand here: `wp-v1-set` exists in both worlds.
 FOUND=()
-for d in "$SRC"/*/; do
-  name=$(basename "$d")
-  [ -f "$d/model.onnx" ] || continue
+while IFS= read -r f; do
+  d=$(dirname "$f")
+  rel="${d#"$SRC"/}"
+  name="$DATASET-sw-$(printf '%s' "$rel" | tr '/' '-' | tr -d '.')"
   mkdir -p "models/wp/$REG/$name"
   cp "$d"/* "models/wp/$REG/$name/"
   FOUND+=("$name")
-done
+done < <(find "$SRC" -name model.onnx | sort)
 [ ${#FOUND[@]} -eq 0 ] && { echo "no models in the output — check https://kaggle.com/$KUSER/$KERNEL" >&2; exit 1; }
 echo "==> got: ${FOUND[*]}"
 
