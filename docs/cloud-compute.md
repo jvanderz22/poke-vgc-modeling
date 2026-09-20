@@ -63,7 +63,7 @@ Notes:
   Intel. Opset 17 is compatible either way. The card records the torch version and device used.
 - A sweep is just several `run_training.sh` calls with different flags and `--out` names; run them
   sequentially on one box and compare **`val_wp_logloss_human`** in each `train.json` — not
-  `val_wp_logloss`. Validation is ~89% self-play, and the two diverge: on Reg M-C the epoch that
+  `val_wp_logloss`. Validation is 72% self-play, and the two diverge: on Reg M-C the epoch that
   minimised overall validation loss scored 0.638 on human rows where the previous epoch scored
   0.581. Pass `--human-weight 4` so `set_torch` also selects its checkpoint that way.
 - **No validation number decides a model.** The gates are measured locally on the frozen held-out

@@ -21,7 +21,7 @@ version of it has never been checked against reality.** The evidence is in
 | 2 — Battle layer, tier 1 | ✅ 2026-09-19 | heuristic 98.4% vs random; seeded runner, identical across worker counts |
 | 3 — Battle data | ✅ 2026-09-19 | snapshots for every perspective; parity exact on 3,089 live decisions; split frozen |
 | 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](docs/phase4-findings.md) |
-| 5 — Ship in-battle WP | 🟡 Nearly done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired. **Left:** two stale docstrings |
+| 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ⏳ Next | the fork in the road; ~25 min of laptop time |
 | 7 — Deterministic team tools | — | weakness report + usage report; no model, no gate |
 | 8 — Closed-sheet belief | — | was Phase 5; the regime the product actually runs in |
@@ -142,7 +142,7 @@ Three amendments:
 Each phase ends in something runnable. Phases 5 and 6 are independent and can run in either order;
 everything from 7 on depends on 6's answer or is deliberately independent of it.
 
-### Phase 5 — Ship in-battle WP
+### Phase 5 — Ship in-battle WP ✅
 
 The capability exists and is being hidden by a gate about a different task. `wp-v1-gbt` on held-out
 human OTS games, spectator, by bucket:
@@ -173,9 +173,9 @@ seven keep `train.json` only, as the tracked evidence that hyperparameter tuning
 that the run never touched a GPU; `wp-v1-sw-split-small` keeps a full card; `wp-v1-sw-uniform-05`'s
 half-finished card was dropped rather than committed. Weights stay gitignored.
 
-_Left to close the phase, one cheap item:_ two stale docstrings that put human rows at "~3%" of the
-data (`set_torch.py:280` — they are 28.0%) and validation at "~89% self-play"
-(`kaggle_train_wp.ipynb` — it is 72%).
+_Closed 2026-09-20._ The five stale claims about corpus composition are corrected in
+`set_torch.py` (×3), `kaggle_train_wp.ipynb` and `docs/cloud-compute.md`: human rows are 28.0% of
+train and val, not "~3%"/"a few percent", and validation is 72% self-play, not ~89%.
 
 ### Phase 6 — Simulator validity: the fork in the road
 

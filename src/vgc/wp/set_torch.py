@@ -98,8 +98,11 @@ def _load(path: Path) -> dict[str, np.ndarray]:
 
 def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.Tensor]:
     # num stays float16 in memory (it's the bulk of the data) and is cast per batch.
-    # Human rows are a few percent of the data but they are the distribution we are judged on,
-    # so they can be weighted up; the model also gets a human/self-play flag in `glob`.
+    # Human rows are 28% of the data — more than their 11% share of battles, because self-play is
+    # thinned (`features.train_orientations`) while human games are kept whole, both orientations
+    # included. They are also the distribution we are judged on, so they can be weighted up: at
+    # `--human-weight 4` they carry ~61% of the loss. The model also gets a human/self-play flag
+    # in `glob`.
     w = np.where(d["source"] == 1, human_weight, 1.0).astype(np.float32)
     return [torch.from_numpy(d["cat"].astype(np.int16)), torch.from_numpy(d["num"].astype(np.float16)),
             torch.from_numpy(d["glob"]), torch.from_numpy(d["y"]), torch.from_numpy(d["bring"]),
@@ -162,7 +165,7 @@ def _losses(model: SetWP, batch: list[torch.Tensor], bring_weight: float) -> tup
 
 @torch.no_grad()
 def _eval(model: SetWP, data: list[torch.Tensor], bs: int = 4096, device: str = "cpu") -> tuple[dict, np.ndarray]:
-    """Validation log loss overall and on human rows alone. Validation is mostly self-play, so a
+    """Validation log loss overall and on human rows alone. Validation is 72% self-play, so a
     model trained to fit human play scores worse overall by construction — when human rows are
     weighted up, they are also what the model is selected on."""
     model.eval()
@@ -277,7 +280,7 @@ def main() -> None:
     ap.add_argument("--threads", type=int, default=6)
     ap.add_argument("--bs", type=int, default=512)
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
-    ap.add_argument("--human-weight", type=float, default=1.0, help="weight on human rows (they are ~3% of the data)")
+    ap.add_argument("--human-weight", type=float, default=1.0, help="weight on human rows (they are 28% of the data)")
     ap.add_argument("--id-dropout-preview", type=float, default=None,
                     help="identity dropout for preview/bring rows only (default: same as --id-dropout). "
                          "Team identity is the whole input before the battle starts, so masking it there "

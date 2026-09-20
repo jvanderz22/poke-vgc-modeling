@@ -195,10 +195,13 @@ This does not change the "stop sweeping" call — §1 and §2 stand on their own
 GPU-hours/week are unspent and **this project has no demonstrated GPU path**. The check is
 `train.json: device`, not the kernel metadata, which records only what was requested.
 
-**Two stale docstrings that misdescribe the data.** `set_torch.py` says human rows are "~3% of the
-data" and the notebook says validation is "~89% self-play". Measured on `data/features/reg_mc/wp-v1`,
-human rows are **28.0%** of both train and val; at `--human-weight 4` that is ~61% of the loss. Anyone
-reasoning about the human/self-play balance from the comments is off by an order of magnitude.
+**Five stale claims that misdescribe the data.** `set_torch.py` said human rows were "~3% of the
+data" and "a few percent"; the notebook and `docs/cloud-compute.md` said validation was "~89%
+self-play". Measured on `data/features/reg_mc/wp-v1`, human rows are **28.0%** of both train and val
+— more than their 10.7% share of battles, because self-play is thinned by
+`features.train_orientations` while human games are kept whole with both orientations. At
+`--human-weight 4` that is ~61% of the loss. Anyone reasoning about the balance from those comments
+was off by an order of magnitude. *Fixed 2026-09-20.*
 
 **The sweep's models came home uncarded.** At the time of this pass, `models/registry.json` listed
 `wp-v1-sw-split-small` with an empty `headline` and empty `gates`, and six further `wp-v1-sw-*`
