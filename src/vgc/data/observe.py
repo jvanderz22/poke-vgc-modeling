@@ -145,25 +145,8 @@ class Observer(BattleState):
 
     def _switch_in(self, a: list[str]) -> None:
         pos = a[0].split(":")[0]
-        side, slot = self.sides[pos[:2]], "ab".index(pos[2])
         m = self._mon(a[0], a[1])
-        if m.state == "active" and m.position not in (None, slot):
-            # Seen in two slots at once: the earlier sighting was an Illusion. Give that slot
-            # to the side's Illusion user, if it has one that could be there.
-            fake_slot = m.position
-            z = next((x for x in side.mons if x is not m and x.state in ("unrevealed", "bench")
-                      and (self._base(x.species) == "zoroark" or x.ability == "illusion")), None)
-            if z is not None:
-                z.state, z.position, z.hp, z.status = "active", fake_slot, m.hp, m.status
-                z.boosts, z.volatiles = m.boosts, m.volatiles
-        for other in side.mons:
-            if other is not m and other.position == slot and other.state == "active":
-                other.state, other.position = "bench", None
-                other.boosts, other.volatiles = {}, set()
-        if m.state != "active" or m.position != slot:
-            m.boosts, m.volatiles = {}, set()
-        m.state, m.position = "active", slot
-        m.forme = _details_species(a[1])
+        self.switch_in(pos[:2], "ab".index(pos[2]), m, _details_species(a[1]))
         self._set_hp(m, a[2] if len(a) > 2 else "100/100")
 
     _on_switch = _switch_in
@@ -276,9 +259,8 @@ class Observer(BattleState):
     def _on_faint(self, a: list[str]) -> None:
         m = self._mon(a[0])
         if m is not None:
-            m.hp, m.state, m.position, m.status = 0.0, "fainted", None, None
-            m.boosts, m.volatiles = {}, set()
-            self.fainted_this_turn.add(a[0][:2])
+            self.faint(m)
+
 
     def _on_status(self, a: list[str]) -> None:
         m = self._mon(a[0])
@@ -298,8 +280,9 @@ class Observer(BattleState):
 
     def _boost(self, a: list[str], sign: int) -> None:
         m = self._mon(a[0])
-        if m is not None and a[1] in BOOSTS:
-            m.boosts[a[1]] = max(-6, min(6, m.boosts.get(a[1], 0) + sign * int(a[2])))
+        if m is not None:
+            self.apply_boost(m, a[1], sign * int(a[2]))
+
 
     def _on_boost(self, a: list[str]) -> None:
         self._boost(a, 1)
@@ -381,33 +364,10 @@ class Observer(BattleState):
         tags = _tags(a[3:])
         src = tags.get("from", "")
         called = bool(src) and src not in ("lockedmove",) and not src.startswith("move: Sleep Talk")
-        mv = to_id(a[1])
-        self._crit = set()
-        side = self._side_of(m)
-        self._resolving = MoveEvent(
-            turn=self.turn, seq=self._seq, side=side, slot=m.position,
-            # `species` is the team-preview identity and stays put — it is what the belief is
-            # keyed on, because the Stat Points do not change when the forme does. `forme` is who
-            # was actually on the field, and it is what the base stats have to come from: Mega
-            # Salamence is base 120 Speed against Salamence's 100.
-            species=m.species, forme=m.forme, move=mv,
-            priority=(self.dex.get_move(mv) or {}).get("priority", 0),
+        self.record_move(
+            m, to_id(a[1]),
             target=(a[2] if len(a) > 2 and ": " in a[2] else None),
-            spread=("spread" in tags), called_by=(src or None) if called else None,
-            trick_room=("trickroom" in self.pseudo),
-            weather=self.weather, terrain=self.terrain,
-            boosts={k: v for k, v in sorted(m.boosts.items()) if v},
-            status=m.status, side_conditions=sorted(self.sides[side].conditions),
-            # The ability is resolved for the forme, not copied from the sheet — see below.
-            item=m.item, ability=self._active_ability(m),
-            **self._order_state(side, m),
-        )
-        self.moves_log.append(self._resolving)
-        self._seq += 1
-        if called:
-            return  # called by another effect (Magic Bounce, Copycat…): not its own move
-        if mv not in m.moves_used:
-            m.moves_used.append(mv)
+            spread=("spread" in tags), called_by=(src or None) if called else None)
 
     def _volatile(self, a: list[str], on: bool) -> None:
         m = self._mon(a[0])
@@ -426,40 +386,39 @@ class Observer(BattleState):
         self._volatile(a, False)
 
     def _on_weather(self, a: list[str]) -> None:
-        w = a[0]
-        if w == "none":
-            self.weather = self.weather_since = None
+        if a[0] == "none":
+            self.set_weather(None)
         elif "[upkeep]" not in a:
-            self.weather, self.weather_since = to_id(w), self.turn
+            self.set_weather(to_id(a[0]))
+
 
     def _on_fieldstart(self, a: list[str]) -> None:
         eff = to_id(a[0].replace("move: ", ""))
         if eff in PSEUDO_WEATHER:
-            self.pseudo[eff] = self.turn
+            self.set_pseudo(eff, True)
         else:
-            self.terrain, self.terrain_since = eff, self.turn
+            self.set_terrain(eff)
+
 
     def _on_fieldend(self, a: list[str]) -> None:
         eff = to_id(a[0].replace("move: ", ""))
         if eff in PSEUDO_WEATHER:
-            self.pseudo.pop(eff, None)
+            self.set_pseudo(eff, False)
         elif eff == self.terrain:
-            self.terrain = self.terrain_since = None
+            self.set_terrain(None)
+
 
     def _on_sidestart(self, a: list[str]) -> None:
-        side = self.sides[a[0][:2]]
-        side.conditions[to_id(a[1].replace("move: ", ""))] = self.turn
+        self.set_side_condition(a[0][:2], to_id(a[1].replace("move: ", "")), True)
+
 
     def _on_sideend(self, a: list[str]) -> None:
-        self.sides[a[0][:2]].conditions.pop(to_id(a[1].replace("move: ", "")), None)
+        self.set_side_condition(a[0][:2], to_id(a[1].replace("move: ", "")), False)
+
 
     def _on_turn(self, a: list[str]) -> None:
-        self.turn = int(a[0])
-        self.started = True
-        self._seq = 0
-        self._resolving = None
-        self._crit = set()
-        self._snapshot_turn_start()
+        self.begin_turn(int(a[0]))
+
 
     def _on_win(self, a: list[str]) -> None:
         self.ended = True

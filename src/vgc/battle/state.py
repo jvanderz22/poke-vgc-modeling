@@ -225,6 +225,138 @@ class BattleState:
         self._crit: set[str] = set()   # idents the resolving move crit against
         self._turn_start: dict[tuple[str, int], dict[str, Any]] = {}
 
+    # --- the verbs ----------------------------------------------------------------------
+    #
+    # Everything below changes the battle. The protocol adapter parses a line and calls one of
+    # these; manual entry calls the same one directly. They are shared by construction rather
+    # than by a test that hopes two implementations agree — which is the only version of this
+    # that stays true after somebody edits one of them.
+
+    def at(self, sid: str, slot: int) -> "Mon | None":
+        """Whoever is in that slot — how a UI addresses a Pokémon, with no ident string."""
+        for m in self.sides[sid].mons:
+            if m.state == "active" and m.position == slot:
+                return m
+        return None
+
+    def bench(self, sid: str) -> list["Mon"]:
+        """Who could still be sent out — the switch menu."""
+        return [m for m in self.sides[sid].mons if m.state in ("bench", "unrevealed")]
+
+    def begin_turn(self, n: int) -> None:
+        self.turn = n
+        self.started = True
+        self._seq = 0
+        self._resolving = None
+        self._crit = set()
+        self._snapshot_turn_start()
+
+    def switch_in(self, sid: str, slot: int, m: "Mon", forme: str) -> None:
+        """`m` takes `slot`, displacing whoever held it. Boosts and volatiles are left behind."""
+        side = self.sides[sid]
+        if m.state == "active" and m.position not in (None, slot):
+            # Seen in two slots at once: the earlier sighting was an Illusion. Give that slot
+            # to the side's Illusion user, if it has one that could be there.
+            fake_slot = m.position
+            z = next((x for x in side.mons if x is not m and x.state in ("unrevealed", "bench")
+                      and (self._base(x.species) == "zoroark" or x.ability == "illusion")), None)
+            if z is not None:
+                z.state, z.position, z.hp, z.status = "active", fake_slot, m.hp, m.status
+                z.boosts, z.volatiles = m.boosts, m.volatiles
+        for other in side.mons:
+            if other is not m and other.position == slot and other.state == "active":
+                other.state, other.position = "bench", None
+                other.boosts, other.volatiles = {}, set()
+        if m.state != "active" or m.position != slot:
+            m.boosts, m.volatiles = {}, set()
+        m.state, m.position = "active", slot
+        m.forme = forme
+
+    def set_hp(self, m: "Mon", cur: int, mx: int, status: str | None) -> None:
+        """`cur`/`mx` as the perspective sees them: out of 100 for the opponent and exact for your
+        own side — the same split a cartridge gives you, a percentage for theirs and real numbers
+        for yours."""
+        if status == "fnt" or (cur == 0 and mx == 0):
+            m.hp = 0.0
+            return
+        if mx:
+            m.hp = cur / mx
+            if mx != 100 or self._own(self._side_of(m)):
+                m.hp_max = mx
+        m.status = status if status != "fnt" else None
+
+    def record_move(self, m: "Mon", move: str, *, target: str | None = None,
+                    spread: bool = False, called_by: str | None = None) -> "MoveEvent":
+        """Log a move as it resolves, with the state that decided the turn's order."""
+        self._crit = set()
+        side = self._side_of(m)
+        self._resolving = MoveEvent(
+            turn=self.turn, seq=self._seq, side=side, slot=m.position,
+            # `species` is the team-preview identity and stays put — it is what the belief is
+            # keyed on, because the Stat Points do not change when the forme does. `forme` is who
+            # was actually on the field, and it is what the base stats have to come from: Mega
+            # Salamence is base 120 Speed against Salamence's 100.
+            species=m.species, forme=m.forme, move=move,
+            priority=(self.dex.get_move(move) or {}).get("priority", 0),
+            target=target, spread=spread, called_by=called_by,
+            trick_room=("trickroom" in self.pseudo),
+            weather=self.weather, terrain=self.terrain,
+            boosts={k: v for k, v in sorted(m.boosts.items()) if v},
+            status=m.status, side_conditions=sorted(self.sides[side].conditions),
+            # The ability is resolved for the forme, not copied from the sheet.
+            item=m.item, ability=self._active_ability(m),
+            **self._order_state(side, m),
+        )
+        self.moves_log.append(self._resolving)
+        self._seq += 1
+        if called_by:
+            return self._resolving   # called by another effect: not its own move
+        if move not in m.moves_used:
+            m.moves_used.append(move)
+        return self._resolving
+
+    def apply_boost(self, m: "Mon", stat: str, stages: int) -> None:
+        """A stage back to 0 is *kept* as 0, not removed. `observation()` filters falsy boosts on
+        the way out, so the difference is invisible there and very visible in `moves_log`, which
+        does the same filtering itself."""
+        if stat in BOOSTS:
+            m.boosts[stat] = max(-6, min(6, m.boosts.get(stat, 0) + stages))
+
+    def set_weather(self, weather: str | None) -> None:
+        if weather is None:
+            self.weather = self.weather_since = None
+        else:
+            self.weather, self.weather_since = weather, self.turn
+
+    def set_terrain(self, terrain: str | None) -> None:
+        if terrain is None:
+            self.terrain = self.terrain_since = None
+        else:
+            self.terrain, self.terrain_since = terrain, self.turn
+
+    def set_pseudo(self, effect: str, on: bool) -> None:
+        if on:
+            self.pseudo[effect] = self.turn
+        else:
+            self.pseudo.pop(effect, None)
+
+    def set_side_condition(self, sid: str, condition: str, on: bool) -> None:
+        if on:
+            self.sides[sid].conditions[condition] = self.turn
+        else:
+            self.sides[sid].conditions.pop(condition, None)
+
+    def faint(self, m: "Mon") -> None:
+        m.hp, m.state, m.position, m.status = 0.0, "fainted", None, None
+        m.boosts, m.volatiles = {}, set()
+        self.fainted_this_turn.add(self._side_of(m))
+
+    def reveal(self, m: "Mon", kind: str, value: str) -> None:
+        """Public alias for a first sighting — what a UI calls when an item or ability shows."""
+        self._reveal(m, kind, value)
+
+    # --- identity -----------------------------------------------------------------------
+
     def _base(self, name: str) -> str:
         if name not in self._base_cache:
             s = self.dex.get_species(name)
