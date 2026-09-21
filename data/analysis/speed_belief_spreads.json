@@ -1,129 +1,62 @@
 {
  "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
- "battles": 20000,
- "pokemon_checked": 54904,
+ "battles": 6000,
+ "pokemon_checked": 16633,
  "soundness": {
-  "silently_wrong": 16,
-  "rate": 0.0002914177473408131,
-  "contradicted": 13,
-  "contradicted_rate": 0.0002367769197144106,
-  "examples": [
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-6486",
-    "mon": [
-     "p2",
-     "Annihilape"
-    ],
-    "true_spe": 11,
-    "bounds": [
-     0,
-     10
-    ],
-    "used": 4
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7750",
-    "mon": [
-     "p2",
-     "Rillaboom"
-    ],
-    "true_spe": 15,
-    "bounds": [
-     0,
-     6
-    ],
-    "used": 1
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7752",
-    "mon": [
-     "p2",
-     "Rillaboom"
-    ],
-    "true_spe": 15,
-    "bounds": [
-     0,
-     6
-    ],
-    "used": 1
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7754",
-    "mon": [
-     "p2",
-     "Rillaboom"
-    ],
-    "true_spe": 15,
-    "bounds": [
-     0,
-     6
-    ],
-    "used": 1
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8391",
-    "mon": [
-     "p2",
-     "Gholdengo"
-    ],
-    "true_spe": 2,
-    "bounds": [
-     0,
-     1
-    ],
-    "used": 6
-   }
-  ]
+  "silently_wrong": 0,
+  "rate": 0.0,
+  "contradicted": 5,
+  "contradicted_rate": 0.0003006072265977274,
+  "examples": []
  },
  "power": {
-  "narrowed_mean": 0.1294010702979084,
-  "any_narrowing": 0.3534350866967798,
-  "bounds_width_mean": 28.729764680169023,
-  "pairs_per_battle": 9.2319
+  "narrowed_mean": 0.12880746380415714,
+  "any_narrowing": 0.3530932483616906,
+  "bounds_width_mean": 28.749353694462815,
+  "pairs_per_battle": 9.288333333333334
  },
  "pairs": {
-  "considered": 446460,
-  "usable": 184638,
-  "priority_differs": 177776,
-  "state_moved_mid_turn": 17856,
-  "unmodelled_mover": 66190,
-  "turn_reordered": 4
+  "considered": 135573,
+  "usable": 55730,
+  "priority_differs": 54555,
+  "state_moved_mid_turn": 5502,
+  "unmodelled_mover": 19786
  },
- "abstention_rate": 0.5864399946243785,
+ "abstention_rate": 0.5889299491786713,
  "truth_distribution": {
-  "0": 1593,
-  "1": 1529,
-  "2": 1759,
-  "3": 1619,
-  "4": 1558,
-  "5": 1549,
-  "6": 1809,
-  "7": 1727,
-  "8": 1644,
-  "9": 1694,
-  "10": 1611,
-  "11": 1807,
-  "12": 1630,
-  "13": 1598,
-  "14": 1480,
-  "15": 1729,
-  "16": 1647,
-  "17": 1638,
-  "18": 1651,
-  "19": 1764,
-  "20": 1894,
-  "21": 1751,
-  "22": 1585,
-  "23": 1747,
-  "24": 1728,
-  "25": 1678,
-  "26": 1685,
-  "27": 1591,
-  "28": 1572,
-  "29": 1604,
-  "30": 1726,
-  "31": 1728,
-  "32": 1579
+  "0": 419,
+  "1": 479,
+  "2": 507,
+  "3": 498,
+  "4": 513,
+  "5": 458,
+  "6": 510,
+  "7": 538,
+  "8": 550,
+  "9": 454,
+  "10": 481,
+  "11": 573,
+  "12": 478,
+  "13": 496,
+  "14": 405,
+  "15": 507,
+  "16": 533,
+  "17": 524,
+  "18": 511,
+  "19": 513,
+  "20": 600,
+  "21": 549,
+  "22": 406,
+  "23": 531,
+  "24": 518,
+  "25": 496,
+  "26": 528,
+  "27": 553,
+  "28": 501,
+  "29": 464,
+  "30": 549,
+  "31": 516,
+  "32": 475
  },
  "caveat": "the pool's spreads are impute_sp's output, so the truth here takes few distinct values and the power number is a floor, not an estimate of the real thing"
 }

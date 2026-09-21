@@ -681,11 +681,28 @@ the causality and calls it Speed.
 Filtered to abilities that actually fire on arrival — `onStart` in the pinned build, the same
 derivation the entry rules use — it is 453 of 453 with no counterexample.
 
-Two things are *not* established and are recorded rather than assumed:
+**Trick Room inverts it**, confirmed from play as well as from `Pokemon.getActionSpeed()`, which
+subtracts Speed from 10000 under it. Worth separating from the rest: this corpus contains **zero**
+Trick Room pairs, so unlike everything else in this document it rests on the source and on the
+user, not on a measurement. Ability priority tiers (`onSwitchInPriority`) are the remaining
+unknown; none appeared, which is not the same as none existing.
 
-- **Trick Room.** `Pokemon.getActionSpeed()` inverts Speed under it and `eachEvent` sorts on
-  `pokemon.speed`, so the order should invert — but this corpus produced **zero** Trick Room pairs
-  to check it against, so the inversion is read off the source and unmeasured. The existing speed
-  channel already folds Trick Room in as a sign flip, and that one *was* measured.
-- Ability priority tiers. `onSwitchInPriority` orders some abilities ahead of Speed entirely; none
-  appeared here, which is not the same as none existing.
+## Folded into the belief, and what it is worth
+
+| over 2,500 battles | moves only | + switch-in order |
+| --- | --- | --- |
+| Pokémon with any constraint | 6,826 | 6,884 |
+| **silently wrong** | **0** | **0** |
+| share of the prior ruled out | 12.96% | 13.14% |
+| narrowed at all | 35.25% | 35.52% |
+| constraints per Pokémon | 2.317 | 2.343 |
+
+**The aggregate gain is about 1% and that is not the case for it.** 322 of the 371 pairs land on
+**turn 0**, and in **12.0% of battles an ability pair is the first Speed evidence of any kind** —
+it arrives before a move has resolved. That is the turn where the belief is widest, where the lead
+decision is already made, and where every other channel has nothing to say. A channel worth 1% of
+the total that fires when nothing else has fired is not the same as a channel worth 1%.
+
+Six abilities are excluded for having a second trigger — Forecast and Mimicry react to weather and
+terrain, Ice Face and Flash Fire to being hit, Shields Down to its own HP — since each announces
+the same line from something that is not an arrival.

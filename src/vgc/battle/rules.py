@@ -30,6 +30,24 @@ from typing import Any, Iterable
 
 from vgc.regulation import Regulation, to_id
 
+# Abilities that fire *because the holder arrived*, and therefore in Speed order. Derived from
+# `onStart` in the pinned build (`tests/test_battle_rules.py` re-derives it), minus the handful
+# that also fire on something else — Forecast and Mimicry react to weather and terrain, Ice Face
+# and Flash Fire to being hit, Shields Down to its own HP. Those announce the same `-ability`
+# line from a trigger that is not an arrival, so including them would let a mid-turn announcement
+# be read as a race. Soundness over power, as everywhere else in this package.
+AMBIGUOUS_TRIGGER = {"forecast", "mimicry", "iceface", "shieldsdown", "flashfire"}
+
+SWITCH_IN_ABILITIES = {
+    "anticipation", "cloudnine", "curiousmedicine", "drizzle", "drought", "electricsurge",
+    "embodyaspectcornerstone", "embodyaspecthearthflame", "embodyaspectteal",
+    "embodyaspectwellspring", "fairyaura", "forewarn", "frisk", "gluttony", "grassysurge",
+    "hospitality", "intimidate", "klutz", "moldbreaker", "pressure", "psychicsurge",
+    "sandstream", "screencleaner", "snowwarning", "supersweetsyrup", "supremeoverlord",
+    "trace", "unnerve",
+}
+
+
 # --- what an ability does when its holder arrives ----------------------------------------
 
 WEATHER_ON_START = {"drizzle": "raindance", "drought": "sunnyday", "sandstream": "sandstorm",

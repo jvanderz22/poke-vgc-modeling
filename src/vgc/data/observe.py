@@ -24,11 +24,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from vgc.battle.state import (BOOSTS, PERSPECTIVES, PSEUDO_WEATHER, BattleState, DamageEvent,
-                              Mon, MoveEvent, Side, _details_species, _hp, _tags, dumps)
+from vgc.battle.state import (BOOSTS, PERSPECTIVES, PSEUDO_WEATHER, AbilityEvent, BattleState,
+                              DamageEvent, Mon, MoveEvent, Side, _details_species, _hp, _tags,
+                              dumps)
+from vgc.battle.rules import SWITCH_IN_ABILITIES
 from vgc.regulation import Dex, to_id
 
-__all__ = ["Observer", "BattleState", "Mon", "Side", "MoveEvent", "DamageEvent", "dumps",
+__all__ = ["Observer", "BattleState", "Mon", "Side", "MoveEvent", "DamageEvent", "AbilityEvent",
+           "dumps",
            "PERSPECTIVES", "PSEUDO_WEATHER", "BOOSTS"]
 
 _IGNORE = {"", "t:", "j", "J", "l", "L", "c", "raw", "html", "uhtml", "uhtmlchange", "inactive", "inactiveoff",
@@ -355,7 +358,9 @@ class Observer(BattleState):
         m = self._mon(a[0])
         if m is not None and len(a) > 1:
             if "from" not in _tags(a[2:]):  # not Trace/Skill Swap/…: its own ability
-                self._reveal(m, "ability", to_id(a[1]))
+                ability = to_id(a[1])
+                self._reveal(m, "ability", ability)
+                self.record_ability(m, ability, switch_in=ability in SWITCH_IN_ABILITIES)
 
     def _on_move(self, a: list[str]) -> None:
         m = self._mon(a[0])

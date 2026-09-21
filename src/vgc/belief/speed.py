@@ -235,6 +235,44 @@ def pairs(reg: Regulation, moves: Iterable[MoveEvent]) -> list[tuple[MoveEvent, 
     return out
 
 
+def ability_pairs(reg: Regulation, log: Iterable[Any]) -> list[tuple[Any, Any, int]]:
+    """Switch-in ability announcements that raced, as `(first, second, sign)`.
+
+    A second evidence source, and the only one that lands on **turn 1** — before a move has been
+    used, which is exactly when the belief is widest and the advice least informed. Abilities that
+    fire because their holder arrived do so in Speed order, so a batch of simultaneous arrivals is
+    a set of Speed comparisons for free.
+
+    Two rules carry all the soundness, and the first was found by measuring rather than reasoning:
+
+    - **A response is not a race.** Reading every `-ability` line as an ordering agrees with the
+      truth on only 91.3% of pairs, and every counterexample is the same shape — Incineroar at 86
+      Speed announcing before Kingambit at 97, which is Intimidate and then *Defiant answering
+      it*. A trigger and its response are adjacent in the log and causally ordered. Filtered to
+      `rules.SWITCH_IN_ABILITIES`, it is 453 of 453 over 3,000 battles.
+    - **Only within one batch.** Switches print before the abilities they trigger, so everything
+      announced after the last switch arrived together. Announcements separated by a switch or a
+      turn did not race.
+
+    Trick Room inverts it, as it inverts move order: `Pokemon.getActionSpeed` subtracts from
+    10000 under it and `eachEvent` sorts on that. Confirmed against play as well as the source,
+    because this corpus contains no Trick Room pair to measure it with.
+    """
+    usable = [e for e in log if e.switch_in and e.order_known]
+    out = []
+    for a, b in zip(usable, usable[1:]):
+        if a.batch != b.batch:
+            continue
+        if a.side == b.side and a.slot == b.slot:
+            continue
+        if to_id(a.item or "") in ABSTAIN_ITEMS or to_id(b.item or "") in ABSTAIN_ITEMS:
+            continue
+        if to_id(a.ability or "") in ABSTAIN_ABILITIES or to_id(b.ability or "") in ABSTAIN_ABILITIES:
+            continue
+        out.append((a, b, -1 if a.trick_room else 1))
+    return out
+
+
 def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | None = None,
           cap: int | None = None) -> dict[tuple[str, str], SpeedBelief]:
     """Feasible Speed SP for every Pokémon that moved, given the ones whose spread you know.
@@ -280,7 +318,8 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | No
         stat = speed_stat(reg, ev.forme or ev.species, natures.get(key), points)
         return None if stat is None else effective_speed(stat, ev)
 
-    for first, second, sign in pairs(reg, obs.moves_log):
+    evidence = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
+    for first, second, sign in evidence:
         fb, sb = belief_for(first), belief_for(second)
         if fb is UNMODELLED or sb is UNMODELLED:
             continue

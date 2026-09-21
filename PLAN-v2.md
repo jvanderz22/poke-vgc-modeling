@@ -338,6 +338,20 @@ not whether anything is.
 Two information channels, neither of which exists today, and both of which are pure computation
 against the pinned calc rather than anything learned:
 
+- **Switch-in ability order → a bound on speed, on turn 1. ✅ Built and gated**
+  (folded into `vgc.belief.speed`). Abilities that fire because their holder arrived announce in
+  Speed order, so a batch of simultaneous arrivals is a set of Speed comparisons before a move has
+  been used. **0 silently wrong over 6,000 battles.** The aggregate gain is ~1% of constraints and
+  that is not the case for it: 322 of 371 pairs land on **turn 0**, and in **12% of battles it is
+  the first Speed evidence of any kind**, at the point where the belief is widest and every other
+  channel is silent.
+
+  The soundness rests entirely on one filter, found by measuring rather than reasoning: **a
+  response is not a race.** Reading every `-ability` line as an ordering agrees on only 91.3% of
+  pairs, and every counterexample is Intimidate followed by Defiant *answering* it — adjacent in
+  the log and causally ordered, not racing. Filtered to the derived `onStart` set it is 453 of 453.
+  Trick Room inverts it, which is the one claim here confirmed from play rather than measured:
+  the corpus contains no Trick Room pair at all.
 - **Turn order → a bound on speed. ✅ Built and gated** (`vgc belief speed`, `vgc.belief.speed`,
   [findings](docs/phase8-findings.md)). Their nature, item and ability are on the sheet, so their
   Speed stat is a known function of one unknown integer in 0..32, and every equal-priority pair is

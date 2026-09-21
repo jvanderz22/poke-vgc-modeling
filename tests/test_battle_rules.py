@@ -236,3 +236,13 @@ def test_a_consumed_item_is_known_and_known_to_be_gone(reg):
     assert them.boosts == {"def": 1}
     assert them.item == "" and them.lost_item == "grassyseed"
     assert them.item_source == "revealed"
+
+
+def test_the_switch_in_ability_set_is_exactly_the_pinned_one(reg):
+    """The set that decides whether an announcement is Speed evidence. Getting it wrong is not a
+    missing inference but a wrong one: a response ability read as a race says Incineroar outran a
+    Kingambit it did not outrun."""
+    assert rules.SWITCH_IN_ABILITIES == _hooked(reg, "onStart") - rules.AMBIGUOUS_TRIGGER
+    # No response ability may be in it — that is the whole point.
+    assert not rules.SWITCH_IN_ABILITIES & set(rules.REBOUND)
+    assert not rules.SWITCH_IN_ABILITIES & _hooked(reg, "onDamagingHit")

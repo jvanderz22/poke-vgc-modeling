@@ -130,6 +130,32 @@ class DamageEvent:
         return {k: getattr(self, k) for k in self.__slots__}
 
 
+class AbilityEvent:
+    """An ability announcing itself, and the state that decided when it got to.
+
+    Abilities that fire on *arrival* do so in Speed order, so a batch of them is a set of Speed
+    comparisons available on turn 1, before a move has been used. Abilities that fire in *answer*
+    to something — Defiant to an Intimidate, Stamina to a hit — are ordered by what caused them
+    and say nothing about Speed, so `switch_in` marks which kind this is and the belief only ever
+    reads the first.
+
+    The `order_*` names match `MoveEvent` so `vgc.belief.speed.effective_speed` can read either.
+    For an arriving Pokémon the state that decided the order *is* the state on arrival, so there
+    is no turn-start snapshot to consult.
+    """
+
+    __slots__ = ("turn", "seq", "batch", "side", "slot", "species", "forme", "ability",
+                 "switch_in", "item", "trick_room", "order_boosts", "order_status",
+                 "order_side_conditions", "order_weather", "order_terrain", "order_known")
+
+    def __init__(self, **kw: Any):
+        for k in self.__slots__:
+            setattr(self, k, kw.get(k))
+
+    def to_json(self) -> dict[str, Any]:
+        return {k: getattr(self, k) for k in self.__slots__}
+
+
 class Mon:
     __slots__ = ("species", "forme", "nickname", "state", "position", "hp", "hp_max", "status", "boosts",
                  "volatiles", "item", "item_source", "lost_item", "ability", "ability_source", "moves",
@@ -224,6 +250,11 @@ class BattleState:
         # training rows and every manifest built on them. Evidence is read from a live stream.
         self.moves_log: list[MoveEvent] = []
         self.damage_log: list[DamageEvent] = []
+        self.ability_log: list[AbilityEvent] = []
+        # Which batch of simultaneous arrivals we are in. Switches are printed before the
+        # abilities they trigger, so everything announced after the last switch arrived together
+        # and therefore raced.
+        self._batch = 0
         self._seq = 0              # position within the current turn, across both sides
         self._resolving: MoveEvent | None = None
         self._crit: set[str] = set()   # idents the resolving move crit against
@@ -248,6 +279,7 @@ class BattleState:
         return [m for m in self.sides[sid].mons if m.state in ("bench", "unrevealed")]
 
     def begin_turn(self, n: int) -> None:
+        self._batch += 1
         self.turn = n
         self.started = True
         self._seq = 0
@@ -257,6 +289,7 @@ class BattleState:
 
     def switch_in(self, sid: str, slot: int, m: "Mon", forme: str) -> None:
         """`m` takes `slot`, displacing whoever held it. Boosts and volatiles are left behind."""
+        self._batch += 1
         side = self.sides[sid]
         if m.state == "active" and m.position not in (None, slot):
             # Seen in two slots at once: the earlier sighting was an Illusion. Give that slot
@@ -318,6 +351,21 @@ class BattleState:
         if move not in m.moves_used:
             m.moves_used.append(move)
         return self._resolving
+
+    def record_ability(self, m: "Mon", ability: str, *, switch_in: bool) -> "AbilityEvent":
+        """Log an ability announcing itself. `switch_in` is what makes it Speed evidence."""
+        side = self._side_of(m)
+        ev = AbilityEvent(
+            turn=self.turn, seq=self._seq, batch=self._batch, side=side, slot=m.position,
+            species=m.species, forme=m.forme, ability=ability, switch_in=switch_in,
+            item=m.item, trick_room=("trickroom" in self.pseudo),
+            order_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
+            order_status=m.status,
+            order_side_conditions=sorted(self.sides[side].conditions),
+            order_weather=self.weather, order_terrain=self.terrain, order_known=True,
+        )
+        self.ability_log.append(ev)
+        return ev
 
     def apply_boost(self, m: "Mon", stat: str, stages: int) -> None:
         """A stage back to 0 is *kept* as 0, not removed. `observation()` filters falsy boosts on
