@@ -1,0 +1,1619 @@
+{
+ "note": "sha256 over every intermediate observation plus both evidence logs; see tests/test_observe_golden.py",
+ "showdown_sha": "2ddfa0476f8207e12e204b1c69f7c7683b17633c",
+ "sample": 400,
+ "replays": {
+  "gen9championsvgc2026regmc-2677944137": {
+   "spectator": "c844951182629d791fd7445fc409b052fd2910d506e655258043284466eb2a75",
+   "p1": "0da232b46d9c6cd5cbe9eadb051d652ea8457ce85b8f1192399442ced361baf0"
+  },
+  "gen9championsvgc2026regmc-2677944518": {
+   "spectator": "d24aa285a8f1d6a7bfd8a47740d5e5a6a53ef8e33eb8a8e0d909fd0d9a532d62",
+   "p1": "c1dedc4466a99f2be6f57c1522dfdd4188f7bc0b0ad9c1d2dd120f2d36944f76"
+  },
+  "gen9championsvgc2026regmc-2677945987": {
+   "spectator": "4d19eb658fbe0a03138805c85f515673263271d05c0f09b18cb08420bc872957",
+   "p1": "7d9691d9533d0ad7e69ba509cd8ba6ed39ec7fcddc1259e58692790349f386db"
+  },
+  "gen9championsvgc2026regmc-2677949913": {
+   "spectator": "1efb29495fadc1fb30325aed39a213ca825b4921ae44878d94965c83747ba98e",
+   "p1": "42e21de62e4a998da9a2b32d1973c9fcf52bd54e1c3b003bde5fbe0331b50903"
+  },
+  "gen9championsvgc2026regmc-2677956303": {
+   "spectator": "1f6f793772219b682846823d2ebfa1b4b27c15a2163f58b8d29c8c1e2a9d69be",
+   "p1": "ed5139df9149b0909700753223603ac0e3895b539cb98cc0013d8b1e98131e19"
+  },
+  "gen9championsvgc2026regmc-2677958296": {
+   "spectator": "9b2e0753595fba3304cecd0993c26f871c0d6b3bc3002aadc17f97e6120a51cc",
+   "p1": "cd5dd08c5a7f4961c733b8e596f17f50f75284132464b47c7e40598fc46d7a55"
+  },
+  "gen9championsvgc2026regmc-2677959913": {
+   "spectator": "e3d3648f497503cce245d06508c8b2ec3d199a28dec698f473496db7b9bbd32f",
+   "p1": "3be910334536d424a1c33cc12b57d1dddeaeedc2e2062582006398f0413fc1fc"
+  },
+  "gen9championsvgc2026regmc-2677961024": {
+   "spectator": "1912ccc2b3d3644ff012657d1d99d9bc4bc494407901fbf2c3afbc1c1cbe8dd2",
+   "p1": "26cb6ec3084aaf371bf88336e34cf41025112a427334309022c0c4a4e8cdc4a2"
+  },
+  "gen9championsvgc2026regmc-2677961294": {
+   "spectator": "ea779846081b7c687e53e139cd968fd59e8ae6b391769a44ccfd5a2cf9e83dc8",
+   "p1": "af9cffd3ad7eca9fe2ceb104c1fea5ce84b055c2df8ab92bfe6b9be0a75cb1d4"
+  },
+  "gen9championsvgc2026regmc-2677962534": {
+   "spectator": "28c28663f44fbffb10bd48b8b0825bbdd2baa5eaf07f49b2ef8b27be1e9164dd",
+   "p1": "9356c3906b1707e718bff5522086a4d4ed3165f1c4f94a5a19172b0022f48f41"
+  },
+  "gen9championsvgc2026regmc-2677962977": {
+   "spectator": "7e88d9b84fb39092a4171f3e61151b9c4b0df5d1afbf6ba31759e9038f8d9da6",
+   "p1": "615b1287cbfa038a56ffe24e566fbe061ae40603a40fcbdb421dffc89a54a15b"
+  },
+  "gen9championsvgc2026regmc-2677963043": {
+   "spectator": "ae2e47331a2a872a02f7a1f1ee6a583e85c92875074bbca2fda673d338df0705",
+   "p1": "a9e968851132a10eb71a39b780bff9ccf226237d2cd7fa955e3ee1b878cc6ca9"
+  },
+  "gen9championsvgc2026regmc-2677963072": {
+   "spectator": "44808750763b25f5a7f734734627bc090cbe3d0fcd3d5b503ef407dfd6d54f2d",
+   "p1": "4e9f0897d577369a8bd62423478c04e5b2c496768fd784cfa721c65db81831dc"
+  },
+  "gen9championsvgc2026regmc-2677972145": {
+   "spectator": "6205dbf8a4bee2bd463c2432ab54dd8c3f92c4cdca80ba82cfc10316ca7cebc2",
+   "p1": "0aad1d354cb5843a2c3b82ecbbd1a8d06e15d1536033a4a0cd9c986e5b36209b"
+  },
+  "gen9championsvgc2026regmc-2677974613": {
+   "spectator": "0809d56262699a53f5d4adcd16a4372fe7a3bea4fd07416d2eca2dd8030dc632",
+   "p1": "4785befbbe1bd6e6b8c0423fa13965036ca1fb8c05dc85e687281d0038f36b31"
+  },
+  "gen9championsvgc2026regmc-2677975125": {
+   "spectator": "8bb0b5d401bbf97011089737afd58705f9821be8cfeb3062a2faecdc8f4218c7",
+   "p1": "e8fa277694d41c344f1f59bb82510f028877b2320fa790bf63bb98810511298a"
+  },
+  "gen9championsvgc2026regmc-2677978282": {
+   "spectator": "83d79b3d7ce7a83cd69facc954e3ae7daeb1953caa52382e17718673a24ab98f",
+   "p1": "29d7fd67b6f09172bc3db7ac28b2c079dc7558502a5ea8977cf755e3242e7697"
+  },
+  "gen9championsvgc2026regmc-2677978999": {
+   "spectator": "c69b6a392210e3294a65cc504af51ff537052edab9e665530f58b010296cd15f",
+   "p1": "6e77268cd8026e2214e99cdb04779133b6183e8a72d3e4fe2c6298705cf6c504"
+  },
+  "gen9championsvgc2026regmc-2677979571": {
+   "spectator": "4b4b05b8818c2a03ad5ab5fca5328e296292443d9bd8371170403001da6972c0",
+   "p1": "031a1122b00a85b4d367f37969f24901d3f63b5a7181ebd9fb88873e7ffe2b87"
+  },
+  "gen9championsvgc2026regmc-2677979574": {
+   "spectator": "0650f03659436088f6ad7a79c6e56cd46754c303e0870a437c1b916f801f2a8e",
+   "p1": "26f51f788b60ca919054f34c212d7f90f6992e1281b751410e7238bc5d0adc5e"
+  },
+  "gen9championsvgc2026regmc-2677980427": {
+   "spectator": "29762563066abcb69f91839d64246dd95cc77e8f68b20f2369a8c53bb09a5350",
+   "p1": "e2b62d5ff9836bb0d2113884f5b11c85e89e55e0c027fd019c8bf2d84a1a7f62"
+  },
+  "gen9championsvgc2026regmc-2677981142": {
+   "spectator": "5f587c914337602be06ebacfb8f785e4ef9416cfcd3d9212e68cee11dcec0bb5",
+   "p1": "42375990109a209351c9563f7a180947a5cf77c1845fd2f94840d56869082921"
+  },
+  "gen9championsvgc2026regmc-2677981574": {
+   "spectator": "ea1c743742390bda121c8ef0275203266141476f76a922eb6f1fa1156f8827b0",
+   "p1": "bb59a2364ca532a8feb81bf0f05114a3dd512224e8c293e312ab8dd0298431e6"
+  },
+  "gen9championsvgc2026regmc-2677983311": {
+   "spectator": "f605370c2717717d985005645a46a3810b0c84d57b9a95815a259bf3563c6165",
+   "p1": "a41d7433c22a9f45f8c132015e71584a830d20ae29d64f512d9cd492cf1a4f63"
+  },
+  "gen9championsvgc2026regmc-2677984262": {
+   "spectator": "ced65afa964a6faffcadc098581fee970e10c6c9d8788ea7d20bd732637cffb0",
+   "p1": "af71f5ce8ea257b71a98939011fa8fbf793695aae9e496c74d073e44f3c932f3"
+  },
+  "gen9championsvgc2026regmc-2677984682": {
+   "spectator": "0103d867575b0f0e5b95a1120f5f5b264587911a00369ca9b9e853cb88e89f80",
+   "p1": "7d9279ee46a5a0acc4aab4b40b4fc6a6a19c591ab801721873eaa9ce1e383c10"
+  },
+  "gen9championsvgc2026regmc-2677984973": {
+   "spectator": "2cb6d05afb9906e09d8c3eb8be2527f77f3d8b5ef5e30e7982628dcbecf49b32",
+   "p1": "3df97e01e98f84522e9e33ceb1e0fb9935043138de66f1ac64642b2e766a07ec"
+  },
+  "gen9championsvgc2026regmc-2677985021": {
+   "spectator": "33357b2247f1a96e6acef75b8e5e9bfe08f8c1407594b425f7666b054642ba4f",
+   "p1": "bc04a24f534d75a9e0a3514fd0a377ee0ce4dd7a2e2cf57b7491ec288c1d42ae"
+  },
+  "gen9championsvgc2026regmc-2677988777": {
+   "spectator": "e5e1b20f07a034964a34f583df46100d4853a319c34cb912159057f8cc720c11",
+   "p1": "b55bfbf24452713fea7b35b6d0cb68cd5e13b1837c831f83a0379fef99deda7c"
+  },
+  "gen9championsvgc2026regmc-2677988796": {
+   "spectator": "2f638012adcfc34755275051ceece98baa66fb7eb0ec1d89612fc1566407d897",
+   "p1": "1ce3294f1cd8150fc7ecfc4414c171b785d32b02935db94864208ae5128eab33"
+  },
+  "gen9championsvgc2026regmc-2677990021": {
+   "spectator": "aea9c46c2f93a7da1ec0a151728b4715f790da5fbf30e8d222715a919a884465",
+   "p1": "97bee2f52411a19a964ed9e0cfb3de37e36954bd2ccd23300260e75bd25e8a71"
+  },
+  "gen9championsvgc2026regmc-2677991726": {
+   "spectator": "1bd837225d0d52f4bf11ce3f779bfc46ef6dd742d7a283cf9ac68a32aebb3a7e",
+   "p1": "eeccd54d8010a618167a079db89b980a2e14b8135b0bc936acab7cac0350e2aa"
+  },
+  "gen9championsvgc2026regmc-2677992132": {
+   "spectator": "b6c58f002921c09b140146bc33499a51f4d5fae4149f9918ccf624dfd62263da",
+   "p1": "7858727b1c6e7c66abfd0a6280bb21dcc2187a94c685a2c9df4412065fe94038"
+  },
+  "gen9championsvgc2026regmc-2677992380": {
+   "spectator": "f410597e9903c53499b4a4f1b6c0b3c18d168c402d7535f1d1aa9b3498153650",
+   "p1": "bd2ca5f38370fb353c311d0c833427a09b472b518732dc12d7cb2c8d80665b07"
+  },
+  "gen9championsvgc2026regmc-2677994368": {
+   "spectator": "826b1bb791c4020211390c7d937d44163d4d8f3b7fee59b7f148f52fe6f447d6",
+   "p1": "38daf8f60decd21cd8e0087f785102256d8f4fa43779a42a76d91fc6e34a3a46"
+  },
+  "gen9championsvgc2026regmc-2677995162": {
+   "spectator": "19be8b23388dc89b0232ac901b888c9d5138f4b4bfdbce55fcf21d890a5886b1",
+   "p1": "cb88cef9e3b47e8e9d137b7aae7a8f67240ce079a7bdb270a596b15fc5b351fa"
+  },
+  "gen9championsvgc2026regmc-2677995607": {
+   "spectator": "9e8e1271456b17ceac34dc80970df807f0bef4c875ad549b605f1d20465fcaf6",
+   "p1": "9d49acd28d9302a3d538a617443ddb3e5a178fb3b07346d9505bdce4f4023ecc"
+  },
+  "gen9championsvgc2026regmc-2677997754": {
+   "spectator": "02f78bc11ff126ef930b91cbdd9e306d24d1eea71a839bba3826573d8b84dfdf",
+   "p1": "a7a869cb4776735f3f4e3b3982fe9f2214a556dbb6e5cf03715c9bdd2060c101"
+  },
+  "gen9championsvgc2026regmc-2677997838": {
+   "spectator": "a9c7b3eee6a6c1162a086588b6d92f3277ec31d0720d8d9d15c65113a6139e78",
+   "p1": "979974c999124b04fc3a7b71f3578fbc4cf658c33d925a1ada4b8f1be673c115"
+  },
+  "gen9championsvgc2026regmc-2677998994": {
+   "spectator": "2098ffce4c78ce9f9e5f08b2b23a25c6764118da36044fbaf4cbc28b86c34647",
+   "p1": "4024e2f7c7a66239342a563567eec206b8275e6ee0714801903fc3989e037051"
+  },
+  "gen9championsvgc2026regmc-2677999371": {
+   "spectator": "daa393f3341ff078761981264408498f5d0a889e3f4b1a1110991ee5737c6936",
+   "p1": "bc80165b62d1420e49a904eaefce612eb74021424213f42e900079a73bdcb7be"
+  },
+  "gen9championsvgc2026regmc-2678000867": {
+   "spectator": "a22bbee9a674c8cb6e0401b1c6fdc0b0625dcccc05d1c6d89e6144dcd30e23e2",
+   "p1": "c3479afa6fdeca152bdbfd5b82ca6ed6ba761ea0a082cb2c75ef7227a7406c23"
+  },
+  "gen9championsvgc2026regmc-2678001104": {
+   "spectator": "ac95b8e5db995ca55f70d8f2943c4134693535055a9ce04d6ada6fc36b0d2644",
+   "p1": "50712203f7aa22a7b07d24e990d397a0ae911e32e06c5a04b1390a176bb8890c"
+  },
+  "gen9championsvgc2026regmc-2678002886": {
+   "spectator": "c5069281bf6855a365b4ec9b2089d2fc5b801328a7b630553c7ce0a5d1494da0",
+   "p1": "0044656c03a49bcf82700ed3fc736fdc4e0731e9631662a3a3b0316dc3e346ce"
+  },
+  "gen9championsvgc2026regmc-2678004665": {
+   "spectator": "d8ee8ceedaadb09924adb50ef6ffede6aee2bee064f84c5dc6e08dde560d4610",
+   "p1": "bb621b91c3056e11c3d5012bbc802cb60b8e04da89494abab7a32a14bafac24b"
+  },
+  "gen9championsvgc2026regmc-2678007807": {
+   "spectator": "65afb910026f010812a37545703ccd6b9f67eace73c64ab4f9fade745197be2f",
+   "p1": "567fca1a4237b47eaf30b674dbfb5ebf70ef3b7a5f6c334c799acc1c5b0ff882"
+  },
+  "gen9championsvgc2026regmc-2678008685": {
+   "spectator": "064f58e792cdaa494610ad9f102a7f26d6c377759103b3f64bdb81dd09e65b4b",
+   "p1": "5ce1c928c269fdcf5af881072eb1ab612c37b2e7ecbd301b3bd25a0a5165b059"
+  },
+  "gen9championsvgc2026regmc-2678010960": {
+   "spectator": "82329f393c81940a2761daea64b3ff75b696310adc8adac04ff61d3fabc009df",
+   "p1": "860a8fb88c4a63f646eb2b3f176382cc26240fbee114e8253eac9f335cd376ee"
+  },
+  "gen9championsvgc2026regmc-2678013785": {
+   "spectator": "b1e1c66a8f4f55a03b049c4824280f28eb277d43e770949a6073c8e6e30ffa40",
+   "p1": "a48c55e4ea9a899a4253bf57fd4ea96a5b6cc70f6a26a103202026e2934f6863"
+  },
+  "gen9championsvgc2026regmc-2678014032": {
+   "spectator": "9ec88d2584364c8159af78e64a47a10e297a1aba8478ecd44363aaed0a16543a",
+   "p1": "28c89a4f043cd62f24ddc1b3b31dd1a679b438d38884a6b5704df9ed5d615405"
+  },
+  "gen9championsvgc2026regmc-2678014084": {
+   "spectator": "25a7f398a30e5bb4785d38fedddbbd543609a847eacfb9c19031045b2c4329fc",
+   "p1": "b073d53feffd4c2d09d48a18ec88cc8e6c6b861105b32cb3a88f4894001460c6"
+  },
+  "gen9championsvgc2026regmc-2678014325": {
+   "spectator": "1a637f926a051496cf9f2df90eb7e67343ec13cd0998e715d8ced62c79c8caa4",
+   "p1": "2145ec3adea12cf6af83649153232b7bbbc071a53355abd1b9b40897571c382c"
+  },
+  "gen9championsvgc2026regmc-2678018315": {
+   "spectator": "edee31b6bb9fc7a1ed68a5e9b556eefbd54b27a54e564e7ae27ef368a6435e60",
+   "p1": "c063475c0f6f32a33d82b29797dd55cba9fcb479fa3cea38471782339ec3f016"
+  },
+  "gen9championsvgc2026regmc-2678020411": {
+   "spectator": "2fc637d44b4e251b26d51f7d6bab4f67aaa036d8b3caf7dde948d765f503c770",
+   "p1": "5fffcc3251338a511cd157978c6c4687dc3de642e89c50d4237ecb1c8bdcba6f"
+  },
+  "gen9championsvgc2026regmc-2678023097": {
+   "spectator": "1e3097dc49034e123c7c36385c5ce4b1781b6fa40f2cfd206b6d7e2414ab92e4",
+   "p1": "a40444bcd3ac2d9e6b9a8205423ac70d6267e8eacf2067dee12f70712fda6558"
+  },
+  "gen9championsvgc2026regmc-2678023477": {
+   "spectator": "5f856f6ed392b112a92ffaeb49678052c477f50280f11d8084ec825ec2391d17",
+   "p1": "273216f380a2bc56b415c68c24ef10cfa68453b4b755ba4b47c0f2ec57741201"
+  },
+  "gen9championsvgc2026regmc-2678024791": {
+   "spectator": "8289a4e768c0728c9d4b2bebeeca77e09776733210926117b1020919523d962d",
+   "p1": "e3e71492530cecf8bca45c16ca9923b134f69018eca935fa2cd8d18ba163086f"
+  },
+  "gen9championsvgc2026regmc-2678024975": {
+   "spectator": "51e7123140320c1a0655d7c533aa3b0901a92276cb93d338912ab177258a0f87",
+   "p1": "4319c3d6a8feb32c90a256e12aee046af729f24c9a8777efbf6ddb54fb4c07a8"
+  },
+  "gen9championsvgc2026regmc-2678025733": {
+   "spectator": "20eeb08ce598c2048c38404d379430caf2b33e0e36930d5929f9331b1ff07279",
+   "p1": "f0bc327f4c4292a9d9ca495844562e7883ff784d43a324622840763cae25ee5c"
+  },
+  "gen9championsvgc2026regmc-2678026666": {
+   "spectator": "e560cca8c64e5a8a0a72c851b98f320fc21a34080cd2fd7bd4680d612a20be2e",
+   "p1": "11029da96c444a0f4ab6b51d666e6b610228dfffdd45ac5fda2205ddbd98ddc0"
+  },
+  "gen9championsvgc2026regmc-2678027134": {
+   "spectator": "3dcce4888e935fbfc28d6039f78986afdd42e42bd6e35d8ba6c6bf091a3dcfc6",
+   "p1": "5e39ea769267f93693631b5bb5c768ba44662186279c036913c4dd8cd2b8f791"
+  },
+  "gen9championsvgc2026regmc-2678027726": {
+   "spectator": "6dfc6a4fd8b843797e587d9a932c9f5f686b53c1a5a54bb76c5026f291fb08cc",
+   "p1": "822034e88ddc512ece55c22270db022e98ba534a85376befbca5759ad6b09598"
+  },
+  "gen9championsvgc2026regmc-2678027881": {
+   "spectator": "9cfec03bf6a9d6a8474e14f581ce815215f067ead867c0241eb1be173098714c",
+   "p1": "4bdb79656203e52bdff8ec64b59d1f874cd321e8001fa85df6120129e109dbd1"
+  },
+  "gen9championsvgc2026regmc-2678030405": {
+   "spectator": "a0862d4086bd4d0f6a693e081dc29195969b6990bc2a8dd2acbced74bdc78e60",
+   "p1": "269bc52c4df51c729287c2069096c49be0d3f23a9032738e885d103f3b9c969c"
+  },
+  "gen9championsvgc2026regmc-2678031041": {
+   "spectator": "8aa0673e066b1c0139c0cd58d8659c19440059cc85c5a0d3af222b49af4b89d4",
+   "p1": "8d2841f34ded77cfe99780eecaaa2734597450c1de7a75c4357f2cb16a52f7e1"
+  },
+  "gen9championsvgc2026regmc-2678032249": {
+   "spectator": "468409aad2f8b67933bc6becf05def66f9374ec7317a52eeca232d21214b13fd",
+   "p1": "82286ec7c50f2a2b5f1a4b9c48d3bd73595057e82491ac7d143b4efd1ae85a41"
+  },
+  "gen9championsvgc2026regmc-2678033097": {
+   "spectator": "406a040710f51d803f0811ca1ae7d6e0fad5a0b9dc41d437aa526a57ad50aec6",
+   "p1": "b8d61f51ac2630787320cfc91b85c76ea09cb8499e5ac15b63fbdcb47d01a86f"
+  },
+  "gen9championsvgc2026regmc-2678033335": {
+   "spectator": "19a8cc2b21e0b190d51fb4cdc8a90fde0b5dfd8fca7842c8d511a1aa9c9ec717",
+   "p1": "b9a73af982059db4d1941262885364b7d2a985f0e399d96590dc92e469aeeb70"
+  },
+  "gen9championsvgc2026regmc-2678034396": {
+   "spectator": "3186b4db33f951c36fe7002a75a0ffd9f6f359a541df237aeca932d9e8de1376",
+   "p1": "88b16219426fb1db8726b7740e2e9cc8ef91117d4f16216e049f0e35ad2115b3"
+  },
+  "gen9championsvgc2026regmc-2678034647": {
+   "spectator": "b701248c77df0291d2534d89d1ec4bbc737dae8d2da5d73dd0fdd966aca5b5c5",
+   "p1": "c1426d59f72a7478974333a035e58100c43ce5166bd7a29b96288e0f12826bba"
+  },
+  "gen9championsvgc2026regmc-2678034934": {
+   "spectator": "b78d8e4ef633689eb143f77a241a3bbd533448479504cabbdc3e0567beaa58a6",
+   "p1": "646507b461b09b05450d70535ce9e1349597c088fd968c2497664b803fa14300"
+  },
+  "gen9championsvgc2026regmc-2678036765": {
+   "spectator": "df75d3398813e0d720a18ab741b516dee87065ec02dbbcd321ee40c4c4ba914a",
+   "p1": "80055677c4695f2c746e8fbd6a0a6276102e5d23df0059681461a79cc9787284"
+  },
+  "gen9championsvgc2026regmc-2678036832": {
+   "spectator": "2141b91985c7eb1600bb54b089e980ac9d4885b964ffa64c15916a8bc83fbf7f",
+   "p1": "3f55e4278e1451af0d13bff3a53ae08461c7f27fb7f435f5137537257bf5f1e6"
+  },
+  "gen9championsvgc2026regmc-2678037600": {
+   "spectator": "ef96e26eb5861c308a33bedd8a860dff4181e6fed732277f6148ac85fa70b7d1",
+   "p1": "342768ed88f7d1ed4c8e76b83e72363ef2fbd47a7f7991f7a5e3d4d3b40f1b9b"
+  },
+  "gen9championsvgc2026regmc-2678038749": {
+   "spectator": "629e21e066fad1fc9f88ea40acd169356d8c73f82269f7f40dfbde87f9726af6",
+   "p1": "ac53f3dac8e3cdd0a0dfe66f6fee3a19c0e458142e5a49ded463b7bc1e28d53c"
+  },
+  "gen9championsvgc2026regmc-2678039021": {
+   "spectator": "9de4101e9aef4f4d19891be42f18d632973e090dab34f0602e92ad016e36c7e1",
+   "p1": "910befad7e2fde496ff7aa2b6dcb04be2b12cbbf9761921b379f7697d170b74b"
+  },
+  "gen9championsvgc2026regmc-2678039094": {
+   "spectator": "3a425e1aa41efa38b84d039384b4db9b1580972cf8af6d6fdfd78a3d23c2468b",
+   "p1": "56fb3390fa3998a4f1afad7966ca8e3380a95dca040e580b66f48721f73a8c20"
+  },
+  "gen9championsvgc2026regmc-2678040086": {
+   "spectator": "b5dd15f0160b327791c2c62bc2bf114a45c92a87ee8ae497cfe066b64cefb32d",
+   "p1": "d75796fe019e73ec172f3f7e9550cb0cfe7223400347d4a8762c25dc517d4b53"
+  },
+  "gen9championsvgc2026regmc-2678040088": {
+   "spectator": "ae5e4cae060e645a379dcca925112d43563ae26633b84060f3fed71fcd4fe42a",
+   "p1": "5ad812d8dfb9bb2d1b6500ba18f1676badc866e196f154d829835c3739115dad"
+  },
+  "gen9championsvgc2026regmc-2678041586": {
+   "spectator": "e362e22d0177328f8fd07f643c52dd257885119d37de64b1e884f79d669b161f",
+   "p1": "38824c6c8e8ca6706a51df8f48020952ae842b49c4ba3225d06819680ffa5cf1"
+  },
+  "gen9championsvgc2026regmc-2678042004": {
+   "spectator": "de69475bc9fad7799cf855c9f6b37add747f65fcb79a928c72ffda94c32c306f",
+   "p1": "bf35b797cbbacffeb1a00132c89fd9f435fa0be0e70899dc4411392b7c97ae49"
+  },
+  "gen9championsvgc2026regmc-2678042210": {
+   "spectator": "2ba1f55edf2e383c631bb6f8997f6e32ff1c654567aa213ac3c94e79396eb57b",
+   "p1": "88e46d39413febf59c4806b70e3e770f4028a3f22bb84cbbbb8b88fbeb959a7b"
+  },
+  "gen9championsvgc2026regmc-2678045312": {
+   "spectator": "4399028eef3008cdd507659c1ad31bdbfa2938cdf3b5c3c1c6910ef9a7b01816",
+   "p1": "dece21e66d3762202e9d63731e95bebe269a186c06d92b240ea47c2a7b3937d8"
+  },
+  "gen9championsvgc2026regmc-2678047296": {
+   "spectator": "e1fd0c7ba02554f8c1e8581aaee4775c5ff2196670ef9f7b0328b0aae433ba65",
+   "p1": "fa389239cdfac02a4e3ed48214abd84eeebb7334cad47683eefe5ad168da5cf8"
+  },
+  "gen9championsvgc2026regmc-2678047616": {
+   "spectator": "c2b7bbe8addc6ffa65bf4f80ee062f28bb728dcf5b2ddee23a63f50941cb7c09",
+   "p1": "4475800541d15251f79d7dffec8dec493105e30f14878be5d41e58a83ab181ff"
+  },
+  "gen9championsvgc2026regmc-2678048076": {
+   "spectator": "04b3732f0bf0f9de675b780ff962cf3ac4456f451bd52b604cbdf922eab4749a",
+   "p1": "55228ae8f841f05e6b6acbc5f5d816f475c20645bcb02f1715a24ad1e3ed7db6"
+  },
+  "gen9championsvgc2026regmc-2678048178": {
+   "spectator": "6d0420b7baf25ed5930dbdb20cbc596ce14ac339eba7bcb184cec6a70279d1a6",
+   "p1": "380847fb524a05c6eb6d570cc441a07a2860b07cffa0313131b0649aba9db115"
+  },
+  "gen9championsvgc2026regmc-2678050740": {
+   "spectator": "bd61f926b86d97f90818a5da5d763aa6d8448be27e3647e41c7ca78092561cfb",
+   "p1": "8374ffb9f598850c13ef9bfb6a93678f223607712625e67ec20631b78c358837"
+  },
+  "gen9championsvgc2026regmc-2678051661": {
+   "spectator": "6f12a65a487faefa150b97ee870ed45501b9f45a8684d5894ce6e8800d5de937",
+   "p1": "a8fd6569676e23b70daa96299b21ae755576dd058c280cd1be1fe9a9e6b4cdf2"
+  },
+  "gen9championsvgc2026regmc-2678052615": {
+   "spectator": "61ba11fa47884aa81c5f5a51a64140d685407444e38d9a69751acfb66487bace",
+   "p1": "c493c6734f10ad237e8ed366b26848236085b22a0e3d007cd3dc06a67e2c1b28"
+  },
+  "gen9championsvgc2026regmc-2678053424": {
+   "spectator": "ec009fbec7af0d86a9b3fecc8d70f3b3319d923e9f29f78f72d2d7ca75d1fc34",
+   "p1": "01b894ccad9163ddc56df3faef9455732dec8872870dd81f225f835506b27bb0"
+  },
+  "gen9championsvgc2026regmc-2678054654": {
+   "spectator": "8fc25143d0d3e3c5b10a639ffb0197ddb745e162e095aa17a5d1d28ed373e624",
+   "p1": "21c58b79e8e60df74f6ab8eda780847e28195ecdd533abf3de28b3e462c06d99"
+  },
+  "gen9championsvgc2026regmc-2678055756": {
+   "spectator": "6d37e29d34f1c8fdb2c5ebb0254c38f5b358111a7df1054d1169e6e1070575a9",
+   "p1": "410615600812b666adf7b5f5b70c0ac7ca8d08bc704d5bda3f050ee9e971467d"
+  },
+  "gen9championsvgc2026regmc-2678057653": {
+   "spectator": "2be8d0262e358bb5e8908c2c11415dd9e96382fdcf45fc32050ee4f7b6a78cca",
+   "p1": "42461dcafea59efda4c19290556f3cbf3a5d61ca3e4da12ce8c0859d04ac6805"
+  },
+  "gen9championsvgc2026regmc-2678060767": {
+   "spectator": "3def3ecfd08daa4ceb0967eaf2b13889349783a032cc0ca816dd559101d0aaa6",
+   "p1": "21c52c0e00cce2ba3c55a80c34c7c71aa34188d1b3735c8d68089ca53e05996b"
+  },
+  "gen9championsvgc2026regmc-2678062120": {
+   "spectator": "111ecafc575fa82885ee112b2d5875bcc2e732093521f5489971a8efe1f1bd86",
+   "p1": "b6203ef7db0498b9e2d97970cb3ed97cf9ea87c929ad370befcb85cf315d29e7"
+  },
+  "gen9championsvgc2026regmc-2678062226": {
+   "spectator": "b663c52868406afa9e7e58346de29c2fd3188651ce756b912870fa5fb2f0b1b1",
+   "p1": "55c56a8b5bb16bf4a057f21bc87158f885da2ef192890a1e1b7a9d2dda61134b"
+  },
+  "gen9championsvgc2026regmc-2678063057": {
+   "spectator": "de89e73dbea7d06ff51e93f8706fc2bf7e5beb7587f022253024f1dec64da848",
+   "p1": "10248ada9db5899fa6efe7ed592eeda1e54b87fd4d502ed086afa25483f5564c"
+  },
+  "gen9championsvgc2026regmc-2678063659": {
+   "spectator": "0366eec04efa324d3b9e7bbd563a41b362480adcdd05d454964ec7c0819dc629",
+   "p1": "1dbec6cc230e5d82af4bb5736f9af4e9e3dff2a037364e703652d9169e88d33d"
+  },
+  "gen9championsvgc2026regmc-2678065394": {
+   "spectator": "bf83e6dc7ebfffe12aabc6f4d352469b4714a628bfe571cc8174a7fad24833e1",
+   "p1": "2898d1138f7db653b8941271cbee5038690f6bab60458d4eb54b3f485606cda4"
+  },
+  "gen9championsvgc2026regmc-2678067209": {
+   "spectator": "ebbc3cac2d63835906d2a45644e78c3398c2fd1944224b6fcd12d58fc0c02a0c",
+   "p1": "33f11290f70cbb014b199e1d7aac11354485cd9f03d6378fb155ddbb84a9a0c8"
+  },
+  "gen9championsvgc2026regmc-2678067737": {
+   "spectator": "5b1b4de1b60d6807a082f0d7b9acc3c78d2823afb5acd821426fa71ff1e6f203",
+   "p1": "4eed16f508f0c8ad55ff956e9f0f4e8829e8ece7349ffc6a6894d14991a8f719"
+  },
+  "gen9championsvgc2026regmc-2678068278": {
+   "spectator": "e7095ac556a4c7723f11636aa817e5cae8bdbfc7df5593779f921533e2bcec60",
+   "p1": "68afb0ae4a51619e722032a97932fa0bf4967c7197711810415147f85ec40637"
+  },
+  "gen9championsvgc2026regmc-2678068624": {
+   "spectator": "68cbfb087085314b87a4c5de4477fb0b0db15a37d0603b8282333ba72c2c3e46",
+   "p1": "1c16ea5af01f1c8a89b8fbf286d91f00236be924f35166b05da38f59d76dd073"
+  },
+  "gen9championsvgc2026regmc-2678070200": {
+   "spectator": "67441099423158f66f2ca477c1c52ba20f825a913d6f58eefe3f6747e86cd567",
+   "p1": "8f4f331c1168eebc07de7eaf9caa3039b442510cfeae56170902786baf0d528a"
+  },
+  "gen9championsvgc2026regmc-2678073126": {
+   "spectator": "062cd84505805bfe844796ba38e34f24ecd93e975f9cd7a8a94e309a260b5057",
+   "p1": "0880ce3a1f54f1376de69445a41599c3aae0b7c099c1020efc4a97081451666c"
+  },
+  "gen9championsvgc2026regmc-2678073572": {
+   "spectator": "d81cc13f94bc8c179f617c79b4c2ea46dd0477170296fbbc24424a523aa02bbd",
+   "p1": "513b03a2e3d1b04edb098a7cdb09c4500c88c71b2db128c9772c1a019557b9ed"
+  },
+  "gen9championsvgc2026regmc-2678075406": {
+   "spectator": "c5c41d6c6efdb1847dc356a56818198ada3f49942ff7901182c2c3bfadd202ca",
+   "p1": "d34393c55390fbd77f136c8e127b7a665e739d10c8cad0bc54e3cd6c2bfd76b9"
+  },
+  "gen9championsvgc2026regmc-2678077167": {
+   "spectator": "9f9f87e1c8807a8f6fef937660573874b77ad54197db9e8d5ff1ae822900687f",
+   "p1": "71f94cd5deab75cc82e9a8917f3a8a4dee98cc0ff9ba2e136d706007c56f888a"
+  },
+  "gen9championsvgc2026regmc-2678077442": {
+   "spectator": "f28cfabbe7b01b4647ea3b6cc824705a4431a02416bbcf841000f428657135ff",
+   "p1": "4342730082d3f67c25972d39ea29563530b2dbc630473123c3995dd6e145c55a"
+  },
+  "gen9championsvgc2026regmc-2678077610": {
+   "spectator": "bd50531f68d9a76b4109012c7f6f4c597c14c2f61f2cb5e3847eb48e50340422",
+   "p1": "83c1fbb7a4fda5070a8a0abdcb30f440a1eaff9caf8ba48180ab602a69b2bb20"
+  },
+  "gen9championsvgc2026regmc-2678078888": {
+   "spectator": "08e3e6c4e66eba1b308252e3a59fa587cca76e06832cb4b5f8be53574943374c",
+   "p1": "5ad4311613b808f80d48464a7b5450193ae4077648770c4e6be5b3ed56800bc2"
+  },
+  "gen9championsvgc2026regmc-2678079283": {
+   "spectator": "747498ec39fd0dc8788cb1af616f49e496b5eb08ef0b4191625d69964ebdee2e",
+   "p1": "7291a18a0c2f13d6400005bbd736b0808c2113f88244b6e8cdbaa33b82bd07e7"
+  },
+  "gen9championsvgc2026regmc-2678079525": {
+   "spectator": "b485bc94f6394e5da80ab39335a7dca9d8c47dfe64302c9f417d6dfdd19d959b",
+   "p1": "d4afc132c591d5f51c7575b47e5d9db8b793b5ca9040027fd358cc0dd0ab9857"
+  },
+  "gen9championsvgc2026regmc-2678079552": {
+   "spectator": "f52e66adf1b52ff1e21d155ae03fdb69dabfa8a89aedffb5dbb32ea8eaee3c29",
+   "p1": "fa64a278eace9a00468d7194b5199e3a453154ac9f124becf8b250389d567c8d"
+  },
+  "gen9championsvgc2026regmc-2678080569": {
+   "spectator": "164f0f2cea6ee4cd81c8cffc9e28a7fd44064749b0a576ea1809d7a6c57eaf42",
+   "p1": "5de1c13783d60b18d01de27c7c439ff4c99917a3656885122cc52035870bf44a"
+  },
+  "gen9championsvgc2026regmc-2678080630": {
+   "spectator": "271f24ceed3cb86307532e0b844aa87808d0590c113519ddea98517b7c257d52",
+   "p1": "1f6a0e58827ef222aa8adcdd438103d027ab27d6efa4b4ba9d246e7f5b3d78c4"
+  },
+  "gen9championsvgc2026regmc-2678081629": {
+   "spectator": "8db9438380d1cf13ce2f2a9920a635b2cc5a24c168104428cec7a7c8c94857fd",
+   "p1": "2afcc63d52f05fa4be040ba853d59e5521260ed763232ae9f3d1022e66e6633a"
+  },
+  "gen9championsvgc2026regmc-2678088938": {
+   "spectator": "bc1688f16c8392e5bed31cc3584f4760e7f9a8037f16c9cade6aca59f2a8ed2c",
+   "p1": "7db3ca10daafb29607308a6f94e6deb835d8e524abf217fef4823d8c8c431941"
+  },
+  "gen9championsvgc2026regmc-2678089621": {
+   "spectator": "b6365a265d8fb4d99270ea16af1ed3774c4d25a96dac7f959406530f5bc8cc29",
+   "p1": "9da3294408a2fc011c05aeb4d057e45ebab9eec552352a925f0daac0cc3a97c8"
+  },
+  "gen9championsvgc2026regmc-2678093131": {
+   "spectator": "61d0192c13b44cef3a1929fe6ce9ee9af43adaa4b96622bd3903aded654f507b",
+   "p1": "f73a24cb4005ef24e13bc2d5f07e22666e6f7c907825a2d13dd2cc52e2f63e6d"
+  },
+  "gen9championsvgc2026regmc-2678093198": {
+   "spectator": "76e979363d4509580f67452e10e536513e64ded7c7cb8864f2fce390fd88597e",
+   "p1": "a11086a58c9833004e561a0712479e9eec84448621b5571891fe07b7a03c12ac"
+  },
+  "gen9championsvgc2026regmc-2678097745": {
+   "spectator": "24435b12c5ade98e99b31300ed93ac775844092a9f1b45de63f51ad85a28b329",
+   "p1": "827080d4abf7ede29af2aa6d6f664b746839046d364ef75ef5e1dfca55be4a54"
+  },
+  "gen9championsvgc2026regmc-2678099427": {
+   "spectator": "e33e98f82a1e916249bdf5d6ba1c2e3400b9d5c64b1310f869711c6460dac683",
+   "p1": "bfead2b164076c431639a3ecdc9ece3042ae53cc063246e70b99e0465bd4cbf2"
+  },
+  "gen9championsvgc2026regmc-2678099470": {
+   "spectator": "da089fd4cc9df1d42770f8cd2859dbf71bc7d77c596e000aa90477fb2a398369",
+   "p1": "1902f686354c75052a9e377d76ffbc8535a622f1a48f1f5af96706c45a52f912"
+  },
+  "gen9championsvgc2026regmc-2678099661": {
+   "spectator": "2f0c08a14a61c498fd9747b4efc476d07449268070ff0dc10989ae94255f13b0",
+   "p1": "51c9c0e02e1e5eae37406427ea2bb6dc85698db2069f46ed5c91d5e81e9b23f5"
+  },
+  "gen9championsvgc2026regmc-2678100993": {
+   "spectator": "2e7b2d37957c289dd7cddf53ddca571f21c4ff6f00ec32f40943c4c0684b5962",
+   "p1": "69d39aac5e2643195c8316b1bcc997a8470ad3d0b0939841f0114dd18be668d0"
+  },
+  "gen9championsvgc2026regmc-2678105232": {
+   "spectator": "8e519893cdece7e8f09cbe5e065330e618de5b88dd9656ea5b4967b2a4a15c30",
+   "p1": "4ef4da649e75e943876d44e0cd6da1a98e69f18f1982ff5b8799c3d598ea8c24"
+  },
+  "gen9championsvgc2026regmc-2678105605": {
+   "spectator": "a6d73157824b536fc993ac48bfe34ef632bbc5a79a5e42b3bd9456f94df7cb15",
+   "p1": "a8aae99e5e1e080b4f92667526795ed9577e63edff2cb407ad3a1b23470d4d43"
+  },
+  "gen9championsvgc2026regmc-2678105769": {
+   "spectator": "d77aefda4a873e5679ff6d7926fdfdd3380ac58a6ae44763a6f4ae26a2065124",
+   "p1": "6496a0d539b8ebc048e6de705244df5b8496588d34c46d00b2699259a9a408cb"
+  },
+  "gen9championsvgc2026regmc-2678107962": {
+   "spectator": "3796db760abc4218154ffddf839b9bed7c3bcb0faac64d7025930ad24960cd28",
+   "p1": "2d6a2c74c7cc49286621b39e59963a53184cddc1dd8a1ad2faec4711f2d6625c"
+  },
+  "gen9championsvgc2026regmc-2678108022": {
+   "spectator": "781246dbcb3ea976bcb31a132e0d639576cfa5d84acb2920e96b99b0bab5a8f9",
+   "p1": "5166ccee43b7bbd17221fbdc1a8625c9f543fc695a4d194877598cc15fede16f"
+  },
+  "gen9championsvgc2026regmc-2678110116": {
+   "spectator": "d9ce74a6b1e0af14e18471de747233e289d7e9e5c8929b8d23ce77cabafe6d35",
+   "p1": "589df8b7d9629d3d4fdc14bdc1341d0f8972abef2a60db141e5e8483e1afdef1"
+  },
+  "gen9championsvgc2026regmc-2678110470": {
+   "spectator": "3a7630cc1d8b7f2f8edd46d22478124c3aad14df9952f0630e2ede9c49c7db0d",
+   "p1": "de5a3957ad1444d933ebd05567d3b7c35ca54a1da2f9b76793160f08ab89567c"
+  },
+  "gen9championsvgc2026regmc-2678111330": {
+   "spectator": "cfc2c65af33e647ebe0e2ed9218b9d382f8ca93c26b16a2665ce4dd98c7a4a88",
+   "p1": "438f2dd356c0cee571d7010819590068eb9f6c9d6ba4dcf0a3c2f742d9aec392"
+  },
+  "gen9championsvgc2026regmc-2678111458": {
+   "spectator": "1f51f72419342d1ef4f47dceb6ca6d4df17b2f6fa9cbc46c4c55e3eda49cd381",
+   "p1": "6149c4673390cfa6decfed632728e77764115ccaa0424bc9935d66f54b6d2545"
+  },
+  "gen9championsvgc2026regmc-2678112297": {
+   "spectator": "e2ddfdf8f8eeb0aedddf2df25c187b0de34d946d3155f6537b3dab7469f4a67b",
+   "p1": "8ff84885b806a70e4e25f3de03b5c5c9cd6607331cac7b87b3ccc02ea56d8266"
+  },
+  "gen9championsvgc2026regmc-2678113549": {
+   "spectator": "920abefc72d31c5cc3e59bc4ec11257ad0ba9e90e8b173d3de78627177c1af29",
+   "p1": "686c55e039a3ef80e2e55e52f083cb376bbd5cf7a0ded1ec6bb6138d925203ec"
+  },
+  "gen9championsvgc2026regmc-2678113929": {
+   "spectator": "13dc8c601534bc2f698b229490fc13c61e465d05504a25617a22ef2565287ef7",
+   "p1": "3fac623ea9c4eda05778566368007acf2bf7fe820bb8de5c99b70edd01e73f9e"
+  },
+  "gen9championsvgc2026regmc-2678115733": {
+   "spectator": "3b1d1054ba3d761d99e2d5a5aa050937d4513aaad137635bfc0841140eda6486",
+   "p1": "2d1a78e6148c2edeb128088eb01d9881679c1d93d4fa751145b23a6d1e1e01e4"
+  },
+  "gen9championsvgc2026regmc-2678117365": {
+   "spectator": "34ce574c5639447da8f91b2a54d3220f999b9d2e8d1d011f596badfe82b51349",
+   "p1": "49be8bf7143ce825b9ecb0bbc94c241d326708d617365259bec643e7362a7ac5"
+  },
+  "gen9championsvgc2026regmc-2678118067": {
+   "spectator": "e897d82888733536298451c6d0c41a846be2178af16c650c5f494567ed868fb0",
+   "p1": "85cb8edd69223863ed805a4d44c23b3521b6ea5f7f8f836bf3789150334e7176"
+  },
+  "gen9championsvgc2026regmc-2678118465": {
+   "spectator": "ef8a5b9d173aa68fa7ab5b67af08ffce4e4b4d192e969ca0f040dc5f9abdd70e",
+   "p1": "92866ff2ab5bbb89e7d9447dcad426bdd53e93cb87fa5f60c6f07849e4e17fbb"
+  },
+  "gen9championsvgc2026regmc-2678120118": {
+   "spectator": "29d062583bdaae92551600d2b15d63df5db647034f0db1f4f0e9a158b2b63e94",
+   "p1": "03a0f12a80501c7fbd94597643eedeb58dd429d4dfd1be776962dd308de38a25"
+  },
+  "gen9championsvgc2026regmc-2678120933": {
+   "spectator": "b775d91cf2a3540e86c3c6f49ea1698270d71a7fa941f90ff93e16102c92caf7",
+   "p1": "f6cc9be6147623c30bc4c66c37d8edbaf180eb2e3a0cf7d15d28b0d19adb6ba2"
+  },
+  "gen9championsvgc2026regmc-2678121288": {
+   "spectator": "e01994696918da7940cc1bb682fe324ee0805d27bd3ecff67a17bc93bc9451b2",
+   "p1": "682bc793fd92a55fd5bb9484932f1aa8884339164f43a5638850d1dbfcd51765"
+  },
+  "gen9championsvgc2026regmc-2678122771": {
+   "spectator": "7a7d1fa948c12fd0a3d6d9dcf9995b2e64bc026a054ecc397b9c210e83d4df3a",
+   "p1": "88f29d86f5819c488ea3998f9e9433df1da3bea2c0395336a8e0697be482dc96"
+  },
+  "gen9championsvgc2026regmc-2678123649": {
+   "spectator": "7d71af18cd92863289111408e495ec9b4997384a0055f1d7f32ca30ce3b134a3",
+   "p1": "86cfbe81495b0d7e0e875ddb25923f3a9bb6bba047093362c1afdcd30da05325"
+  },
+  "gen9championsvgc2026regmc-2678123974": {
+   "spectator": "45825c98a2b8395ebc503401ed9ad41b68da6a4b27b61625c31236204bbc02d0",
+   "p1": "64b48cf0045587660b9011959c33e5d6cf5509b8ff70ec4b24a27ea792a0213f"
+  },
+  "gen9championsvgc2026regmc-2678124358": {
+   "spectator": "9089d194d9494c66776dc116b2a998b44c7f448e3af637a2529261d6dbee0de8",
+   "p1": "934bf97bf0fc1d53df1790587d7465493bfea9a7d0b4bedf78eebe675d907a3b"
+  },
+  "gen9championsvgc2026regmc-2678126394": {
+   "spectator": "068b622ac695bfe6b33ce13a15cea5509576bb3b21320e88217ff53801665347",
+   "p1": "80a9f17a25c88310c35cfbb921c9a2fc6c92d7bfa11a4146fc3f8580485cbac5"
+  },
+  "gen9championsvgc2026regmc-2678128480": {
+   "spectator": "63cc783031be1f52907ca80636b8399a58939866664d097932f94270ffb1b961",
+   "p1": "a1e8e0e1ce613b78ec274b7fcddb38cadcd5876fbae90a82f0230caff5403fd5"
+  },
+  "gen9championsvgc2026regmc-2678129454": {
+   "spectator": "663ca6d1c1c810a164ae7b39d06440e95cf8b65d5776627d35a9632ffcfea89c",
+   "p1": "87937602fb8f7844f3bd610aa6d25ef8798c3eb661018141fe0d4fe224840ad0"
+  },
+  "gen9championsvgc2026regmc-2678129804": {
+   "spectator": "2f85c61614b8075d7d7d06e4b3547f3eb5025c3268d4f26fe968c07c50b6eedb",
+   "p1": "e0a15d1ea926c74cdb89ae6afd9f3bd68c09b1ec237a053bea951e32351737c7"
+  },
+  "gen9championsvgc2026regmc-2678132544": {
+   "spectator": "204fde5219435280915ece711dbf3903860b824792e6fa14b5a6b18274b90c7c",
+   "p1": "2db86f32b24f7bd6187e8370c77d8b2c421aab74ac69c2ca3e7be3815001c0da"
+  },
+  "gen9championsvgc2026regmc-2678132670": {
+   "spectator": "707419434b9e9c1342a95acc1f7cd4c33d393f046a004a48cd98a02a777f58b3",
+   "p1": "ebc219259024ca6de3ae16472624eea6524e8eeaa92badf0702f0efcd6a9c857"
+  },
+  "gen9championsvgc2026regmc-2678133442": {
+   "spectator": "da11e2f14758f201754a9186f6ab16caab95b4f85d4d0c6fa017e995b3b55cc4",
+   "p1": "1b4e834baecc25aa6e36a43783343b42c333777e9f90fb92dca0547310477ace"
+  },
+  "gen9championsvgc2026regmc-2678138024": {
+   "spectator": "3c8aade8bc4eebc51fd3e99e50de95aca2693dabf4a305f7befe20d1814d9704",
+   "p1": "2a4b79b0f1c2ab12a292f62d2ae8f6e9db52e2d541b18fbb4053548526118a20"
+  },
+  "gen9championsvgc2026regmc-2678140081": {
+   "spectator": "74730cf867ed6576b28ff21e9a51a480a9158464543204f6e6ba2c6c213d6234",
+   "p1": "52528d23c4e42b0a3d008a45a94f5d16b0bbe44101918421eaf84832f99899c7"
+  },
+  "gen9championsvgc2026regmc-2678141768": {
+   "spectator": "bdf2435d5988a972780c6bdd283f1ad57fdadfa75c396b38caafa247f5cbbc54",
+   "p1": "0704a8222619c0d4e4ce202e60e9fcdf6a07fa58cc83ed9c9f9d7d31368ebd42"
+  },
+  "gen9championsvgc2026regmc-2678141911": {
+   "spectator": "fd76e4de64ee992d5ee1ae86588e126e049f81877b0b20879adcac32004fc130",
+   "p1": "63cbb73c8cad205e19f3eaa29405e569ea137e323b272bde1674ca49741f9426"
+  },
+  "gen9championsvgc2026regmc-2678143736": {
+   "spectator": "85520e2c0e117eb8d31f475b4ed6030fcea2242364fa445e3fabe2f67b19c5c4",
+   "p1": "b1dd14c5c709f4bcd81ca40de570d1f24a70a38500b9146b53a76ae5c8f8865e"
+  },
+  "gen9championsvgc2026regmc-2678149391": {
+   "spectator": "3e3be9d5bcd694e98fc9036c2291a352f58b4fc4ea368b294eb937e211882169",
+   "p1": "3d42fe56473976d0250a5629c473373a431861e0bd9553860c72a7f86be394e1"
+  },
+  "gen9championsvgc2026regmc-2678149989": {
+   "spectator": "7c7a78a867b437040a14193715bf91a3a165570c47840c5a66ea71a470bad798",
+   "p1": "9cf19f02d40bcc1403f532158ea80994c61aaf35bb446560aa8b6153a339d27b"
+  },
+  "gen9championsvgc2026regmc-2678151015": {
+   "spectator": "a7de8c184f33075dfd4926ef244b008b4c60af10b9fff53fafda1a38f0bc23b2",
+   "p1": "16767c9ff14726bc999e277ff546fd2279ae132f2e0d33d4a138da258ee91333"
+  },
+  "gen9championsvgc2026regmc-2678152329": {
+   "spectator": "af7c5ddc5dd5bc47f31cd71376f5d85fbfb357340ad699291fe117ad59b5b896",
+   "p1": "52af08084559a05642ec5672f756c11febd7ad91a9752d1134cbdf688a9a13d4"
+  },
+  "gen9championsvgc2026regmc-2678152792": {
+   "spectator": "8d443ba0270d4ed367e28b04a24b33f23df96d80a003f6037ce4235dc285f91c",
+   "p1": "2cd68b8266b03866a86fef235ccac857ed697d9d2aa1cb1c2442939c31dadb81"
+  },
+  "gen9championsvgc2026regmc-2678152951": {
+   "spectator": "c34dc8ef4faff8b274fb39336711a6d15d4142632f6a4c0c9fcfa3e6524f88fb",
+   "p1": "bae81893b27815900d7371c4e913f0a588f44cd37015c84b40a4fc22d9527a31"
+  },
+  "gen9championsvgc2026regmc-2678154594": {
+   "spectator": "7ee3e93cb30fb713808ef8c77cd0cf01840bbb02632dba8d5a1581dcff51c04c",
+   "p1": "ba7541ab1a9dc0fbb7b37f66f27b08f76cbb90311a2aa0494a894a6df57eb0cc"
+  },
+  "gen9championsvgc2026regmc-2678154755": {
+   "spectator": "d637e2114aac85fac125e774fb7dffea24e6e4763cebe24faf9635576db208e5",
+   "p1": "45582453f41ae36cb9121d52e98ccba2adbf9c045774618da85963dadf290b08"
+  },
+  "gen9championsvgc2026regmc-2678158437": {
+   "spectator": "17ae0962132538183b9ffa2fc27fcd77b34b9de7a4754152ac58a949d9c1050e",
+   "p1": "0788c301936dce61c6a91fc540b6ed0862bfd2aef173a23793e6cd2069fd12b7"
+  },
+  "gen9championsvgc2026regmc-2678159873": {
+   "spectator": "6e8c9307bfd81376c3bbf0306169ecd033182bb51ad5661a55700d12b462cac4",
+   "p1": "0c5871324f738fe38ce64a8a9e92759458772331fef4af66eed6f5354d44b524"
+  },
+  "gen9championsvgc2026regmc-2678160009": {
+   "spectator": "2aa7dec246a4e061a49e7276478445601ebc860c7d053d617338b74c44e5920d",
+   "p1": "2cc1865e5fad70a7442ab8830139f47cd140617d296b8fd26f6bd78b7d20e8d7"
+  },
+  "gen9championsvgc2026regmc-2678161743": {
+   "spectator": "11845ebe7555e1be3e3095d074a0b1431976b63973a4b3c0f2cefa3a6b1bf561",
+   "p1": "3616f3a20c84ce49821a164166519d0fb8feab6310c2de7ab2b71e9280f4ed02"
+  },
+  "gen9championsvgc2026regmc-2678161819": {
+   "spectator": "955793086f311c1485b9b8b0f0c5e3d53243839a62a1d0c6b4aee825972b1c2e",
+   "p1": "145c12111c771411266c6c93300726cf36750449381a224022201f4c5d371349"
+  },
+  "gen9championsvgc2026regmc-2678162758": {
+   "spectator": "0dee9d9bfd2d6370ef1eb25b5f46858a7e79b39c5186141749e6525a69a5d4d9",
+   "p1": "2cd8708ed542d35305064b92c713c7367b397e2b5955867a5635840fa060f775"
+  },
+  "gen9championsvgc2026regmc-2678163572": {
+   "spectator": "e7fc465676d2ae09025bd5455d94ab490f736ac7ca8ed4b67b99e78bbd2c12f0",
+   "p1": "51d1ec3a52c6fea5d4992cb9e3db9383170c833236b3b60e20cb5a4511c530e2"
+  },
+  "gen9championsvgc2026regmc-2678163947": {
+   "spectator": "b9b236a806af7c5e047d5a00227a5b7eccce0a311d59e58cbd09cc1366fd5a9d",
+   "p1": "e93ab457b30694b7a8e18deed92f14d383ef5c847bf409807c434c4b4b7a41df"
+  },
+  "gen9championsvgc2026regmc-2678165861": {
+   "spectator": "2dfae50fdf67abc8a3ecab630e3baaf3ec559a7156dd4a2022dbaa916db1da93",
+   "p1": "8bf0d5a2eeee34ee15d5f6a25dd4f1e3ffcc95f9d44e9cc0a09b39ec43d45d26"
+  },
+  "gen9championsvgc2026regmc-2678166486": {
+   "spectator": "a5508bfa8c4be66ebdfaa3186e6a230529ebe8cdd1ac137f651812cef0c5dc8f",
+   "p1": "723817c5cbea7f5c4b505cf13fd54b1ecd9429a5e054d17c8b450c4365ddb9cf"
+  },
+  "gen9championsvgc2026regmc-2678167434": {
+   "spectator": "2c204844517046f31ce730a1f2395c2ae149fd8cd0599de936b51e800e1716e5",
+   "p1": "93d74b75106ff41f2d5863417937bc23746a58f0a8af4991a1bae631c020a002"
+  },
+  "gen9championsvgc2026regmc-2678167767": {
+   "spectator": "c0e2beaa93f2e48730b882e78852b30655c640f1ac27a9be84800cfb2a1f111d",
+   "p1": "80bb885c0408a889dc78dabf21a5b09ef05dc660943357ee19015656a192ed22"
+  },
+  "gen9championsvgc2026regmc-2678167821": {
+   "spectator": "811b42b4bf10dbd2cbecdde5b69528b92036e1a58cd84d01b18012b73361f9e2",
+   "p1": "267097f14efbc2c75d4c440f5a8bfb0052442fc8bd0df423b86180850d95668a"
+  },
+  "gen9championsvgc2026regmc-2678168075": {
+   "spectator": "73ec79408368c02693afae50942b8903b3dff2cb073e35264f6b259aa0a24b58",
+   "p1": "aa7f104c1e5d43d4af51a9c05751fab820f0e2572469824d09d16cfb0e188d37"
+  },
+  "gen9championsvgc2026regmc-2678168141": {
+   "spectator": "6372f46e9e053d7c1a7e3f57e57209531333d7fd6e48d2b325ac8a4bd49ac0fb",
+   "p1": "75c0aeea39b076200de3367cc903bdca911190a0653a4167e347838a342408f9"
+  },
+  "gen9championsvgc2026regmc-2678168487": {
+   "spectator": "3c32fcebc05de13c1c71811d94df9452274c78a7c43914021f0c0c9a807fbbb5",
+   "p1": "30f880b41c406de6426a512b76e0117d955074b3833a80605d88e3020898fea1"
+  },
+  "gen9championsvgc2026regmc-2678170161": {
+   "spectator": "602cdff82c1106ef0ad898fbad8fd8d42841616e88d13407f7b3cbea452b0f3f",
+   "p1": "6ac043618e86065b98f6bd59363388e03d5a0624d1ee6b1e065cfe347a725a71"
+  },
+  "gen9championsvgc2026regmc-2678171996": {
+   "spectator": "bdabe0a25a9020fee3c318edc1f0f161a85c205a5edac772de22c85e1903fe53",
+   "p1": "3c9f42dcc56574e2e701acb50f2a1fc9dd38261e4fcc2912be5e4f2f55b2e9c5"
+  },
+  "gen9championsvgc2026regmc-2678173799": {
+   "spectator": "dc9fb4c91accbdee5520a6d3e545eb630e91f76ac42541625721e4c7fc4a4909",
+   "p1": "e4601b0a2c38e6739c2a07d1d9f7fbcc8b3e8cfb5d0be421b9359a909924d757"
+  },
+  "gen9championsvgc2026regmc-2678174727": {
+   "spectator": "a0b2822317dca492ffa4ce53053bded5c28916e769787cb8e57b89c090301ac4",
+   "p1": "33fea5e009efb6a228abd9de45980f288cde4bed4163cc2879ba26be18be963c"
+  },
+  "gen9championsvgc2026regmc-2678175134": {
+   "spectator": "93645885d245587a700a6148bb086ddf8855e138e048b3ea6f205dcefb651153",
+   "p1": "31837e494eb187b3842f3f8e450a7c97a51fae10af3959c7bf17e0841a7c62c9"
+  },
+  "gen9championsvgc2026regmc-2678175259": {
+   "spectator": "04b2ffaa2b3c95a0716c617f0ed527238ed29ee02099bfeb6415703de73c7a8c",
+   "p1": "c7d1d12fc4de98760086a2ef90ce8f81e5842cf1b094b710fbd634ef8d627653"
+  },
+  "gen9championsvgc2026regmc-2678175519": {
+   "spectator": "2ac9825de678356c2174e6f08b3521888e1b4bdeef06f83211e5bb162b87de72",
+   "p1": "05df1716eb717a4fcc4173177aa82dc4859916d562a975efb23cdbe9c5fe1243"
+  },
+  "gen9championsvgc2026regmc-2678175774": {
+   "spectator": "1795bc696f4e9bd027cdf74b6bb96b67f80a1bcdac4102f1bf70cd42787a06fc",
+   "p1": "ffb2172fb746d78746486b9081ef68a73975edb649d0d8b2d6c57c9c0b0d036e"
+  },
+  "gen9championsvgc2026regmc-2678179928": {
+   "spectator": "9e4fc4f947f65c93e31022d5a0030b7c9debac422111e3c01502cc68439fbccd",
+   "p1": "814abe99fba232305ecf806ac0b0a79f45c5c459452c45b7c2bc6ba021342691"
+  },
+  "gen9championsvgc2026regmc-2678181725": {
+   "spectator": "692e55cf092753d782fb9cdcc633d545be212491856faf332fe81a5c40479f57",
+   "p1": "db95a7785c274d934de0af58fb6b48811fd3599e9258c6899a0b82495b28e133"
+  },
+  "gen9championsvgc2026regmc-2678182748": {
+   "spectator": "a02b88d670731a80b7faf71a03f358f54ec56077a308785c194b95386539a9d7",
+   "p1": "d65811d2d4201ef86bf78c057fb603a9990d41d591dd5ea481e43a9c017feef9"
+  },
+  "gen9championsvgc2026regmc-2678182949": {
+   "spectator": "96215a5deb0d1615dc8c411ee7846b555cddb224b027e7d44ab4a5cd54b9764e",
+   "p1": "49d0c28df564ef12c6c713594a2f472249d6b4d31a6e7eefc377f533f61a7b54"
+  },
+  "gen9championsvgc2026regmc-2678183297": {
+   "spectator": "fb7096ad21f59803a0b6359feefac17fd6cf7ad12ee020d5967e91b25b5d7057",
+   "p1": "225667548f267fb68a7a4dab5f78ed5695331d6834082d3fb88932b2a79f7952"
+  },
+  "gen9championsvgc2026regmc-2678183597": {
+   "spectator": "b70deffa290d7ca476e1404efd239cff9344d362d253de023a2d8f1454f42998",
+   "p1": "d311fc283d9b51bd20f934d0f8564221fc3b98a800e88575c67042f8eb3ada15"
+  },
+  "gen9championsvgc2026regmc-2678184190": {
+   "spectator": "5d64921be3affb29f1bf81d127974ca759b1512bf6b0f1c3c22903e02b9ce22a",
+   "p1": "ab910fb5c599ba0b2728f4c3d25fd97f9cfaf919013bc557d14af78028cee27d"
+  },
+  "gen9championsvgc2026regmc-2678184560": {
+   "spectator": "cbb5ffe662a4e5f2ee0e272723edd142e56c57dd1fa2df608f394fe8b89bed89",
+   "p1": "43ccb42a8c64695f7cac978761aa290983c749dd301ae6e8cc84b6b8d314f978"
+  },
+  "gen9championsvgc2026regmc-2678188643": {
+   "spectator": "10910457250803a529246fea3d89aaa11ad64dfbd59cc5d7ec6a47664815ec19",
+   "p1": "01c39b07f3b10057e3abe80692c6695cf5d8574d1ea3abfacb0bc0b266723bcb"
+  },
+  "gen9championsvgc2026regmc-2678190232": {
+   "spectator": "d11d277560b4fb2e26d085a38bc70a545b80ad085182aefc7bb1c67586100fe5",
+   "p1": "b6797fe43534169bd3844e6d230d989784877bb1303e69c99fc885e17c1028b5"
+  },
+  "gen9championsvgc2026regmc-2678191577": {
+   "spectator": "b1d37e2a7d13f0d129aa9b65152471dc9e2109635a7e942863d5b4a3cfa56fbb",
+   "p1": "facdfcfc53ef0945e67886e1287e4bfd794da526fd24e6b73243fbd36a55718b"
+  },
+  "gen9championsvgc2026regmc-2678191985": {
+   "spectator": "151cd896f350e0c70ab08b079ce65de33372c5c03934606bc323ce4578240c63",
+   "p1": "2881b91371cfb10a7724ff73ed0eb4c6126471440166df6056d07e773deb03d3"
+  },
+  "gen9championsvgc2026regmc-2678192512": {
+   "spectator": "782de4b9057863e5e0013594029b1ab42ea9351e52de33bf2123acbbab6d75a7",
+   "p1": "1f55d614d3e129b1dc8b2601988b5f7a9ad9736029cce4ed8be9126959e55e3b"
+  },
+  "gen9championsvgc2026regmc-2678193388": {
+   "spectator": "39b90054ca1ee0cb84bef28bb984d7c8bfa9795a4e319f088aadda44b3afefac",
+   "p1": "e0693198ef155a051be52c4793d049057d62857ca9eabab2a1652a3d418bd6c7"
+  },
+  "gen9championsvgc2026regmc-2678194178": {
+   "spectator": "b12de46081be902c56822decea0a2d96d5ebce0ad082ef359cd868b6f556f411",
+   "p1": "9d0865c49996cd853652459048d14a6e6d0e435a4e0ae9c2a04881373d547a25"
+  },
+  "gen9championsvgc2026regmc-2678197266": {
+   "spectator": "602ea285e71d6fda1b83ed2c14872aa69cbc3762d93cbac3552cd85cd654b6ea",
+   "p1": "27eb1426846a33bb859ea33d9b885b2cf78640078e31360d78e6b8b8301a703d"
+  },
+  "gen9championsvgc2026regmc-2678197296": {
+   "spectator": "5bb140605e7a56639c6ff9e5ca7fe6a1363c3917681a70bd36e01aa7f33c1485",
+   "p1": "fea00582df541233587a2796e73469f355943ffce1ea0d51dac6628c6bea5fb7"
+  },
+  "gen9championsvgc2026regmc-2678197457": {
+   "spectator": "86b6958aa047ac1d5970bfb332590c252830eb956c612a9c1ee73190fd4912c7",
+   "p1": "03e028047afec433c31248261007fa169f091370b91529411765a1f7f223c188"
+  },
+  "gen9championsvgc2026regmc-2678198874": {
+   "spectator": "4b6ce75782ef6363fafad43d5e2c1b579783b236bcc5cbf7591436ba4249ded6",
+   "p1": "d93923707e38d273f1db6fefe1ee8250d359c9c68fbe278ef3831e1909a03da7"
+  },
+  "gen9championsvgc2026regmc-2678198928": {
+   "spectator": "c1f98dad8c2b1b583da7008a2853b239724715a24d28b8f07ba95068bb7af454",
+   "p1": "14175ba808882075d3f3d330818eb52ac2d01250df1e15de80ecb6f75c3de29b"
+  },
+  "gen9championsvgc2026regmc-2678200728": {
+   "spectator": "1d86a82edefc8cad2e80b563565121d465eefa7cc426a579342169812d1fedc5",
+   "p1": "740d9b4ab6d86e8cf90aa0919d5905c2110b0101dc45fe1b63f0924de614d482"
+  },
+  "gen9championsvgc2026regmc-2678202046": {
+   "spectator": "08077e50ae0c49c96bdc01af39fa0068f0494935ddf8b3fac37bf2ae682a296b",
+   "p1": "fada728b14ca7d1febaacb665ee3a8091ba461cf9224bf7fa53df032b2dd9e66"
+  },
+  "gen9championsvgc2026regmc-2678202785": {
+   "spectator": "ccf08ddf6059d0f70804edd718045da2762eb8b3499af2ad0d4554ea06969519",
+   "p1": "276c0f96517d4b578177017c4e61140e52b0e8a82ed4206b4d5d97af3ea7f92a"
+  },
+  "gen9championsvgc2026regmc-2678203913": {
+   "spectator": "f0d798f2ce9617575f52e778c0a7febee01a26d701c458725f4de03d7adb7099",
+   "p1": "da4842eae3dcf12e8898d2b1c984856f0bab6cd208d36d655484155f8aff117c"
+  },
+  "gen9championsvgc2026regmc-2678208897": {
+   "spectator": "f06e979b11341d518bb9c733ef90ca01db49da303735b3499f017ae459471df3",
+   "p1": "3ddcba83657927d267d06a7a51fb8c945f870d496e95106057b48fa85abd406e"
+  },
+  "gen9championsvgc2026regmc-2678211535": {
+   "spectator": "b215ffed0cb2c0479307c3a93fbd0c86245fb98a3b2a8362578a7f0a79e48881",
+   "p1": "4b68edc8c71d203d7513fa3124d477fcfa7c596d5f321650da826139d7ce3cef"
+  },
+  "gen9championsvgc2026regmc-2678218024": {
+   "spectator": "97d4969d417cbec7a4ff6ec5221fcb5f09fc45073876d67f7a0feb383f068d06",
+   "p1": "ea4a473cf4762a754e66cc721d67648be457a2c8fa5b6d230eb95bd40130f0aa"
+  },
+  "gen9championsvgc2026regmc-2678219132": {
+   "spectator": "83355b673768d9e17993f74d7c4cdbdfbc5411067d671d810b5d97dcc53429b6",
+   "p1": "e6697be65805eb7a9a14ef3f4d962fda0002c45021a0d24ab3fdf5d552e6d531"
+  },
+  "gen9championsvgc2026regmc-2678223117": {
+   "spectator": "9bb83c57b3e4ec4cc3590b26df85e0c8c95fa6163bf6eb2a87a05239b3343ec8",
+   "p1": "3a55d147e90ec272e85b22994bbca6028af904cfa2bd277ffe8fbfb0f191e304"
+  },
+  "gen9championsvgc2026regmc-2678224969": {
+   "spectator": "b233db897b32bfe1c92100b0744e8ebdbaf5e7efa7708b8567b416cf07fb7642",
+   "p1": "70dbb142d75cf9e2a64e2202d6134a7384cf2b6b482a565a82ab51bc9a69a41c"
+  },
+  "gen9championsvgc2026regmc-2678226620": {
+   "spectator": "46572037be6f606e7be23727557be370c3e59b83add53106870ee97150007df6",
+   "p1": "c3db49034d8fdb7d194862c3bf0c95985ec5fd9893bc09468a8e26fd1ae26fce"
+  },
+  "gen9championsvgc2026regmc-2678226757": {
+   "spectator": "ba17149f73c3e9669b0c63bcb32b136f15546ba60370af64b88da3e1a4e55e95",
+   "p1": "a962cd1974abcfb311e6eacdd71ffbd060e2a979bf2678e9267236e6ac3fc6a0"
+  },
+  "gen9championsvgc2026regmc-2678228699": {
+   "spectator": "bdfd680dd53e54a5dd719aaaf641926724794deabe8da28ac080dc99f8d530da",
+   "p1": "2efdb7f4986385ac9aeba618649979811122edb70cbb2637bc9203b56dabfff7"
+  },
+  "gen9championsvgc2026regmc-2678228909": {
+   "spectator": "fb6416826c604110bedd15f4054f52b8ca8e2289f8697b19c26a213d0b7193c9",
+   "p1": "928403fa23b19fc5ebd7ab83c0efe681a9316bd629d8c51ad63ba0aa5ca2b29c"
+  },
+  "gen9championsvgc2026regmc-2678230565": {
+   "spectator": "7bf7e6c450e19f4a7db6c1c5efa8ebc4d088cf85e77016dd5c5f626fd0b703cc",
+   "p1": "504c8455cd4012c12c39d73acbea820c47d925a2de2dafeded04f9a28c8fbd34"
+  },
+  "gen9championsvgc2026regmc-2678231248": {
+   "spectator": "ad464429d93d11fbc424b4c60c8f9657a159d14319cf1d764c39e0c610e98bce",
+   "p1": "8ae082ecb6194be93570a25c2f63a510a425dde019dc516e88503d370c0b4b1f"
+  },
+  "gen9championsvgc2026regmc-2678232061": {
+   "spectator": "6d31f21fab196f49777967d5169625cf017cfd87daafe5df9291624934602678",
+   "p1": "f3cc37964a736c4e4992d855a5ee2896d286f29fcd329ec97203fb0341095167"
+  },
+  "gen9championsvgc2026regmc-2678232115": {
+   "spectator": "8bffa703028c76cdde921ccdad6db5a9cc9db98fd16090c7adf321e64705c2c2",
+   "p1": "9f640fbc55104d00b32c1d07e2808e9c57e7054a2dd5806aa6e08a7b2e2ec9f3"
+  },
+  "gen9championsvgc2026regmc-2678233152": {
+   "spectator": "5172eff7bcaca10612a71e513c81f964cee1c9ce369a2a8638f9f5b9aca60fe7",
+   "p1": "c73f895d8823ac24c65c7f1addcfe800065d036c1d83b6c5cc23a90ddea485de"
+  },
+  "gen9championsvgc2026regmc-2678234566": {
+   "spectator": "efaeafe46a18e92590dfaa8b3dcc63aea5ddebef0d424738a6ba3cd9d105908b",
+   "p1": "a15b5ccfbb7f9565d181a4e2050b56d91efc368a8f9b0c6ac06ce6fb840be84e"
+  },
+  "gen9championsvgc2026regmc-2678234995": {
+   "spectator": "991bb3431eb88731ce5b212f8eee0a2fbdfb27d2a9dec7795a1c5a40f643c08a",
+   "p1": "8bf75ebfce26fc08e270a6c4f7c251f1ffd7689be6599ff8804b083d110670b4"
+  },
+  "gen9championsvgc2026regmc-2678236125": {
+   "spectator": "816644fc8456aef627fea500f63ad8144b42cfe3e85fafc8fe3244fbc662d1b2",
+   "p1": "15582a2f5499c68e7c232a95c107fe9c51566e145be951abb819a9a1c330640a"
+  },
+  "gen9championsvgc2026regmc-2678236400": {
+   "spectator": "be892dbd81856ac7917d5721d9ab129c6f4cddc08ff594fff49581162797b379",
+   "p1": "3337a31c4392257753d46046c8537228395caaac54f3b7457fd3160ba512c1cb"
+  },
+  "gen9championsvgc2026regmc-2678237221": {
+   "spectator": "8b9623fc368749557fd4a8130ced076e4afcffe3ea0760e0fc9729cf168b1a40",
+   "p1": "7e6479b8b2c4104b173c3188f702f36df9259838b18925f0258fe8e2e10eeaa5"
+  },
+  "gen9championsvgc2026regmc-2678239171": {
+   "spectator": "3107fc48f04d2d52fe0f60a3742f662f002cc130e50af1c80c52046a83be8988",
+   "p1": "62adef288c53a03d379411786bad8b3c4c847599d727ad24a58b08b36e84ee9a"
+  },
+  "gen9championsvgc2026regmc-2678239779": {
+   "spectator": "0e59f0812dddae50ff71c0a94929a29b59e521133e594487810b3074ecba60c1",
+   "p1": "27150f5edb3dfbd344430194133fd050f6674746f5a6c2d2a23b2a47b7e88008"
+  },
+  "gen9championsvgc2026regmc-2678242308": {
+   "spectator": "90ad38aaa8744df750b2cfe3b802d34eac516858f3678fa445d5ee86be0cdd3a",
+   "p1": "86068928b1b360700404b931f027ac529b5f1a23a05a080bbcae3dcdb393cca9"
+  },
+  "gen9championsvgc2026regmc-2678243936": {
+   "spectator": "365159dcc9b8b85c27d137961c125cb1af8dde87a81b1be68ff9ac373ee07546",
+   "p1": "af385900f3472569f84e38a17d52ad889f2b4f5d16f6e15c3c6c85d42d98f5b8"
+  },
+  "gen9championsvgc2026regmc-2678245100": {
+   "spectator": "8b4f9f4e72adc3d0caa747ec37aecf23680d82aa347a9b1c5c983e740c8871d9",
+   "p1": "1f71996ac8a5dc602c42e343951c730e45c3c073b36338b34573ca50cc646bbb"
+  },
+  "gen9championsvgc2026regmc-2678245818": {
+   "spectator": "a09f60649dc0de17e5660a74a051497a5bbf167888e92c4973d9397265b034f8",
+   "p1": "db8ce55d49b62923ce0abdb555836032304c5e523fed156bc0a797e86ecddb71"
+  },
+  "gen9championsvgc2026regmc-2678246239": {
+   "spectator": "5e055dd590bdca10768605cbf25ebf4383a5db4aa39f312cbbf06947315821a7",
+   "p1": "ea9df3b781e099dc99ae70a035cf439162f8d063db42d00a2fc78ac5bbc3e360"
+  },
+  "gen9championsvgc2026regmc-2678246729": {
+   "spectator": "3003959a8a4953376f9e5cfb4b8b501d080e59f9c07036be26adad2068d2054a",
+   "p1": "8b1a7b815736c9b4bda1aff489c95cfbb54b4f2d59c96801ececa85dbea342a4"
+  },
+  "gen9championsvgc2026regmc-2678247216": {
+   "spectator": "ece85739de2cef96c5b64c23f8285e6bd44d0a4afbeed544edf7c201255d229b",
+   "p1": "74d868c4487ac33c293584fcac8203a3cd33a9f1498edd9b7e35f6348496dfd1"
+  },
+  "gen9championsvgc2026regmc-2678248301": {
+   "spectator": "ed27143d2832a4872724cfc2da1ee0c4c2ff947f9832e5db158ed9461b523dff",
+   "p1": "e3bdb7d2008c5d7e0193cfa84c6761429f3145d4696cdf235d9f4ef6dea1cf14"
+  },
+  "gen9championsvgc2026regmc-2678248370": {
+   "spectator": "c39d52ab98330a44acfe45a71f1e74b133e905bad491ea3ebdb5c7c766bb3299",
+   "p1": "7dbca3e1a4bba20d4307e7ae275939e821ca7621627de245df2fa1f777ad4256"
+  },
+  "gen9championsvgc2026regmc-2678248519": {
+   "spectator": "4ee675c3df6a16e863b56f7f9a3fe9c852076878143738728d4ccafa53239dd4",
+   "p1": "834c30147871a964cc720889023f9dbf171e6e5bbc5baea36d645db6a107a2ec"
+  },
+  "gen9championsvgc2026regmc-2678249287": {
+   "spectator": "59785081f786e228e8194ff64be2bb336bcc399b0f38fec55d9fed607d04b56d",
+   "p1": "15dc4f7b69809c04e02bf20732a653e3eddee4ea2ad0592cb27e7d5136b77b70"
+  },
+  "gen9championsvgc2026regmc-2678249335": {
+   "spectator": "6140f566b20130e3baabb0019045e7a7caf175b4b1a30056b1062f9c411e8d5c",
+   "p1": "3afc3dd77f45b16ffabc3dcafb00e7cb8ed3b1634156c35faad05571f5cadc21"
+  },
+  "gen9championsvgc2026regmc-2678251548": {
+   "spectator": "949fa45fea35deee838b38a7da79fc977a69d7e10a1b467c968df4bd1ebb447f",
+   "p1": "43cca77bc733d393dc21b6bb72b1386489d24055010086201316bfa61c7d9812"
+  },
+  "gen9championsvgc2026regmc-2678252097": {
+   "spectator": "18a3c4b44e633c45f279ee4492e967bc693d22280026563f50f2d3633025f28b",
+   "p1": "20e326223df360eb5bffefeccd38f3faa91d2298bfda7ec98c2f13e140bf3ab5"
+  },
+  "gen9championsvgc2026regmc-2678252232": {
+   "spectator": "3951d027dca87ec3ff4caad4a0e449a70f8e813136d9462f9dae366cdc37dab9",
+   "p1": "96e07b0290f00e697a214e94f881e5290b70958a8e70cc4d388fb4a253f6ef4b"
+  },
+  "gen9championsvgc2026regmc-2678252942": {
+   "spectator": "110dc18522937da7c50da7e57be8685dcd56925ef336b9348e24b2f879ae2504",
+   "p1": "7c12761aa62b3d37ca8fdfc3272cef41474aabbdb931262bfb5a125f26ade446"
+  },
+  "gen9championsvgc2026regmc-2678253929": {
+   "spectator": "65caa3075608eb7497d8ae6369a5615e4022ed2693c3b513c24eb3ff180245cb",
+   "p1": "02ce96a19699e03d09133f0d05e5268055e0cbbecd1d808eb9281f8addcf43f4"
+  },
+  "gen9championsvgc2026regmc-2678254597": {
+   "spectator": "351344659b0cee74d6c2494eaf8708bc2c5f8cc1d4f15c6626f76a569ced6d47",
+   "p1": "f458552a823afc212c76a398f2d966975140817d33e5aaaad7a82400cb7fb4d9"
+  },
+  "gen9championsvgc2026regmc-2678254676": {
+   "spectator": "bdba7f211ed43dfa33f9db55d28ea5c49b21b1a7c2030c6ce8ff43703d9d2be6",
+   "p1": "f105be6597e41ac2105f7debec72254f1e5234319111b38cb8b67349c6d955d8"
+  },
+  "gen9championsvgc2026regmc-2678254767": {
+   "spectator": "1d09e96befd3ae1203b68eb7e978d9280d51cad45a707d02f63c976185864cb1",
+   "p1": "3522001fc4d51b363b9638ac6adfffc5342b6ed2e89d7b15fafe188bd6220f8f"
+  },
+  "gen9championsvgc2026regmc-2678254841": {
+   "spectator": "97b6e2e9d8a79e6f9e2c6a9700eccb76039f634643b63389bed0583710d3029b",
+   "p1": "32291b59a1b9e314dcd092fbbdd4ae025ce45d37de7149d0ae0569c18b089f8a"
+  },
+  "gen9championsvgc2026regmc-2678255584": {
+   "spectator": "5bd2275654dd8fc325f9ac3131d1f04c7ce06f528619b722a134536f758f8573",
+   "p1": "ba4c5b47b7b19fe4da896b0548928004401624cef20522c5a4292914f0369c1b"
+  },
+  "gen9championsvgc2026regmc-2678256134": {
+   "spectator": "07129afbac6a40f1abdce40668096206db76b99d686f2949c814399bfdfad5eb",
+   "p1": "613a2e50d5bf26d6055f7af3e428cad820678122e4070e80abe318401d5c0620"
+  },
+  "gen9championsvgc2026regmc-2678257457": {
+   "spectator": "95487ee8a10a6f6c6d70c93de05839cc4fd3ed0295c01d81bffab83cd16772d1",
+   "p1": "870caf18a153d0aa02fdac158711284dee037da4f0e30b55cfa543b9795981ad"
+  },
+  "gen9championsvgc2026regmc-2678259075": {
+   "spectator": "6d317c982d0633916867aa70dd5e5170cb998159b43307aeda58f4097ea8e301",
+   "p1": "45f0002d07d2a9c5d438ca45c80e0aca3b638c533cb5dc5b82a339edb16cc37d"
+  },
+  "gen9championsvgc2026regmc-2678262365": {
+   "spectator": "c4757e334fb8a7a76f155775a9bec17ba143fa86b3c61572e1f24c2e52a18508",
+   "p1": "c30d92542c457458c80d5e2ad055f3683bf2a55e3f6bb6d52097f3f711ee409e"
+  },
+  "gen9championsvgc2026regmc-2678264993": {
+   "spectator": "52bac5b2f4b345d231fc9b819f1efec522fe5add2df488bae6624aed48c01a4b",
+   "p1": "81fbc1b925ece464e1dbd4513178235a8cffbb6fede0f653696eb6b372ad2067"
+  },
+  "gen9championsvgc2026regmc-2678265395": {
+   "spectator": "7edf48520449f200c9ba0d1d4635dead051e932f44ac0b408091e61e33abdc97",
+   "p1": "ca63ef3f055ba6724b0db4e924dd98591586f88c7b98c8f294dd874e78e8aa93"
+  },
+  "gen9championsvgc2026regmc-2678267296": {
+   "spectator": "385eaf5817125a5200fdc95a1a1bf6e611e7ec126187aabff96701293def12ea",
+   "p1": "8e615325d0f0491d28ced618d527144597123603bb3e8b911def65684ff2bff0"
+  },
+  "gen9championsvgc2026regmc-2678267538": {
+   "spectator": "b9fbe675c6fad5619e6e3303fab0d419984eb8abfd47d5c5229d03b900f20d3c",
+   "p1": "3fe565392da2a40e9b13afa6c1017273a1be50c4f4465cd07161c7b91f5cd8be"
+  },
+  "gen9championsvgc2026regmc-2678269324": {
+   "spectator": "d93639ebe7328f9c96175f6c06bf9705a5f2a11bbcc7834d48349ed8b1ae4c09",
+   "p1": "d9e4f8629919a8edffe9bdea070414664cb37ef94f2739142fc928a2d2ca4cb8"
+  },
+  "gen9championsvgc2026regmc-2678271311": {
+   "spectator": "06a3842b39e88a3f1e3c116a236f2cf04836df6bbe4ba51bff1d2c6a8af6a297",
+   "p1": "d8a29cd0e520f53504b1e1bf7426bd86f1c76f1453165f19eb4d1fd5fa646857"
+  },
+  "gen9championsvgc2026regmc-2678272082": {
+   "spectator": "e52c91c80b8f073da1ed537bfab3ff323351be5105310bf0abc45a4860fc6e2b",
+   "p1": "dbac7fcb322667ef260adca3c2359f1b353dd3fc8f57ff7eca41e714ff0134a1"
+  },
+  "gen9championsvgc2026regmc-2678273558": {
+   "spectator": "1210676fd327231b93861d29c0cce6cc28f878c926104f86bd252724e082d6a7",
+   "p1": "b4029b210f0ad5659f55dd0ce37febc7b94766b697b9ff464882b84624133150"
+  },
+  "gen9championsvgc2026regmc-2678273710": {
+   "spectator": "43052c5606d0ad869b138b404305d4466c06612dfc96a809d4b174399bbae829",
+   "p1": "3d363445b7a75492735b108108a01709917d0d969f6a038f39151d3d986ee446"
+  },
+  "gen9championsvgc2026regmc-2678274679": {
+   "spectator": "7c5d6e844a6a2a6817c5c64767bfbd936765ec2d0fdcb6e69d1a8ec2273bd744",
+   "p1": "bddf180bb11b2bcb2baa988184be9c51a62b57496227d92a90a22e0e133e7589"
+  },
+  "gen9championsvgc2026regmc-2678277435": {
+   "spectator": "8566aed6574c7a4d684710725b967c2fa157eb10e016bd127d4d4e4a9ffb8ab2",
+   "p1": "7f64ed9d7e58c05cf0bee0a3563975075f83f2e040ed081443cd84db7aa7d08c"
+  },
+  "gen9championsvgc2026regmc-2678277488": {
+   "spectator": "65e65ebbf65a6671298da14007f23a42788a12578c9a6012fe3b621899a84723",
+   "p1": "a7129103bc6a5152651a1a5e19d9bb901f9eafa1cd01819af913a1a7c8bc2033"
+  },
+  "gen9championsvgc2026regmc-2678277576": {
+   "spectator": "3f99d315bcca6e07a4d8a8e1933fb3da8ed561190dc4e62a8991451f24587207",
+   "p1": "a46c8df10c8f578d6ea31c0fcf7c2272cc670f90c5e57709ca715b11a2be44f1"
+  },
+  "gen9championsvgc2026regmc-2678277773": {
+   "spectator": "c2cde29b29ee27f32b37b4db316b5bbe0af4b6b53e5d8afc28e361618450e70b",
+   "p1": "0f43948b3c3a7a229218210ee423318a43669a36f92692ce4a6670eef9c06d23"
+  },
+  "gen9championsvgc2026regmc-2678279120": {
+   "spectator": "ab9a0dcea6f56cbab541c70594fc53242dcee3d453f822a8e4d59fcc8999ec44",
+   "p1": "facbb04088cd5f4b9bfb8d5fde5b583cb6fcc2a45735d24c628a8282e010c200"
+  },
+  "gen9championsvgc2026regmc-2678281669": {
+   "spectator": "8f0b721a78204e8cec02cc71311998b784051fd88dcd79eb88b8c330396efb5a",
+   "p1": "30c10cffa5e2d4e343997b98b1b5cdbe1b0923b7484ec7cfb8bd0f636059feb7"
+  },
+  "gen9championsvgc2026regmc-2678282465": {
+   "spectator": "d5ca40715a080ac8a83f32dbe43393b091b11b60303be1dfdd03a1914a02324c",
+   "p1": "799bf1dfdb5d1b5c86d5109f3fb03b8bcde32576cebd49f369ec60ed4d114c5c"
+  },
+  "gen9championsvgc2026regmc-2678283895": {
+   "spectator": "f07037bf2c5f33c794afc012714ed45755f7746049bf01ce73139f20dd406f46",
+   "p1": "20e08c396954ec30eff51bbae3f89cffa7ac8edc35d918ac263d1615ea864d0f"
+  },
+  "gen9championsvgc2026regmc-2678284141": {
+   "spectator": "b9e1e4a2315bc9e817326ad8cca41a9eed75524541a355962a26ab4640e99544",
+   "p1": "bf942537cebcb75be21ba77b59f449899b99d5df253502e8fe416037227a6211"
+  },
+  "gen9championsvgc2026regmc-2678286145": {
+   "spectator": "8e0586436233a0df994567fde215933cd0086148993a1ba1ba322174909f83fe",
+   "p1": "3da57f629dc4a6b7d02a33e9511176f314d0e2e8870df8b9dcbf3f824ec6194f"
+  },
+  "gen9championsvgc2026regmc-2678286443": {
+   "spectator": "df5f9487bd67e653ca976a7afc167f24f9844427f3cbeb6dc4baf1036dc1a427",
+   "p1": "82dedd2c94f55da0e8bc0bd03ae0ba2e15a22604bb9c5b9bbde10ab1ddb41fa6"
+  },
+  "gen9championsvgc2026regmc-2678288505": {
+   "spectator": "ce9d52c7b5922c77fc9e400cd25bdb69ca0240508309fbe73671936f535f45f8",
+   "p1": "6252ca48b0b15b07f8566b9ec4daa71cd39dca60bdcbbbd4352d51c4e2ad1d9a"
+  },
+  "gen9championsvgc2026regmc-2678288558": {
+   "spectator": "2f58fee663f1cdf8f50851389756b5b5e458e13bdddabcb1e59d6505e9b67ecc",
+   "p1": "386b52ed756f686b28672cf951486a6aaa1cbe516bbfb95bb3baf4bd60ae61a4"
+  },
+  "gen9championsvgc2026regmc-2678288650": {
+   "spectator": "396cd7c58cc3df3ce87dcb67e2c24c13c7f7e7df70022d8be9b32d46bdece3f1",
+   "p1": "9525fbd37ef16e2907a1e3c1fd39b46164a8570690b16c0add1c9502a4843c59"
+  },
+  "gen9championsvgc2026regmc-2678289350": {
+   "spectator": "71be5f273b74341b9b4f53963f9c7e032b1b0f164d9d6726659c6306e135a8b5",
+   "p1": "921fd7cfdc6fbd85e2fd168c1ef629dfeb3df7c2d2c686b9934a7bfef63aa5f6"
+  },
+  "gen9championsvgc2026regmc-2678292262": {
+   "spectator": "1c130a63ed5661d3d0f505846c8c121b0d19fe5b600c7144a07f45150434af44",
+   "p1": "63ae0836f5aad81cfc59aa27b8e1fe43e41fad17042839d38298e6fade0698a8"
+  },
+  "gen9championsvgc2026regmc-2678292374": {
+   "spectator": "7805963c39ff050225245392eaafa064148681ebf4d4704cc7a0dbb9f482c917",
+   "p1": "d41c2dc4e8e6d485a2e6b178dd4a92da5edaedbecb7631231df90192c4daddc0"
+  },
+  "gen9championsvgc2026regmc-2678292542": {
+   "spectator": "b0e41c984004e0f9e366431afd8fc4b177af33d154bb7b94b2abc489ba98e6d4",
+   "p1": "4bd78723fa8cd6cd9f07dec5519ce1056d265440d11468186f8d4cb56468cf96"
+  },
+  "gen9championsvgc2026regmc-2678292675": {
+   "spectator": "239489242cc719866b180d021715bdcadb5c5e7400ba6d029ff46390d6bfe189",
+   "p1": "5570d5835097627a774ec2bdf06ba4966e42804e330aa0cbee6498f720f462bf"
+  },
+  "gen9championsvgc2026regmc-2678293461": {
+   "spectator": "a77f18b126adfab4a12d372688fce6507d00c6f729d956a945c9c2ad637ea219",
+   "p1": "e6a01072e21c4fd9357fa786377881ac260233c67149dd8668b4a86c4e47464a"
+  },
+  "gen9championsvgc2026regmc-2678294556": {
+   "spectator": "6dea73649e28ecc3557265e75aa275a2b1696796866ddbdb136290dcfcde349b",
+   "p1": "2a9c9830074892b8c241ee3f48e8df77558963f0e29d87052ad962f9a8b6c20a"
+  },
+  "gen9championsvgc2026regmc-2678295168": {
+   "spectator": "c03cac271bcc58e1bc2dccc6062acdd74e594f368b33ca6ce1ff110f18b7fbf8",
+   "p1": "9389c1b03471e82b41d008688c7b8adc35a44bc63d98c80a693a38b5a15ae1b3"
+  },
+  "gen9championsvgc2026regmc-2678295701": {
+   "spectator": "78a3a9197fb3423f653dcfd26bbec2dcfcc09a7a082946659f51c6eef7102a80",
+   "p1": "8a4411db1ed76b8d34d48edd3da6f862ec33a51a8c62c577ff8ebdd55d8a5b37"
+  },
+  "gen9championsvgc2026regmc-2678296261": {
+   "spectator": "eb3351f6643cb8ab7b02f42c01d2701ffe88da2ac2844d2c1a6a233fd2d78a11",
+   "p1": "0c1f87d1c647f8ba7630abe5843635159b99b8c1b4cd620bc5d55ee9522a44ee"
+  },
+  "gen9championsvgc2026regmc-2678296980": {
+   "spectator": "062c363678dc11ba0aacfb832ab3ee131e99106ca1c4438603cd64e97e5e5411",
+   "p1": "e66c7fb896ee3b3d10ad0cbf48c7bbc5309004734145d8c32b6d181f59906e0f"
+  },
+  "gen9championsvgc2026regmc-2678296983": {
+   "spectator": "957b04b52cdcd2c0a3399511021422bfa1d6d8dcacb60ecebbf8d00c45e906b9",
+   "p1": "8d7485be8e8369937416f36f1f203a13534733c98e7c6e73397295fb37c78d76"
+  },
+  "gen9championsvgc2026regmc-2678297629": {
+   "spectator": "e8a4c1a9e69787a9a74d5f6e12209654d69838f8d943d2e16978c067186d2021",
+   "p1": "8d635b445d6bd10f34b1674a08385f97114c47392eaa711f79e57f4a1b047442"
+  },
+  "gen9championsvgc2026regmc-2678297968": {
+   "spectator": "ac6da0bea3f112262192982b7080112131e9fe83ce10d4b8c2c9d880927bda9d",
+   "p1": "054a0f7172cd568ae2a247d77fe82bd77bcca1d02e86def0f0d804cd64ded2da"
+  },
+  "gen9championsvgc2026regmc-2678298392": {
+   "spectator": "1ecc02fbb62e552e1527461370e26ccbdb64e326d11250484e67ee0be609ce07",
+   "p1": "b665b0797a154623dd44293eb3c1571e8e92e21b22ab855306cf0eab2d947a16"
+  },
+  "gen9championsvgc2026regmc-2678298913": {
+   "spectator": "3827149b0a7fe079284606457a74f9168a8313a242869d4efd89596f6b56ad34",
+   "p1": "c61beae638aa88c26d528b590d6120aa2246b09d20bc786b9d5469cf46d7e673"
+  },
+  "gen9championsvgc2026regmc-2678299018": {
+   "spectator": "4473086376f1ce79f80bfad5925e51e0115c686399c4ab1eedae5645a327fc76",
+   "p1": "c4991e5209b61a65d40ef25560fe4d8567abfee5e1930398734b81e28a08ac83"
+  },
+  "gen9championsvgc2026regmc-2678301320": {
+   "spectator": "26ce026e8dc62ca2bb7e4dac8c002ad52ff704def7108699c6416ebbe6752543",
+   "p1": "29c0e5a29eec3a2ae09e515114851d58d54b261f0d546dbb7553324613e692f8"
+  },
+  "gen9championsvgc2026regmc-2678302675": {
+   "spectator": "0541d339c770f52461f2252d81222b1c87ed07d1f32249e58608d1e288e9ba23",
+   "p1": "ce5c2578752fa92a699e36941615014ad7bda51d1ec9f1733599a3f101ff1aa3"
+  },
+  "gen9championsvgc2026regmc-2678302905": {
+   "spectator": "cd5fc6562a66401916c4020be8260c311d4238fccc481c51ae343f95f8cd6e99",
+   "p1": "0697d93a21b0f079109c50e307abc4502e5495494d0586db3d7d435bc51e139c"
+  },
+  "gen9championsvgc2026regmc-2678303786": {
+   "spectator": "8fb27a3b14fd65a5820c78d4172b6f0b501cb6dd45e52169d620bff1e48496f5",
+   "p1": "07a6c6dd67bc0bfb1499f73b7c05e4f2f0457c0692b193c371b14ba6db9756c4"
+  },
+  "gen9championsvgc2026regmc-2678304088": {
+   "spectator": "0da8affe5c81c63f92161a7e430910fee3a11c20ebba0e27d4ffb3f122c82279",
+   "p1": "96bf6ba5ff237e5c01b16194848ee2895f5356f9871f43d8e42146e0cf4b5f7a"
+  },
+  "gen9championsvgc2026regmc-2678304658": {
+   "spectator": "472106eefd27bf46ced886065ee42882a194c5ac50a169ac7bd41a9d067aa6ea",
+   "p1": "93c641047167e6709116460b5e88d048d495cec5c9fe8e26f9f3a7e40cc4244f"
+  },
+  "gen9championsvgc2026regmc-2678306252": {
+   "spectator": "4eed294ff7e9876284e21b9abf202f72ccac4ca72eb536de43d183ff4c532671",
+   "p1": "b1e6983a1987314576c6ee136f3886d4ee735036a3562ba9a10b2c3ea04572e5"
+  },
+  "gen9championsvgc2026regmc-2678306496": {
+   "spectator": "07b38bd4c0fce53b5eb509f196c02e99d1f20865747d1d27b71b4f0505b78273",
+   "p1": "2aad83019a19efb7a08e0d0ef9e42fc5f8b3658413b8162e7b2d4701220c18b0"
+  },
+  "gen9championsvgc2026regmc-2678306944": {
+   "spectator": "d59bb31607a55e47e200da428e1f6d6d4482c850f6ba38b3391d0fd9dadc372b",
+   "p1": "59574884866542138ad375855e73a92564147d785759e553d93cbf1d2d4e999c"
+  },
+  "gen9championsvgc2026regmc-2678307589": {
+   "spectator": "a5688bd89561989b5a289672e67435d9cb79a3ee882d984edad063aed3333da7",
+   "p1": "ed1514b417dc51942be98d13267514245da0241811a6aea1d19bb9f203afd9c3"
+  },
+  "gen9championsvgc2026regmc-2678310743": {
+   "spectator": "9bbe5e893f7868ed6675c369ef451f10a6ee67321a8087d1cd80d06343216f3b",
+   "p1": "fba2dc5e6556b3177b8e64dc3d4771a5c8b305c532f8e07ba4608f8a338eaa18"
+  },
+  "gen9championsvgc2026regmc-2678311389": {
+   "spectator": "917a61b73887a3ba014b2e9e4cc2017079eb0bf25ed1e7566d645a7db235fbe0",
+   "p1": "31a2cbe2eb2105d85c11b38ba58b93deedbb6f59cad5bb3cd1a8bfff59f7336d"
+  },
+  "gen9championsvgc2026regmc-2678311703": {
+   "spectator": "51a87c30b9a8555d45553814edb88f8d7d7ffc2f79e42b3cbe9728a49c48011e",
+   "p1": "fec40604c3a08625cd61e8d2135ad1bf40a95d919737e601c6130a607facae27"
+  },
+  "gen9championsvgc2026regmc-2678312773": {
+   "spectator": "ef57f7fa17151a619a2420ed0b655d5d1372cdbbc3bc601913c67f97d333cd95",
+   "p1": "1e8cdf917751842cc401d5ae67298664086a3defb4fde9f0e7223777be27df53"
+  },
+  "gen9championsvgc2026regmc-2678316177": {
+   "spectator": "43e2c8aa260b8d2aa7bba3b4ad8fea28670d8ee9f88f21e66b238660ac7ee3e3",
+   "p1": "453e05687cc182a990255f1feaa3a9558d20cbfbd5fe96547cbcdac80ba3c5b2"
+  },
+  "gen9championsvgc2026regmc-2678316337": {
+   "spectator": "b7b0e64066dee69ab350ad661745a1ae8a9a76f2601e215ff3369370e805da7e",
+   "p1": "4442dccd7706a71d6a3b6341d43fbfe6a1d1b292359f423dc02ba603846b5c08"
+  },
+  "gen9championsvgc2026regmc-2678318421": {
+   "spectator": "1051ba2c059e520d10792ee8e73090d24634ba863b0edc4ab82600fc0cca319c",
+   "p1": "759fcae88e6762a5944ac9749f78d0b7165302b419362b5b7c69a7f53ae250bb"
+  },
+  "gen9championsvgc2026regmc-2678318743": {
+   "spectator": "b00f55dd50bb659c388add2809e1e6328aab5c3220ae09765b8e8b74753e3b51",
+   "p1": "a809de54b0495ab8368df2c76fdfbbe6aa759208ded0653bf3a9f85899867ee3"
+  },
+  "gen9championsvgc2026regmc-2678319354": {
+   "spectator": "a6f0139fd4b613b1e2bc8bc50671d1675bbbdf823c470a14f15d4bba87c81d8d",
+   "p1": "4596569483e78e67f4a5ec02c09f1509641f060b939dc72e314f85c66a64b42e"
+  },
+  "gen9championsvgc2026regmc-2678322035": {
+   "spectator": "285e8f4b84eece5fd6d13ec50ec8b291e19cd679dc604e591ec92c79574f915e",
+   "p1": "fee6f4ba8eb90381c569aa237ec598d53eb763faccb55ad2fe8e4d2caff088ef"
+  },
+  "gen9championsvgc2026regmc-2678322826": {
+   "spectator": "b3f121373aeb25e0d8967fbfa9f06055cd2d0a01732f49a4874f97d7a56f1087",
+   "p1": "efae194d8fd9c3878e1a152eb5a8f9bbf31fd94a2495421d8a65e15c193b54f3"
+  },
+  "gen9championsvgc2026regmc-2678323334": {
+   "spectator": "80c51435637c80eed5d79686be23e68dcabfe110a316f2b98294c9ad95c8ccb3",
+   "p1": "b6f9ba3783439a8f3986b1530a7f927a81a3b1e40fd259e8100ab22756ff8931"
+  },
+  "gen9championsvgc2026regmc-2678326367": {
+   "spectator": "5adb586d33158a04ecd6943d24bf9047e8b940d31ca18be4dd532f40d8a8d75d",
+   "p1": "84f94c2382984d3a403857cbcadac791f37738ac8f66b17f5c894b1921eddc17"
+  },
+  "gen9championsvgc2026regmc-2678328940": {
+   "spectator": "d1a90400505b8b64a62c49dbd2e6d8307e7d4791164b614055f99dabf5fa262c",
+   "p1": "adfab16ddd738670ce03a14118d268b8357508c2315a53aa57c2f74361fa9a1e"
+  },
+  "gen9championsvgc2026regmc-2678329778": {
+   "spectator": "499ee418d88099b53a2801693fd2e38f2f6c23896026da76853784278f19c35b",
+   "p1": "1ad4820333245a75f337731f11aa884ed03191ef3e8c0394fae8eb1d13d35842"
+  },
+  "gen9championsvgc2026regmc-2678331434": {
+   "spectator": "2907f8df91da65417811cfed3796a54b1373af6eeb540060e3d55e4fd0a2f41e",
+   "p1": "652b165f38ebbb26c98a02a70434ca7b266b93831336777f9ca2c43c8a6a6800"
+  },
+  "gen9championsvgc2026regmc-2678332209": {
+   "spectator": "d96cce80e7118c8fb9452d0a60e452e5ac64ffb71216f96ea87eff14721225c3",
+   "p1": "0c679d6ecb44bc4276635122cd3a6aa862edf1a5c04948695d45bf75dcd8c495"
+  },
+  "gen9championsvgc2026regmc-2678332855": {
+   "spectator": "979b100e4e41cebd595bb95c6c6ed33089bb4a86f57104dbc86ebe78c3120db6",
+   "p1": "b0fef4e0976461e129c9ca42fb50878279c01d241929c64c75d0996a63adc8d1"
+  },
+  "gen9championsvgc2026regmc-2678333954": {
+   "spectator": "f4902640a8b260fbc9cd12932ca295f71e42eccc2ae94027389c3d6c96ef8e91",
+   "p1": "25c7a104bac5cb5b7c1946ec42dae676dfe972b9fc1a67b7f0674fbbc7e810d4"
+  },
+  "gen9championsvgc2026regmc-2678335860": {
+   "spectator": "4b6e60eacc92af1e88b08140e2c587311baac1690d426716b2167d4bb376699c",
+   "p1": "d95d24a8d51925aa89f301ff6f4e57735b65b7933a59aea85d32bc350b9fbc87"
+  },
+  "gen9championsvgc2026regmc-2678336739": {
+   "spectator": "8aaf34024f9ccb3d13a1a71778895c496d8522d0cd806359b344143456ef9957",
+   "p1": "abd1e6023b691b8bc5de21f9a3d0160306fb448212310ec7b57ca4b525ebf3f7"
+  },
+  "gen9championsvgc2026regmc-2678337776": {
+   "spectator": "7d551c3f6ed039ec3408674857625ddf916a276e6ac1e48d4dc18e773a6a1994",
+   "p1": "4b5ec711ee25b280a6cf57c0c13ecf8da1880d349dc86e1fee3f308855d7ffdf"
+  },
+  "gen9championsvgc2026regmc-2678340294": {
+   "spectator": "ba51d5741e18072e906d4bdbf09cc039bd7d444fec5bb094394e01e256efad05",
+   "p1": "91876e0cbaac7df9542c4b9f1f15f987201d22d7bd167b1d28d0f4a6f36d08be"
+  },
+  "gen9championsvgc2026regmc-2678342925": {
+   "spectator": "7db7cb9dd6b4e48e212c8750b8bdb9e81d7e6027b17834ad8e8af2a833eb0dde",
+   "p1": "3d298920101baeab78f5b998eefee8178d171cc98cec7d46ec31efb5ec463021"
+  },
+  "gen9championsvgc2026regmc-2678345647": {
+   "spectator": "15e3d9de9564eb09c418c383b420a9cb6d587e3b3583ab2624d1e51069f4568e",
+   "p1": "b4e1fbea419e30b87849281cb223cbfa13c4c04203ad72844949a12bc1183112"
+  },
+  "gen9championsvgc2026regmc-2678347636": {
+   "spectator": "9b6ce736f82b8f58418b47eb2d4f9d15dd5a612ff8d8878822ab6260551c167c",
+   "p1": "8504333291eb70cf7c8d9ecbf83975b598ac0a341d6a903125c9d4b4b6adcacd"
+  },
+  "gen9championsvgc2026regmc-2678348323": {
+   "spectator": "5405f69349d671cec9a143144e69357a94e527f8d31fa8cca6dd60231ea74af8",
+   "p1": "874b3134eb16d08ab981f4e545c65fb33fff198f0babd7652f5a7a2ebd7beeea"
+  },
+  "gen9championsvgc2026regmc-2678348931": {
+   "spectator": "2bb71bec53fa2ef47302004ef9053660d8c01c38bdc4fab46d2a4a0050d1c9d0",
+   "p1": "b96c59bc6a610f51555c39492ee8fe8ebc3d27b5bf2325e51fd6a100167fd908"
+  },
+  "gen9championsvgc2026regmc-2678349794": {
+   "spectator": "d13fe5769bf5e2e9900ab9283ad951f13a9af6c205de950109a0a95fcca7ebfb",
+   "p1": "165780b9a6695a2e5db4c3986d7f957b69037f61b7d87149f49888bfce60254a"
+  },
+  "gen9championsvgc2026regmc-2678350667": {
+   "spectator": "1a7d5b5bf0c84f8ea366d9c8f0d16d08b999c5feafc2142a1fdc868250eaab1b",
+   "p1": "910511bfe51b800f508c39e54e957f86926e4ab7e5bd1a46cd51864fb4e52281"
+  },
+  "gen9championsvgc2026regmc-2678351730": {
+   "spectator": "48f8c50a47ee68a4beb4c5cded19db3cbdfaa1a53229cb27525c7aa231bf61ee",
+   "p1": "04fa45c73d6610241a83be053e77bfd524b0891f3d82e76ebe9737343c1a2e5c"
+  },
+  "gen9championsvgc2026regmc-2678351941": {
+   "spectator": "2472cecb0568e79f8947da61983b2d9d136221005e1a62ecaa3de66ae7613c43",
+   "p1": "74a8eabd8a22d527204a3e809ea6abc3ad683aca3886dfc5287ccaef04b21bbd"
+  },
+  "gen9championsvgc2026regmc-2678353615": {
+   "spectator": "27690cd2ba8fe5db75638cc6f12a4d9d63c65e98869939e7229c54850c6d3bcd",
+   "p1": "ba63c9770b00ace1b01a228ad7b15ff21cfe9937b2f5f037223b2eea8468835b"
+  },
+  "gen9championsvgc2026regmc-2678354145": {
+   "spectator": "c1b790b832c5ee4aa722e59428ef3785638f45c1080645a28a45d0837ad869ad",
+   "p1": "63dc9f06555bbd0c1254c97b6e29ee25d87abc61168a80fee0ba6519680daf62"
+  },
+  "gen9championsvgc2026regmc-2678354359": {
+   "spectator": "4db0d07fe4d64a2ebdad4125735b2d7f275179f079cd32060da89c33a41632ed",
+   "p1": "058c3e94c857ac46badd493e6cba283bcb2ad0a4b713908f097a08f12ee1a56f"
+  },
+  "gen9championsvgc2026regmc-2678357101": {
+   "spectator": "c2a275137ab4b89effa7fae94748625c0a4941c854ea02d43970e1c26a6f794e",
+   "p1": "9aec22f9d1c73ffa60898e2f3df3035de7a402426383f25353dcbd4c2f1eb43e"
+  },
+  "gen9championsvgc2026regmc-2678357505": {
+   "spectator": "ba36f873de35987e1679e10c080932270da5094bf3ea3bf73fdc94049c93606a",
+   "p1": "6506037afd19c0c4aa9a0f2022fb487a430e1f23ab30530a38455bba8debdc62"
+  },
+  "gen9championsvgc2026regmc-2678358070": {
+   "spectator": "62c1f4c20cc89c1a2b4901213312f1a37f550fc1c8c8f2965556358b2b694e1b",
+   "p1": "84b0dfa250079a547e01a2efb416b4d15f7a5be02e83d9051bb129af1c85e98d"
+  },
+  "gen9championsvgc2026regmc-2678358196": {
+   "spectator": "03d3025fe374ecf76ed6fb66347419d42f006d3406b2acaa8e7a66a3a44b14b1",
+   "p1": "a97a857c7cb59b6f9b93beb7250654cb2be77b96bb0e1d5df5ba0c4c0a1be28b"
+  },
+  "gen9championsvgc2026regmc-2678358215": {
+   "spectator": "4087d114a22efc4b9abdd888ed3318d8df74970fcdb71347aa8cc6cc2b134028",
+   "p1": "f43eb8e1fc2db7283bc7d4611ab474dae5f3ac635f89f8a904a72e2606b45d0d"
+  },
+  "gen9championsvgc2026regmc-2678358365": {
+   "spectator": "a1dbc01671314fc6a629562fb23d75fce20b3c9758c76021ddd5fc1fd03b8417",
+   "p1": "0d1e71ae6a817071c5226a5d3fd6e05161c159d9c30169e696543173e39af6d0"
+  },
+  "gen9championsvgc2026regmc-2678358862": {
+   "spectator": "9ab56c3833058d97af8e172f49a14a2d826d8dc6dfe46f008519f74828faed2c",
+   "p1": "2afaafb4381d97a801c95cb2faa176deba465f5b275ae466606c8f72a1f3fa83"
+  },
+  "gen9championsvgc2026regmc-2678359053": {
+   "spectator": "bbdfd323f8b7a243a419a1a651ec4c099053fb1aba426f762ea48f3e3a5ca195",
+   "p1": "dc7eb3f767f758add1080ef348f3dd2d28056a7c2bc60819c167ab9ded4b0b42"
+  },
+  "gen9championsvgc2026regmc-2678360715": {
+   "spectator": "e77b12318556841045657891bca5f871888190d49a325aff0334d238396e7224",
+   "p1": "4d6383a16f1b6c68b52288c6a72e702b7f5fb4f74a0fef7ac933bd4cfa6f03e0"
+  },
+  "gen9championsvgc2026regmc-2678360980": {
+   "spectator": "5afbd738647799929d4e1ba5e0c89746a2202607af316302cb83143fdbe1c32e",
+   "p1": "bd8c7be585fb329c36f93dfedd166aa8553a723f135a766169a554f15cc7e95a"
+  },
+  "gen9championsvgc2026regmc-2678361896": {
+   "spectator": "3d9ebce978fe52c8c9856127a2032d63e02ec3304763c99df72b55e91429dc2a",
+   "p1": "3951a267d99ebc8b731fefccadcfb7517f13d120d27bfe1e74eb41f6cae4f702"
+  },
+  "gen9championsvgc2026regmc-2678363010": {
+   "spectator": "d6ecbbbf7aae89051c7467683c654a0e846dab795ae435ea24715ba6c8ac8acd",
+   "p1": "58505a4324ea6f9ff292a4296a3dce5868a946f1766122475e4eee47ae69fd6d"
+  },
+  "gen9championsvgc2026regmc-2678363854": {
+   "spectator": "4b4842bf115717ba68753753732bb4bbcf7207d5e856ec2580a811c8e95f593f",
+   "p1": "f554ba706825defcd3433e301c8796e711b8e6694dc290e48090db3df300060b"
+  },
+  "gen9championsvgc2026regmc-2678365043": {
+   "spectator": "8612f35db1eb7459b8ee202a08fa6412ad2502a04425a94fd7624e17ef08802f",
+   "p1": "8b8e2c9212c18dfa89a55c032dac30b12f3a9bea8ae257ab7b700a119f9b36df"
+  },
+  "gen9championsvgc2026regmc-2678365312": {
+   "spectator": "b6615477ea4e9aeba126349bae99df7d8cc094ff0c042e4a186b0e6aeaaa14c9",
+   "p1": "64d01135693261bd2f503b1da6a8604934f8f42ca24b470c92ed1939a29fc6fd"
+  },
+  "gen9championsvgc2026regmc-2678366730": {
+   "spectator": "dc5fb07f9aa65f302409a8afbbb53163ecab6a43f18a660b862d1e803e26d6b9",
+   "p1": "d0b982ee1604c5edfc883749a452ef5d5f7cc9cfc67194d03d88c4f909ea6641"
+  },
+  "gen9championsvgc2026regmc-2678367671": {
+   "spectator": "e3e8be66a47615a53b6e40b046d382b51b7e0839d220758721fde789f45d44cf",
+   "p1": "6c851557eed95c7804814ef445092b5fd229588e1b9ad31b8fb3450641af35ff"
+  },
+  "gen9championsvgc2026regmc-2678368450": {
+   "spectator": "5a4e742d77d3db01de3da13c7ae65825de9990928f9c289fdf4494fd5678952f",
+   "p1": "6e69b5bd73aee68e6e4abf801bdbfd9ce909f9a4503dbb993dde3140a7cb189e"
+  },
+  "gen9championsvgc2026regmc-2678370157": {
+   "spectator": "16a9012c784dc14cba31eb84b763c34b6fa0490d86b5a668d1518fa7e990106b",
+   "p1": "63c6953670afcf35c4115a50a53cba14164cd35017b4473784271bc36bdbf6b0"
+  },
+  "gen9championsvgc2026regmc-2678371515": {
+   "spectator": "4413d7dd60da1cfc90b34843efe917548aaf959b817fa3b1d957979900f5980d",
+   "p1": "b1470e1854590ead17ca4a2dc73fce7502ca11a8c43a08d2003c0ad14a71e66e"
+  },
+  "gen9championsvgc2026regmc-2678372743": {
+   "spectator": "507eb2666ce5054d6380ead2af07511a66310c3535db15e85b20c2125f213572",
+   "p1": "28a62e58f1ab5a2ec7b3c7214bb58712ef1bf204c96446d5307f675b61346d06"
+  },
+  "gen9championsvgc2026regmc-2678374006": {
+   "spectator": "981730650c30d9ea4644e24919dcaa25c3d416fe903d6c40e976142d9a0575b5",
+   "p1": "303074b545675a5f9377c7953a340efdfa7614bd26e3cb6bca2cd7e3928bad75"
+  },
+  "gen9championsvgc2026regmc-2678376090": {
+   "spectator": "c5a0f8df7ea86e3f60fc0d59a16ac0f54a6ea9a1b432bcd390534e3844d4dc2f",
+   "p1": "91be4e30ba5b4c6f89d6457c3370118cfaea6e99ead2a6c3d22e3b259ada0f5f"
+  },
+  "gen9championsvgc2026regmc-2678376802": {
+   "spectator": "3141e94404e526b439d1e02f0e954d0149b47868222db99334be4f210f71805c",
+   "p1": "c359292c337732c6e283c17098afcebad40c538a3eb61745ea161d4856460a6e"
+  },
+  "gen9championsvgc2026regmc-2678379520": {
+   "spectator": "e8bfac5b0b1aa879491e8e1069f240d00aa4c4898f526419aa173310bdd6fe47",
+   "p1": "e776c1f34dd347de272c41ac8f83547849d7395f583157ed200bc69b423f570c"
+  },
+  "gen9championsvgc2026regmc-2678379853": {
+   "spectator": "dd038abf7e32630bad76b8d47caa89aaf3c9b71dfa4836a9b9a881f728c2c119",
+   "p1": "2c1e5715c7e6dff4f1868ad0dbface9d479939673626701f0d32c5644e907a45"
+  },
+  "gen9championsvgc2026regmc-2678380614": {
+   "spectator": "ba96859f2573a76d4ff1d480f1498e99b45ccb9f3221962a05d276d12d1ebd09",
+   "p1": "6fc02de4a092e8412e16093c0f2d4d9191a1a15480657b4589b41cc5df44d69c"
+  },
+  "gen9championsvgc2026regmc-2678381040": {
+   "spectator": "19b34877f680cfb29fa6bc37aa1fe52bbb3bfb7616187b1918e2540335bcd513",
+   "p1": "989e721091d12301aa927a32c936b8a0bce5350b47c88ca7af4699948de2b657"
+  },
+  "gen9championsvgc2026regmc-2678382614": {
+   "spectator": "1cb36550bf23496dd8df16afef21d9280fcc17527c99be41290cf7b5a996859f",
+   "p1": "cf9665dfc57c9bc26ec27d689985a49c2c51f45795759fbb05f1ea39d74dbeaf"
+  },
+  "gen9championsvgc2026regmc-2678382961": {
+   "spectator": "3cdf0830f54a243d0fe46c2f2d9f3358b506b72dce82f765476d96f10f1d982a",
+   "p1": "5ab6f10e5c3d5a67d161734733a6c9c93bcee2d7367669daf41455b2a4fe593e"
+  },
+  "gen9championsvgc2026regmc-2678383285": {
+   "spectator": "635c2670ed591d1fe35cf24d90db31d3dfd7c066b65a739ef61beae76156285a",
+   "p1": "274b45abda2486431aa77dae5d628d3d3a488d6b0834e55ef56b6b97ea4009c7"
+  },
+  "gen9championsvgc2026regmc-2678386037": {
+   "spectator": "0c362d0f991bc020d69350e7b18bb4113c1e2fdb84314861486dd7e40176b293",
+   "p1": "3b8315f0df4de9b58e82224ee397375a6a406d281c4312e1b5ea4fda16cbe188"
+  },
+  "gen9championsvgc2026regmc-2678386444": {
+   "spectator": "2f7e304febd5dd042e1852c8e0289e38c1bbc81f5852ecab833301ce83014c84",
+   "p1": "cd619ee784276a58872f559fccc9198a4a4b0b1e1ff941ccfa26ab4d0fcd6826"
+  },
+  "gen9championsvgc2026regmc-2678390252": {
+   "spectator": "8caa4cf587c47d208cb15da2c88f27eed354bbef9aaa8a8687b8c462076b0df0",
+   "p1": "c5f3617d71a17192fa5a972dfb9bb0632f5150ea857610d66884044fd4175cad"
+  },
+  "gen9championsvgc2026regmc-2678390265": {
+   "spectator": "b346049247b7077770e4f3f10d85a59db6dd399dcbf77e4ae5d1080fe3321c80",
+   "p1": "16a852eb49229dbfa328bd33d06eb5a67f44bae488c604885cd0e9860257e304"
+  },
+  "gen9championsvgc2026regmc-2678390270": {
+   "spectator": "62384a6a4a398344de3f989efbf113e5d2ef662fedc6939ddaaea89aa315f741",
+   "p1": "d4a43ba7cb7462c72d4ba49a530d1ba33057ac01e113b8afb60670edb26ed90b"
+  },
+  "gen9championsvgc2026regmc-2678390990": {
+   "spectator": "67588683bc23382be22d9ff8fb9ba1228f12b939c0020cb59329b9d093d0e9c0",
+   "p1": "67a51ea3f22b64633f3bf293656bfb3b221db66d0453d7d1f5faa71829611665"
+  },
+  "gen9championsvgc2026regmc-2678391374": {
+   "spectator": "7beee14ef44e7f3c89a19f351abb8e8d206209be79af20d6ec7ceccf1a79725d",
+   "p1": "34931903ba43ce09761a9d09962d76dfa0a9e1de3fc1f19539892a258bc4563c"
+  },
+  "gen9championsvgc2026regmc-2678392043": {
+   "spectator": "24fcbf9e6ff5b6f70be77df1c57321779cf58d31487a894915f90ed526128122",
+   "p1": "f21a9dacbe197ccce10d25b674386257254a0a4f8c92b53d4c48cfb2dc3987e1"
+  },
+  "gen9championsvgc2026regmc-2678392955": {
+   "spectator": "cd27c457b963eaae3d3f019b8c6e6bd2a9bca28be71bbb9a57b4ca238f09394d",
+   "p1": "a7f883de8c9edd31c6abf0e00cdebb6f1ca82a7032ecf97faa19e92182b0b4ff"
+  },
+  "gen9championsvgc2026regmc-2678394522": {
+   "spectator": "c0fe0c72177e5ce4e4b7154d0cad852955cf9ad63f5503386ca3713e9d646a44",
+   "p1": "d9b123eb6fdc45b98ee266d31fe1c33b1cb828fa6d201dabb627cc910f993148"
+  },
+  "gen9championsvgc2026regmc-2678396339": {
+   "spectator": "747fa9b5ea6340ff66144e1b91ee0f3be61cb7485cf729c043e44d999f18aa6a",
+   "p1": "be377c4d3a780f5d7dbda3d8964da96f440b8257f58267d9bed8ddcfe5afc8d2"
+  },
+  "gen9championsvgc2026regmc-2678396747": {
+   "spectator": "50e9bd26b4f7c84403c179c74b269f7dbdacec4f246e21f1ee2567e5b13edfa3",
+   "p1": "bc6dedc022d38c8039905676d6564f3ee9b31bac90003bd164243531dddbe2ec"
+  },
+  "gen9championsvgc2026regmc-2678397460": {
+   "spectator": "b46caab0dc7759654ee406146ef6cd5d0aebe037e7510160b908ccc91ace6db6",
+   "p1": "5f8d283d0fae8caa13b07c6dd28c90258e011d637ea6aee3feafe7455380c748"
+  },
+  "gen9championsvgc2026regmc-2678397531": {
+   "spectator": "33e292c72439f8a8ecd0bc3460027862cec10f58cda9d56ae332510a61dbabc8",
+   "p1": "c4a7b112d3a3d18c8cd557a61cf31d017531cb50ca376a2e99b0dbf8f414f6c9"
+  },
+  "gen9championsvgc2026regmc-2678397576": {
+   "spectator": "772ddc875ec64bd05bf21c6fca7c7cff6e7cf0512fe53d4719f16f9910cf669b",
+   "p1": "f56eee5d60e16f95a3aafae9ac827904385b7bc7334df81979300ebfc6e2b27a"
+  },
+  "gen9championsvgc2026regmc-2678398112": {
+   "spectator": "e0def684017edeb6b4a87ef07a94f3dd6607ac9fc75f2e64b0655f7ca0c4d5be",
+   "p1": "c7fa327c5dcfcc69cda3d5443ba1efd4fd1ab48fb421e281f9c69c6770c65412"
+  },
+  "gen9championsvgc2026regmc-2678398140": {
+   "spectator": "7c4cc6e4bdd15907711e3cb4c4c5d1a2881842a9bd2b675eb74db5aa51b79826",
+   "p1": "77cdd8baad7b1335d82668c69f96555d55589671ecf57fd300400fef9e87791c"
+  },
+  "gen9championsvgc2026regmcbo3-2684057197": {
+   "spectator": "bec268022d616caf3a6e08a2200cbd530abe701280a047ee757a0f5e891d4ca1",
+   "p1": "48d6eefa85381cb1c889e1c74273e5bc5b991aae2b6d694a6f2be18e90a3efe2"
+  },
+  "gen9championsvgc2026regmcbo3-2684058730": {
+   "spectator": "866147eec86f9d93f8a8f5e5f5e8c173ec77dd8af6340b8b0edc6fd2d9c706a5",
+   "p1": "9073169136f356ae0afef1a7a7431df35885c4bec6845e40df13806f8b3a2258"
+  },
+  "gen9championsvgc2026regmcbo3-2684171856": {
+   "spectator": "49fc502ee31476b3c477295c3911e9f5d8cc38d087cc282fa638ee86990457e6",
+   "p1": "e06dd14822f793653d9a51a0045445fad0faba6c6b43d29390ece76a0f947341"
+  }
+ }
+}

@@ -1,0 +1,67 @@
+{
+ "note": "sha256 per perspective over every observation, with request payloads fed; see tests/test_observe_golden.py",
+ "showdown_sha": "2ddfa0476f8207e12e204b1c69f7c7683b17633c",
+ "run": "gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "battles": {
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-0": {
+   "spectator": "6d0a59b155e6e7d124debc024e4fdc16290846efb2f9af5b4efa699a6fd79b03",
+   "p1": "06f3b4a88a8f88df1f8857c2b54118056a22b2d6acba786dc0f5f29551b9569f",
+   "p2": "cfff6ed8e088ab53f8b308920ebe3f68dde5e95d4a5e68f929cdf7f06afd17b5"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-1": {
+   "spectator": "587cdd1bcec74bf3389dc716e9d04b393e743cb67d0dbd1b2240b66023666a82",
+   "p1": "9d0390744983ee526d22437a426e4a81c4f4221c1e3f7218f3647ff8f0862e35",
+   "p2": "03816f94e3f0f69cfb4cd4cd41e17a10c8154010c2c2463a839fc18c77d1587a"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-10": {
+   "spectator": "cb95a1c1de8a48b32850f65650589011a04fe1f10ac33bd7c916aeefcee98430",
+   "p1": "9606a67748586b443ae0c33eb743fbdca6dc4ffb835ee2d963c53bfdf2dc6cb9",
+   "p2": "c886d52677ab3fadea28df5af5edd4d63c8da2032dbf6f96974c362e768e14d6"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-11": {
+   "spectator": "8438cb061c0dc1fe13589bbf89b915404491d69094d41558b6865e958ddf7ff4",
+   "p1": "0dea1e24d88c04a037509332f75ef0575c8f16463cf43c2aaf6e33185d797b26",
+   "p2": "4a60713769ceb9bff7022ef4c7bd3efb37c37cb77cc5cd9d47efd230e8a0c25b"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-2": {
+   "spectator": "e2ca3b564b11a5a4e544d8f09483dcf34ab29655ecec9f97092e4115f7387b37",
+   "p1": "6f67f46cf58227a7f041b78d8a583d4e257ceb2aecdda508a211ef89684ca3fd",
+   "p2": "ebdacf13f9e1dc91bc2d61516c7bb1d92fb078a8f9fc369b010db8b70795af41"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-3": {
+   "spectator": "40bd6eb80c1a8df8c90374a7dcce7c82bd513d1663296df00b6c8a3556dd9683",
+   "p1": "d5de9e8427599c466318c5b84fec1606a01d9d193583db349a1867b47eeaa0ec",
+   "p2": "b66c59a47c05026299f97f7dc22873b76763e49cbca4b5a3fe47faa1a36803a2"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-4": {
+   "spectator": "13cdf758dca32234be073337f26c88a77bf91d2f5fcec559f2397fe79c9c1ccd",
+   "p1": "94feba6e065b8d097b705631b0d9b91c49752175475f5943ddcf8b4fe0f98b4f",
+   "p2": "bc25e361fac28d600317ae398dbc985d412697e1fac402f8cf0ae74041ba3de8"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-5": {
+   "spectator": "8e378dd46341d0670af3cb05ff4d2eaf9bb86a5d95c0a4e410e3f334182595b5",
+   "p1": "0a702cb0cb06dd80d7e6b16365c348e43091074e55f2f8efd7b588606fca76ae",
+   "p2": "fab5d0980d7b067c32a09b59e57ba9ba49c771f6853457d9701baaf7e2dc9b37"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-6": {
+   "spectator": "f0a89fc8af91cbc19263850becbc4d330cb1bb6dec2b4bfb44bbeb3fc9a7e68f",
+   "p1": "300ae939debdd8a35fe002a26052322de678cd38945b055b966ab7aae1ea44bb",
+   "p2": "966f4f0d5e9cb7897000b3efbe368dce543162abcecb00823aa6e19dce708003"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-7": {
+   "spectator": "b65ee07cf2ffb70bd96c1104afbac6e89c36bfd0988f32ca3209f24cb710cd92",
+   "p1": "c415bdbae03c929d9879dee05920bc814beba5559d69e37deaf840b03b02111b",
+   "p2": "e2f260c2ab61572ca43043a1e5e3f9e9655672a3e7ea5a3bfeb00163d69d7001"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-8": {
+   "spectator": "4842cf6b04e7f124c10d3b5e8e573c2cbc96c44d53545dea41f7597236e4f086",
+   "p1": "5e22c79c2620354d6541a1d58a65a62ad01370da95ee3f837ee11ee6dc068c70",
+   "p2": "2c1bb39a7ebf52aeab03efcf06901097a0513c1e1b8717371cc20f256f2c44bb"
+  },
+  "gen-heuristic-heuristic-spreads-s21-p4000x5-9": {
+   "spectator": "b862a1c5990a0ad2b0cd198e284dcaae492d5ab4b6d513a403891d305ecdd2d2",
+   "p1": "613ecf2ea9472d7a933a032a888dff3793352b509ce212e08bc49c1419fb8009",
+   "p2": "592c060ca9ab96587aefb3e468f99a9ff262f466fbe03fed5252e6f07a3ce15c"
+  }
+ }
+}
