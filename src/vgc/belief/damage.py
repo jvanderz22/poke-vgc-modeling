@@ -34,7 +34,7 @@ from typing import Any, Iterable
 
 from vgc.data.observe import DamageEvent, Observer
 from vgc.engine.calc import DamageCalc
-from vgc.regulation import Regulation, offensive_stat, to_id
+from vgc.regulation import UNMODELLED_PSEUDO, Regulation, offensive_stat, to_id
 from vgc.teams.sets import PokemonSet, StatPoints
 
 # Abilities whose damage contribution depends on the battle rather than on the spread, so no
@@ -157,6 +157,33 @@ class DamageBelief:
                 "contradicted": self.contradicted}
 
 
+# Move targets that make a move a *spread* move. Showdown applies the 0.75 reduction only when
+# more than one target was actually hit; `@smogon/calc` applies it whenever the game type is not
+# Singles, with no per-move override — `isSpread` is derived from `field.gameType` and the move's
+# target. So a Heat Wave that caught one Pokémon reads 0.75× in the calc and 1.0× in the battle,
+# which is a 1.33× error in exactly the direction that makes an attacker look stronger and a
+# defender look frailer than either is.
+SPREAD_TARGETS = {"allAdjacentFoes", "allAdjacent"}
+SCREENS = {"reflect", "lightscreen", "auroraveil"}
+
+
+def game_type(reg: Regulation, ev: DamageEvent) -> str | None:
+    """What to tell the calc, or None when no answer is right and the event must be dropped.
+
+    `gameType` is overloaded in the calc: it gates the spread reduction *and* the screen strength,
+    which is 1/3 in doubles and 1/2 in singles. Those usually do not conflict — the screen setting
+    only matters when a screen is up, and the spread setting only matters for a spread move that
+    hit one target. When they do conflict there is no value that is right for both, so the event is
+    abstained on rather than being quietly wrong by a third in one term or the other.
+    """
+    entry = reg.dex.get_move(ev.move) or {}
+    single_hit_spread = entry.get("target") in SPREAD_TARGETS and not ev.spread
+    screened = bool(set(ev.target_side_conditions or []) & SCREENS)
+    if not single_hit_spread:
+        return "Doubles"
+    return None if screened else "Singles"
+
+
 def usable(reg: Regulation, ev: DamageEvent) -> str | None:
     """Why this event cannot be used, or None if it can."""
     if to_id(ev.move) in ABSTAIN_MOVES:
@@ -165,8 +192,12 @@ def usable(reg: Regulation, ev: DamageEvent) -> str | None:
         return "not_a_damaging_move"
     if ev.lost <= 0:
         return "no_damage"
-    if _field(ev) is None:
+    if game_type(reg, ev) is None:
+        return "spread_and_screen_disagree"
+    if _field(reg, ev) is None:
         return "field_not_translatable"
+    if set((ev.field or {}).get("pseudo") or []) & UNMODELLED_PSEUDO:
+        return "field_effect_not_modelled"
     return None
 
 
@@ -182,9 +213,12 @@ CALC_WEATHER = {"raindance": "Rain", "sunnyday": "Sun", "sandstorm": "Sand", "sn
                 "desolateland": "Harsh Sunshine", "deltastream": "Strong Winds"}
 
 
-def _field(ev: DamageEvent) -> dict[str, Any] | None:
+def _field(reg: Regulation, ev: DamageEvent) -> dict[str, Any] | None:
     """The calc's view of the field, or None when something in it cannot be translated."""
-    f: dict[str, Any] = {"gameType": "Doubles"}
+    kind = game_type(reg, ev)
+    if kind is None:
+        return None
+    f: dict[str, Any] = {"gameType": kind}
     weather = to_id((ev.field or {}).get("weather") or "")
     terrain = to_id((ev.field or {}).get("terrain") or "")
     if weather:
@@ -203,6 +237,20 @@ def _field(ev: DamageEvent) -> dict[str, Any] | None:
     if "auroraveil" in conditions:
         f["defenderSide"] = {**f.get("defenderSide", {}), "isAuroraVeil": True}
     return f
+
+
+# A Pokémon left on a sliver of HP did not necessarily take only that much: Focus Sash, Sturdy and
+# Endure all floor a lethal hit at 1 HP, and the `|-damage|` line looks exactly the same either
+# way. Measured on 60 sampled-spread battles, 16 of the bulk channel's 19 remaining misses were
+# survivors sitting at ≤2% — the move did *at least* what it appeared to and possibly far more.
+# Reading it as an equality is the same error as reading a KO as one, so it gets the same answer:
+# a one-sided bound, which is sound whether or not a sash was the reason.
+SURVIVED_ON_A_SLIVER = 0.02
+
+
+def censored(ev: DamageEvent) -> bool:
+    """Is this a lower bound rather than a measurement?"""
+    return bool(ev.fainted) or (ev.hp_after is not None and ev.hp_after <= SURVIVED_ON_A_SLIVER)
 
 
 def observed_loss(ev: DamageEvent, defender_hp: int) -> tuple[float, float]:
@@ -275,7 +323,7 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
         for sp, damage in enumerate(rolls):
             if not damage:
                 continue
-            if ev.fainted:
+            if censored(ev):
                 # Right-censored: the move did *at least* the remaining HP. Anything that could
                 # reach it stays in, which is why a KO narrows far less than a survived hit.
                 if max(damage) >= lo:
@@ -284,7 +332,7 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
                 keep.append(sp)
         belief._apply(keep)
         belief.used += 1
-        belief.censored += bool(ev.fainted)
+        belief.censored += censored(ev)
     return beliefs
 
 
@@ -329,7 +377,8 @@ def _sweep(dc: DamageCalc, reg: Regulation, ev: DamageEvent, forme: str, stat: s
                   "sp": defender.sp.as_dict(), "boosts": ev.target_boosts or {},
                   "status": ev.target_status or "", "curHP": None}
         reqs.append({"attacker": attacker, "defender": target,
-                     "move": {"name": ev.move, "isCrit": bool(ev.crit)}, "field": _field(ev)})
+                     "move": {"name": ev.move, "isCrit": bool(ev.crit)},
+                     "field": _field(reg, ev)})
     return [(r.get("damage") or []) if r.get("ok") else [] for r in dc.batch(reqs)]
 
 

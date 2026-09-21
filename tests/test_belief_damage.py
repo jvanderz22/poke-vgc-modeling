@@ -90,12 +90,14 @@ def test_the_field_is_translated_and_refuses_what_it_cannot_translate(reg, calc)
     assert good.max > raw.max
 
     class Ev:
+        move = "Grassy Glide"
+        spread = False
         field = {"weather": None, "terrain": "grassyterrain"}
         target_side_conditions: list[str] = []
-    assert damage._field(Ev())["terrain"] == "Grassy"
+    assert damage._field(reg, Ev())["terrain"] == "Grassy"
 
     Ev.field = {"weather": "somethingnew", "terrain": None}
-    assert damage._field(Ev()) is None          # abstain, never a silently neutral field
+    assert damage._field(reg, Ev()) is None          # abstain, never a silently neutral field
 
 
 # --- what the events carry ---------------------------------------------------------------

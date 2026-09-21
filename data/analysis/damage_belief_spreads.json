@@ -4,41 +4,11 @@
  "damage_events": 12409,
  "pokemon_checked": 2897,
  "soundness": {
-  "silently_wrong": 19,
-  "rate": 0.006558508802209182,
-  "contradicted": 272,
-  "contradicted_rate": 0.09389023127373144,
+  "silently_wrong": 2,
+  "rate": 0.0006903693476009665,
+  "contradicted": 129,
+  "contradicted_rate": 0.04452882292026234,
   "examples": [
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-88",
-    "mon": [
-     "p2",
-     "Basculegion"
-    ],
-    "stat": "atk",
-    "true": 20,
-    "bounds": [
-     0,
-     2
-    ],
-    "used": 1,
-    "censored": 0
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-135",
-    "mon": [
-     "p2",
-     "Sneasler"
-    ],
-    "stat": "atk",
-    "true": 17,
-    "bounds": [
-     0,
-     15
-    ],
-    "used": 4,
-    "censored": 1
-   },
    {
     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-273",
     "mon": [
@@ -52,46 +22,31 @@
      32
     ],
     "used": 2,
-    "censored": 1
+    "censored": 2
    },
    {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-278",
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-922",
     "mon": [
      "p2",
-     "Mawile"
+     "Arcanine-Hisui"
     ],
     "stat": "atk",
-    "true": 4,
+    "true": 16,
     "bounds": [
-     19,
+     27,
      32
     ],
-    "used": 1,
-    "censored": 0
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-370",
-    "mon": [
-     "p2",
-     "Annihilape"
-    ],
-    "stat": "atk",
-    "true": 17,
-    "bounds": [
-     0,
-     14
-    ],
-    "used": 1,
-    "censored": 0
+    "used": 2,
+    "censored": 2
    }
   ]
  },
  "power": {
-  "narrowed_mean": 0.11016621165050573,
-  "any_narrowing": 0.34518467380048323,
+  "narrowed_mean": 0.10592985429022708,
+  "any_narrowing": 0.33897134967207454,
   "observations_per_pokemon": 1.9768726268553676,
-  "narrowed_mean_uncensored": 0.20803368369291292,
-  "narrowed_mean_with_a_ko": 0.059670488241916814
+  "narrowed_mean_uncensored": 0.2138935223797609,
+  "narrowed_mean_with_a_ko": 0.059438832772166106
  },
  "events_by_reason": {
   "usable": 11658,

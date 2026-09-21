@@ -114,3 +114,36 @@ def test_type_chart_matches_dataset(reg):
     for atk, row in reg.dex.type_chart.items():
         for dfn, mult in row.items():
             assert eff[atk][dfn] == mult, (atk, dfn)
+
+
+def test_the_stat_override_tables_still_match_the_pinned_build():
+    """`overrideOffensiveStat` and `overrideDefensiveStat` are not in the dex export — the same
+    omission that hid `multihit` from the damage channel — so both tables are hand-carried and
+    re-derived here. A Showdown bump that adds a move to either fails this instead of quietly
+    measuring the wrong stat."""
+    import re
+
+    from vgc import paths
+    from vgc.regulation import DEFENSIVE_STAT, OFFENSIVE_STAT, load_regulation
+
+    src = (paths.SHOWDOWN / "data" / "moves.ts").read_text()
+    reg = load_regulation("reg_mc")
+    for field, table in (("overrideOffensiveStat", OFFENSIVE_STAT),
+                         ("overrideDefensiveStat", DEFENSIVE_STAT)):
+        found = {}
+        for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+            hit = re.search(rf"{field}: '(\w+)'", m.group(2))
+            if hit and m.group(1) in reg.dex.moves:
+                found[m.group(1)] = hit.group(1)
+        assert found == table, f"{field} drifted: pinned build says {found}"
+
+
+def test_psyshock_is_a_special_move_that_checks_defence(reg):
+    from vgc.regulation import defensive_stat, offensive_stat
+
+    assert reg.dex.get_move("Psyshock")["category"] == "Special"
+    assert offensive_stat(reg.dex, "Psyshock") == "spa"
+    assert defensive_stat(reg.dex, "Psyshock") == "def"
+    assert defensive_stat(reg.dex, "Body Press") == "def"     # physical, ordinary defensively
+    assert defensive_stat(reg.dex, "Hyper Voice") == "spd"
+    assert defensive_stat(reg.dex, "Protect") is None

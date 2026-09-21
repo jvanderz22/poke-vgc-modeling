@@ -85,6 +85,19 @@ class Dex:
 # are detected as flat by whoever sweeps them.
 OFFENSIVE_STAT = {"bodypress": "def"}
 
+# ...and which of the *target's* stats resists it. Special moves normally check Special Defence;
+# Psyshock checks Defence. Neither this nor `OFFENSIVE_STAT` is in the dex export — the pinned
+# build carries them as `overrideDefensiveStat` / `overrideOffensiveStat` and `vgc regulation
+# export` drops both, the same omission that made `multihit` invisible to the damage channel.
+# `tests/test_regulation.py` re-derives them from `vendor/` so a Showdown bump fails a test.
+DEFENSIVE_STAT = {"psyshock": "def"}
+
+# Field effects that change damage and that no channel here models. Wonder Room swaps Defence and
+# Special Defence, Magic Room suppresses items, and Gravity removes Flying's Ground immunity. The
+# first two never appear in this corpus and the third appears in 0.45% of human replays; the guard
+# is one check either way, and the alternative is a silently wrong number.
+UNMODELLED_PSEUDO = {"wonderroom", "magicroom", "gravity"}
+
 
 def is_damaging(entry: dict | None) -> bool:
     """Category, not base power. 25 legal moves deal damage on a listed base power of 0 — Low
@@ -100,6 +113,14 @@ def offensive_stat(dex: Dex, move: str) -> str | None:
     if not is_damaging(entry):
         return None
     return OFFENSIVE_STAT.get(to_id(move)) or ("atk" if entry.get("category") == "Physical" else "spa")
+
+
+def defensive_stat(dex: Dex, move: str) -> str | None:
+    """The target's stat that resists this move, or None if it deals no damage."""
+    entry = dex.get_move(move)
+    if not is_damaging(entry):
+        return None
+    return DEFENSIVE_STAT.get(to_id(move)) or ("def" if entry.get("category") == "Physical" else "spd")
 
 
 def is_grounded(dex: Dex, forme: str, ability: str | None, item: str | None) -> bool:

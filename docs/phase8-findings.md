@@ -379,26 +379,34 @@ The other read: *that did 71% to my Incineroar, so it is not fully invested.* Sa
 `vgc team weakness`, run backwards — there "how many points would they need for the KO", here "how
 many did they have, given what landed" — against the same pinned calc.
 
-| | value |
-| --- | --- |
-| attackers checked | 2,897 |
-| **silently wrong** | **19 (0.66%)** |
-| contradicted (detected, widened back to the prior) | 272 (9.39%) |
-| narrowed at all | 34.5% |
-| mean share of the prior ruled out | 11.0% |
-| — on hits the target survived | **20.8%** |
-| — on hits that KO'd | **6.0%** |
-| observations per attacker | 2.0 |
+| | at first gating | after the bulk channel found three more |
+| --- | --- | --- |
+| attackers checked | 2,897 | 2,897 |
+| **silently wrong** | **19 (0.66%)** | **2 (0.069%)** |
+| contradicted (detected, widened back to the prior) | 272 (9.39%) | 129 (4.45%) |
+| narrowed at all | 34.5% | 33.9% |
+| mean share of the prior ruled out | 11.0% | 10.6% |
+| — on hits the target survived | **20.8%** | **21.4%** |
+| — on hits that KO'd | 6.0% | 5.9% |
+| observations per attacker | 2.0 | 2.0 |
+
+**The second column is the current number, and it was not produced by working on this channel.**
+Building `vgc.belief.bulk` — the same arithmetic pointed the other way — turned up three faults
+that this channel shared and that its own gate had not isolated: the spread reduction, the
+attacker's burn, and sliver survivors. Each is described under that channel. The lesson is about
+gating rather than about damage: a 0.66% error rate looked like an acceptable residue and was
+three specific bugs, and what found them was asking the same question from the other side.
 
 **A KO is worth a third of a survived hit**, and that is the censoring working as intended: a kill
 says the move did *at least* the remaining HP and nothing about how much more, so it cannot rule
 out the top of the range. Reading a KO as an equality would have been the easiest way to look
 powerful and be wrong.
 
-At 0.66% this channel is **twenty times less sound than the speed channel's 0.029%**, and the
-reason is structural rather than fixable by one more patch: turn order needs one comparison to come
-out right, while damage needs the entire calc reproduced — field, screens, boosts, items,
-abilities, formes, HP precision — and every one of those is a way to be quietly wrong.
+At 0.069% this channel is now within about twice the speed channel's 0.029%, where it started at
+twenty times. The structural point survives the improvement: turn order needs one comparison to
+come out right, while damage needs the entire calc reproduced — field, screens, boosts, items,
+abilities, formes, HP precision — and every one of those is a way to be quietly wrong. Eight bugs
+have now been found in it, and every one was in that list.
 
 ## Five bugs, four of them the same shape
 
@@ -450,10 +458,11 @@ rather than trust the aggregate.
 
 ## What is still unexplained
 
-9.39% of attackers still contradict themselves, and the guard widens those back to the prior, so
+4.45% of attackers still contradict themselves, and the guard widens those back to the prior, so
 they state nothing false — they cost power. The residue is diffuse: no single species, move,
-ability or item accounts for more than a few percent of it after the five fixes above. It is
-recorded rather than argued away.
+ability or item accounts for more than a few percent of it. It is recorded rather than argued away,
+and the last three fixes came from building a different channel rather than from staring at this
+one, which is the reason to expect the remainder to go the same way.
 
 ---
 

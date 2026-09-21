@@ -116,7 +116,7 @@ class DamageEvent:
                  "target_side", "target_slot", "target", "target_forme",
                  "hp_before", "hp_after", "hp_max",
                  "exact", "fainted", "spread", "crit", "field", "attacker_boosts",
-                 "target_boosts", "target_status", "target_side_conditions")
+                 "attacker_status", "target_boosts", "target_status", "target_side_conditions")
 
     def __init__(self, **kw: Any):
         for k in self.__slots__:
@@ -549,6 +549,7 @@ class Observer:
             field={"weather": self.weather, "terrain": self.terrain,
                    "pseudo": sorted(self.pseudo)},
             attacker_boosts=dict(sorted(self._boosts_of(ev.side, ev.slot).items())),
+            attacker_status=ev.status,
             target_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
             target_status=m.status,
             target_side_conditions=sorted(target_side.conditions),
