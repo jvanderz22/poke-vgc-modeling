@@ -398,6 +398,48 @@ class BattleState:
         else:
             self.sides[sid].conditions.pop(condition, None)
 
+    def record_damage(self, m: "Mon", before: float, *, crit: bool = False) -> "DamageEvent | None":
+        """Attribute an HP loss to the move now resolving — the calc's question asked backwards.
+
+        Returns None when there is nothing to attribute it to: no move resolving, a move called by
+        something else (Sleep Talk's output is not its user's move), or a Pokémon damaging itself.
+        Reading recoil or Life Orb as the move's own output would tell the belief the attacker hits
+        far harder than it does, so the caller is responsible for not offering those at all — the
+        protocol adapter checks for a `[from]` tag, and manual entry simply does not log them.
+
+        `before` is the target's HP fraction *before* the hit, because by the time this is called
+        the state already holds what it dropped to.
+        """
+        ev = self._resolving
+        if ev is None or ev.called_by:
+            return None
+        side, slot = self._side_of(m), m.position
+        if (side, slot) == (ev.side, ev.slot):
+            return None
+        dmg = DamageEvent(
+            turn=self.turn, seq=ev.seq,
+            attacker_side=ev.side, attacker_slot=ev.slot, attacker=ev.species,
+            attacker_forme=ev.forme, attacker_item=ev.item, attacker_ability=ev.ability,
+            move=ev.move,
+            target_side=side, target_slot=slot, target=m.species, target_forme=m.forme,
+            hp_before=round(before, 4), hp_after=round(m.hp, 4), hp_max=m.hp_max,
+            exact=self._own(side) and m.hp_max is not None,
+            fainted=(m.hp == 0.0), spread=ev.spread, crit=crit,
+            field={"weather": self.weather, "terrain": self.terrain,
+                   "pseudo": sorted(self.pseudo)},
+            attacker_boosts=dict(sorted(self._boosts_of(ev.side, ev.slot).items())),
+            attacker_status=ev.status,
+            # As of this moment, for the same reason the formes are: a Pokémon that has its item
+            # knocked off, or Mega Evolves, is a different defender afterwards, and reading either
+            # off the final state answers a question about a Pokémon that no longer existed.
+            target_item=m.item, target_ability=self._active_ability(m),
+            target_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
+            target_status=m.status,
+            target_side_conditions=sorted(self.sides[side].conditions),
+        )
+        self.damage_log.append(dmg)
+        return dmg
+
     def faint(self, m: "Mon") -> None:
         m.hp, m.state, m.position, m.status = 0.0, "fainted", None, None
         m.boosts, m.volatiles = {}, set()

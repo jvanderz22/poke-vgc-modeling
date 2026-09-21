@@ -218,42 +218,15 @@ class Observer(BattleState):
     _on_sethp = _on_heal
 
     def _record_damage(self, m: Mon, a: list[str], before: float) -> None:
-        """Attribute this HP loss to the move now resolving, or to nothing.
+        """Offer this HP loss to `BattleState.record_damage`, unless something else caused it.
 
-        A `[from]` tag means something else did it — Life Orb, recoil, poison, Rocky Helmet — and
-        those are excluded rather than mis-attributed: reading recoil as the move's own output
-        would tell the belief the attacker hits far harder than it does. Self-damage is dropped
-        for the same reason. What is left is `|move|` → `|-damage|`, which is the calc's own
-        question asked backwards.
+        A `[from]` tag means it was not the move's own output — Life Orb, recoil, poison, Rocky
+        Helmet — and those are dropped rather than mis-attributed. What is left is `|move|` →
+        `|-damage|`, which is the question the calc answers forwards.
         """
-        ev = self._resolving
-        if ev is None or ev.called_by or _tags(a[1:]).get("from"):
+        if _tags(a[1:]).get("from"):
             return
-        side, slot = self._side_of(m), m.position
-        if (side, slot) == (ev.side, ev.slot):
-            return
-        target_side = self.sides[side]
-        self.damage_log.append(DamageEvent(
-            turn=self.turn, seq=ev.seq,
-            attacker_side=ev.side, attacker_slot=ev.slot, attacker=ev.species,
-            attacker_forme=ev.forme, attacker_item=ev.item, attacker_ability=ev.ability,
-            move=ev.move,
-            target_side=side, target_slot=slot, target=m.species, target_forme=m.forme,
-            hp_before=round(before, 4), hp_after=round(m.hp, 4), hp_max=m.hp_max,
-            exact=self._own(side) and m.hp_max is not None,
-            fainted=(m.hp == 0.0), spread=ev.spread, crit=(a[0] in self._crit),
-            field={"weather": self.weather, "terrain": self.terrain,
-                   "pseudo": sorted(self.pseudo)},
-            attacker_boosts=dict(sorted(self._boosts_of(ev.side, ev.slot).items())),
-            attacker_status=ev.status,
-            # As of this moment, for the same reason the formes are: a Pokémon that has its item
-            # knocked off, or Mega Evolves, is a different defender afterwards, and reading either
-            # off the final state answers a question about a Pokémon that no longer existed.
-            target_item=m.item, target_ability=self._active_ability(m),
-            target_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
-            target_status=m.status,
-            target_side_conditions=sorted(target_side.conditions),
-        ))
+        self.record_damage(m, before, crit=(a[0] in self._crit))
 
     def _on_crit(self, a: list[str]) -> None:
         if a:

@@ -100,7 +100,7 @@ def _name(reg: Regulation, ability: str) -> str:
     return (reg.dex.abilities.get(ability) or {}).get("name", ability)
 
 
-def _collect(reg: Regulation, species: str, known: str | None,
+def _collect(reg: Regulation, species: str, known: str | Iterable[str] | None,
              describe) -> list[Outcome]:
     """Build one outcome per ability that would announce, plus the silence that rules them out.
 
@@ -128,14 +128,27 @@ def _collect(reg: Regulation, species: str, known: str | None,
     return loud
 
 
-def candidate_abilities(reg: Regulation, species: str, known: str | None = None) -> list[str]:
+def candidate_abilities(reg: Regulation, species: str,
+                        known: str | Iterable[str] | None = None) -> list[str]:
     """What this Pokémon's ability could still be.
 
     One entry once it is known — from a sheet, or because you watched it fire — and otherwise
     everything the species is allowed, which at team preview is two or three.
+
+    A *sequence* narrows it without settling it, which is what `still_possible` returns after
+    something that would have announced did not: three candidates become two, and the next pop-up
+    offers two options instead of three. Passing the species' full list is the same as passing
+    nothing, so a caller that has not narrowed anything loses nothing by asking.
     """
-    if known:
-        return [to_id(known)]
+    if isinstance(known, str):
+        return [to_id(known)] if known else _allowed(reg, species)
+    if known is not None:
+        narrowed = sorted({to_id(a) for a in known})
+        return narrowed or _allowed(reg, species)
+    return _allowed(reg, species)
+
+
+def _allowed(reg: Regulation, species: str) -> list[str]:
     entry = reg.dex.get_species(species) or {}
     return sorted({to_id(a) for a in (entry.get("abilities") or {}).values()})
 
@@ -144,7 +157,8 @@ def opposing_slots(sid: str) -> str:
     return "p2" if sid == "p1" else "p1"
 
 
-def on_switch_in(reg: Regulation, species: str, known: str | None = None) -> list[Outcome]:
+def on_switch_in(reg: Regulation, species: str,
+                 known: str | Iterable[str] | None = None) -> list[Outcome]:
     """What could fire when this Pokémon arrives — one outcome per ability still possible."""
 
     def describe(ability: str):
@@ -164,7 +178,7 @@ def on_switch_in(reg: Regulation, species: str, known: str | None = None) -> lis
 
 
 def stat_drop_outcomes(reg: Regulation, species: str, stat: str, stages: int,
-                       known: str | None = None) -> list[Outcome]:
+                       known: str | Iterable[str] | None = None) -> list[Outcome]:
     """What a drop aimed at this Pokémon could do, given what its ability might be.
 
     The second half of the Intimidate chain, and the reason it is worth deriving rather than
@@ -251,7 +265,7 @@ HIT_TERRAIN = {"seedsower": "grassyterrain"}
 
 
 def on_damaging_hit(reg: Regulation, species: str, move: str,
-                    known: str | None = None) -> list[Outcome]:
+                    known: str | Iterable[str] | None = None) -> list[Outcome]:
     """What the Pokémon you just hit could announce, one outcome per ability still possible.
 
     Stamina matters twice over: it is a reveal, and it moves the Defence the bulk channel is
