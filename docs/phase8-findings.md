@@ -365,3 +365,92 @@ worked on 700,000 logs from genuinely high-rated players, and PLAN-v2 defers BC 
 higher-rated corpus" exists; on this evidence that corpus may not be buildable for Reg M-C before
 the 2026-12-02 rotation, and the deferral is better read as *waiting on a ladder* than as waiting
 on scraping effort. What **is** available — and is now built — is the top half.
+
+
+---
+
+# Phase 8, channel 2 — damage magnitude as a bound on their offensive Stat Points
+
+_Measured 2026-09-20 on 1,000 battles of the sampled-spread corpus (2,897 attackers, 11,658 usable
+damage events). Script: [`scripts/analysis/damage_belief.py`](../scripts/analysis/damage_belief.py);
+result: [`data/analysis/damage_belief_spreads.json`](../data/analysis/damage_belief_spreads.json)._
+
+The other read: *that did 71% to my Incineroar, so it is not fully invested.* Same arithmetic as
+`vgc team weakness`, run backwards — there "how many points would they need for the KO", here "how
+many did they have, given what landed" — against the same pinned calc.
+
+| | value |
+| --- | --- |
+| attackers checked | 2,897 |
+| **silently wrong** | **19 (0.66%)** |
+| contradicted (detected, widened back to the prior) | 272 (9.39%) |
+| narrowed at all | 34.5% |
+| mean share of the prior ruled out | 11.0% |
+| — on hits the target survived | **20.8%** |
+| — on hits that KO'd | **6.0%** |
+| observations per attacker | 2.0 |
+
+**A KO is worth a third of a survived hit**, and that is the censoring working as intended: a kill
+says the move did *at least* the remaining HP and nothing about how much more, so it cannot rule
+out the top of the range. Reading a KO as an equality would have been the easiest way to look
+powerful and be wrong.
+
+At 0.66% this channel is **twenty times less sound than the speed channel's 0.029%**, and the
+reason is structural rather than fixable by one more patch: turn order needs one comparison to come
+out right, while damage needs the entire calc reproduced — field, screens, boosts, items,
+abilities, formes, HP precision — and every one of those is a way to be quietly wrong.
+
+## Five bugs, four of them the same shape
+
+Something was handed to the calc, or read from the dex export, that was silently not what it looked
+like. None of them raised an error; each just returned a plausible wrong number.
+
+1. **Items and abilities as ids.** The Observer stores `blackglasses`; `@smogon/calc` wants
+   `Black Glasses` and **ignores what it does not recognise** rather than failing — 90-106 against
+   108-127 on the same calc. Every item and ability was quietly vanishing. 38% → 31% contradicted.
+2. **Formes read from the wrong moment.** Both sides' forme was being looked up on the Observer's
+   *final* state. Gengar is base 60 Defence and Mega Gengar is 80, so a Pokémon that Mega Evolved
+   later in the battle made earlier observations look impossible. The event now carries both
+   formes, and the attacker's item and ability, as of the moment. 31% → 14%.
+3. **Weather and terrain as ids.** The same silent drop a third time: `terrain="grassyterrain"` is
+   a neutral field, `"Grassy"` is the 1.3×. Now translated through an explicit table, and anything
+   absent from it makes the event unusable instead of quietly becoming neutral. 14% → 11%.
+4. **`multihit` is not in the dex export at all**, so `entry.get("multihit")` never fired and
+   Population Bomb was being treated as a single hit. The lists now come from the pinned
+   `data/moves.ts`, and `tests/test_belief_damage.py` re-derives them from `vendor/` so a Showdown
+   bump fails a test instead of widening the error. The same pass also picked up the 53 moves with
+   a `basePowerCallback` — power computed at run time from the attacker's remaining HP (Eruption),
+   fainted allies (Last Respects), whether the target has moved (Avalanche) — which are abstained
+   on wholesale.
+
+## And one that was nearly mis-diagnosed as a mechanic
+
+Electro Shot dominated what was left. The evidence said its damage behaved as though *unboosted*:
+over 52 uncensored hits with the true spread known, the implied multiplier against an unboosted
+calc was a median of 0.975. That contradicts the pinned `onTryMove`, which boosts Special Attack
+and then attacks — in rain immediately, otherwise charging and firing next turn with the +1 still
+up — and it contradicts the log, which plainly shows the boost line landing before the damage.
+
+Both were right. **The calc applies that move's boost itself**: its Champions mechanics do
+`if (move.named('Meteor Beam', 'Electro Shot'))`, so handing it the boost from the log counts it
+twice. It is visible in one line — a +1 passed to Electro Shot moves the damage by 1.32×, where a
++1 passed to Flash Cannon moves it by 1.50×, because the calc is really going from +1 to +2. On an
+ordinary move the calc matches Showdown's stat table exactly at every stage, which is now pinned by
+a test.
+
+The correction is to subtract what the calc adds, not to ignore the log, because the boost persists
+into later turns and a second Electro Shot at a logged +2 has to arrive as +1. With that,
+**50 of 52 uncensored Electro Shot hits contain the truth, against 1 of 52 before.**
+
+It barely moves the aggregate — those are 52 events out of 11,658 — and it is the most useful thing
+in this section anyway. The first instinct was to abstain on charge moves as a class, which "fixed"
+the contradictions by discarding the evidence. The measurement that looked like a mechanical
+discovery was a bug in the bridge, and the way to tell the difference was to read the pinned source
+rather than trust the aggregate.
+
+## What is still unexplained
+
+9.39% of attackers still contradict themselves, and the guard widens those back to the prior, so
+they state nothing false — they cost power. The residue is diffuse: no single species, move,
+ability or item accounts for more than a few percent of it after the five fixes above. It is
+recorded rather than argued away.

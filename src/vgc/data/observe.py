@@ -103,10 +103,18 @@ class DamageEvent:
     the loss is known to about a percentage point and no better — `exact` says which case this is.
     `fainted` marks a right-censored observation: the move did *at least* the remaining HP, and
     reading it as an equality would systematically underestimate the attacker's investment.
+
+    Both sides' forme, and the attacker's item and ability, are recorded **as of this moment**
+    rather than looked up afterwards. A Pokémon that Mega Evolves changes its base stats and its
+    ability mid-battle, so reading them off the final state answers a question about a different
+    Pokémon: Gengar is base 60 Defence and Mega Gengar is 80, which is enough to make a true
+    observation look impossible.
     """
 
-    __slots__ = ("turn", "seq", "attacker_side", "attacker_slot", "attacker", "move",
-                 "target_side", "target_slot", "target", "hp_before", "hp_after", "hp_max",
+    __slots__ = ("turn", "seq", "attacker_side", "attacker_slot", "attacker", "attacker_forme",
+                 "attacker_item", "attacker_ability", "move",
+                 "target_side", "target_slot", "target", "target_forme",
+                 "hp_before", "hp_after", "hp_max",
                  "exact", "fainted", "spread", "crit", "field", "attacker_boosts",
                  "target_boosts", "target_status", "target_side_conditions")
 
@@ -531,8 +539,10 @@ class Observer:
         target_side = self.sides[side]
         self.damage_log.append(DamageEvent(
             turn=self.turn, seq=ev.seq,
-            attacker_side=ev.side, attacker_slot=ev.slot, attacker=ev.species, move=ev.move,
-            target_side=side, target_slot=slot, target=m.species,
+            attacker_side=ev.side, attacker_slot=ev.slot, attacker=ev.species,
+            attacker_forme=ev.forme, attacker_item=ev.item, attacker_ability=ev.ability,
+            move=ev.move,
+            target_side=side, target_slot=slot, target=m.species, target_forme=m.forme,
             hp_before=round(before, 4), hp_after=round(m.hp, 4), hp_max=m.hp_max,
             exact=self._own(side) and m.hp_max is not None,
             fainted=(m.hp == 0.0), spread=ev.spread, crit=(a[0] in self._crit),

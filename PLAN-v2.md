@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | speed channel re-gated on a non-degenerate corpus: **0.029% silently wrong**, 12.9% narrowing, 54,904 Pokémon. `vgc data generate --spreads sampled` ([findings](docs/phase8-findings.md)). Damage channel next |
+| 8 — Belief over hidden sets | 🟡 In progress | **both channels built and gated**: speed 0.029% silently wrong (54,904 Pokémon), damage 0.66% (2,897 attackers) ([findings](docs/phase8-findings.md)). Next: combine into an SP belief, then WP_v2 |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -359,8 +359,22 @@ against the pinned calc rather than anything learned:
 
   The prerequisite this phase already had now has a second reason: the evidence log lives outside
   `observation()` deliberately, because snapshots embed it and are fingerprinted at VERSION 3.
-- **Damage magnitude → a likelihood over spread and item.** _Next._ The evidence is already
-  recorded — `vgc.data.observe` now attributes each `|-damage|` to the move that caused it, with the
+- **Damage magnitude → a bound on their offensive investment. ✅ Built and gated**
+  (`vgc.belief.damage`). 0.66% of 2,897 attackers had the truth silently excluded; a further 9.4%
+  contradicted themselves and widened back. It narrows 20.8% of the prior on a hit the target
+  survived and 6.0% on a KO — right-censoring working as intended, since a kill says the move did
+  *at least* the remaining HP and nothing about how much more.
+
+  It is **twenty times less sound than the speed channel** and structurally so: turn order needs one
+  comparison to come out right, damage needs the whole calc reproduced. Five bugs got it there and
+  four were the same shape — something handed to the calc that was silently not what it looked
+  like, with no error raised. The fifth is the one worth remembering: Electro Shot's damage looked
+  unboosted across 52 hits, contradicting both the pinned `onTryMove` and the log, because
+  `@smogon/calc` applies that move's own boost itself and the log's boost was being counted twice.
+  The first instinct — abstain on charge moves as a class — would have "fixed" it by discarding the
+  evidence.
+
+  The evidence is already recorded — `vgc.data.observe` now attributes each `|-damage|` to the move that caused it, with the
   field, both sides' boosts, crits, spread flags and a `fainted` marker for the right-censored case
   — and `vgc team weakness` already runs this arithmetic forwards. A move that did 71% to a known defender
   narrows the attacker's offensive SP and item jointly, through the same calc the rest of the stack
