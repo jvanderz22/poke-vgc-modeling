@@ -1,0 +1,129 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "battles": 20000,
+ "pokemon_checked": 54904,
+ "soundness": {
+  "silently_wrong": 16,
+  "rate": 0.0002914177473408131,
+  "contradicted": 13,
+  "contradicted_rate": 0.0002367769197144106,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-6486",
+    "mon": [
+     "p2",
+     "Annihilape"
+    ],
+    "true_spe": 11,
+    "bounds": [
+     0,
+     10
+    ],
+    "used": 4
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7750",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "true_spe": 15,
+    "bounds": [
+     0,
+     6
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7752",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "true_spe": 15,
+    "bounds": [
+     0,
+     6
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-7754",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "true_spe": 15,
+    "bounds": [
+     0,
+     6
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8391",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 2,
+    "bounds": [
+     0,
+     1
+    ],
+    "used": 6
+   }
+  ]
+ },
+ "power": {
+  "narrowed_mean": 0.1294010702979084,
+  "any_narrowing": 0.3534350866967798,
+  "bounds_width_mean": 28.729764680169023,
+  "pairs_per_battle": 9.2319
+ },
+ "pairs": {
+  "considered": 446460,
+  "usable": 184638,
+  "priority_differs": 177776,
+  "state_moved_mid_turn": 17856,
+  "unmodelled_mover": 66190,
+  "turn_reordered": 4
+ },
+ "abstention_rate": 0.5864399946243785,
+ "truth_distribution": {
+  "0": 1593,
+  "1": 1529,
+  "2": 1759,
+  "3": 1619,
+  "4": 1558,
+  "5": 1549,
+  "6": 1809,
+  "7": 1727,
+  "8": 1644,
+  "9": 1694,
+  "10": 1611,
+  "11": 1807,
+  "12": 1630,
+  "13": 1598,
+  "14": 1480,
+  "15": 1729,
+  "16": 1647,
+  "17": 1638,
+  "18": 1651,
+  "19": 1764,
+  "20": 1894,
+  "21": 1751,
+  "22": 1585,
+  "23": 1747,
+  "24": 1728,
+  "25": 1678,
+  "26": 1685,
+  "27": 1591,
+  "28": 1572,
+  "29": 1604,
+  "30": 1726,
+  "31": 1728,
+  "32": 1579
+ },
+ "caveat": "the pool's spreads are impute_sp's output, so the truth here takes few distinct values and the power number is a floor, not an estimate of the real thing"
+}

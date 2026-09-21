@@ -72,8 +72,12 @@ from vgc.regulation import Regulation, offensive_stat, to_id
 
 TIERS = ("usage", "pool", "structural")
 
-# Conventional Speed investments: a build is normally maxed, uninvested, or sitting at a
-# breakpoint between them. These two are the anchors the first iteration benchmarks against.
+# The Speed investments a benchmark is measured against. These are an *assumption*, and the same
+# one that makes `impute_sp` useless: that builds sit at the extremes. It is roughly true of the
+# corpus in hand — but the corpus is 58% unrated with a median rating of 1101, and at higher level
+# a spread is chosen to hit a specific number, so "maxed or nothing" is one option among many
+# rather than the rule. `benchmarks()` takes these as an argument so a better set can replace them
+# without touching anything else, and the tier recorded on every result says where they came from.
 CONVENTIONAL = (0, 32)
 
 
@@ -99,8 +103,8 @@ def dead_stats(reg: Regulation, moves: Iterable[str], nature: str | None) -> dic
 
 # --- benchmarks -------------------------------------------------------------------------
 
-def benchmarks(reg: Regulation, report: dict[str, Any] | None = None, n: int = 30
-               ) -> tuple[list[tuple[int, float]], str]:
+def benchmarks(reg: Regulation, report: dict[str, Any] | None = None, n: int = 30,
+               anchors: tuple[int, ...] = CONVENTIONAL) -> tuple[list[tuple[int, float]], str]:
     """`[(speed, weight)]` worth clearing, and the tier that produced them.
 
     `weight` is how much of the meta sits at that speed, so a breakpoint past a Pokémon nobody
@@ -118,7 +122,7 @@ def benchmarks(reg: Regulation, report: dict[str, Any] | None = None, n: int = 3
     if report:
         for s in usage.top_species(report, n) if report else []:
             nature = s["natures"][0]["name"] if s["natures"] else "Serious"
-            for sp in CONVENTIONAL:
+            for sp in anchors:
                 v = speed_stat(reg, s["species"], nature, sp)
                 if v:
                     out[v] = out.get(v, 0.0) + s["share"]
@@ -128,7 +132,7 @@ def benchmarks(reg: Regulation, report: dict[str, Any] | None = None, n: int = 3
     # Fallback: the legal pool, every species equally, at a neutral nature. No corpus needed.
     species = list(reg.dex.species.values())
     for entry in species:
-        for sp in CONVENTIONAL:
+        for sp in anchors:
             v = speed_stat(reg, entry["name"], "Serious", sp)
             if v:
                 out[v] = out.get(v, 0.0) + 1.0 / max(len(species), 1)
@@ -292,3 +296,69 @@ def imputed_prior(reg: Regulation, species: str, nature: str | None, moves: Iter
     mass = [1e-9] * (cap + 1)          # not zero: a log-likelihood has to stay finite
     mass[min(sp.spe, cap)] += 1.0
     return SpeedPrior(species, nature, "imputed", mass, 1, {})
+
+
+# --- sampling a spread, for a corpus that can actually gate an inference -----------------
+
+def sample_spread(reg: Regulation, species: str, nature: str | None, moves: Iterable[str],
+                  rng: Any, cap: int | None = None, budget: int | None = None) -> dict[str, int]:
+    """A legal allocation of the 66 points, for generating a corpus to gate inference against.
+
+    **This does not try to imitate the meta, and it should not.** The corpus it feeds exists to
+    measure whether a channel can infer a hidden quantity, and the hardest honest test of that is a
+    truth drawn as close to uniform as the rules allow: if the generated spreads matched the human
+    prior, a channel could score well by echoing the prior back rather than by reading the battle.
+    So the two stats the belief channels infer — Speed, and the offensive stat that is actually
+    live — get flat marginals, which is also the one marginal shape that beat every alternative on
+    19,255 real turn orders.
+
+    What it does keep from reality is the part that is not a guess: a stat no move of theirs uses
+    gets nothing, because 90.9% of real Pokémon-sheets are built that way and investing there is
+    strictly wasted.
+
+    The consequence is worth stating plainly, because it decides what these runs may be used for:
+    teams built this way are *not* realistic teams. Win rates over them mean nothing, and they must
+    not be manifested into WP training. They are an instrument for gating the belief layer, where
+    the spread has to vary or the gate measures nothing.
+    """
+    cap = reg.sp_per_stat_cap if cap is None else cap
+    budget = reg.sp_budget if budget is None else budget
+    dead = set(dead_stats(reg, moves, nature))
+    live_offence = next((s for s in ("atk", "spa") if s not in dead), None)
+
+    out = {s: 0 for s in ("hp", "atk", "def", "spa", "spd", "spe")}
+    left = budget
+    for stat in (s for s in ("spe", live_offence) if s):
+        take = int(rng.integers(0, min(cap, left) + 1))
+        out[stat] = take
+        left -= take
+
+    # Whatever is left goes to the stats that are neither dead nor already drawn, one at a time in
+    # random order, so no single stat systematically absorbs the remainder.
+    order = [s for s in ("hp", "def", "spd") if s not in dead]
+    rng.shuffle(order)
+    for i, stat in enumerate(order):
+        # A stat has to take enough that the ones after it can still absorb the rest under the
+        # cap, or the budget ends up unspent — real sheets always total exactly 66, and a team
+        # quietly spending 32 of its points would be a weaker opponent, not a differently built
+        # one.
+        remaining_after = len(order) - i - 1
+        lo = max(0, left - cap * remaining_after)
+        hi = min(cap, left)
+        take = hi if remaining_after == 0 else int(rng.integers(lo, hi + 1))
+        out[stat] = take
+        left -= take
+    if left:                                     # unreachable given 3 × 32 ≥ 66, but cheap to say
+        raise ValueError(f"{left} Stat Points could not be spent for {species}")
+    return out
+
+
+def resample_team(reg: Regulation, text: str, rng: Any) -> str:
+    """A pool team's Showdown export with every spread redrawn. Everything else is untouched."""
+    from vgc.teams.sets import StatPoints
+    from vgc.teams.showdown_text import export_set, parse_team
+
+    team = parse_team(text)
+    for mon in team:
+        mon.sp = StatPoints.from_dict(sample_spread(reg, mon.species, mon.nature, mon.moves, rng))
+    return "\n\n".join(export_set(m) for m in team) + "\n"

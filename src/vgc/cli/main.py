@@ -425,6 +425,25 @@ def cmd_data_generate(args: argparse.Namespace) -> int:
     reg = _reg(args)
     pool = load_pool(reg)
     teams = [(t.id, t.text) for t in pool]
+    if args.spreads == "sampled":
+        # A corpus for gating the belief layer, not for training. `impute_sp` puts the cap in the
+        # offensive stat of all 20,082 pool Pokémon, so offensive investment is a *constant* there
+        # and nothing that infers it can be measured — the same degeneracy finding 8 caught in the
+        # training mix. Resampled teams get their own ids so they can never be mistaken for pool
+        # teams by the split or a manifest, and the run id says what they are.
+        import numpy as np
+
+        from vgc.belief import prior as belief_prior
+        from vgc.meta import replays as meta_replays
+
+        rng = np.random.default_rng(args.spread_seed)
+        resampled = []
+        for _, text in teams:
+            new_text = belief_prior.resample_team(reg, text, rng)
+            resampled.append((meta_replays.team_id(new_text), new_text))
+        teams = resampled
+        print(f"spreads resampled for {len(teams)} teams (seed {args.spread_seed}); "
+              f"this corpus is for belief gating and must not be manifested")
     weights = None
     if args.usage_alpha > 0 or args.min_rating:
         from vgc.meta.pool import sampling_weights
@@ -440,7 +459,8 @@ def cmd_data_generate(args: argparse.Namespace) -> int:
     else:
         ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed, weights=weights)
         suffix = f"-n{args.n}"
-    run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}-s{args.seed}{suffix}"
+    tag = "-spreads" if args.spreads == "sampled" else ""
+    run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}{tag}-s{args.seed}{suffix}"
     _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=run_id))
     r = extract_selfplay(SELFPLAY / run_id, reg, workers=args.workers)
     _print_extract(r)
@@ -894,6 +914,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", choices=["bo3", "bo1", "both"], default="both")
     p.set_defaults(func=cmd_data_human)
     p = with_run(data.add_parser("generate", help="self-play across the team pool, then extract snapshots"))
+    p.add_argument("--spreads", choices=["imputed", "sampled"], default="imputed",
+                   help="'sampled' redraws every spread from vgc.belief.prior — for gating the "
+                        "belief layer, never for training (see the flag's note when it runs)")
+    p.add_argument("--spread-seed", type=int, default=11)
     p.add_argument("--per-pair", type=int, default=1,
                    help="battles per team pairing (>1 repeats pairings, which is what team-preview WP needs)")
     p.add_argument("--usage-alpha", type=float, default=0.0,

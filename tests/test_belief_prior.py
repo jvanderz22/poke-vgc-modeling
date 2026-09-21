@@ -10,7 +10,11 @@ from __future__ import annotations
 
 import pytest
 
+from pathlib import Path
+
 from vgc.belief import prior
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 # --- structural zeros -------------------------------------------------------------------
@@ -135,3 +139,85 @@ def test_impute_sp_as_a_prior_is_a_point_mass(reg):
     assert max(p.mass) > 0.99
     assert sum(1 for m in p.mass if m > 0.01) == 1
     assert all(m > 0 for m in p.mass)  # floored, so a log-likelihood stays finite
+
+
+# --- sampling a corpus that can gate an inference ---------------------------------------
+
+@pytest.fixture
+def rng():
+    import numpy as np
+    return np.random.default_rng(0)
+
+
+def test_a_sampled_spread_spends_every_point(reg, rng):
+    """Real sheets total exactly 66. An early draft let the last stats hit the cap with budget
+    left over, which does not produce a differently built team — it produces a weaker one."""
+    for _ in range(300):
+        sp = prior.sample_spread(reg, "Salamence", "Timid",
+                                 ["Hyper Voice", "Draco Meteor", "Flamethrower"], rng)
+        assert sum(sp.values()) == reg.sp_budget
+        assert all(0 <= v <= reg.sp_per_stat_cap for v in sp.values())
+
+
+def test_a_sampled_spread_never_invests_in_a_dead_stat(reg, rng):
+    for _ in range(200):
+        sp = prior.sample_spread(reg, "Salamence", "Timid", ["Hyper Voice", "Draco Meteor"], rng)
+        assert sp["atk"] == 0
+        sp = prior.sample_spread(reg, "Rillaboom", "Adamant", ["Wood Hammer", "Fake Out"], rng)
+        assert sp["spa"] == 0
+
+
+def test_the_inferable_stats_come_out_flat(reg, rng):
+    """The point of the sampler. A corpus whose hidden truth is uniform is the hardest honest test
+    of a channel that has to infer it — if the spreads matched the human prior, a channel could
+    score well by echoing the prior instead of reading the battle."""
+    moves = ["Hyper Voice", "Draco Meteor", "Flamethrower", "Protect"]
+    draws = [prior.sample_spread(reg, "Salamence", "Timid", moves, rng) for _ in range(6000)]
+    cap = reg.sp_per_stat_cap
+    for stat in ("spe", "spa"):
+        vals = [d[stat] for d in draws]
+        assert min(vals) == 0 and max(vals) == cap
+        assert abs(sum(vals) / len(vals) - cap / 2) < 1.0
+
+
+def test_a_resampled_team_is_still_legal(reg, rng):
+    from vgc.teams import is_legal, parse_team, validate_team
+
+    text = (FIXTURES / "teams" / "valid_basic.txt").read_text()
+    for _ in range(25):
+        team = parse_team(prior.resample_team(reg, text, rng))
+        problems = validate_team(team, reg)
+        assert is_legal(problems), problems
+        assert all(m.sp.total == reg.sp_budget for m in team)
+
+
+def test_resampling_changes_the_spread_and_nothing_else(reg, rng):
+    from vgc.teams import parse_team
+
+    text = (FIXTURES / "teams" / "valid_basic.txt").read_text()
+    before, after = parse_team(text), parse_team(prior.resample_team(reg, text, rng))
+    for a, b in zip(before, after):
+        assert (a.species, a.item, a.ability, a.nature, a.moves) == \
+               (b.species, b.item, b.ability, b.nature, b.moves)
+    assert [m.sp.as_dict() for m in before] != [m.sp.as_dict() for m in after]
+
+
+def test_a_sampled_corpus_does_not_repeat_impute_sps_constant(reg, rng):
+    """The pathology this sampler exists to remove, guarded directly.
+
+    All 20,082 Pokémon in the `impute_sp` pool have exactly 32 points in their offensive stat, so
+    offensive investment is a constant there and nothing that infers it can be gated. That is also
+    not how people build: at higher level a spread is chosen to hit a benchmark, and maxing the
+    attacking stat is one option among many. A generated corpus has to show the whole range.
+    """
+    text = (FIXTURES / "teams" / "valid_basic.txt").read_text()
+    from vgc.teams import parse_team
+
+    seen = {"offence": set(), "spe": set()}
+    for _ in range(120):
+        for mon in parse_team(prior.resample_team(reg, text, rng)):
+            seen["offence"].add(max(mon.sp.atk, mon.sp.spa))
+            seen["spe"].add(mon.sp.spe)
+    for stat, values in seen.items():
+        assert len(values) > reg.sp_per_stat_cap * 0.8, (stat, sorted(values))
+        assert min(values) == 0 and max(values) == reg.sp_per_stat_cap, stat

@@ -8,6 +8,16 @@ sheet appeared. It exists so a closed-sheet team preview can produce *a* legal t
 What that costs you, stated plainly because the UI has to repeat it: the model then evaluates one
 guessed team with full confidence, instead of averaging over what the opponent might actually be
 holding. A Choice Scarf you guessed as Assault Vest is simply wrong, not uncertain.
+
+**The spread is a guess of a different kind, and a worse one.** Sheets never carry Stat Points, so
+the spread on every set here comes from `impute_sp`, which puts the cap in the offensive stat and
+the cap in Speed — every one of the 20,082 Pokémon in the pool, without exception. That is a
+property of the imputation, not of how people build: at higher level a spread is chosen against
+benchmarks, and maxing the attacking stat is one option among many rather than the rule. Scored
+against 19,255 real turn orders, `impute_sp` is 2.9 nats a pair *worse than assuming nothing*
+(docs/phase8-findings.md). So `share` describes the item, ability, nature and moves — the things
+the sheet actually shows — and never the spread, which is reported separately as `spread` so the
+UI cannot accidentally present a guess as a measurement.
 """
 
 from __future__ import annotations
@@ -68,7 +78,8 @@ def fill(species: str, reg: Regulation) -> tuple[PokemonSet, dict[str, Any]]:
     known = usage(reg.id).get(sid)
     if known:
         mon = PokemonSet(**{**vars(known["set"])})
-        return mon, {"source": "usage", "share": round(known["share"], 3), "seen": known["seen"]}
+        return mon, {"source": "usage", "share": round(known["share"], 3), "seen": known["seen"],
+                     "spread": "imputed"}
 
     entry = reg.dex.get_species(species)
     if entry is None:
@@ -81,7 +92,7 @@ def fill(species: str, reg: Regulation) -> tuple[PokemonSet, dict[str, Any]]:
     per = reg.sp_budget // 6
     for stat in ("hp", "atk", "def", "spa", "spd", "spe"):
         setattr(mon.sp, stat, min(per, reg.sp_per_stat_cap))
-    return mon, {"source": "default", "share": None, "seen": 0}
+    return mon, {"source": "default", "share": None, "seen": 0, "spread": "even"}
 
 
 def compose(species: list[str], reg: Regulation) -> dict[str, Any]:
@@ -91,6 +102,6 @@ def compose(species: list[str], reg: Regulation) -> dict[str, Any]:
         mon, note = fill(name, reg)
         blocks.append(export_set(mon))
         notes.append({"species": mon.species, "item": mon.item, "ability": mon.ability,
-                      "moves": list(mon.moves), **note})
+                      "moves": list(mon.moves), "sp": mon.sp.as_dict(), **note})
     return {"text": "\n\n".join(blocks) + "\n", "sets": notes,
             "inferred": sum(1 for n in notes if n["source"] != "given")}

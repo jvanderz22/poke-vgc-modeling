@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | speed channel gated (0.014% silently wrong, 62,581 Pokémon); spread prior measured — `impute_sp` is 2.9 nats/pair worse than flat ([findings](docs/phase8-findings.md)) |
+| 8 — Belief over hidden sets | 🟡 In progress | speed channel re-gated on a non-degenerate corpus: **0.029% silently wrong**, 12.9% narrowing, 54,904 Pokémon. `vgc data generate --spreads sampled` ([findings](docs/phase8-findings.md)). Damage channel next |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -493,7 +493,7 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 | --- | --- |
 | **Learned preview / team-strength WP** | A corpus three-plus orders of magnitude larger. The second route — Phase 6 passing, so the simulator could be the target instead of human games — is closed: it failed. (Findings 1, 2, 7.) |
 | **Behaviour cloning** | A higher-rated corpus. VGC-Bench's BC worked on 700,000 logs from *high-rating* players; this corpus is 58% unrated, median 1101. (Finding 5.) |
-| **Self-play spreads from `impute_sp`** | Cancelled as a design, not deferred. All 20,082 pool Pokémon have exactly 32 points in their offensive stat, so nothing that infers offensive investment can be gated on that corpus — and as a prior it is 2.9 nats/pair worse than flat. Generation has to sample spreads from `vgc.belief.prior` instead. |
+| **Self-play spreads from `impute_sp`** | Cancelled as a design, not deferred, and **replaced**: `vgc data generate --spreads sampled`. All 20,082 pool Pokémon have exactly 32 points in their offensive stat, so nothing that infers offensive investment could be gated there — and as a prior it is 2.9 nats/pair worse than flat. Re-gating the speed channel on the sampled corpus doubled its silently-wrong rate, 0.014% → 0.029%, which is what a degenerate truth was hiding. |
 | **Self-play generation for WP training** | A policy that passes Phase 6. The rows do not pay for themselves in training (finding 3), and finding 7 removed the other justification. Generating more under *this* policy buys nothing. |
 | **Hyperparameter sweeps on the set encoder** | Nothing — closed off. Every config selected epoch 1 or 2 of 12; the constraint is coverage, not regularization. GPU time is better spent elsewhere. |
 | **PPO self-play fine-tuning** | Nothing. Optional-and-last in v1 for technical reasons; cost and the paper's results both confirm it. |

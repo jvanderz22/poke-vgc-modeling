@@ -101,12 +101,12 @@ Most of the abstention is not a modelling gap: 39% of candidate pairs are droppe
 moves had different priority, which is simply not a race. 16% are an unmodelled mover and 4% are
 state that moved mid-turn.
 
-**The self-play power number is a floor, and a bad one.** The pool's spreads come from
-`impute_sp`, so the truth takes two values — 32 Speed (58,788) and 0 (4,756) — and a channel that
-only has to separate two well-spaced cases is being asked an easy question. A proper power
-measurement needs self-play generated with randomized legal spreads, and that is the next thing to
-run. The human numbers do not have this problem for *power* (the prior really is 0..32 there), but
-they cannot be scored for soundness at all, which is the whole reason this phase exists.
+**The self-play power number was a floor, and a bad one** — the pool's spreads come from
+`impute_sp`, so the truth took two values, 32 Speed (58,788) and 0 (4,756), and a channel that
+only has to separate two well-spaced cases is being asked an easy question. That has since been
+replaced; see *Re-gating on a corpus that can stress it* below. The human numbers never had this
+problem for *power* (the prior really is 0..32 there), but they cannot be scored for soundness at
+all, which is the whole reason this phase exists.
 
 The best single case in the human corpus: three pairs pinned a Sneasler to exactly 32 Speed SP,
 ruling out 97% of the prior.
@@ -219,3 +219,65 @@ The `pool` tier costs almost nothing against `usage` here (−0.011 against −0
 +0.012 against +0.010 on close ones), which is the useful part: **a freshly rotated regulation with
 no replays yet is not much worse off than one with 15,028 sheets.** Every result carries the tier
 that produced it.
+
+
+---
+
+# Re-gating on a corpus that can stress it
+
+_Measured 2026-09-20 on `data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5` — 20,000
+battles whose spreads were drawn from `vgc.belief.prior.sample_spread` rather than `impute_sp`.
+Result: [`data/analysis/speed_belief_spreads.json`](../data/analysis/speed_belief_spreads.json)._
+
+Every gate above was scored against a corpus where Speed took two values and **offensive
+investment took one**: all 20,082 pool Pokémon have exactly 32 points in their attacking stat,
+because that is what `impute_sp` does. `vgc data generate --spreads sampled` replaces the spreads
+and leaves everything else on the sheet alone.
+
+The generator does not try to imitate the meta, and should not. A corpus exists here to measure
+whether a channel can infer a hidden quantity, and the hardest honest test of that is a truth as
+close to uniform as the rules allow — if the spreads matched the human prior, a channel could
+score well by echoing the prior back rather than by reading the battle. So Speed and the live
+offensive stat get flat marginals. What it keeps from reality is the part that is not a guess: a
+stat no move of theirs uses gets nothing, which is how 90.9% of real sheets are built. The
+consequence decides what these runs may be used for — **the teams are not realistic teams**, win
+rates over them mean nothing, and they must not be manifested into WP training.
+
+| | `impute_sp` corpus | sampled corpus |
+| --- | --- | --- |
+| distinct Speed SP in the truth | 2 | **33** |
+| distinct offensive SP in the truth | **1** | **33** |
+| Pokémon checked | 62,581 | 54,904 |
+| **silently wrong** | 9 (0.014%) | **16 (0.029%)** |
+| contradicted (detected, widened back) | 22 (0.035%) | 13 (0.024%) |
+| narrowed at all | 31.3% | 35.3% |
+| mean share of the prior ruled out | 16.8% | **12.9%** |
+| racing pairs per battle | 7.2 | 9.2 |
+
+**The degenerate corpus was flattering the gate in both directions, and the soundness number is
+the one that matters: it doubles, to 0.029%.** The channel is still sound — 16 in 54,904 — but the
+old figure was measured where it could not be stressed. Power moves the other way and for the same
+reason: mean narrowing falls from 16.8% to 12.9%, because ruling out a broad middle looks
+impressive when the truth only ever sits at 0 or 32. What rises is coverage — 35.3% of their
+Pokémon get narrowed at all, against 31.3% — so the channel bites more often and less deeply than
+the first measurement claimed.
+
+## What was baked in, and where it actually was
+
+The constant is a property of `impute_sp`, not of how people build. At higher level a spread is
+chosen to hit a number — enough Speed to outrun a specific threat, enough Attack for a specific
+KO, the rest into bulk — so maxing the attacking stat is one option among many rather than the
+rule, and a corpus that assumes otherwise will keep flattering anything measured on it. Three
+places assumed it; only one was where it would have been guessed.
+
+- **The generator** — fixed, and the regression is guarded by a test that asserts a sampled corpus
+  spans the full range in both offence and Speed.
+- **The web app**, which nobody had looked at. `vgc.web.prior.compose` handed the WP model a
+  Kingambit at 32 Attack / 32 Speed and labelled the whole set `share: 0.211`, presenting an
+  imputed spread with a measured set's confidence. The 21% describes the item, ability, nature and
+  moves — what the sheet actually shows. `share` is now scoped to those and the spread ships as its
+  own `spread` field, so the UI cannot conflate them.
+- **`prior.benchmarks()`**, which measured "what is worth outrunning" against opponents at 0 or 32
+  Speed — the same maxed-or-nothing assumption in the stat this phase happened to be working on.
+  Now a parameter, with the caveat recorded: it is roughly true of a corpus that is 58% unrated at
+  a median rating of 1101, and it is exactly what should stop holding as the level rises.
