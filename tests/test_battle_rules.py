@@ -74,10 +74,13 @@ def test_team_preview_offers_every_ability_the_species_could_have(reg):
 
 
 def test_an_arriving_pokemon_offers_what_it_could_announce(reg):
-    labels = [o.label for o in rules.on_switch_in(reg, "Incineroar")]
-    assert any("Intimidate" in x and "atk -1" in x for x in labels)
-    # Seeing nothing is an option, and it is informative: it rules Intimidate out.
-    assert any("nothing announced" in x and "Blaze" in x for x in labels)
+    out = rules.on_switch_in(reg, "Incineroar")
+    loud = next(o for o in out if "Intimidate" in o.label)
+    assert loud.ability == "intimidate" and "atk -1" in loud.label
+    # Seeing nothing is an option and it is informative: Intimidate would have said so, and with
+    # only Blaze left the silence pins the ability outright rather than merely excluding one.
+    silence = next(o for o in out if o.label.startswith("nothing announced"))
+    assert silence.ability == "blaze" and silence.effects == []
 
 
 def test_a_drop_is_not_a_foregone_conclusion_against_an_unknown(reg):
@@ -87,8 +90,9 @@ def test_a_drop_is_not_a_foregone_conclusion_against_an_unknown(reg):
     assert any("Mirror Armor" in x for x in out)
     reflect = next(o for k, o in out.items() if "Mirror Armor" in k)
     assert reflect.effects == [{"kind": "reflect", "stat": "atk", "stages": -1}]
-    plain = next(o for k, o in out.items() if k == "atk -1")
+    plain = next(o for k, o in out.items() if k.startswith("atk -1, nothing else"))
     assert plain.effects == [{"kind": "boost", "stat": "atk", "stages": -1}]
+    assert "mirrorarmor" in plain.excludes, "the drop landing proves it is not Mirror Armor"
 
     answered = {o.label: o for o in rules.stat_drop_outcomes(reg, "Milotic", "atk", -1)}
     rebound = next(o for k, o in answered.items() if "Competitive" in k)
@@ -117,3 +121,118 @@ def test_an_on_hit_answer_can_depend_on_the_move(reg):
     assert any("Weak Armor" in x for x in dark)
     fire = [o.label for o in rules.on_damaging_hit(reg, "Ceruledge", "Flamethrower")]
     assert any("Flash Fire" in x or "nothing announced" in x for x in fire)
+
+
+# --- applying one, and the chain it starts ------------------------------------------------
+
+def _two_v_two(reg, mine, theirs):
+    from vgc.battle.state import BattleState, Mon
+
+    st = BattleState("p1", reg.dex)
+    for sid, names in (("p1", mine), ("p2", theirs)):
+        st.sides[sid].team_size = len(names)
+        for n in names:
+            st.sides[sid].mons.append(Mon(n))
+    st.begin_turn(1)
+    for slot, _ in enumerate(mine):
+        st.switch_in("p1", slot, st.sides["p1"].mons[slot], mine[slot])
+    st.switch_in("p2", 0, st.sides["p2"].mons[0], theirs[0])
+    return st
+
+
+def test_intimidate_asks_rather_than_assumes(reg):
+    """The drop is not applied when Intimidate fires, because what it *does* depends on an ability
+    nobody has established. Applying it eagerly and again through the answer is the double-count
+    this design exists to prevent."""
+    st = _two_v_two(reg, ["Rillaboom", "Milotic"], ["Incineroar", "Kingambit"])
+    fired = next(o for o in rules.on_switch_in(reg, "Incineroar") if o.ability == "intimidate")
+    pending = rules.apply(st, fired, st.at("p2", 0))
+
+    assert st.at("p2", 0).ability == "intimidate"
+    assert [p.mon.species for p in pending] == ["Rillaboom", "Milotic"]
+    assert st.at("p1", 0).boosts == {} and st.at("p1", 1).boosts == {}, "nothing applied yet"
+
+    for p in pending:
+        options = rules.stat_drop_outcomes(reg, p.mon.species, p.stat, p.stages,
+                                           known=p.mon.ability)
+        rules.apply(st, options[0], p.mon, source=p.source)
+    assert st.at("p1", 0).boosts == {"atk": -1}                      # Rillaboom, nothing special
+    assert st.at("p1", 1).boosts == {"atk": -1, "spa": 2}            # Milotic answers
+    assert st.at("p1", 1).ability == "competitive"
+
+
+def test_mirror_armor_sends_it_back_to_the_source(reg):
+    st = _two_v_two(reg, ["Corviknight", "Rillaboom"], ["Incineroar", "Kingambit"])
+    fired = next(o for o in rules.on_switch_in(reg, "Incineroar") if o.ability == "intimidate")
+    pending = rules.apply(st, fired, st.at("p2", 0))
+    corv = next(p for p in pending if p.mon.species == "Corviknight")
+    reflect = next(o for o in rules.stat_drop_outcomes(reg, "Corviknight", "atk", -1)
+                   if o.ability == "mirrorarmor")
+    rules.apply(st, reflect, corv.mon, source=corv.source)
+    assert corv.mon.boosts == {}, "the drop never lands on the holder"
+    assert st.at("p2", 0).boosts == {"atk": -1}, "it lands on whoever caused it"
+    assert corv.mon.ability == "mirrorarmor"
+
+
+def test_silence_narrows_what_will_be_offered_next_time(reg):
+    """Once an ability has failed to announce itself it should stop being offered, and when that
+    leaves one candidate the app knows the ability without ever being told."""
+    st = _two_v_two(reg, ["Rillaboom", "Milotic"], ["Archaludon", "Kingambit"])
+    them = st.at("p2", 0)
+    assert rules.still_possible(reg, them) == ["stalwart", "stamina", "sturdy"]
+
+    quiet = next(o for o in rules.on_damaging_hit(reg, "Archaludon", "Close Combat")
+                 if o.label.startswith("nothing announced"))
+    rules.apply(st, quiet, them)
+    assert rules.still_possible(reg, them) == ["stalwart", "sturdy"]
+    assert them.ability is None, "two candidates left is not knowing"
+
+
+def test_an_entered_ability_is_recorded_as_revealed_not_assumed(reg):
+    st = _two_v_two(reg, ["Rillaboom", "Milotic"], ["Incineroar", "Kingambit"])
+    fired = next(o for o in rules.on_switch_in(reg, "Incineroar") if o.ability == "intimidate")
+    rules.apply(st, fired, st.at("p2", 0))
+    assert st.at("p2", 0).ability_source == "revealed"
+
+
+# --- items ---------------------------------------------------------------------------------
+
+def test_the_seed_table_matches_the_pinned_build(reg):
+    """Derived, like every other table here. The boost is a separate `boosts:` field rather than
+    an inline call, which is why reading it off the trigger body finds nothing."""
+    src = (paths.SHOWDOWN / "data" / "items.ts").read_text()
+    found = {}
+    for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if "onTerrainChange" not in body or name not in reg.dex.items:
+            continue
+        terrain = re.search(r"isTerrain\('(\w+)'\)", body).group(1)
+        boost = re.search(r"boosts: \{\s*(\w+): (-?\d)", body)
+        found[terrain] = (name, boost.group(1), int(boost.group(2)))
+    assert found == rules.SEEDS
+
+
+def test_a_terrain_asks_one_question_however_large_the_item_space_is(reg):
+    """An item's hypothesis space is the whole legal list, not the two or three an ability has —
+    so the trigger is keyed the other way round. Nothing asks *which item*; it asks whether the
+    one item that could respond to this terrain fired."""
+    out = rules.on_terrain_set(reg, "grassyterrain")
+    assert len(out) == 2
+    fired = out[0]
+    assert fired.item == "grassyseed" and fired.consumed
+    assert fired.effects == [{"kind": "boost", "stat": "def", "stages": 1}]
+    # Nothing to ask when the terrain has no seed, or when you already know it holds something else.
+    assert [o.label for o in rules.on_terrain_set(reg, "grassyterrain", held="Assault Vest")] \
+        == ["nothing announced"]
+
+
+def test_a_consumed_item_is_known_and_known_to_be_gone(reg):
+    """Both halves matter. A Sitrus Berry already eaten cannot heal again, and the damage channel
+    reads `item` — so leaving a spent seed in place would have it applying a boost forever."""
+    st = _two_v_two(reg, ["Rillaboom", "Milotic"], ["Incineroar", "Kingambit"])
+    them = st.at("p2", 0)
+    assert them.item is None
+    rules.apply(st, rules.on_terrain_set(reg, "grassyterrain")[0], them)
+    assert them.boosts == {"def": 1}
+    assert them.item == "" and them.lost_item == "grassyseed"
+    assert them.item_source == "revealed"

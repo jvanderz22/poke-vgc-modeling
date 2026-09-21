@@ -133,7 +133,7 @@ class DamageEvent:
 class Mon:
     __slots__ = ("species", "forme", "nickname", "state", "position", "hp", "hp_max", "status", "boosts",
                  "volatiles", "item", "item_source", "lost_item", "ability", "ability_source", "moves",
-                 "moves_used", "nature", "stats", "mega", "gender")
+                 "moves_used", "nature", "stats", "mega", "gender", "ability_ruled_out")
 
     def __init__(self, species: str):
         self.species = species  # as shown at team preview
@@ -151,6 +151,10 @@ class Mon:
         self.lost_item: str | None = None  # an item it had and lost (consumed, knocked off…)
         self.ability: str | None = None
         self.ability_source: str | None = None
+        # Abilities this Pokémon has been *shown* not to have, by something that would have fired
+        # and did not. Deliberately absent from `to_json`, for the same reason the evidence logs
+        # are: `observation()` is fingerprinted at VERSION 3 across 433,052 frozen rows.
+        self.ability_ruled_out: set[str] = set()
         self.moves: list[str] = []  # known moveset (sheet / own)
         self.moves_used: list[str] = []  # revealed by use, in order of first use
         self.nature: str | None = None
@@ -354,6 +358,15 @@ class BattleState:
     def reveal(self, m: "Mon", kind: str, value: str) -> None:
         """Public alias for a first sighting — what a UI calls when an item or ability shows."""
         self._reveal(m, kind, value)
+
+    def consume_item(self, m: "Mon", item: str) -> None:
+        """It used it and it is gone. Both halves matter: what it held is now known, and it is
+        known not to be holding it any more — a Sitrus Berry already eaten cannot heal again, and
+        `lost_item` is what tells the damage channel the difference."""
+        m.lost_item = item
+        m.item = ""
+        if m.item_source is None:
+            m.item_source = "revealed"
 
     # --- identity -----------------------------------------------------------------------
 

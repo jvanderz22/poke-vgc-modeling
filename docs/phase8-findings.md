@@ -655,3 +655,37 @@ subset of stats, and K particles drawn from one dynamic program rather than by r
 tight belief costs no more to sample than a wide one, which is what Phase 9's determinization needs
 of it. Blocks rather than six independent stats because a bulk observation constrains HP and a
 defensive stat *jointly*, and the projections are worth about a ninth of the region.
+
+---
+
+# Phase 8, a fourth channel found by designing the UI — switch-in order
+
+_Measured 2026-09-21 on 3,000 battles of the sampled-spread corpus._
+
+Designing entry for a cartridge turned up an evidence source none of the three channels reads.
+**Abilities that announce themselves on switch-in fire in Speed order**, so a turn where two of
+them go off is a Speed comparison — and it happens on turn 1, before a single move has been used,
+which is precisely when the belief is widest and advice is least informed.
+
+| | pairs | in Speed order |
+| --- | --- | --- |
+| consecutive `-ability` lines, naive | 437 | 91.3% |
+| **switch-in announcements only** | **453** | **100.00%** |
+
+The gap between the two rows is the finding. Reading every `-ability` line as a race is wrong 8.7%
+of the time, and the counterexamples are all the same shape: Incineroar at 86 Speed announcing
+before Kingambit at 97. That is not a race — it is **Intimidate, then Defiant answering it**. A
+trigger and its response are adjacent in the log and causally ordered, so comparing them measures
+the causality and calls it Speed.
+
+Filtered to abilities that actually fire on arrival — `onStart` in the pinned build, the same
+derivation the entry rules use — it is 453 of 453 with no counterexample.
+
+Two things are *not* established and are recorded rather than assumed:
+
+- **Trick Room.** `Pokemon.getActionSpeed()` inverts Speed under it and `eachEvent` sorts on
+  `pokemon.speed`, so the order should invert — but this corpus produced **zero** Trick Room pairs
+  to check it against, so the inversion is read off the source and unmeasured. The existing speed
+  channel already folds Trick Room in as a sign flip, and that one *was* measured.
+- Ability priority tiers. `onSwitchInPriority` orders some abilities ahead of Speed entirely; none
+  appeared here, which is not the same as none existing.

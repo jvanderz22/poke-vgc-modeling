@@ -59,15 +59,55 @@ REFLECTS_DROP = {"mirrorarmor"}
 
 @dataclass
 class Outcome:
-    """One thing that could happen next, and what it would tell you if it did."""
+    """One thing that could happen next, and what it would tell you if it did.
+
+    `ability` is what picking this outcome *pins*, and `excludes` is what it rules out — the
+    second matters as much as the first. Nothing happening when Incineroar arrives is not an
+    absence of information: Intimidate would have announced itself, so silence leaves Blaze.
+    """
 
     label: str                                   # what the cartridge would print
     effects: list[dict[str, Any]] = field(default_factory=list)
-    implies: dict[tuple[str, int], str] = field(default_factory=dict)   # slot → ability id
+    ability: str | None = None                   # picking this proves the ability is this
+    excludes: frozenset[str] = frozenset()       # ...or that it is none of these
+    item: str | None = None                      # or proves it was holding this
+    consumed: bool = False                       # ...and has now used it up
 
     def to_json(self) -> dict[str, Any]:
-        return {"label": self.label, "effects": self.effects,
-                "implies": {f"{s}:{i}": a for (s, i), a in self.implies.items()}}
+        return {"label": self.label, "effects": self.effects, "ability": self.ability,
+                "excludes": sorted(self.excludes), "item": self.item, "consumed": self.consumed}
+
+
+def _name(reg: Regulation, ability: str) -> str:
+    return (reg.dex.abilities.get(ability) or {}).get("name", ability)
+
+
+def _collect(reg: Regulation, species: str, known: str | None,
+             describe) -> list[Outcome]:
+    """Build one outcome per ability that would announce, plus the silence that rules them out.
+
+    `describe(ability)` returns `(what the cartridge prints, effects)` or None when that ability
+    says nothing here.
+    """
+    loud: list[Outcome] = []
+    quiet: list[str] = []
+    for ability in candidate_abilities(reg, species, known):
+        got = describe(ability)
+        if got is None:
+            quiet.append(ability)
+        else:
+            text, effects = got
+            loud.append(Outcome(f"{_name(reg, ability)} — {text}", effects, ability=ability))
+    if quiet:
+        names = " or ".join(_name(reg, a) for a in quiet)
+        if not loud:
+            loud.append(Outcome("nothing announced"))
+        elif len(quiet) == 1:
+            loud.append(Outcome(f"nothing announced — so {names}", ability=quiet[0]))
+        else:
+            loud.append(Outcome(f"nothing announced — so {names}",
+                                excludes=frozenset(o.ability for o in loud if o.ability)))
+    return loud
 
 
 def candidate_abilities(reg: Regulation, species: str, known: str | None = None) -> list[str]:
@@ -87,63 +127,94 @@ def opposing_slots(sid: str) -> str:
 
 
 def on_switch_in(reg: Regulation, species: str, known: str | None = None) -> list[Outcome]:
-    """What could fire when this Pokémon arrives — one outcome per ability still possible.
+    """What could fire when this Pokémon arrives — one outcome per ability still possible."""
 
-    Includes "nothing visible", because most abilities announce nothing on arrival and seeing
-    nothing is itself informative: it rules out every ability that would have.
-    """
-    quiet = []
-    out: list[Outcome] = []
-    for ability in candidate_abilities(reg, species, known):
-        name = (reg.dex.abilities.get(ability) or {}).get("name", ability)
+    def describe(ability: str):
         if ability in WEATHER_ON_START:
-            out.append(Outcome(f"{name} — weather turns to {WEATHER_ON_START[ability]}",
-                               [{"kind": "weather", "value": WEATHER_ON_START[ability]}]))
-        elif ability in TERRAIN_ON_START:
-            out.append(Outcome(f"{name} — {TERRAIN_ON_START[ability]} covers the field",
-                               [{"kind": "terrain", "value": TERRAIN_ON_START[ability]}]))
-        elif ability in DROP_ON_START:
+            return (f"weather turns to {WEATHER_ON_START[ability]}",
+                    [{"kind": "weather", "value": WEATHER_ON_START[ability]}])
+        if ability in TERRAIN_ON_START:
+            return (f"{TERRAIN_ON_START[ability]} covers the field",
+                    [{"kind": "terrain", "value": TERRAIN_ON_START[ability]}])
+        if ability in DROP_ON_START:
             stat, stages = DROP_ON_START[ability]
-            out.append(Outcome(f"{name} — {stat} {stages:+d} on both opposing Pokémon",
-                               [{"kind": "drop_opposing", "stat": stat, "stages": stages}]))
-        else:
-            quiet.append(name)
-    if quiet:
-        out.append(Outcome("nothing announced" + (f" (so not {', '.join(sorted(quiet))})"
-                                                  if len(quiet) < 3 else "")))
-    return out
+            return (f"{stat} {stages:+d} on both opposing Pokémon",
+                    [{"kind": "drop_opposing", "stat": stat, "stages": stages}])
+        return None
+
+    return _collect(reg, species, known, describe)
 
 
 def stat_drop_outcomes(reg: Regulation, species: str, stat: str, stages: int,
                        known: str | None = None) -> list[Outcome]:
     """What a drop aimed at this Pokémon could do, given what its ability might be.
 
-    This is the second half of the Intimidate chain and the reason it is worth deriving rather
-    than assuming: against an unknown Pokémon the drop is not a foregone conclusion. Twelve legal
-    abilities refuse it, one of them throws it back, and two answer it with +2 — and which of
-    those you see pins the ability on the spot.
+    The second half of the Intimidate chain, and the reason it is worth deriving rather than
+    assuming: against an unknown Pokémon the drop is not a foregone conclusion. Twelve legal
+    abilities refuse it, one throws it back, and two answer it with +2 — and which of those you
+    see pins the ability on the spot.
     """
-    out: list[Outcome] = []
-    plain = []
-    for ability in candidate_abilities(reg, species, known):
-        name = (reg.dex.abilities.get(ability) or {}).get("name", ability)
-        guarded = BLOCKS_DROP.get(ability, "missing")
+
+    def describe(ability: str):
         if ability in REFLECTS_DROP:
-            out.append(Outcome(f"{name} — the drop is sent back to whoever caused it",
-                               [{"kind": "reflect", "stat": stat, "stages": stages}]))
-        elif guarded is None or guarded == stat:
-            out.append(Outcome(f"{name} — the drop is refused", []))
-        elif ability in REBOUND:
+            return ("the drop is sent back to whoever caused it",
+                    [{"kind": "reflect", "stat": stat, "stages": stages}])
+        guarded = BLOCKS_DROP.get(ability, "missing")
+        if guarded is None or guarded == stat:
+            return ("the drop is refused", [])
+        if ability in REBOUND:
             rstat, rstages = REBOUND[ability]
-            out.append(Outcome(f"{name} — {stat} {stages:+d}, then {rstat} {rstages:+d}",
-                               [{"kind": "boost", "stat": stat, "stages": stages},
-                                {"kind": "boost", "stat": rstat, "stages": rstages}]))
-        else:
-            plain.append(name)
-    if plain:
-        out.append(Outcome(f"{stat} {stages:+d}",
-                           [{"kind": "boost", "stat": stat, "stages": stages}]))
+            return (f"{stat} {stages:+d}, then {rstat} {rstages:+d}",
+                    [{"kind": "boost", "stat": stat, "stages": stages},
+                     {"kind": "boost", "stat": rstat, "stages": rstages}])
+        return None
+
+    out = _collect(reg, species, known, describe)
+    # The plain case is not "nothing announced" — the drop lands and the cartridge says so — so it
+    # is relabelled rather than left reading as silence.
+    for o in out:
+        if o.label.startswith("nothing announced"):
+            rest = o.label.removeprefix("nothing announced")
+            o.label = f"{stat} {stages:+d}, nothing else{rest}"
+            o.effects = [{"kind": "boost", "stat": stat, "stages": stages}]
     return out
+
+
+# --- items that announce themselves ------------------------------------------------------
+#
+# An item firing is worth as much as an ability firing and sometimes more: the damage channel
+# needs the attacker's item and the bulk channel needs the defender's, and at team preview
+# neither is known. The hypothesis space for an item is the whole legal list rather than the two
+# or three an ability has — so these are keyed the other way round. Nothing asks *which item is
+# it*; the trigger asks *did the one item that could respond to this fire*, which is one question
+# with two answers however large the space is.
+#
+# Reg M-C narrows it further than expected: Clear Amulet, Covert Cloak, Weakness Policy, Room
+# Service and Booster Energy are all illegal here, so the terrain seeds and the contact items are
+# most of what is left.
+
+SEEDS = {"grassyterrain": ("grassyseed", "def", 1), "electricterrain": ("electricseed", "def", 1),
+         "mistyterrain": ("mistyseed", "spd", 1), "psychicterrain": ("psychicseed", "spd", 1)}
+
+
+def on_terrain_set(reg: Regulation, terrain: str, held: str | None = None) -> list[Outcome]:
+    """What a Pokémon could announce when this terrain comes up — the seeds, and nothing else.
+
+    A seed fires on the terrain *and* on arriving into it, and is consumed either way, so the
+    same two options serve a switch-in under standing terrain.
+    """
+    entry = SEEDS.get(to_id(terrain))
+    if entry is None:
+        return [Outcome("nothing announced")]
+    item, stat, stages = entry
+    if held is not None and to_id(held) != item:
+        return [Outcome("nothing announced")]        # you already know it holds something else
+    name = (reg.dex.items.get(item) or {}).get("name", item)
+    return [
+        Outcome(f"{name} — {stat} {stages:+d}, and it is used up",
+                [{"kind": "boost", "stat": stat, "stages": stages}], item=item, consumed=True),
+        Outcome("nothing announced"),
+    ]
 
 
 # --- and what fires when a Pokémon is hit ------------------------------------------------
@@ -165,24 +236,17 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
                     known: str | None = None) -> list[Outcome]:
     """What the Pokémon you just hit could announce, one outcome per ability still possible.
 
-    The same shape as the other two triggers, and the same payoff: Stamina announcing itself is
-    both a Defence boost to apply and proof of which ability that Pokémon has — which matters
-    twice over, because a Defence that just went up is a Defence the bulk channel has to know
-    about before it reads the next hit backwards.
+    Stamina matters twice over: it is a reveal, and it moves the Defence the bulk channel is
+    about to read the next hit against.
     """
-    entry = reg.dex.get_move(move) or {}
-    mtype = entry.get("type")
-    out: list[Outcome] = []
-    quiet = []
-    for ability in candidate_abilities(reg, species, known):
-        name = (reg.dex.abilities.get(ability) or {}).get("name", ability)
+    mtype = (reg.dex.get_move(move) or {}).get("type")
+
+    def describe(ability: str):
         effects: list[dict[str, Any]] = []
-        if ability in HIT_BOOST_SELF:
-            stat, stages = HIT_BOOST_SELF[ability]
-            effects.append({"kind": "boost", "stat": stat, "stages": stages})
-        if ability in HIT_DROP_SELF:
-            stat, stages = HIT_DROP_SELF[ability]
-            effects.append({"kind": "boost", "stat": stat, "stages": stages})
+        for table in (HIT_BOOST_SELF, HIT_DROP_SELF):
+            if ability in table:
+                stat, stages = table[ability]
+                effects.append({"kind": "boost", "stat": stat, "stages": stages})
         if ability in HIT_BOOST_SELF_IF_TYPE:
             want, stat, stages = HIT_BOOST_SELF_IF_TYPE[ability]
             want = (want,) if isinstance(want, str) else want
@@ -196,17 +260,14 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
         if ability in HIT_TERRAIN:
             effects.append({"kind": "terrain", "value": HIT_TERRAIN[ability]})
         if effects:
-            out.append(Outcome(f"{name} — " + ", ".join(_describe(e) for e in effects), effects))
-        elif ability in ANNOUNCES_ON_HIT:
+            return (", ".join(_describe(e) for e in effects), effects)
+        if ability in ANNOUNCES_ON_HIT:
             # It announces and does something this model does not carry (a status, recoil, an
             # ability swap). Worth offering, because picking it still pins the ability.
-            out.append(Outcome(f"{name} — announced, no stat or field change modelled", []))
-        else:
-            quiet.append(name)
-    if quiet:
-        out.append(Outcome("nothing announced" + (f" (so not {', '.join(sorted(quiet))})"
-                                                  if len(quiet) < 3 else "")))
-    return out
+            return ("announced, no stat or field change modelled", [])
+        return None
+
+    return _collect(reg, species, known, describe)
 
 
 def _describe(effect: dict[str, Any]) -> str:
@@ -223,3 +284,70 @@ def _describe(effect: dict[str, Any]) -> str:
 ANNOUNCES_ON_HIT = {"aftermath", "cursedbody", "cutecharm", "effectspore", "electromorphosis",
                     "flamebody", "gulpmissile", "illusion", "innardsout", "mummy", "poisonpoint",
                     "roughskin", "spicyspray", "static", "toxicdebris", "wanderingspirit"}
+
+
+# --- applying one -------------------------------------------------------------------------
+
+@dataclass
+class Pending:
+    """A decision this outcome created — the next pop-up, not a thing already done."""
+
+    mon: Any
+    stat: str
+    stages: int
+    source: Any = None
+
+
+def apply(state: Any, outcome: Outcome, on: Any, source: Any = None) -> list[Pending]:
+    """Run an outcome's effects, record what picking it proved, and return what to ask next.
+
+    `on` is the Pokémon the outcome is about — the one arriving, the one the drop is aimed at,
+    the one that was hit — and `source` is the other party, the Intimidate user or the attacker.
+    Both the effect and the reveal come from the same call, because they came from the same tap.
+
+    Intimidate does **not** apply its own drop here, and that is the whole shape of the chain: it
+    aims a drop at each opposing Pokémon, and what that drop *does* depends on an ability nobody
+    has established yet. So it comes back as a `Pending` — one pop-up per target — and applying
+    it twice, once eagerly and once through the answer, is the mistake this prevents.
+
+    **Only an entry adapter should call this.** A Showdown log already reports every one of these
+    as its own line, so deriving them from a log applies them twice.
+    """
+    pending: list[Pending] = []
+    for effect in outcome.effects:
+        kind = effect["kind"]
+        if kind == "boost":
+            state.apply_boost(on, effect["stat"], effect["stages"])
+        elif kind == "boost_attacker" and source is not None:
+            state.apply_boost(source, effect["stat"], effect["stages"])
+        elif kind == "reflect" and source is not None:
+            state.apply_boost(source, effect["stat"], effect["stages"])
+        elif kind == "drop_opposing":
+            them = opposing_slots(state._side_of(on))
+            pending += [Pending(mon, effect["stat"], effect["stages"], source=on)
+                        for mon in state.sides[them].mons if mon.state == "active"]
+        elif kind == "weather":
+            state.set_weather(effect["value"])
+        elif kind == "terrain":
+            state.set_terrain(effect["value"])
+    if outcome.ability:
+        state.reveal(on, "ability", outcome.ability)
+    on.ability_ruled_out |= set(outcome.excludes)
+    if outcome.item:
+        if outcome.consumed:
+            state.consume_item(on, outcome.item)
+        else:
+            state.reveal(on, "item", outcome.item)
+    return pending
+
+
+def still_possible(reg: Regulation, mon: Any) -> list[str]:
+    """What this Pokémon's ability could still be, after everything that has been ruled out.
+
+    The narrowing half of the pop-up: once Intimidate has failed to announce itself, it should
+    not be offered again, and if that leaves one candidate the app knows the ability without
+    ever having been told.
+    """
+    if mon.ability:
+        return [to_id(mon.ability)]
+    return [a for a in candidate_abilities(reg, mon.species) if a not in mon.ability_ruled_out]
