@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import gzip
 import json
+import statistics
 import time
 import urllib.parse
 import urllib.request
+from collections import Counter
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterable, Iterator
 
 from vgc import paths
 from vgc.regulation import Dex, Regulation, to_id
@@ -44,6 +46,87 @@ def search(fmt: str, pages: int = 1, before: int | None = None, delay: float = 0
             return
         before = page[49]["uploadtime"]
         time.sleep(delay)
+
+
+def search_user(user: str, fmt: str | None = None, pages: int = 1, delay: float = 0.5) -> Iterator[dict]:
+    """Newest-first replays for one player, optionally in one format.
+
+    This is the endpoint that makes a skill-filtered corpus possible. A replay's own `rating` is
+    missing 58% of the time, so filtering on it throws away most of a strong player's games —
+    including, in the sample that motivated this, a 1412 and an unrated game from the same player
+    on the same day. Their identity is the dense signal; the rating on any one battle is not.
+    """
+    before = None
+    for _ in range(pages):
+        q = {"user": to_id(user)} | ({"format": fmt} if fmt else {}) | (
+            {"before": str(before)} if before else {})
+        page = _get_json(f"{BASE}/search.json?{urllib.parse.urlencode(q)}")
+        if not isinstance(page, list) or not page:
+            return
+        yield from page[:50]
+        if len(page) <= 50:
+            return
+        before = page[49]["uploadtime"]
+        time.sleep(delay)
+
+
+def players_in(replay: dict) -> list[str]:
+    """The two player ids, from the metadata rather than the log (cheaper, and always present)."""
+    return [to_id(p) for p in replay.get("players", []) if p]
+
+
+def player_skill(fmts: Iterable[str]) -> dict[str, dict[str, Any]]:
+    """Per-player skill, as the **median** of the ratings their battles carried.
+
+    Not the maximum, which was the first thing tried here and is badly biased by how much of a
+    player we happen to hold: across this cache the mean *best* rating climbs 1125 → 1162 → 1205 →
+    1282 as the number of cached rated games goes 1 → 2-3 → 4-9 → 10+, while the mean *median*
+    moves 1125 → 1130 → 1135 → 1166. Almost all of that first curve is sample size. A filter built
+    on the maximum selects heavy uploaders and calls them strong.
+
+    `rating` is None for a player whose games were all unrated — that is not the same as being bad,
+    so it is not folded into a number.
+    """
+    seen: dict[str, list[int]] = {}
+    games: Counter = Counter()
+    for fmt in fmts:
+        for rep in cached(fmt):
+            rating = rep.get("rating") or None
+            for pid in players_in(rep):
+                games[pid] += 1
+                if rating:
+                    seen.setdefault(pid, []).append(rating)
+    return {pid: {"player": pid, "games": n,
+                  "rated_games": len(seen.get(pid, [])),
+                  "rating": statistics.median(seen[pid]) if seen.get(pid) else None}
+            for pid, n in games.items()}
+
+
+def skill_floor(skill: dict[str, dict[str, Any]], percentile: float) -> float | None:
+    """The rating at `percentile` of the *observed player population*.
+
+    A percentile rather than a fixed number, because 1100 means one thing on this ladder and
+    something else on the next one — and the point of the filter is "not the bottom half of
+    whoever is here", which is a statement about the population and not about Elo.
+    """
+    vals = sorted(e["rating"] for e in skill.values() if e["rating"] is not None)
+    if not vals:
+        return None
+    return vals[min(int(len(vals) * percentile / 100), len(vals) - 1)]
+
+
+def qualified(skill: dict[str, dict[str, Any]], percentile: float = 50.0,
+              min_rated: int = 1) -> set[str]:
+    """Players at or above `percentile`, with at least `min_rated` rated games to say so.
+
+    A player with no rated game at all cannot be placed and is excluded: keeping them would be
+    assuming they are average, which is the assumption the filter exists to avoid making.
+    """
+    floor = skill_floor(skill, percentile)
+    if floor is None:
+        return set()
+    return {p for p, e in skill.items()
+            if e["rating"] is not None and e["rating"] >= floor and e["rated_games"] >= min_rated}
 
 
 def cache_path(replay_id: str, fmt: str) -> Path:

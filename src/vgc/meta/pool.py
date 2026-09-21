@@ -37,11 +37,26 @@ def formats_for(reg: Regulation) -> list[str]:
     return [reg.showdown_format + "bo3", reg.showdown_format]
 
 
-def build_pool(reg: Regulation) -> list[PoolTeam]:
+def build_pool(reg: Regulation, skill_percentile: float | None = None,
+               min_rated_games: int = 1) -> list[PoolTeam]:
+    """Every distinct legal team in the cache, optionally only from players worth learning from.
+
+    `skill_percentile` is applied per sheet, by whoever brought it: a team belongs to one player,
+    so a strong player's team counts even when their opponent is weak. See
+    `vgc.meta.replays.player_skill` for why the statistic is a median and not a maximum.
+    """
+    keep = None
+    if skill_percentile is not None:
+        skill = replays.player_skill(formats_for(reg))
+        keep = replays.qualified(skill, skill_percentile, min_rated_games)
+
     by_key: dict[str, PoolTeam] = {}
     for fmt in formats_for(reg):
         for rep in replays.cached(fmt):
+            names = {f"p{i + 1}": pid for i, pid in enumerate(replays.players_in(rep))}
             for _side, team in replays.teams_from_replay(rep, reg):
+                if keep is not None and names.get(_side) not in keep:
+                    continue
                 key = replays.team_key(team)
                 entry = by_key.get(key)
                 if entry is None:

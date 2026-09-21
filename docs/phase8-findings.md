@@ -281,3 +281,87 @@ places assumed it; only one was where it would have been guessed.
   Speed — the same maxed-or-nothing assumption in the stat this phase happened to be working on.
   Now a parameter, with the caveat recorded: it is roughly true of a corpus that is 58% unrated at
   a median rating of 1101, and it is exactly what should stop holding as the level rises.
+
+
+---
+
+# Filtering the corpus by who played, not by what the battle was rated
+
+_Measured 2026-09-20 on 10,194 cached replays, 4,261 players._
+
+The goal is modest and worth stating plainly: not a corpus of top players, which this ladder may
+not contain, but one that is **not the bottom half of whoever is here**.
+
+## Two things had to be fixed before that was possible
+
+**The battle's rating is the wrong field.** 58% of cached battles carry no rating at all, so a
+per-battle filter discards most of what any given player did. Skill belongs to the player: at a
+1300 floor the cache held 211 battles *rated* 1300 and 2,039 battles *played by* someone who had
+been there — an order of magnitude, for the same skill floor. One player's own replays included a
+1412 and an unrated game on the same day.
+
+**The maximum is a biased statistic, and it was the first one tried here.** A player's best
+observed rating rises with how many of their games we happen to hold, because a maximum over more
+draws is larger:
+
+| cached rated games | players | mean *best* | mean *median* |
+| --- | --- | --- | --- |
+| 1 | 2,267 | 1125 | 1125 |
+| 2–3 | 815 | 1162 | 1130 |
+| 4–9 | 403 | 1205 | 1135 |
+| 10+ | 134 | **1282** | 1166 |
+
+Almost all of that first column is sample size. A filter built on it selects heavy uploaders and
+calls them strong — so `player_skill` reports the **median** of the ratings a player's battles
+carried, and a player with no rated game is `None` rather than a number, because unrated is not the
+same as bad.
+
+## The filter is a percentile, and it is applied per sheet
+
+A percentile of the observed player population, not a rating: 1100 means one thing on this ladder
+and something else on the next one, and "not the bottom half" is a statement about the population.
+It also survives a regulation rotation, which a hardcoded number does not.
+
+Applied **per sheet, by whoever brought it**. A sheet belongs to one player, so a strong player's
+team still counts when their opponent is weak. A *battle* corpus is the opposite case and needs
+both sides to qualify, because a trajectory is the product of both — that distinction is in the
+docstrings so the next use does not quietly pick the wrong one.
+
+    vgc meta players                          who is here, and the yield at each percentile
+    vgc meta usage --skill-percentile 50      usage over the top half
+    vgc meta pool  --skill-percentile 50      a team pool from the top half
+    vgc meta scrape --players 50              fetch every replay of the top half, then snowball
+
+| percentile | rating floor | players | their sheets |
+| --- | --- | --- | --- |
+| 0 | 1000 | 3,701 | 18,977 |
+| 25 | 1050 | 2,801 | 16,068 |
+| **50** | **1104** | **1,857** | **10,892** |
+| 75 | 1187 | 927 | 5,044 |
+| 90 | 1291 | 377 | 1,252 |
+
+## What the top half actually plays
+
+Cluster bootstrap over players, since one player's sheets are not independent:
+
+| species | all | top half | delta | 95% CI |
+| --- | --- | --- | --- | --- |
+| Salamence | 32.7% | 29.4% | −3.3% | [−5.8%, −0.9%] |
+| Golisopod | 11.2% | 9.1% | −2.1% | [−3.6%, −0.7%] |
+| Charizard | 12.6% | 14.4% | +1.8% | [+0.2%, +3.8%] |
+| Kingambit | 25.5% | 27.9% | +2.4% | [−0.2%, +4.8%] |
+| Garchomp | 15.4% | 17.1% | +1.7% | [−0.0%, +3.8%] |
+
+Three of five clear zero. **The shift is real and small** — a few points on a handful of species,
+and the structural traits barely move at all (Trick Room 34.2% → 33.5%, Tailwind 58.6% → 58.0%,
+redirection 43.1% → 45.0%). The top half is playing a recognizably similar game, which is what a
+compressed ladder should look like.
+
+## The ceiling, which bears on a deferral
+
+Across 4,261 players the 90th percentile sits at 1291 and the highest single battle rating ever
+observed is 1578. There is no 1800 tail here to filter down to. VGC-Bench's behaviour cloning
+worked on 700,000 logs from genuinely high-rated players, and PLAN-v2 defers BC until "a
+higher-rated corpus" exists; on this evidence that corpus may not be buildable for Reg M-C before
+the 2026-12-02 rotation, and the deferral is better read as *waiting on a ladder* than as waiting
+on scraping effort. What **is** available — and is now built — is the top half.

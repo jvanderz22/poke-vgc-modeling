@@ -230,6 +230,75 @@ def cmd_meta_scrape(args: argparse.Namespace) -> int:
             replays.fetch(meta["id"], fmt)
             new += 1
         print(f"{fmt}: {new} new, {cached} already cached")
+
+    if args.players:
+        _scrape_by_player(reg, fmts, args)
+    return 0
+
+
+def _scrape_by_player(reg, fmts: list[str], args: argparse.Namespace) -> None:
+    """Fetch every cached replay of the players who have reached `--players`, then repeat.
+
+    Skill is a property of the player, not of the battle: 58% of battles carry no rating at all,
+    so a per-battle filter discards most of what a strong player did. Going by identity is worth
+    an order of magnitude — at a 1300 floor the cache holds 211 rated-at-1300 battles but 2,039
+    battles played *by* someone who has been there.
+
+    Each round re-reads the cache, so opponents met in a newly fetched high-rated game become
+    seeds for the next one. That snowball is the only way the set grows: nothing here can ask the
+    ladder who the good players are.
+    """
+    from vgc.meta import replays
+
+    seen_players: set[str] = set()
+    for rnd in range(1, args.rounds + 1):
+        skill = replays.player_skill(fmts)
+        floor = replays.skill_floor(skill, args.players)
+        targets = sorted(replays.qualified(skill, args.players) - seen_players)
+        if not targets:
+            print(f"round {rnd}: no new players at the {args.players:g}th percentile")
+            return
+        print(f"round {rnd}: {len(targets)} new players at the {args.players:g}th "
+              f"percentile (rating {floor:.0f}+)")
+        new = cached = 0
+        for pid in targets:
+            seen_players.add(pid)
+            for fmt in fmts:
+                for meta in replays.search_user(pid, fmt, pages=args.player_pages):
+                    if replays.cache_path(meta["id"], fmt).exists():
+                        cached += 1
+                        continue
+                    try:
+                        replays.fetch(meta["id"], fmt)
+                        new += 1
+                    except Exception as exc:          # a deleted or private replay
+                        print(f"  {meta['id']}: {exc}", file=sys.stderr)
+        print(f"  {new} new, {cached} already cached")
+
+
+def cmd_meta_players(args: argparse.Namespace) -> int:
+    from vgc.meta import pool, replays
+
+    reg = _reg(args)
+    skill = replays.player_skill(pool.formats_for(reg))
+    placeable = [e for e in skill.values() if e["rating"] is not None]
+    if args.json:
+        print(json.dumps(sorted(skill.values(), key=lambda e: -(e["rating"] or 0)), indent=1))
+        return 0
+    games = sum(e["games"] for e in skill.values()) // 2
+    print(f"{len(skill)} players over {games} replays; {len(placeable)} have a rated game and can "
+          f"be placed at all")
+    print(f"\n{'percentile':>11} {'rating':>7} {'players':>8} {'their sheets':>13}")
+    for q in args.percentiles:
+        floor = replays.skill_floor(skill, q)
+        who = replays.qualified(skill, q, args.min_rated)
+        theirs = sum(e["games"] for pid, e in skill.items() if pid in who)
+        print(f"{q:>10.0f}% {floor or 0:>7.0f} {len(who):>8} {theirs:>13}")
+    print("\nskill is the *median* of the ratings a player's battles carried, not the maximum.")
+    print("The maximum rises with how much of someone we happen to have cached — mean best goes")
+    print("1125 → 1282 from one rated game to ten or more, while mean median goes 1125 → 1166 —")
+    print("so a filter built on it selects heavy uploaders and calls them strong.")
+    print("A percentile, not a rating, because 1100 means something else on the next ladder.")
     return 0
 
 
@@ -237,7 +306,7 @@ def cmd_meta_pool(args: argparse.Namespace) -> int:
     from vgc.meta import pool
 
     reg = _reg(args)
-    teams = pool.build_pool(reg)
+    teams = pool.build_pool(reg, args.skill_percentile, args.min_rated)
     path = pool.save_pool(reg, teams, tag=args.tag)
     print(f"{len(teams)} distinct legal teams ({sum(t.count for t in teams)} sheets) → {path}")
     return 0
@@ -255,7 +324,8 @@ def cmd_meta_usage(args: argparse.Namespace) -> int:
         report = usage.load(reg)
         path = None
     else:
-        report = usage.build(reg, min_rating=args.min_rating)
+        report = usage.build(reg, min_rating=args.min_rating,
+                             skill_percentile=args.skill_percentile, min_rated_games=args.min_rated)
         path = usage.save(reg, report)
 
     if args.json:
@@ -860,14 +930,33 @@ def build_parser() -> argparse.ArgumentParser:
     p = with_reg(meta.add_parser("scrape", help="cache recent public replays (gzipped, data/replays/)"))
     p.add_argument("--pages", type=int, default=4, help="50 replays per page, newest first")
     p.add_argument("--format", choices=["bo3", "bo1", "both"], default="bo3", help="Bo3 games always carry team sheets")
+    p.add_argument("--players", type=float, metavar="PERCENTILE",
+                   help="after the sweep, fetch every replay of players at or above this "
+                        "percentile of the observed population — skill belongs to the player, not "
+                        "to one battle, and 58%% of battles carry no rating at all")
+    p.add_argument("--player-pages", type=int, default=4, help="pages per player (50 replays each)")
+    p.add_argument("--rounds", type=int, default=2,
+                   help="repeat, so opponents found in new high-rated games seed the next round")
     p.set_defaults(func=cmd_meta_scrape)
+    p = with_reg(meta.add_parser("players", help="who is in the cache, and how strong they got"))
+    p.add_argument("--percentiles", type=float, nargs="+", default=[0, 25, 50, 75, 90])
+    p.add_argument("--min-rated", type=int, default=1, help="rated games needed to be placed")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_meta_players)
     p = with_reg(meta.add_parser("pool", help="build a dated team pool from cached replays' team sheets"))
     p.add_argument("--tag", default="", help="suffix, to keep an earlier pool of the same date")
+    p.add_argument("--skill-percentile", type=float, metavar="P",
+                   help="only sheets brought by a player at or above the Pth percentile")
+    p.add_argument("--min-rated", type=int, default=1)
     p.set_defaults(func=cmd_meta_pool)
     p = with_reg(meta.add_parser("usage", help="what the corpus brings: species, items, abilities, natures, moves, partners"))
     p.add_argument("--species", help="the full detail for one species instead of the table")
     p.add_argument("--top", type=int, default=30, help="rows per table")
     p.add_argument("--min-rating", type=int, help="only sheets from replays rated at least this (ratings are sparse)")
+    p.add_argument("--skill-percentile", type=float, metavar="P",
+                   help="only sheets brought by a player at or above the Pth percentile of the "
+                        "observed population — the filter for 'not the bottom half'")
+    p.add_argument("--min-rated", type=int, default=1)
     p.add_argument("--reuse", action="store_true", help="print the last saved report instead of recounting")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_meta_usage)

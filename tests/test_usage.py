@@ -184,3 +184,59 @@ def test_a_trait_counts_the_slot_that_carries_it(reg):
     traits = usage._team_traits(team, table)
     assert traits["fake_out"] == sum("fakeout" in {to_id(x) for x in m.moves} for m in team)
     assert all(0 <= v <= len(team) for v in traits.values())
+
+
+# --- player skill ---------------------------------------------------------------------
+
+def _rep(rid, players, rating, log="|showteam|p1|"):
+    return {"id": rid, "players": players, "rating": rating, "log": log, "formatid": "f"}
+
+
+def test_skill_is_a_median_not_a_maximum(reg):
+    """The first version of this used the best rating a player's battles carried, and that is
+    badly biased by how much of them we hold: across the cache, mean *best* climbs 1125 → 1282 as
+    cached rated games go 1 → 10+, while mean *median* moves 1125 → 1166. A filter built on the
+    maximum selects heavy uploaders and calls them strong.
+    """
+    from vgc.meta import replays
+
+    heavy = [_rep(f"h{i}", ["Heavy", "X"], r) for i, r in enumerate([1000, 1050, 1100, 1400])]
+    light = [_rep("l0", ["Light", "Y"], 1100)]
+    skill = {}
+    import unittest.mock as mock
+    with mock.patch.object(replays, "cached", lambda fmt: iter(heavy + light)):
+        skill = replays.player_skill(["f"])
+    assert skill["heavy"]["rating"] == 1075          # median, not the 1400
+    assert skill["light"]["rating"] == 1100
+    assert skill["light"]["rating"] > skill["heavy"]["rating"]
+
+
+def test_a_player_with_no_rated_game_cannot_be_placed(reg):
+    """Unrated is not the same as bad, so it is not folded into a number — and such a player is
+    excluded rather than assumed average, which is the assumption the filter exists to avoid."""
+    from vgc.meta import replays
+    import unittest.mock as mock
+
+    reps = [_rep("a", ["Known", "Ghost"], 1200), _rep("b", ["Ghost", "Other"], None)]
+    with mock.patch.object(replays, "cached", lambda fmt: iter(reps)):
+        skill = replays.player_skill(["f"])
+    assert skill["other"]["rating"] is None and skill["other"]["games"] == 1
+    assert "other" not in replays.qualified(skill, 0)
+
+
+def test_the_floor_is_a_percentile_of_the_population(reg):
+    from vgc.meta import replays
+
+    skill = {str(i): {"player": str(i), "rating": 1000 + i, "rated_games": 1, "games": 1}
+             for i in range(100)}
+    assert replays.skill_floor(skill, 0) == 1000
+    assert replays.skill_floor(skill, 50) == 1050
+    assert len(replays.qualified(skill, 50)) == 50
+
+
+def test_the_skill_filter_drops_sheets_and_says_how_many(reg, corpus):
+    unfiltered = usage.build(reg, corpus)
+    filtered = usage.build(reg, corpus, skill_percentile=100)
+    assert filtered["skill_percentile"] == 100
+    assert filtered["sheets"] <= unfiltered["sheets"]
+    assert filtered["sheets_dropped_below_skill"] == unfiltered["sheets"] - filtered["sheets"]

@@ -42,6 +42,9 @@ vgc meta scrape --format both --pages 8          # cache public replays (data/re
 vgc meta pool                                    # dated team pool from open team sheets
 vgc meta usage                                   # what the corpus brings: species, items, abilities, natures, moves, partners
 vgc meta usage --species Rillaboom               # the full detail for one species
+vgc meta players                                 # who is in the cache, and how strong they got
+vgc meta usage --skill-percentile 50             # usage over the top half of players
+vgc meta scrape --players 50                     # fetch every replay of the top half, then snowball
 vgc sim battle --team-a a.txt --team-b b.txt --n 50   # seeded, parallel; win rate with 95% CI
 vgc sim selfplay --n 500 --policy-a heuristic --policy-b random
 vgc sim validate                                 # does self-play predict real human results?

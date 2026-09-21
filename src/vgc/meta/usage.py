@@ -156,11 +156,20 @@ class _Species:
 
 
 def build(reg: Regulation, source: Iterable[dict] | None = None, *,
-          min_rating: int | None = None, top: int = 12, sets: int = 3) -> dict[str, Any]:
+          min_rating: int | None = None, skill_percentile: float | None = None,
+          min_rated_games: int = 1, top: int = 12, sets: int = 3) -> dict[str, Any]:
     """Count the corpus. `top` caps how many entries each distribution keeps, except items and
     abilities, which are short enough to report whole.
 
     `sets` caps the joint item/ability/nature/moves combinations kept per species.
+
+    `skill_percentile` keeps only sheets brought by a player at or above that percentile of the
+    observed player population. It is applied **per sheet, by whoever brought it** — a sheet
+    belongs to one player, so a strong player's team still counts when their opponent is weak.
+    (A *battle* corpus is the opposite case and needs both sides to qualify, because a trajectory
+    is the product of both.) A percentile rather than a rating, because 1100 means one thing on
+    this ladder and another on the next one, and the filter's job is "not the bottom half of
+    whoever is here".
 
     `min_rating` keeps only sheets from replays carrying at least that rating. Ratings are sparse
     and belong to the *battle*, not the player, so the filter is reported alongside how many sheets
@@ -175,8 +184,19 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
     trait_sheets: Counter = Counter()  # sheets carrying it at all
     trait_slots: Counter = Counter()   # how many of the six, summed over sheets
 
+    keep: set[str] | None = None
+    floor = None
+    if skill_percentile is not None:
+        skill = replays.player_skill(formats_for(reg))
+        keep = replays.qualified(skill, skill_percentile, min_rated_games)
+        floor = replays.skill_floor(skill, skill_percentile)
+
+    dropped_unplaceable = dropped_weak = 0
     for sheet in sheets(reg, source):
         if min_rating is not None and (sheet.rating or 0) < min_rating:
+            continue
+        if keep is not None and sheet.player not in keep:
+            dropped_weak += 1
             continue
         n_sheets += 1
         n_rated += sheet.rating is not None
@@ -238,6 +258,9 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
         "distinct_teams": len(teams),
         "rated_sheets": n_rated,
         "min_rating": min_rating,
+        "skill_percentile": skill_percentile,
+        "skill_floor": floor,
+        "sheets_dropped_below_skill": dropped_weak,
         "traits": {
             name: {"sheets": trait_sheets[name],
                    "share": trait_sheets[name] / max(n_sheets, 1),
