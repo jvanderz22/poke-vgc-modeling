@@ -30,7 +30,7 @@ PSEUDO_WEATHER = {"trickroom", "gravity", "magicroom", "wonderroom", "fairylock"
 _IGNORE = {"", "t:", "j", "J", "l", "L", "c", "raw", "html", "uhtml", "uhtmlchange", "inactive", "inactiveoff",
            "chat", "n", "debug", "bigerror", "gen", "tier", "rule", "rated", "gametype", "seed", "badge",
            "message", "-message", "-hint", "-center", "-combine", "-notarget", "-nothing", "-anim", "-fail",
-           "-block", "-miss", "-immune", "-crit", "-supereffective", "-resisted", "-hitcount", "-waiting",
+           "-block", "-miss", "-immune", "-supereffective", "-resisted", "-hitcount", "-waiting",
            "-ohko", "-primal", "-burst", "-zpower", "-zbroken", "-prepare", "-mustrecharge", "-singleturn",
            "-singlemove", "-activate", "-fieldactivate", "cant", "upkeep", "done", "start", "clearpoke",
            "teampreview", "split", "timer", "request", "error", "sentchoice", "uhtml", "-candynamax", "askreg",
@@ -64,6 +64,62 @@ def _tags(args: list[str]) -> dict[str, str]:
             k, v = a[1:a.index("]")], a[a.index("]") + 1 :].strip()
             out[k] = v
     return out
+
+
+class MoveEvent:
+    """One move as it resolved, in the order it resolved.
+
+    The Observer records the sequence and draws no conclusion from it; `vgc.belief` turns pairs of
+    these into a bound on Speed. It carries the field and the mover's state because the order
+    alone does not mean anything: under Trick Room the slower Pokémon moves first, so the same
+    sequence implies the opposite bound, and Tailwind, a Speed boost and paralysis each move the
+    comparison as well. The very first turn of the fixture replay has Trick Room up.
+
+    The state comes in two flavours and the distinction is not cosmetic. `boosts`, `status` and
+    `side_conditions` are as they stood when the move went off, which is what a damage calc wants.
+    The `order_*` copies are as they stood when the turn *began*, which is what decided the order:
+    a Weak Armor Pokémon hit earlier in the same turn is at +2 Speed by the time its own move
+    line appears, and reading that as the reason it moved second turns a true observation into a
+    contradiction. `order_known` is False when the Pokémon was not on the field at the turn mark.
+    """
+
+    __slots__ = ("turn", "seq", "side", "slot", "species", "forme", "move", "priority", "target",
+                 "spread", "called_by", "trick_room", "weather", "terrain", "boosts", "status",
+                 "side_conditions", "item", "ability", "order_boosts", "order_status",
+                 "order_side_conditions", "order_weather", "order_terrain", "order_known")
+
+    def __init__(self, **kw: Any):
+        for k in self.__slots__:
+            setattr(self, k, kw.get(k))
+
+    def to_json(self) -> dict[str, Any]:
+        return {k: getattr(self, k) for k in self.__slots__}
+
+
+class DamageEvent:
+    """Damage a move did, with everything the calc needs to ask what spread could produce it.
+
+    `hp_before`/`hp_after` are fractions, and for the opponent the public line is out of 100, so
+    the loss is known to about a percentage point and no better — `exact` says which case this is.
+    `fainted` marks a right-censored observation: the move did *at least* the remaining HP, and
+    reading it as an equality would systematically underestimate the attacker's investment.
+    """
+
+    __slots__ = ("turn", "seq", "attacker_side", "attacker_slot", "attacker", "move",
+                 "target_side", "target_slot", "target", "hp_before", "hp_after", "hp_max",
+                 "exact", "fainted", "spread", "crit", "field", "attacker_boosts",
+                 "target_boosts", "target_status", "target_side_conditions")
+
+    def __init__(self, **kw: Any):
+        for k in self.__slots__:
+            setattr(self, k, kw.get(k))
+
+    @property
+    def lost(self) -> float:
+        return max(0.0, self.hp_before - self.hp_after)
+
+    def to_json(self) -> dict[str, Any]:
+        return {k: getattr(self, k) for k in self.__slots__}
 
 
 class Mon:
@@ -147,6 +203,15 @@ class Observer:
         self.started = False
         self.fainted_this_turn: set[str] = set()
         self._base_cache: dict[str, str] = {}
+        # Evidence. Kept out of `observation()` on purpose: snapshots embed the observation and
+        # are fingerprinted at VERSION 3, so adding fields there would invalidate 433,052 frozen
+        # training rows and every manifest built on them. Evidence is read from a live stream.
+        self.moves_log: list[MoveEvent] = []
+        self.damage_log: list[DamageEvent] = []
+        self._seq = 0              # position within the current turn, across both sides
+        self._resolving: MoveEvent | None = None
+        self._crit: set[str] = set()   # idents the resolving move crit against
+        self._turn_start: dict[tuple[str, int], dict[str, Any]] = {}
 
     # --- identity -----------------------------------------------------------------------
 
@@ -354,6 +419,54 @@ class Observer:
         real.nickname = a[0].split(": ", 1)[1]
         real.state, real.position, real.forme = "active", slot, _details_species(a[1])
 
+    def _order_state(self, side: str, m: Mon) -> dict[str, Any]:
+        """What the mover's Speed depended on when the turn's order was decided."""
+        start = self._turn_start.get((side, m.position))
+        if start is None or start["species"] != m.species:
+            return {"order_boosts": {k: v for k, v in sorted(m.boosts.items()) if v},
+                    "order_status": m.status,
+                    "order_side_conditions": sorted(self.sides[side].conditions),
+                    "order_weather": self.weather, "order_terrain": self.terrain,
+                    "order_known": False}
+        return {"order_boosts": start["boosts"], "order_status": start["status"],
+                "order_side_conditions": start["side_conditions"],
+                "order_weather": start["weather"], "order_terrain": start["terrain"],
+                "order_known": True}
+
+    def _snapshot_turn_start(self) -> None:
+        """Weather and terrain are part of it: a Swift Swim Pokémon whose rain arrived partway
+        through the turn was not fast when the order was decided, and reading the weather off its
+        own move line says it was."""
+        self._turn_start = {}
+        for sid, side in self.sides.items():
+            conditions = sorted(side.conditions)
+            for mon in side.mons:
+                if mon.state == "active" and mon.position is not None:
+                    self._turn_start[(sid, mon.position)] = {
+                        "species": mon.species,
+                        "boosts": {k: v for k, v in sorted(mon.boosts.items()) if v},
+                        "status": mon.status, "side_conditions": conditions,
+                        "weather": self.weather, "terrain": self.terrain,
+                    }
+
+    def _active_ability(self, m: Mon) -> str | None:
+        """The ability that was actually in force, which after a Mega Evolution is not the one on
+        the sheet: Mega Swampert has Swift Swim where Swampert had Torrent, and Mega Salamence has
+        Aerilate where Salamence had Intimidate. A Mega forme has exactly one ability, and it
+        becomes public the moment the Mega happens.
+
+        `Mon.ability` deliberately still reports the sheet's. It is serialized into `observation()`,
+        which snapshots embed and fingerprint at VERSION 3, so correcting it there would invalidate
+        433,052 frozen training rows — a regeneration that belongs with the Phase 8 prerequisite,
+        not with this. Recorded rather than quietly carried: anything reading `ability` off a
+        Mega-Evolved Pokémon's observation is reading the pre-Mega ability.
+        """
+        if not m.mega or m.forme == m.species:
+            return m.ability
+        entry = self.dex.get_species(m.forme)
+        mega_ability = (entry or {}).get("abilities", {}).get("0")
+        return to_id(mega_ability) if mega_ability else m.ability
+
     def _on_detailschange(self, a: list[str]) -> None:
         m = self._mon(a[0])
         if m is not None:
@@ -387,11 +500,59 @@ class Observer:
 
     def _on_damage(self, a: list[str]) -> None:
         m = self._mon(a[0])
+        if m is None:
+            return
+        before = m.hp
+        self._set_hp(m, a[1])
+        self._record_damage(m, a, before)
+
+    def _on_heal(self, a: list[str]) -> None:
+        m = self._mon(a[0])
         if m is not None:
             self._set_hp(m, a[1])
 
-    _on_heal = _on_damage
-    _on_sethp = _on_damage
+    _on_sethp = _on_heal
+
+    def _record_damage(self, m: Mon, a: list[str], before: float) -> None:
+        """Attribute this HP loss to the move now resolving, or to nothing.
+
+        A `[from]` tag means something else did it — Life Orb, recoil, poison, Rocky Helmet — and
+        those are excluded rather than mis-attributed: reading recoil as the move's own output
+        would tell the belief the attacker hits far harder than it does. Self-damage is dropped
+        for the same reason. What is left is `|move|` → `|-damage|`, which is the calc's own
+        question asked backwards.
+        """
+        ev = self._resolving
+        if ev is None or ev.called_by or _tags(a[1:]).get("from"):
+            return
+        side, slot = self._side_of(m), m.position
+        if (side, slot) == (ev.side, ev.slot):
+            return
+        target_side = self.sides[side]
+        self.damage_log.append(DamageEvent(
+            turn=self.turn, seq=ev.seq,
+            attacker_side=ev.side, attacker_slot=ev.slot, attacker=ev.species, move=ev.move,
+            target_side=side, target_slot=slot, target=m.species,
+            hp_before=round(before, 4), hp_after=round(m.hp, 4), hp_max=m.hp_max,
+            exact=self._own(side) and m.hp_max is not None,
+            fainted=(m.hp == 0.0), spread=ev.spread, crit=(a[0] in self._crit),
+            field={"weather": self.weather, "terrain": self.terrain,
+                   "pseudo": sorted(self.pseudo)},
+            attacker_boosts=dict(sorted(self._boosts_of(ev.side, ev.slot).items())),
+            target_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
+            target_status=m.status,
+            target_side_conditions=sorted(target_side.conditions),
+        ))
+
+    def _boosts_of(self, sid: str, slot: int | None) -> dict[str, int]:
+        for mon in self.sides[sid].mons:
+            if mon.state == "active" and mon.position == slot:
+                return {k: v for k, v in mon.boosts.items() if v}
+        return {}
+
+    def _on_crit(self, a: list[str]) -> None:
+        if a:
+            self._crit.add(a[0])
 
     def _on_faint(self, a: list[str]) -> None:
         m = self._mon(a[0])
@@ -500,9 +661,32 @@ class Observer:
             return
         tags = _tags(a[3:])
         src = tags.get("from", "")
-        if src and src not in ("lockedmove",) and not src.startswith("move: Sleep Talk"):
-            return  # called by another effect (Magic Bounce, Copycat…): not its own move
+        called = bool(src) and src not in ("lockedmove",) and not src.startswith("move: Sleep Talk")
         mv = to_id(a[1])
+        self._crit = set()
+        side = self._side_of(m)
+        self._resolving = MoveEvent(
+            turn=self.turn, seq=self._seq, side=side, slot=m.position,
+            # `species` is the team-preview identity and stays put — it is what the belief is
+            # keyed on, because the Stat Points do not change when the forme does. `forme` is who
+            # was actually on the field, and it is what the base stats have to come from: Mega
+            # Salamence is base 120 Speed against Salamence's 100.
+            species=m.species, forme=m.forme, move=mv,
+            priority=(self.dex.get_move(mv) or {}).get("priority", 0),
+            target=(a[2] if len(a) > 2 and ": " in a[2] else None),
+            spread=("spread" in tags), called_by=(src or None) if called else None,
+            trick_room=("trickroom" in self.pseudo),
+            weather=self.weather, terrain=self.terrain,
+            boosts={k: v for k, v in sorted(m.boosts.items()) if v},
+            status=m.status, side_conditions=sorted(self.sides[side].conditions),
+            # The ability is resolved for the forme, not copied from the sheet — see below.
+            item=m.item, ability=self._active_ability(m),
+            **self._order_state(side, m),
+        )
+        self.moves_log.append(self._resolving)
+        self._seq += 1
+        if called:
+            return  # called by another effect (Magic Bounce, Copycat…): not its own move
         if mv not in m.moves_used:
             m.moves_used.append(mv)
 
@@ -553,6 +737,10 @@ class Observer:
     def _on_turn(self, a: list[str]) -> None:
         self.turn = int(a[0])
         self.started = True
+        self._seq = 0
+        self._resolving = None
+        self._crit = set()
+        self._snapshot_turn_start()
 
     def _on_win(self, a: list[str]) -> None:
         self.ended = True

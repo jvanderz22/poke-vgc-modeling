@@ -35,7 +35,7 @@ from typing import Any, Iterable, Iterator
 
 from vgc.meta import replays
 from vgc.meta.pool import TEAMS, formats_for
-from vgc.regulation import Regulation, to_id
+from vgc.regulation import CONDITIONAL_PRIORITY, Regulation, to_id
 from vgc.teams.sets import Team
 
 
@@ -117,14 +117,6 @@ TRAITS: dict[str, dict[str, set[str]]] = {
 }
 
 SPREAD_TARGETS = {"allAdjacentFoes", "allAdjacent"}
-
-# Moves whose priority the dex's `priority` field understates because it is conditional, and the
-# pinned build applies the condition in an `onModifyPriority` hook the export does not carry.
-# Grassy Glide is +1 under Grassy Terrain, and it is the *only* such move: grep finds exactly one
-# `onModifyPriority` in `vendor/pokemon-showdown/data/moves.ts`. Missing it would be a bad miss —
-# it is on 56% of sheets, and Grassy Surge is on 56% too, so the condition is usually met.
-CONDITIONAL_PRIORITY = {"grassyglide": "grassy terrain"}
-
 
 def _derived_traits(reg: Regulation) -> dict[str, dict[str, set[str]]]:
     """`priority_attack` and `spread_move` are defined by what the dex says, not by a list."""

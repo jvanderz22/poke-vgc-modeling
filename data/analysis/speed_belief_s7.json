@@ -1,0 +1,97 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-s7-p3000x20",
+ "battles": 25000,
+ "pokemon_checked": 62581,
+ "soundness": {
+  "silently_wrong": 9,
+  "rate": 0.00014381361755165306,
+  "contradicted": 22,
+  "contradicted_rate": 0.00035154439845959634,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-s7-p3000x20-14661",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 32,
+    "bounds": [
+     0,
+     23
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-s7-p3000x20-14665",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 32,
+    "bounds": [
+     0,
+     23
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-s7-p3000x20-14667",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 32,
+    "bounds": [
+     0,
+     23
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-s7-p3000x20-14669",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 32,
+    "bounds": [
+     0,
+     23
+    ],
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-s7-p3000x20-14671",
+    "mon": [
+     "p2",
+     "Gholdengo"
+    ],
+    "true_spe": 32,
+    "bounds": [
+     0,
+     23
+    ],
+    "used": 1
+   }
+  ]
+ },
+ "power": {
+  "narrowed_mean": 0.16805468597546067,
+  "any_narrowing": 0.31276265959316724,
+  "bounds_width_mean": 27.4541953628098,
+  "pairs_per_battle": 7.23056
+ },
+ "pairs": {
+  "considered": 443291,
+  "state_moved_mid_turn": 17769,
+  "unmodelled_mover": 70993,
+  "usable": 180764,
+  "priority_differs": 173765
+ },
+ "abstention_rate": 0.5922227160037086,
+ "truth_distribution": {
+  "0": 4726,
+  "32": 57855
+ },
+ "caveat": "the pool's spreads are impute_sp's output, so the truth here takes few distinct values and the power number is a floor, not an estimate of the real thing"
+}

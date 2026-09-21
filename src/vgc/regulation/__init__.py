@@ -22,6 +22,19 @@ from vgc import paths
 
 STAT_IDS = ("hp", "atk", "def", "spa", "spd", "spe")
 
+# Moves whose priority the dex export understates because it is conditional: the pinned build
+# applies the condition in an `onModifyPriority` hook, and the JSON export carries only the
+# unconditional number. Grassy Glide is +1 under Grassy Terrain for a grounded user, and it is the
+# only such move — grep finds exactly one `onModifyPriority` in the pinned `data/moves.ts`. It
+# matters twice over: it is on 56% of sheets, and a move compared at the wrong priority produces a
+# *wrong* turn-order inference rather than a missing one.
+CONDITIONAL_PRIORITY = {"grassyglide": "grassy terrain"}
+
+# Being airborne is what Grassy Terrain (and Ground moves) care about.
+AIRBORNE_ABILITIES = {"levitate"}
+AIRBORNE_ITEMS = {"airballoon"}
+
+
 
 def to_id(text: str) -> str:
     """Showdown's `toID`: lowercase, alphanumerics only."""
@@ -64,6 +77,14 @@ class Dex:
         base = self.species.get(species_id)
         mega_name = item["megaStone"].get(base["name"]) if base else None
         return self.get_species(mega_name) if mega_name else None
+
+
+def is_grounded(dex: Dex, forme: str, ability: str | None, item: str | None) -> bool:
+    """Grassy Terrain's +1 only reaches a grounded user, so the check is part of the priority."""
+    entry = dex.get_species(forme) or {}
+    if "Flying" in (entry.get("types") or []):
+        return False
+    return to_id(ability or "") not in AIRBORNE_ABILITIES and to_id(item or "") not in AIRBORNE_ITEMS
 
 
 @dataclass(frozen=True)

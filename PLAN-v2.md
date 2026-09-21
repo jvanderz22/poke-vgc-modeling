@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | — | was Phase 5. **Rescoped:** open sheets hide Stat Points too, so this is not closed-sheet-only (finding 8) |
+| 8 — Belief over hidden sets | 🟡 In progress | speed channel built and gated: 0.014% silently wrong on 62,581 self-play Pokémon ([findings](docs/phase8-findings.md)). Damage channel next |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -338,13 +338,31 @@ not whether anything is.
 Two information channels, neither of which exists today, and both of which are pure computation
 against the pinned calc rather than anything learned:
 
-- **Turn order → a bound on speed.** Observing that their Pokémon moved first, given both base
-  stats, the natures on the sheet, known items and the field's speed modifiers, constrains their
-  speed SP to a range. Observing it repeatedly, or against different modifiers, tightens it. A speed
-  tie is itself informative. This is arithmetic, and today the featurizer explicitly throws it away:
-  `_move_summary` is documented as "independent of move order" and there is no who-moved-first
-  feature anywhere.
-- **Damage magnitude → a likelihood over spread and item.** A move that did 71% to a known defender
+- **Turn order → a bound on speed. ✅ Built and gated** (`vgc belief speed`, `vgc.belief.speed`,
+  [findings](docs/phase8-findings.md)). Their nature, item and ability are on the sheet, so their
+  Speed stat is a known function of one unknown integer in 0..32, and every equal-priority pair is
+  an inequality on it. A tie is never ruled out, because Showdown breaks ties at random.
+
+  Soundness is the claim, so it is the gate: **9 of 62,581 opposing Pokémon (0.014%) had the truth
+  silently excluded** over 25,000 self-play battles, where the spread is in the `input_log` and so
+  is actually known. A further 0.035% proved themselves contradictory and widened back to the prior,
+  which is reported separately because those state nothing false. Getting there took five fixes and
+  **every one produced a wrong inference rather than a missing one**: Mega formes on the hidden side
+  and on the known side, Grassy Glide's conditional +1, a Mega's ability differing from its sheet's,
+  and state that moved inside the turn. Quick Claw is abstained on outright.
+
+  Power is the separate question and it is modest: 7.2–7.8 racing pairs a game, 28–31% of their
+  Pokémon narrowed at all, 13.8–16.8% of the prior ruled out on average. The self-play figure is a
+  *floor* and a bad one — the pool's spreads are `impute_sp`'s output, so the truth takes two
+  values and the channel is being asked an easy question. A randomized-spread self-play run is the
+  next measurement.
+
+  The prerequisite this phase already had now has a second reason: the evidence log lives outside
+  `observation()` deliberately, because snapshots embed it and are fingerprinted at VERSION 3.
+- **Damage magnitude → a likelihood over spread and item.** _Next._ The evidence is already
+  recorded — `vgc.data.observe` now attributes each `|-damage|` to the move that caused it, with the
+  field, both sides' boosts, crits, spread flags and a `fainted` marker for the right-censored case
+  — and `vgc team weakness` already runs this arithmetic forwards. A move that did 71% to a known defender
   narrows the attacker's offensive SP and item jointly, through the same calc the rest of the stack
   treats as ground truth. `_on_damage` currently writes the defender's new HP and nothing else.
   PLAN-v2 already listed "a calc-based damage likelihood" in this phase; finding 8 says it applies at
@@ -354,7 +372,14 @@ Build, in the order the evidence supports:
 
 1. **SP belief, open sheets.** Everything but the spread is on the sheet, so the belief is over one
    object: the allocation of 66 points, ≤32 per stat. Prior from `impute_sp` and the sheet corpus,
-   updated by the two channels above. This is the piece that can be gated on **7,459 battles**.
+   updated by the two channels above. This is the piece that can be gated on **7,459 battles** —
+   though the Speed half was gated on 25,000 self-play battles instead, because soundness needs a
+   truth the human corpus does not contain.
+
+   The Speed half also produced a diagnostic worth keeping: when the belief contradicts itself, it
+   is usually because the spread *you* supplied for your own team is wrong. The contradiction rate
+   is 0.035% against true spreads and 9.8–12.2% against assumed ones, so the flag is a detector for
+   bad input and the app should show it rather than swallow it.
 2. **Full-set belief, closed sheets.** Set prior from the sheet corpus and usage
    (`P(item, ability, moves, nature | species)`), updated by hard reveals *and* the same two
    channels; K complete-set particles per opponent Pokémon.

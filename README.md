@@ -60,6 +60,8 @@ vgc wp eval --version <v> --baseline wp-v1-gbt   # held-out human games; writes 
 vgc wp registry                                  # every model, with the gates it failed
 vgc wp endgames                                  # held-out human games it called at 90%+ before the end
 
+vgc belief speed <replay> --known p1             # turn order → a bound on their Speed Stat Points
+
 vgc web                                          # battle companion on localhost:8001
 ```
 
@@ -81,7 +83,7 @@ data/teams/<id>/         team pools and usage reports built from open team sheet
 data/splits/<id>.json    the frozen held-out split (tracked; never re-rolled)
 data/selfplay/, data/snapshots/, data/replays/   generated / cached, not tracked
 sidecar/                 Node helpers: calc server, Showdown dex export, damage sampler, battle runner
-src/vgc/                 regulation · engine · teams · policy · meta · sim · data · building · cli  (mcp to come)
+src/vgc/                 regulation · engine · teams · policy · meta · sim · data · building · belief · cli  (mcp to come)
 ```
 
 ## Docs
@@ -90,6 +92,7 @@ src/vgc/                 regulation · engine · teams · policy · meta · sim 
 - [PLAN.md](PLAN.md): superseded archive — the research and architecture behind the stack
 - [docs/phase4-findings.md](docs/phase4-findings.md): what the WP corpus does and doesn't support
 - [docs/phase6-findings.md](docs/phase6-findings.md): whether the simulator predicts human outcomes
+- [docs/phase8-findings.md](docs/phase8-findings.md): turn order as a bound on their hidden Speed investment
 - [docs/phase0-findings.md](docs/phase0-findings.md): environment spike results
 - [docs/regulation-change.md](docs/regulation-change.md): runbook for moving to a new regulation and retraining
 - [docs/cloud-compute.md](docs/cloud-compute.md): when renting hardware pays off, and the spend controls

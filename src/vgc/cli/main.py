@@ -660,6 +660,51 @@ def cmd_wp_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_belief_speed(args: argparse.Namespace) -> int:
+    from vgc.belief import speed
+    from vgc.data.observe import Observer
+    from vgc.meta import replays
+
+    reg = _reg(args)
+    if Path(args.replay).exists():
+        rep = json.loads(Path(args.replay).read_text())
+    else:
+        rep = replays.fetch(args.replay, args.replay.rsplit("-", 1)[0])
+    obs = Observer("spectator", reg.dex)
+    obs.feed_many(rep["log"] if isinstance(rep["log"], list) else rep["log"].split("\n"))
+
+    # `--known` names the side whose spreads you wrote, which is the side you can actually pin the
+    # other against. Without it every pair has two unknowns and the answer is honestly "nothing".
+    known: dict[tuple[str, str], int] = {}
+    if args.known:
+        for mon in obs.sides[args.known].mons:
+            known[(args.known, mon.species)] = args.assume
+    beliefs = speed.infer(reg, obs, known)
+
+    if args.json:
+        print(json.dumps({"summary": speed.summary(beliefs),
+                          "beliefs": [b.to_json() for b in beliefs.values()]}, indent=1))
+        return 0
+
+    players = rep.get("players", ["p1", "p2"])
+    print(f"{rep.get('id', args.replay)}: {players[0]} (p1) vs {players[1]} (p2)")
+    print(f"{len(obs.moves_log)} moves, {len(speed.pairs(reg, obs.moves_log))} of their pairs raced"
+          + (f"; assuming {args.known} ran {args.assume} Speed SP throughout" if args.known else
+             "; no side's spread given, so every pair has two unknowns (--known p1)"))
+    print(f"\n{'':4}{'pokemon':20} {'nature':9} {'Speed SP':>12} {'ruled out':>10}  from")
+    for b in sorted(beliefs.values(), key=lambda x: (-x.narrowed, x.species)):
+        lo_hi = f"{b.bounds[0]}-{b.bounds[1]}" if b.bounds else "—"
+        note = f"{b.used} pairs" + (f", {b.deferred} deferred" if b.deferred else "")
+        if b.contradicted:
+            note += "  ⚠ contradicted, widened back"
+        print(f"{b.side:4}{b.species:20} {str(b.nature):9} {lo_hi:>12} {b.narrowed:>10.0%}  {note}")
+    s = speed.summary(beliefs)
+    print(f"\n{s['constraints_used']} constraints used, {s['constraints_deferred']} deferred "
+          f"(both sides unknown), {s['any_narrowed']}/{s['pokemon']} narrowed at all")
+    print("a bound is never tightened past a speed tie: Showdown breaks ties at random.")
+    return 0
+
+
 def cmd_wp_endgames(args: argparse.Namespace) -> int:
     """Build the browsable set of decided endgames, and report how often the call was right."""
     from vgc import paths
@@ -916,6 +961,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-turns", type=int, default=4, help="skip games too short to have an endgame")
     p.add_argument("--quiet", action="store_true")
     p.set_defaults(func=cmd_wp_endgames)
+    belief = sub.add_parser("belief", help="what the battle reveals about their hidden spread")
+    bsub = belief.add_subparsers(dest="belief_cmd", required=True)
+    p = with_reg(bsub.add_parser("speed", help="turn order → a bound on their Speed Stat Points"))
+    p.add_argument("replay", help="replay id or a JSON file")
+    p.add_argument("--known", choices=["p1", "p2"], help="the side whose spread you know")
+    p.add_argument("--assume", type=int, default=32, help="Speed SP to assume for --known")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_belief_speed)
+
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)
     p = sub.add_parser("web", help="battle-companion web app on localhost")
