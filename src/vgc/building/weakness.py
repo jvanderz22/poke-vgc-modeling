@@ -40,22 +40,11 @@ from typing import Any, Iterable
 
 from vgc.engine.calc import DamageCalc
 from vgc.meta import usage
-from vgc.regulation import STAT_IDS, Regulation, to_id
+from vgc.regulation import STAT_IDS, Regulation, is_damaging, offensive_stat, to_id
 from vgc.teams.sets import PokemonSet, StatPoints, Team, calc_stats
 
-# Which stat a move's damage scales with, for the breakpoint sweep. Everything else follows the
-# move's category; Body Press is the one that does not. Moves that key off something other than
-# the attacker's own investment — Foul Play off *your* Attack, Seismic Toss off nothing — need no
-# entry, because a flat sweep is reported as flat rather than as "0 SP is enough".
-OFFENSIVE_STAT = {"bodypress": "def"}
-
-
-def _damaging(entry: dict) -> bool:
-    """Category, not base power. 25 legal moves deal damage on a listed base power of 0 — Low
-    Kick, Grass Knot, Gyro Ball, Seismic Toss and the rest compute it from weight, speed or a
-    constant — and Low Kick is on Kingambit's most common set, so testing base power would drop a
-    main attacking move from the most-used Pokémon's threat entry without saying anything."""
-    return bool(entry) and entry.get("category") in ("Physical", "Special")
+# `offensive_stat` and `is_damaging` live in `vgc.regulation`: they are facts about the pinned dex,
+# and `vgc.belief.prior` needs the same answer to decide which of a Pokémon's stats is dead weight.
 
 
 @dataclass
@@ -135,10 +124,7 @@ def speed_table(reg: Regulation, team: Team, pool: list[Threat]) -> dict[str, An
 # --- damage ---------------------------------------------------------------------------
 
 def _stat_for(reg: Regulation, move: str) -> str | None:
-    entry = reg.dex.get_move(move) or {}
-    if not _damaging(entry):
-        return None
-    return OFFENSIVE_STAT.get(to_id(move)) or ("atk" if entry.get("category") == "Physical" else "spa")
+    return offensive_stat(reg.dex, move)
 
 
 def _sweep(dc: DamageCalc, attacker_at, defender: PokemonSet, move: str, cap: int) -> list[dict]:
@@ -287,7 +273,7 @@ def type_pressure(reg: Regulation, team: Team, pool: list[Threat]) -> list[dict[
             continue
         carriers = sum(t.share for t in pool
                        if any((reg.dex.get_move(mv) or {}).get("type") == atk_type
-                              and _damaging(reg.dex.get_move(mv) or {}) for mv in t.moves))
+                              and is_damaging(reg.dex.get_move(mv)) for mv in t.moves))
         out.append({"type": atk_type, "weak": hit, "count": len(hit),
                     "quad": sum(1 for h in hit if h["multiplier"] >= 4), "carriers": carriers})
     return sorted(out, key=lambda r: (-r["count"] * r["carriers"], -r["count"]))

@@ -79,6 +79,29 @@ class Dex:
         return self.get_species(mega_name) if mega_name else None
 
 
+# Which stat a move's damage scales with. Everything else follows the move's category; Body Press
+# is the one that does not. Moves keyed off something other than the attacker's own investment —
+# Foul Play off the target's Attack, Seismic Toss off nothing — get their category's stat here and
+# are detected as flat by whoever sweeps them.
+OFFENSIVE_STAT = {"bodypress": "def"}
+
+
+def is_damaging(entry: dict | None) -> bool:
+    """Category, not base power. 25 legal moves deal damage on a listed base power of 0 — Low
+    Kick, Grass Knot, Gyro Ball, Seismic Toss and the rest compute it from weight, speed or a
+    constant — and Low Kick is on Kingambit's most common set, so testing base power would drop a
+    main attacking move from the most-used Pokémon."""
+    return bool(entry) and entry.get("category") in ("Physical", "Special")
+
+
+def offensive_stat(dex: Dex, move: str) -> str | None:
+    """The stat this move's damage scales with, or None if it deals no damage."""
+    entry = dex.get_move(move)
+    if not is_damaging(entry):
+        return None
+    return OFFENSIVE_STAT.get(to_id(move)) or ("atk" if entry.get("category") == "Physical" else "spa")
+
+
 def is_grounded(dex: Dex, forme: str, ability: str | None, item: str | None) -> bool:
     """Grassy Terrain's +1 only reaches a grounded user, so the check is part of the priority."""
     entry = dex.get_species(forme) or {}

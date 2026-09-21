@@ -123,3 +123,99 @@ pre-Mega ability.
 **The evidence log is not in `observation()`** for the same reason. It is read from a live stream,
 which is what the app and the CLI do. It has to move into the snapshot format before any of this
 reaches a trained model, and that is step 3's problem.
+
+
+---
+
+# Phase 8, the spread prior — what their 66 points were doing before the battle spoke
+
+_Measured 2026-09-20 on 2,500 cached human replays (19,255 racing pairs). Script:
+[`scripts/analysis/spread_prior.py`](../scripts/analysis/spread_prior.py); result:
+[`data/analysis/spread_prior.json`](../data/analysis/spread_prior.json)._
+
+The speed channel needed a prior, and uniform-over-0..32 was the obvious placeholder. It is also
+the obvious thing to be wrong about: spreads are not drawn, they are *chosen*, against goals. Two
+kinds of structure follow, and both are computable from public information.
+
+## The structure is real
+
+**Structural zeros.** A Pokémon whose moves never scale off Attack gains nothing from Attack.
+Across the 47,928 weighted Pokémon-sheets: **90.9% have exactly one offensive stat that no move of
+theirs uses**, 0.1% have neither, 9.0% genuinely use both. Of the 90.9%, **95.1% have the nature
+confirming it**. For nine Pokémon in ten, one of six dimensions is gone before a turn is played.
+Read through `offensive_stat`, not the move's category, so Body Press counts towards Defence and
+Foul Play — which scales off the *target's* Attack — does not rescue a dead Attack.
+
+**Benchmarks.** Speed is bought to clear something. Against conventional builds — each top-30
+threat at 0 and at 32 with its modal nature — the 33 investments collapse: an Adamant Rillaboom has
+16 distinct outcomes, a Careful Incineroar 13, a Jolly Garchomp 13. A builder takes the cheapest
+point in each class, because the rest is worth more elsewhere.
+
+## Scoring a prior with no ground truth
+
+A human's Stat Points are not recoverable from a replay. But a prior implies a distribution over
+who moves first, and the corpus is full of observed turn orders:
+
+    P(A moved first) = Σ_a Σ_b P(a) P(b) · [eff(a) > eff(b)] + ½·[eff(a) = eff(b)]
+
+the half because Showdown breaks ties at random; under Trick Room the comparison inverts. Priors
+are then compared by the likelihood they assign to what happened — on real games, with no truth
+required. Two priors scored on the *same* pairs are a paired comparison, so the interval that has
+to clear zero is the one on the **difference**; reading their separate intervals throws away the
+shared between-game variance and reports overlap where there is a verdict. Clusters are replays.
+
+| prior | all pairs | close pairs only |
+| --- | --- | --- |
+| `impute_sp` (a point mass) | +1.123 [1.039, 1.215] | +2.925 [2.689, 3.165] |
+| structural (no free parameters) | +0.004 [0.003, 0.005] | +0.002 [−0.000, 0.003] |
+| benchmark, pool tier | **−0.011** [−0.016, −0.006] | +0.012 [0.008, 0.017] |
+| benchmark, usage tier | **−0.011** [−0.016, −0.007] | +0.010 [0.005, 0.015] |
+
+_Nats per pair against a flat prior; positive means worse than assuming nothing. "Close" is the
+subset where a flat prior gives the order between 5% and 95% — the pairs a prior's detail decides,
+rather than the ones base stats already settled._
+
+## Three findings
+
+**1. `impute_sp` is catastrophic as a prior, and it generated the entire corpus.** A point mass
+assigns near-zero probability to every turn order it did not predict, and it is **2.9 nats a pair
+worse than assuming nothing**. This is the same degeneracy finding 8 caught in the training mix,
+in a third place: every spread in the 60,000-battle self-play corpus came from this function, and
+all 20,082 pool Pokémon have exactly 32 points in their offensive stat as a result. Nothing that
+infers offensive investment can be gated on that corpus, because there is no variation to infer.
+
+**2. The benchmark prior beats flat overall and loses on close pairs** — both intervals clearing
+zero, in opposite directions. It is a better description of the population and a worse one of the
+individual: the broad shape is right, and the specific concentration on class minima is wrong
+exactly where the prior's detail decides the answer. A single pooled number would have reported the
+win and hidden the loss, which is gate 1 arriving somewhere new.
+
+So `speed_classes` is kept for what it is — a true statement about which investments are
+distinguishable, and useful output for a team builder — and the **weighting** over those classes
+stays opt-in and unvalidated. `flat_prior` remains what the belief layer uses, not for want of
+trying to beat it.
+
+**3. Counting allocations underrates the extremes.** A uniform distribution over legal spreads puts
+0.7–1.3% on maxed Speed; real builds sit at 0 and 32 far more often than that. It is the one thing
+every version of this agrees on, and it is why the benchmark tier carries an explicit `extremes`
+weight at all.
+
+## Tiers, because a regulation rotation must not take the belief offline
+
+Benchmarks are circular — what is worth outrunning depends on what everyone runs, which depends on
+what is worth outrunning. Solving it needs an independent ranking of what is good and a model of
+how the meta moves toward it, which is a different and much harder project. This iterates once from
+the conventional extremes and says so.
+
+The circularity is also why the prior is tiered, and `benchmarks()` degrades on its own:
+
+| tier | benchmarks from | needs |
+| --- | --- | --- |
+| `usage` | the measured meta (`vgc meta usage`) | a corpus for the regulation |
+| `pool` | the legal species list at conventional spreads | the dex only |
+| `structural` | none — structural zeros and allocation counting | nothing |
+
+The `pool` tier costs almost nothing against `usage` here (−0.011 against −0.011 on all pairs,
++0.012 against +0.010 on close ones), which is the useful part: **a freshly rotated regulation with
+no replays yet is not much worse off than one with 15,028 sheets.** Every result carries the tier
+that produced it.

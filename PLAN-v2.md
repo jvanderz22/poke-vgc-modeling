@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | speed channel built and gated: 0.014% silently wrong on 62,581 self-play Pokémon ([findings](docs/phase8-findings.md)). Damage channel next |
+| 8 — Belief over hidden sets | 🟡 In progress | speed channel gated (0.014% silently wrong, 62,581 Pokémon); spread prior measured — `impute_sp` is 2.9 nats/pair worse than flat ([findings](docs/phase8-findings.md)) |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -371,7 +371,13 @@ against the pinned calc rather than anything learned:
 Build, in the order the evidence supports:
 
 1. **SP belief, open sheets.** Everything but the spread is on the sheet, so the belief is over one
-   object: the allocation of 66 points, ≤32 per stat. Prior from `impute_sp` and the sheet corpus,
+   object: the allocation of 66 points, ≤32 per stat. ~~Prior from `impute_sp`~~ — **not from
+   `impute_sp`**: scored against 19,255 observed turn orders it is 2.9 nats a pair *worse than a
+   flat prior*, because a point mass assigns near-zero probability to everything it did not
+   predict. The prior is now `vgc.belief.prior`, tiered so a rotated regulation with no corpus
+   still has one, and the honest default is flat — the structural zeros (90.9% of Pokémon have a
+   dead offensive stat) and the benchmark classes are both real and neither demonstrably beats
+   uniform where it counts. Prior from the sheet corpus,
    updated by the two channels above. This is the piece that can be gated on **7,459 battles** —
    though the Speed half was gated on 25,000 self-play battles instead, because soundness needs a
    truth the human corpus does not contain.
@@ -487,6 +493,7 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 | --- | --- |
 | **Learned preview / team-strength WP** | A corpus three-plus orders of magnitude larger. The second route — Phase 6 passing, so the simulator could be the target instead of human games — is closed: it failed. (Findings 1, 2, 7.) |
 | **Behaviour cloning** | A higher-rated corpus. VGC-Bench's BC worked on 700,000 logs from *high-rating* players; this corpus is 58% unrated, median 1101. (Finding 5.) |
+| **Self-play spreads from `impute_sp`** | Cancelled as a design, not deferred. All 20,082 pool Pokémon have exactly 32 points in their offensive stat, so nothing that infers offensive investment can be gated on that corpus — and as a prior it is 2.9 nats/pair worse than flat. Generation has to sample spreads from `vgc.belief.prior` instead. |
 | **Self-play generation for WP training** | A policy that passes Phase 6. The rows do not pay for themselves in training (finding 3), and finding 7 removed the other justification. Generating more under *this* policy buys nothing. |
 | **Hyperparameter sweeps on the set encoder** | Nothing — closed off. Every config selected epoch 1 or 2 of 12; the constraint is coverage, not regularization. GPU time is better spent elsewhere. |
 | **PPO self-play fine-tuning** | Nothing. Optional-and-last in v1 for technical reasons; cost and the paper's results both confirm it. |

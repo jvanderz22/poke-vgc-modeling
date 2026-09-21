@@ -1,0 +1,161 @@
+{
+ "regulation": "reg_mc",
+ "replays_scanned": 2500,
+ "racing_pairs": 19255,
+ "benchmark_tier": "usage",
+ "benchmark_speeds": 41,
+ "unit_of_independence": "replay (cluster bootstrap over games, not pairs)",
+ "all_pairs": {
+  "flat": {
+   "pairs": 19255,
+   "mean_logloss": 0.7046314434317362,
+   "ci95": [
+    0.6124,
+    0.8043
+   ]
+  },
+  "imputed (impute_sp)": {
+   "pairs": 19255,
+   "mean_logloss": 1.827871404854779,
+   "ci95": [
+    1.6812,
+    1.9776
+   ]
+  },
+  "structural": {
+   "pairs": 19255,
+   "mean_logloss": 0.7089735365049982,
+   "ci95": [
+    0.6165,
+    0.8087
+   ]
+  },
+  "benchmark (pool tier)": {
+   "pairs": 19255,
+   "mean_logloss": 0.6938409231380804,
+   "ci95": [
+    0.6028,
+    0.7897
+   ]
+  },
+  "benchmark (usage tier)": {
+   "pairs": 19255,
+   "mean_logloss": 0.6932895887593088,
+   "ci95": [
+    0.6021,
+    0.7891
+   ]
+  }
+ },
+ "close_pairs_only": {
+  "flat": {
+   "pairs": 6192,
+   "mean_logloss": 0.4958007085398333,
+   "ci95": [
+    0.478,
+    0.5138
+   ]
+  },
+  "imputed (impute_sp)": {
+   "pairs": 6192,
+   "mean_logloss": 3.4200904408200876,
+   "ci95": [
+    3.1867,
+    3.6725
+   ]
+  },
+  "structural": {
+   "pairs": 6192,
+   "mean_logloss": 0.49741171202049367,
+   "ci95": [
+    0.4781,
+    0.5169
+   ]
+  },
+  "benchmark (pool tier)": {
+   "pairs": 6192,
+   "mean_logloss": 0.5082487283101846,
+   "ci95": [
+    0.4949,
+    0.5221
+   ]
+  },
+  "benchmark (usage tier)": {
+   "pairs": 6192,
+   "mean_logloss": 0.5056276143385691,
+   "ci95": [
+    0.4923,
+    0.5193
+   ]
+  }
+ },
+ "vs_flat_all_pairs": {
+  "imputed (impute_sp)": {
+   "worse_than_flat_by": 1.12258,
+   "ci95": [
+    1.03863,
+    1.21494
+   ],
+   "verdict": "flat is better"
+  },
+  "structural": {
+   "worse_than_flat_by": 0.00434,
+   "ci95": [
+    0.00327,
+    0.00542
+   ],
+   "verdict": "flat is better"
+  },
+  "benchmark (pool tier)": {
+   "worse_than_flat_by": -0.01079,
+   "ci95": [
+    -0.0158,
+    -0.00617
+   ],
+   "verdict": "beats flat"
+  },
+  "benchmark (usage tier)": {
+   "worse_than_flat_by": -0.01134,
+   "ci95": [
+    -0.01633,
+    -0.0066
+   ],
+   "verdict": "beats flat"
+  }
+ },
+ "vs_flat_close_pairs": {
+  "imputed (impute_sp)": {
+   "worse_than_flat_by": 2.92485,
+   "ci95": [
+    2.68949,
+    3.16527
+   ],
+   "verdict": "flat is better"
+  },
+  "structural": {
+   "worse_than_flat_by": 0.00161,
+   "ci95": [
+    -0.00011,
+    0.00346
+   ],
+   "verdict": "not distinguishable"
+  },
+  "benchmark (pool tier)": {
+   "worse_than_flat_by": 0.01246,
+   "ci95": [
+    0.00772,
+    0.01689
+   ],
+   "verdict": "flat is better"
+  },
+  "benchmark (usage tier)": {
+   "worse_than_flat_by": 0.00985,
+   "ci95": [
+    0.00458,
+    0.01475
+   ],
+   "verdict": "flat is better"
+  }
+ },
+ "note": "lower is better; the score is the negative log-likelihood the prior assigns to the turn order that actually happened"
+}
