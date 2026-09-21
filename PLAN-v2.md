@@ -29,7 +29,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](docs/phase4-findings.md) |
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
-| 7 — Deterministic team tools | 🟡 In progress | **usage report done** (`vgc meta usage`, 15,028 sheets); weakness report next. No model, no gate |
+| 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
 | 8 — Belief over hidden sets | — | was Phase 5. **Rescoped:** open sheets hide Stat Points too, so this is not closed-sheet-only (finding 8) |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
@@ -271,15 +271,34 @@ recorded. The last readings of the retired check are kept in the Phase 6 finding
 Re-run this against every new policy. It is the project's standing check that the simulator measures
 the game rather than the bot, and it has now earned that description.
 
-### Phase 7 — Deterministic team tools 🟡 _in progress; independent of Phase 6, which is why it survived it_
+### Phase 7 — Deterministic team tools ✅ _independent of Phase 6, which is why it survived it_
 
 v1 opened Phase 8 with "analytic weakness report first (no model, immediately useful)" and then put
 four phases of ML in front of it. It moves here, alongside a second tool the corpus already supports.
 
-**Weakness report (Q1, and part of Q3).** Type-coverage matrix, speed tiers under Tailwind and Trick
-Room, and real damage calcs against the top-30 meta threats: "nothing on your team OHKOs X", "Y OHKOs
-three of your six", "you lose to Trick Room", "no answer to redirection". Deterministic, explainable,
-every number traceable to the pinned calc.
+**Weakness report ✅ (Q1, and part of Q3)** (`vgc team weakness`, `vgc.building.weakness`).
+Type pressure, speed tiers, and real calcs against the top-30 threats, in ~2s: "Sylveon OHKOes 5 of
+your six", "nothing on your team can OHKO Kingambit even uninvested (best roll 98%)". Deterministic,
+explainable, every number traceable to the pinned calc.
+
+**Finding 8 changed its shape, and for the better.** Their spread is hidden, so "Kingambit OHKOs your
+Sinistcha" is not a fact — it is a fact about an assumed spread. Rather than assume one, the report
+states the **breakpoint**: the fewest Stat Points they must have in the attacking stat for the KO to
+exist, and the fewest for it to be guaranteed. *Arcanine-Hisui's Head Smash OHKOes your Incineroar
+from 0 Atk SP, and always from 14.* That has no free parameter in it, it is what a player wants
+anyway, and it is Phase 8's damage channel run forwards — so this is a down payment on that phase
+rather than something to redo.
+
+The asymmetry is the design. Incoming, the unknown is *one* number, because your own spread is known,
+so the answer is an exact threshold. Outgoing, it is two — their HP and the relevant defence — and no
+single threshold separates the cases, so that half reports a bracket between an uninvested and a fully
+invested defender instead of inventing a spread to sit between them. Speed is one number too, so it
+gets thresholds: *Sneasler needs 28 Speed SP to outrun your Salamence.*
+
+Three things it says out loud rather than burying: a threat is **one set, usually a minority one**
+(Kingambit's most common is 22.4% of its sheets, and the share is printed next to every row); the
+**field is empty** (no terrain, weather, screens, Intimidate or boosts, though 80% of teams bring a
+terrain setter); and battle-scaling abilities are evaluated at base.
 
 **Usage report ✅** (`vgc meta usage`, `vgc.meta.usage`). 15,028 sheets from 7,514 replays, 2,523
 players, 3,347 distinct teams: species usage, item / ability / nature distributions, move frequencies
@@ -301,10 +320,12 @@ counting decisions, each measured rather than assumed:
   them would publish our own guess as a measurement of what people play. Nature is on the sheet, so
   nature is counted; the spread belongs to Phase 8, which infers it rather than assuming it.
 
-_Verification:_ every claim in a weakness report resolves to a calc or a dex lookup, checked against
-the simulator on a sample; usage numbers reconcile to sheet counts (`tests/test_usage.py` — species
-counts sum to 6 × sheets, every distribution sums to its species, partner counts are symmetric); both
-run offline with no model.
+_Verification:_ every claim in a weakness report resolves to a calc or a dex lookup
+(`tests/test_weakness.py` re-runs the calc at N and N−1 for every threshold the report states, so a
+bug in the sweep cannot agree with itself; two breakpoints were also cross-checked by hand against
+`vgc calc`). Usage numbers reconcile to sheet counts (`tests/test_usage.py` — species counts sum to
+6 × sheets, every distribution sums to its species, partner counts are symmetric). Both run offline
+with no model.
 
 ### Phase 8 — Belief over hidden set information _(was Phase 5; "closed-sheet belief")_
 
@@ -517,7 +538,7 @@ Kaggle before paid.
 | --- | --- | --- |
 | W1 | Phase 3 ✅ partial | `vgc web`, team library, validation, active team, bring/lead ranking. **Still missing:** pokepast.es fetching, calc panel, per-turn input, WP timeline |
 | **W2** | **Phase 5** 🟡 | In-battle WP routed to a gate-passing model and banner-flagged ✅; **left:** the per-turn WP timeline |
-| **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — **the next web work**, and Phase 6 made it the next *useful* work too |
+| **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — **the next web work** now that both exist on the CLI, and Phase 6 made it the next *useful* work too |
 | W3 | Phase 8 | Belief panel — **for open-sheet games too**, where the unknown is the spread: inferred speed ranges and damage-implied SP, with manual corrections. The stopgap's share display survives |
 | W4 | Phases 9–10 | EWP action table with intervals and worst-case replies; on-demand bring/lead simulation; state-reconstruction parity checks; post-game review. Gated on Phase 6 passing against the Phase 9 policy — an app that ranks brings under a policy that fails it would be presenting the bot's opinion as the game's |
 | W5 | Phase 11 | Complete-my-team and moveset/SP suggestions |

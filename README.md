@@ -33,6 +33,7 @@ Training uses a separate `.venv-train` (see the Phase 0 findings).
 vgc regulation                                   # what Reg M-C allows, and the pins
 vgc team validate team.txt --showdown            # SP budget, clauses, pool, no Tera; cross-checks Showdown
 vgc team stats team.txt                          # level-50 stats, including Mega formes
+vgc team weakness team.txt                       # what the meta does to it: KO breakpoints, speed, holes
 vgc calc --attacker "Garchomp @ Garchompite Z | Jolly Nature | EVs: 32 Atk / 32 Spe" --attacker-mega \
          --defender "Kingambit | Careful Nature | EVs: 32 HP / 32 Def" --move Earthquake
 vgc server start | status | stop                 # local Showdown on :8000, --no-security
@@ -80,7 +81,7 @@ data/teams/<id>/         team pools and usage reports built from open team sheet
 data/splits/<id>.json    the frozen held-out split (tracked; never re-rolled)
 data/selfplay/, data/snapshots/, data/replays/   generated / cached, not tracked
 sidecar/                 Node helpers: calc server, Showdown dex export, damage sampler, battle runner
-src/vgc/                 regulation · engine · teams · policy · meta · sim · data · cli  (building · mcp to come)
+src/vgc/                 regulation · engine · teams · policy · meta · sim · data · building · cli  (mcp to come)
 ```
 
 ## Docs

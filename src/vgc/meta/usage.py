@@ -160,12 +160,15 @@ class _Species:
     natures: Counter = field(default_factory=Counter)
     moves: Counter = field(default_factory=Counter)
     partners: Counter = field(default_factory=Counter)
+    sets: Counter = field(default_factory=Counter)  # the joint (item, ability, nature, moves)
 
 
 def build(reg: Regulation, source: Iterable[dict] | None = None, *,
-          min_rating: int | None = None, top: int = 12) -> dict[str, Any]:
+          min_rating: int | None = None, top: int = 12, sets: int = 3) -> dict[str, Any]:
     """Count the corpus. `top` caps how many entries each distribution keeps, except items and
     abilities, which are short enough to report whole.
+
+    `sets` caps the joint item/ability/nature/moves combinations kept per species.
 
     `min_rating` keeps only sheets from replays carrying at least that rating. Ratings are sparse
     and belong to the *battle*, not the player, so the filter is reported alongside how many sheets
@@ -201,6 +204,12 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
             s.natures[mon.nature or "(none)"] += 1
             for move in dict.fromkeys(mon.moves):  # a sheet counts a move once
                 s.moves[move] += 1
+            # The marginals above are not a set. Item mode, ability mode and nature mode need not
+            # co-occur on any real sheet, and a threat has to be something somebody actually
+            # brought — so the joint combination is counted too, and it is also the object
+            # Phase 8's set prior is P(·|species) *of*.
+            s.sets[(mon.item or "(none)", mon.ability or "(none)", mon.nature or "(none)",
+                    tuple(sorted(dict.fromkeys(mon.moves))))] += 1
             for other in ids:
                 if other != mon.species_id:
                     s.partners[other] += 1
@@ -220,6 +229,9 @@ def build(reg: Regulation, source: Iterable[dict] | None = None, *,
             "natures": _counts(s.natures, s.sheets)[:top],
             "moves": _counts(s.moves, s.sheets)[:top],
             "partners": _partners(s, per, n_sheets, top),
+            "sets": [{"item": i, "ability": a, "nature": nat, "moves": list(mv),
+                      "sheets": n, "share": n / s.sheets}
+                     for (i, a, nat, mv), n in s.sets.most_common(sets)],
         }
     return {
         "regulation": reg.id,

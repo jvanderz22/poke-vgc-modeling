@@ -371,6 +371,47 @@
      "share": 0.14128526278824768,
      "lift": 0.7869662450636716
     }
+   ],
+   "sets": [
+    {
+     "item": "Miracle Seed",
+     "ability": "Grassy Surge",
+     "nature": "Adamant",
+     "moves": [
+      "Fake Out",
+      "Grassy Glide",
+      "High Horsepower",
+      "Wood Hammer"
+     ],
+     "sheets": 3280,
+     "share": 0.38394006789184126
+    },
+    {
+     "item": "Miracle Seed",
+     "ability": "Grassy Surge",
+     "nature": "Adamant",
+     "moves": [
+      "Fake Out",
+      "Grassy Glide",
+      "U-turn",
+      "Wood Hammer"
+     ],
+     "sheets": 1600,
+     "share": 0.18728783799602014
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Grassy Surge",
+     "nature": "Adamant",
+     "moves": [
+      "Fake Out",
+      "Grassy Glide",
+      "U-turn",
+      "Wood Hammer"
+     ],
+     "sheets": 441,
+     "share": 0.051621210347653046
+    }
    ]
   },
   "sneasler": {
@@ -645,6 +686,47 @@
      "share": 0.14400630914826498,
      "lift": 0.9193401928122881
     }
+   ],
+   "sets": [
+    {
+     "item": "Grassy Seed",
+     "ability": "Unburden",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Dire Claw",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 755,
+     "share": 0.11908517350157728
+    },
+    {
+     "item": "Psychic Seed",
+     "ability": "Unburden",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Dire Claw",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 580,
+     "share": 0.0914826498422713
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Unburden",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Dire Claw",
+      "Fake Out",
+      "Protect"
+     ],
+     "sheets": 439,
+     "share": 0.0692429022082019
+    }
    ]
   },
   "salamence": {
@@ -883,6 +965,47 @@
      "sheets": 672,
      "share": 0.1364467005076142,
      "lift": 2.0670574750286552
+    }
+   ],
+   "sets": [
+    {
+     "item": "Salamencite",
+     "ability": "Intimidate",
+     "nature": "Timid",
+     "moves": [
+      "Draco Meteor",
+      "Hyper Voice",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 1918,
+     "share": 0.38944162436548224
+    },
+    {
+     "item": "Salamencite",
+     "ability": "Intimidate",
+     "nature": "Timid",
+     "moves": [
+      "Flamethrower",
+      "Hyper Voice",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 425,
+     "share": 0.08629441624365482
+    },
+    {
+     "item": "Salamencite",
+     "ability": "Intimidate",
+     "nature": "Naive",
+     "moves": [
+      "Double-Edge",
+      "Hyper Voice",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 289,
+     "share": 0.05868020304568528
     }
    ]
   },
@@ -1208,6 +1331,47 @@
      "share": 0.11378958120531155,
      "lift": 2.5184533525087214
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Careful",
+     "moves": [
+      "Fake Out",
+      "Flare Blitz",
+      "Parting Shot",
+      "Throat Chop"
+     ],
+     "sheets": 765,
+     "share": 0.15628192032686414
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Impish",
+     "moves": [
+      "Fake Out",
+      "Flare Blitz",
+      "Parting Shot",
+      "Throat Chop"
+     ],
+     "sheets": 441,
+     "share": 0.09009193054136874
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Careful",
+     "moves": [
+      "Darkest Lariat",
+      "Fake Out",
+      "Flare Blitz",
+      "Parting Shot"
+     ],
+     "sheets": 266,
+     "share": 0.05434116445352401
+    }
    ]
   },
   "gholdengo": {
@@ -1487,6 +1651,47 @@
      "share": 0.11322921451538814,
      "lift": 0.7228583839155706
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Good as Gold",
+     "nature": "Timid",
+     "moves": [
+      "Make It Rain",
+      "Nasty Plot",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 2090,
+     "share": 0.48001837390904917
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Good as Gold",
+     "nature": "Modest",
+     "moves": [
+      "Make It Rain",
+      "Nasty Plot",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 1260,
+     "share": 0.28938906752411575
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Good as Gold",
+     "nature": "Modest",
+     "moves": [
+      "Make It Rain",
+      "Nasty Plot",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 407,
+     "share": 0.09347726228755168
+    }
    ]
   },
   "kingambit": {
@@ -1761,6 +1966,47 @@
      "share": 0.16248313090418354,
      "lift": 1.2251863980070596
     }
+   ],
+   "sets": [
+    {
+     "item": "Chople Berry",
+     "ability": "Defiant",
+     "nature": "Adamant",
+     "moves": [
+      "Iron Head",
+      "Kowtow Cleave",
+      "Low Kick",
+      "Sucker Punch"
+     ],
+     "sheets": 830,
+     "share": 0.22402159244264508
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Defiant",
+     "nature": "Adamant",
+     "moves": [
+      "Iron Head",
+      "Kowtow Cleave",
+      "Low Kick",
+      "Sucker Punch"
+     ],
+     "sheets": 362,
+     "share": 0.09770580296896086
+    },
+    {
+     "item": "Black Glasses",
+     "ability": "Defiant",
+     "nature": "Adamant",
+     "moves": [
+      "Kowtow Cleave",
+      "Protect",
+      "Sucker Punch",
+      "Swords Dance"
+     ],
+     "sheets": 359,
+     "share": 0.09689608636977058
+    }
    ]
   },
   "arcaninehisui": {
@@ -2010,6 +2256,47 @@
      "share": 0.10184574818721161,
      "lift": 1.599308154396464
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Rock Head",
+     "nature": "Jolly",
+     "moves": [
+      "Extreme Speed",
+      "Flare Blitz",
+      "Head Smash",
+      "Protect"
+     ],
+     "sheets": 2475,
+     "share": 0.8157547791694133
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Rock Head",
+     "nature": "Adamant",
+     "moves": [
+      "Extreme Speed",
+      "Flare Blitz",
+      "Head Smash",
+      "Protect"
+     ],
+     "sheets": 203,
+     "share": 0.06690837178642056
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Rock Head",
+     "nature": "Jolly",
+     "moves": [
+      "Flare Blitz",
+      "Head Smash",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 101,
+     "share": 0.033289386947923535
+    }
    ]
   },
   "raichu": {
@@ -2238,6 +2525,47 @@
      "sheets": 251,
      "share": 0.08391842193246406,
      "lift": 1.1043135243441944
+    }
+   ],
+   "sets": [
+    {
+     "item": "Raichunite Y",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Focus Blast",
+      "Protect",
+      "Zap Cannon"
+     ],
+     "sheets": 2057,
+     "share": 0.6877298562353727
+    },
+    {
+     "item": "Raichunite Y",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Focus Blast",
+      "Protect",
+      "Zap Cannon"
+     ],
+     "sheets": 345,
+     "share": 0.11534603811434303
+    },
+    {
+     "item": "Raichunite Y",
+     "ability": "Static",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Focus Blast",
+      "Protect",
+      "Zap Cannon"
+     ],
+     "sheets": 221,
+     "share": 0.07388833166165162
     }
    ]
   },
@@ -2497,6 +2825,47 @@
      "sheets": 383,
      "share": 0.1419570051890289,
      "lift": 1.115175051741101
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Adaptability",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Jet",
+      "Last Respects",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 753,
+     "share": 0.27909562638991847
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Adaptability",
+     "nature": "Jolly",
+     "moves": [
+      "Aqua Jet",
+      "Flip Turn",
+      "Last Respects",
+      "Wave Crash"
+     ],
+     "sheets": 715,
+     "share": 0.2650111193476649
+    },
+    {
+     "item": "Mystic Water",
+     "ability": "Adaptability",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Jet",
+      "Last Respects",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 322,
+     "share": 0.11934766493699037
     }
    ]
   },
@@ -2776,6 +3145,47 @@
      "sheets": 295,
      "share": 0.11425251742835012,
      "lift": 0.8203472679948617
+    }
+   ],
+   "sets": [
+    {
+     "item": "Rocky Helmet",
+     "ability": "Psychic Surge",
+     "nature": "Bold",
+     "moves": [
+      "Follow Me",
+      "Helping Hand",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 215,
+     "share": 0.08326878388845856
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Psychic Surge",
+     "nature": "Calm",
+     "moves": [
+      "Follow Me",
+      "Helping Hand",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 148,
+     "share": 0.05731990704879938
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Psychic Surge",
+     "nature": "Relaxed",
+     "moves": [
+      "Follow Me",
+      "Helping Hand",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 136,
+     "share": 0.052672347017815646
     }
    ]
   },
@@ -3076,6 +3486,47 @@
      "share": 0.1427357689039932,
      "lift": 1.8783127277488703
     }
+   ],
+   "sets": [
+    {
+     "item": "Garchompite Z",
+     "ability": "Rough Skin",
+     "nature": "Modest",
+     "moves": [
+      "Draco Meteor",
+      "Flamethrower",
+      "Power Gem",
+      "Protect"
+     ],
+     "sheets": 299,
+     "share": 0.127017841971113
+    },
+    {
+     "item": "Garchompite Z",
+     "ability": "Rough Skin",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Flamethrower",
+      "Power Gem",
+      "Protect"
+     ],
+     "sheets": 190,
+     "share": 0.08071367884451996
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Rough Skin",
+     "nature": "Jolly",
+     "moves": [
+      "Dragon Claw",
+      "Protect",
+      "Rock Slide",
+      "Stomping Tantrum"
+     ],
+     "sheets": 177,
+     "share": 0.0751911639762107
+    }
    ]
   },
   "milotic": {
@@ -3334,6 +3785,47 @@
      "sheets": 363,
      "share": 0.15552699228791775,
      "lift": 2.442277575865024
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Competitive",
+     "nature": "Calm",
+     "moves": [
+      "Coil",
+      "Hypnosis",
+      "Muddy Water",
+      "Protect"
+     ],
+     "sheets": 326,
+     "share": 0.13967437874892888
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Competitive",
+     "nature": "Modest",
+     "moves": [
+      "Ice Beam",
+      "Icy Wind",
+      "Protect",
+      "Scald"
+     ],
+     "sheets": 324,
+     "share": 0.13881748071979436
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Competitive",
+     "nature": "Bold",
+     "moves": [
+      "Ice Beam",
+      "Icy Wind",
+      "Protect",
+      "Scald"
+     ],
+     "sheets": 127,
+     "share": 0.054413024850042846
     }
    ]
   },
@@ -3629,6 +4121,47 @@
      "share": 0.1409460105112279,
      "lift": 0.8203472679948617
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Armor Tail",
+     "nature": "Bold",
+     "moves": [
+      "Protect",
+      "Psychic",
+      "Thunderbolt",
+      "Trick Room"
+     ],
+     "sheets": 140,
+     "share": 0.06688963210702341
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Armor Tail",
+     "nature": "Quiet",
+     "moves": [
+      "Expanding Force",
+      "Protect",
+      "Thunderbolt",
+      "Trick Room"
+     ],
+     "sheets": 90,
+     "share": 0.04300047778308648
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Armor Tail",
+     "nature": "Bold",
+     "moves": [
+      "Helping Hand",
+      "Psychic",
+      "Thunderbolt",
+      "Trick Room"
+     ],
+     "sheets": 77,
+     "share": 0.03678929765886288
+    }
    ]
   },
   "sylveon": {
@@ -3863,6 +4396,47 @@
      "share": 0.15654791771199197,
      "lift": 0.37107288759870904
     }
+   ],
+   "sets": [
+    {
+     "item": "Fairy Feather",
+     "ability": "Pixilate",
+     "nature": "Modest",
+     "moves": [
+      "Detect",
+      "Hyper Beam",
+      "Hyper Voice",
+      "Quick Attack"
+     ],
+     "sheets": 1106,
+     "share": 0.554942298043151
+    },
+    {
+     "item": "Fairy Feather",
+     "ability": "Pixilate",
+     "nature": "Modest",
+     "moves": [
+      "Hyper Beam",
+      "Hyper Voice",
+      "Protect",
+      "Quick Attack"
+     ],
+     "sheets": 377,
+     "share": 0.18916206723532364
+    },
+    {
+     "item": "Fairy Feather",
+     "ability": "Pixilate",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Hyper Beam",
+      "Hyper Voice",
+      "Protect"
+     ],
+     "sheets": 57,
+     "share": 0.028600100351229302
+    }
    ]
   },
   "floetteeternal": {
@@ -4071,6 +4645,47 @@
      "sheets": 192,
      "share": 0.09761057447890188,
      "lift": 2.7114449413473887
+    }
+   ],
+   "sets": [
+    {
+     "item": "Floettite",
+     "ability": "Flower Veil",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Dazzling Gleam",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 677,
+     "share": 0.344178952719878
+    },
+    {
+     "item": "Floettite",
+     "ability": "Flower Veil",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Light of Ruin",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 290,
+     "share": 0.14743263853584138
+    },
+    {
+     "item": "Floettite",
+     "ability": "Flower Veil",
+     "nature": "Timid",
+     "moves": [
+      "Calm Mind",
+      "Dazzling Gleam",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 281,
+     "share": 0.14285714285714285
     }
    ]
   },
@@ -4295,6 +4910,47 @@
      "sheets": 340,
      "share": 0.17773131207527443,
      "lift": 1.5288758774282907
+    }
+   ],
+   "sets": [
+    {
+     "item": "Charizardite Y",
+     "ability": "Blaze",
+     "nature": "Modest",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Solar Beam",
+      "Weather Ball"
+     ],
+     "sheets": 435,
+     "share": 0.22739153162571876
+    },
+    {
+     "item": "Charizardite Y",
+     "ability": "Blaze",
+     "nature": "Modest",
+     "moves": [
+      "Ancient Power",
+      "Heat Wave",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 301,
+     "share": 0.15734448510193413
+    },
+    {
+     "item": "Charizardite Y",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Solar Beam",
+      "Weather Ball"
+     ],
+     "sheets": 188,
+     "share": 0.0982749607945635
     }
    ]
   },
@@ -4585,6 +5241,47 @@
      "share": 0.1728677733257012,
      "lift": 0.9628824675828901
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Stamina",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Electro Shot",
+      "Flash Cannon",
+      "Protect"
+     ],
+     "sheets": 620,
+     "share": 0.35489410417859185
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Stamina",
+     "nature": "Calm",
+     "moves": [
+      "Dragon Pulse",
+      "Electro Shot",
+      "Flash Cannon",
+      "Protect"
+     ],
+     "sheets": 318,
+     "share": 0.18202633085289066
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Stamina",
+     "nature": "Bold",
+     "moves": [
+      "Dragon Pulse",
+      "Electro Shot",
+      "Flash Cannon",
+      "Protect"
+     ],
+     "sheets": 297,
+     "share": 0.1700057240984545
+    }
    ]
   },
   "golisopod": {
@@ -4808,6 +5505,47 @@
      "sheets": 244,
      "share": 0.14104046242774568,
      "lift": 0.9004061467137477
+    }
+   ],
+   "sets": [
+    {
+     "item": "Golisopite",
+     "ability": "Emergency Exit",
+     "nature": "Adamant",
+     "moves": [
+      "Iron Head",
+      "Leech Life",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 382,
+     "share": 0.2208092485549133
+    },
+    {
+     "item": "Golisopite",
+     "ability": "Emergency Exit",
+     "nature": "Adamant",
+     "moves": [
+      "Leech Life",
+      "Protect",
+      "Sucker Punch",
+      "Swords Dance"
+     ],
+     "sheets": 169,
+     "share": 0.09768786127167631
+    },
+    {
+     "item": "Golisopite",
+     "ability": "Emergency Exit",
+     "nature": "Brave",
+     "moves": [
+      "Iron Head",
+      "Leech Life",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 133,
+     "share": 0.07687861271676301
     }
    ]
   },
@@ -5113,6 +5851,47 @@
      "share": 0.12268518518518519,
      "lift": 1.70398610255357
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Drizzle",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Tailwind",
+      "Weather Ball",
+      "Wide Guard"
+     ],
+     "sheets": 221,
+     "share": 0.12789351851851852
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Drizzle",
+     "nature": "Modest",
+     "moves": [
+      "Hurricane",
+      "Tailwind",
+      "Weather Ball",
+      "Wide Guard"
+     ],
+     "sheets": 207,
+     "share": 0.11979166666666667
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Drizzle",
+     "nature": "Modest",
+     "moves": [
+      "Hurricane",
+      "Tailwind",
+      "Weather Ball",
+      "Wide Guard"
+     ],
+     "sheets": 199,
+     "share": 0.11516203703703703
+    }
    ]
   },
   "staraptor": {
@@ -5326,6 +6105,47 @@
      "sheets": 98,
      "share": 0.07469512195121951,
      "lift": 0.1770533584673386
+    }
+   ],
+   "sets": [
+    {
+     "item": "Staraptite",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Close Combat",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 857,
+     "share": 0.6532012195121951
+    },
+    {
+     "item": "Staraptite",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Close Combat",
+      "Protect",
+      "Roost"
+     ],
+     "sheets": 134,
+     "share": 0.10213414634146341
+    },
+    {
+     "item": "Staraptite",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Dual Wingbeat",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 109,
+     "share": 0.08307926829268293
     }
    ]
   },
@@ -5590,6 +6410,47 @@
      "sheets": 97,
      "share": 0.07674050632911393,
      "lift": 0.8790063484100032
+    }
+   ],
+   "sets": [
+    {
+     "item": "Tyranitarite",
+     "ability": "Sand Stream",
+     "nature": "Adamant",
+     "moves": [
+      "Knock Off",
+      "Low Kick",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 367,
+     "share": 0.2903481012658228
+    },
+    {
+     "item": "Tyranitarite",
+     "ability": "Sand Stream",
+     "nature": "Jolly",
+     "moves": [
+      "Knock Off",
+      "Low Kick",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 307,
+     "share": 0.24287974683544303
+    },
+    {
+     "item": "Chople Berry",
+     "ability": "Sand Stream",
+     "nature": "Adamant",
+     "moves": [
+      "Knock Off",
+      "Low Kick",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 126,
+     "share": 0.09968354430379747
     }
    ]
   },
@@ -5860,6 +6721,47 @@
      "share": 0.1033091202582728,
      "lift": 0.7892879813123149
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Psychic Surge",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Imprison",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 264,
+     "share": 0.21307506053268765
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Psychic Surge",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Mystical Fire",
+      "Protect",
+      "Trick"
+     ],
+     "sheets": 94,
+     "share": 0.07586763518966909
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Psychic Surge",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Mystical Fire",
+      "Protect",
+      "Trick"
+     ],
+     "sheets": 79,
+     "share": 0.06376109765940274
+    }
    ]
   },
   "volcarona": {
@@ -6099,6 +7001,47 @@
      "share": 0.14273204903677758,
      "lift": 1.090481562239295
     }
+   ],
+   "sets": [
+    {
+     "item": "Grassy Seed",
+     "ability": "Flame Body",
+     "nature": "Modest",
+     "moves": [
+      "Giga Drain",
+      "Heat Wave",
+      "Protect",
+      "Quiver Dance"
+     ],
+     "sheets": 178,
+     "share": 0.15586690017513136
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Flame Body",
+     "nature": "Modest",
+     "moves": [
+      "Bug Buzz",
+      "Heat Wave",
+      "Protect",
+      "Quiver Dance"
+     ],
+     "sheets": 93,
+     "share": 0.08143607705779335
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Flame Body",
+     "nature": "Modest",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Quiver Dance",
+      "Struggle Bug"
+     ],
+     "sheets": 74,
+     "share": 0.0647985989492119
+    }
    ]
   },
   "gardevoir": {
@@ -6298,6 +7241,47 @@
      "share": 0.10628465804066543,
      "lift": 4.013180505113367
     }
+   ],
+   "sets": [
+    {
+     "item": "Gardevoirite",
+     "ability": "Trace",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Hyper Voice",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 223,
+     "share": 0.20609981515711645
+    },
+    {
+     "item": "Gardevoirite",
+     "ability": "Trace",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Hyper Voice",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 147,
+     "share": 0.13585951940850277
+    },
+    {
+     "item": "Gardevoirite",
+     "ability": "Telepathy",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Hyper Voice",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 87,
+     "share": 0.08040665434380777
+    }
    ]
   },
   "froslass": {
@@ -6496,6 +7480,47 @@
      "sheets": 127,
      "share": 0.11924882629107982,
      "lift": 1.5692393708426862
+    }
+   ],
+   "sets": [
+    {
+     "item": "Froslassite",
+     "ability": "Cursed Body",
+     "nature": "Timid",
+     "moves": [
+      "Aurora Veil",
+      "Blizzard",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 461,
+     "share": 0.4328638497652582
+    },
+    {
+     "item": "Froslassite",
+     "ability": "Snow Cloak",
+     "nature": "Timid",
+     "moves": [
+      "Aurora Veil",
+      "Blizzard",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 191,
+     "share": 0.17934272300469484
+    },
+    {
+     "item": "Froslassite",
+     "ability": "Cursed Body",
+     "nature": "Timid",
+     "moves": [
+      "Aurora Veil",
+      "Blizzard",
+      "Protect",
+      "Rain Dance"
+     ],
+     "sheets": 118,
+     "share": 0.1107981220657277
     }
    ]
   },
@@ -6751,6 +7776,47 @@
      "share": 0.1424390243902439,
      "lift": 0.4346342453881391
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Prankster",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Moonblast",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 367,
+     "share": 0.35804878048780486
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Prankster",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Moonblast",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 57,
+     "share": 0.055609756097560976
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Prankster",
+     "nature": "Modest",
+     "moves": [
+      "Encore",
+      "Moonblast",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 34,
+     "share": 0.033170731707317075
+    }
    ]
   },
   "excadrill": {
@@ -6980,6 +8046,47 @@
      "share": 0.07661290322580645,
      "lift": 0.48909885712719603
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Sand Rush",
+     "nature": "Adamant",
+     "moves": [
+      "High Horsepower",
+      "Iron Head",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 439,
+     "share": 0.4425403225806452
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Sand Rush",
+     "nature": "Jolly",
+     "moves": [
+      "High Horsepower",
+      "Iron Head",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 221,
+     "share": 0.22278225806451613
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Sand Rush",
+     "nature": "Adamant",
+     "moves": [
+      "Earthquake",
+      "High Horsepower",
+      "Iron Head",
+      "Protect"
+     ],
+     "sheets": 164,
+     "share": 0.16532258064516128
+    }
    ]
   },
   "metagross": {
@@ -7199,6 +8306,47 @@
      "share": 0.09090909090909091,
      "lift": 2.5252898672492017
     }
+   ],
+   "sets": [
+    {
+     "item": "Metagrossite",
+     "ability": "Clear Body",
+     "nature": "Adamant",
+     "moves": [
+      "Body Press",
+      "Protect",
+      "Psychic Fangs",
+      "Steel Roller"
+     ],
+     "sheets": 179,
+     "share": 0.18704284221525602
+    },
+    {
+     "item": "Metagrossite",
+     "ability": "Clear Body",
+     "nature": "Jolly",
+     "moves": [
+      "Iron Head",
+      "Protect",
+      "Psychic Fangs",
+      "Stomping Tantrum"
+     ],
+     "sheets": 141,
+     "share": 0.14733542319749215
+    },
+    {
+     "item": "Metagrossite",
+     "ability": "Clear Body",
+     "nature": "Jolly",
+     "moves": [
+      "Body Press",
+      "Iron Head",
+      "Protect",
+      "Psychic Fangs"
+     ],
+     "sheets": 94,
+     "share": 0.09822361546499478
+    }
    ]
   },
   "gengar": {
@@ -7392,6 +8540,47 @@
      "sheets": 38,
      "share": 0.045454545454545456,
      "lift": 5.508797653958944
+    }
+   ],
+   "sets": [
+    {
+     "item": "Gengarite",
+     "ability": "Cursed Body",
+     "nature": "Modest",
+     "moves": [
+      "Perish Song",
+      "Protect",
+      "Shadow Ball",
+      "Sludge Bomb"
+     ],
+     "sheets": 507,
+     "share": 0.6064593301435407
+    },
+    {
+     "item": "Gengarite",
+     "ability": "Cursed Body",
+     "nature": "Timid",
+     "moves": [
+      "Perish Song",
+      "Protect",
+      "Shadow Ball",
+      "Sludge Bomb"
+     ],
+     "sheets": 98,
+     "share": 0.11722488038277512
+    },
+    {
+     "item": "Gengarite",
+     "ability": "Cursed Body",
+     "nature": "Timid",
+     "moves": [
+      "Disable",
+      "Perish Song",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 60,
+     "share": 0.07177033492822966
     }
    ]
   },
@@ -7621,6 +8810,47 @@
      "sheets": 122,
      "share": 0.16598639455782313,
      "lift": 3.657541843716959
+    }
+   ],
+   "sets": [
+    {
+     "item": "Swampertite",
+     "ability": "Torrent",
+     "nature": "Adamant",
+     "moves": [
+      "Earthquake",
+      "Ice Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 234,
+     "share": 0.3183673469387755
+    },
+    {
+     "item": "Swampertite",
+     "ability": "Damp",
+     "nature": "Adamant",
+     "moves": [
+      "Earthquake",
+      "Ice Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 175,
+     "share": 0.23809523809523808
+    },
+    {
+     "item": "Swampertite",
+     "ability": "Torrent",
+     "nature": "Adamant",
+     "moves": [
+      "High Horsepower",
+      "Ice Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 119,
+     "share": 0.1619047619047619
     }
    ]
   },
@@ -7906,6 +9136,47 @@
      "share": 0.10260115606936417,
      "lift": 0.8922975540569471
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Flash Fire",
+     "nature": "Quiet",
+     "moves": [
+      "Armor Cannon",
+      "Expanding Force",
+      "Trick Room",
+      "Wide Guard"
+     ],
+     "sheets": 80,
+     "share": 0.11560693641618497
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Flash Fire",
+     "nature": "Modest",
+     "moves": [
+      "Armor Cannon",
+      "Expanding Force",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 78,
+     "share": 0.11271676300578035
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Flash Fire",
+     "nature": "Timid",
+     "moves": [
+      "Armor Cannon",
+      "Expanding Force",
+      "Protect",
+      "Wide Guard"
+     ],
+     "sheets": 49,
+     "share": 0.0708092485549133
+    }
    ]
   },
   "venusaur": {
@@ -8119,6 +9390,47 @@
      "sheets": 83,
      "share": 0.1217008797653959,
      "lift": 0.8738274348372526
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Chlorophyll",
+     "nature": "Modest",
+     "moves": [
+      "Leaf Storm",
+      "Protect",
+      "Sleep Powder",
+      "Sludge Bomb"
+     ],
+     "sheets": 116,
+     "share": 0.17008797653958943
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Chlorophyll",
+     "nature": "Modest",
+     "moves": [
+      "Earth Power",
+      "Protect",
+      "Sleep Powder",
+      "Sludge Bomb"
+     ],
+     "sheets": 67,
+     "share": 0.09824046920821114
+    },
+    {
+     "item": "Venusaurite",
+     "ability": "Chlorophyll",
+     "nature": "Modest",
+     "moves": [
+      "Earth Power",
+      "Giga Drain",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 66,
+     "share": 0.0967741935483871
     }
    ]
   },
@@ -8379,6 +9691,47 @@
      "share": 0.05154639175257732,
      "lift": 6.247090123046225
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Drizzle",
+     "nature": "Calm",
+     "moves": [
+      "Encore",
+      "Perish Song",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 360,
+     "share": 0.5301914580265096
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Drizzle",
+     "nature": "Calm",
+     "moves": [
+      "Helping Hand",
+      "Ice Beam",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 34,
+     "share": 0.050073637702503684
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Drizzle",
+     "nature": "Calm",
+     "moves": [
+      "Helping Hand",
+      "Perish Song",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 28,
+     "share": 0.041237113402061855
+    }
    ]
   },
   "glimmora": {
@@ -8587,6 +9940,47 @@
      "sheets": 75,
      "share": 0.11432926829268293,
      "lift": 0.7361354943883629
+    }
+   ],
+   "sets": [
+    {
+     "item": "Glimmoranite",
+     "ability": "Toxic Debris",
+     "nature": "Timid",
+     "moves": [
+      "Earth Power",
+      "Power Gem",
+      "Sludge Bomb",
+      "Spiky Shield"
+     ],
+     "sheets": 216,
+     "share": 0.32926829268292684
+    },
+    {
+     "item": "Glimmoranite",
+     "ability": "Toxic Debris",
+     "nature": "Modest",
+     "moves": [
+      "Earth Power",
+      "Power Gem",
+      "Sludge Bomb",
+      "Spiky Shield"
+     ],
+     "sheets": 165,
+     "share": 0.25152439024390244
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Toxic Debris",
+     "nature": "Modest",
+     "moves": [
+      "Earth Power",
+      "Power Gem",
+      "Sludge Bomb",
+      "Spiky Shield"
+     ],
+     "sheets": 99,
+     "share": 0.15091463414634146
     }
    ]
   },
@@ -8801,6 +10195,47 @@
      "sheets": 67,
      "share": 0.10894308943089431,
      "lift": 3.280955406748456
+    }
+   ],
+   "sets": [
+    {
+     "item": "Lucarionite Z",
+     "ability": "Inner Focus",
+     "nature": "Timid",
+     "moves": [
+      "Aura Sphere",
+      "Calm Mind",
+      "Flash Cannon",
+      "Protect"
+     ],
+     "sheets": 83,
+     "share": 0.13495934959349593
+    },
+    {
+     "item": "Lucarionite Z",
+     "ability": "Inner Focus",
+     "nature": "Timid",
+     "moves": [
+      "Aura Sphere",
+      "Calm Mind",
+      "Detect",
+      "Flash Cannon"
+     ],
+     "sheets": 46,
+     "share": 0.07479674796747968
+    },
+    {
+     "item": "Lucarionite Z",
+     "ability": "Inner Focus",
+     "nature": "Timid",
+     "moves": [
+      "Aura Sphere",
+      "Dark Pulse",
+      "Detect",
+      "Flash Cannon"
+     ],
+     "sheets": 43,
+     "share": 0.06991869918699187
     }
    ]
   },
@@ -9051,6 +10486,47 @@
      "share": 0.09640522875816994,
      "lift": 0.6154536014349099
     }
+   ],
+   "sets": [
+    {
+     "item": "Light Clay",
+     "ability": "Prankster",
+     "nature": "Careful",
+     "moves": [
+      "Light Screen",
+      "Parting Shot",
+      "Reflect",
+      "Spirit Break"
+     ],
+     "sheets": 176,
+     "share": 0.2875816993464052
+    },
+    {
+     "item": "Light Clay",
+     "ability": "Prankster",
+     "nature": "Sassy",
+     "moves": [
+      "Light Screen",
+      "Parting Shot",
+      "Reflect",
+      "Spirit Break"
+     ],
+     "sheets": 165,
+     "share": 0.2696078431372549
+    },
+    {
+     "item": "Light Clay",
+     "ability": "Prankster",
+     "nature": "Calm",
+     "moves": [
+      "Foul Play",
+      "Light Screen",
+      "Parting Shot",
+      "Reflect"
+     ],
+     "sheets": 69,
+     "share": 0.11274509803921569
+    }
    ]
   },
   "kommoo": {
@@ -9300,6 +10776,47 @@
      "share": 0.16666666666666666,
      "lift": 0.6760233918128654
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Soundproof",
+     "nature": "Modest",
+     "moves": [
+      "Aura Sphere",
+      "Clanging Scales",
+      "Clangorous Soul",
+      "Protect"
+     ],
+     "sheets": 212,
+     "share": 0.3719298245614035
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Soundproof",
+     "nature": "Modest",
+     "moves": [
+      "Aura Sphere",
+      "Clanging Scales",
+      "Flamethrower",
+      "Protect"
+     ],
+     "sheets": 99,
+     "share": 0.1736842105263158
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Soundproof",
+     "nature": "Modest",
+     "moves": [
+      "Clanging Scales",
+      "Clangorous Soul",
+      "Flamethrower",
+      "Protect"
+     ],
+     "sheets": 87,
+     "share": 0.15263157894736842
+    }
    ]
   },
   "dragonite": {
@@ -9544,6 +11061,47 @@
      "share": 0.13493530499075784,
      "lift": 1.160737128449404
     }
+   ],
+   "sets": [
+    {
+     "item": "Dragoninite",
+     "ability": "Multiscale",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Heat Wave",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 115,
+     "share": 0.21256931608133087
+    },
+    {
+     "item": "Dragoninite",
+     "ability": "Inner Focus",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Heat Wave",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 63,
+     "share": 0.11645101663585952
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Inner Focus",
+     "nature": "Adamant",
+     "moves": [
+      "Dragon Claw",
+      "Extreme Speed",
+      "Protect",
+      "Superpower"
+     ],
+     "sheets": 47,
+     "share": 0.08687615526802218
+    }
    ]
   },
   "annihilape": {
@@ -9787,6 +11345,47 @@
      "sheets": 67,
      "share": 0.127134724857685,
      "lift": 2.8014378961309245
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Defiant",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Ice Punch",
+      "Rage Fist",
+      "U-turn"
+     ],
+     "sheets": 62,
+     "share": 0.11764705882352941
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Defiant",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Ice Punch",
+      "Phantom Force",
+      "Shadow Claw"
+     ],
+     "sheets": 51,
+     "share": 0.0967741935483871
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Defiant",
+     "nature": "Careful",
+     "moves": [
+      "Bulk Up",
+      "Drain Punch",
+      "Protect",
+      "Rage Fist"
+     ],
+     "sheets": 50,
+     "share": 0.09487666034155598
     }
    ]
   },
@@ -10052,6 +11651,47 @@
      "share": 0.1342685370741483,
      "lift": 3.280955406748456
     }
+   ],
+   "sets": [
+    {
+     "item": "Occa Berry",
+     "ability": "Hospitality",
+     "nature": "Bold",
+     "moves": [
+      "Life Dew",
+      "Matcha Gotcha",
+      "Rage Powder",
+      "Trick Room"
+     ],
+     "sheets": 45,
+     "share": 0.09018036072144289
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Hospitality",
+     "nature": "Bold",
+     "moves": [
+      "Matcha Gotcha",
+      "Protect",
+      "Rage Powder",
+      "Trick Room"
+     ],
+     "sheets": 41,
+     "share": 0.08216432865731463
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Hospitality",
+     "nature": "Relaxed",
+     "moves": [
+      "Matcha Gotcha",
+      "Protect",
+      "Rage Powder",
+      "Trick Room"
+     ],
+     "sheets": 41,
+     "share": 0.08216432865731463
+    }
    ]
   },
   "hatterene": {
@@ -10286,6 +11926,47 @@
      "share": 0.07036247334754797,
      "lift": 0.3919226276749262
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Magic Bounce",
+     "nature": "Quiet",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 338,
+     "share": 0.720682302771855
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Magic Bounce",
+     "nature": "Sassy",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 29,
+     "share": 0.06183368869936034
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Magic Bounce",
+     "nature": "Quiet",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Mystical Fire",
+      "Trick Room"
+     ],
+     "sheets": 16,
+     "share": 0.03411513859275053
+    }
    ]
   },
   "aerodactyl": {
@@ -10515,6 +12196,47 @@
      "share": 0.1108695652173913,
      "lift": 0.7138593942103498
     }
+   ],
+   "sets": [
+    {
+     "item": "Aerodactylite",
+     "ability": "Unnerve",
+     "nature": "Jolly",
+     "moves": [
+      "Dual Wingbeat",
+      "Protect",
+      "Rock Slide",
+      "Tailwind"
+     ],
+     "sheets": 147,
+     "share": 0.31956521739130433
+    },
+    {
+     "item": "Aerodactylite",
+     "ability": "Unnerve",
+     "nature": "Jolly",
+     "moves": [
+      "Dual Wingbeat",
+      "Rock Slide",
+      "Tailwind",
+      "Wide Guard"
+     ],
+     "sheets": 64,
+     "share": 0.1391304347826087
+    },
+    {
+     "item": "Aerodactylite",
+     "ability": "Unnerve",
+     "nature": "Jolly",
+     "moves": [
+      "Dual Wingbeat",
+      "Ice Fang",
+      "Rock Slide",
+      "Tailwind"
+     ],
+     "sheets": 60,
+     "share": 0.13043478260869565
+    }
    ]
   },
   "camerupt": {
@@ -10703,6 +12425,47 @@
      "sheets": 22,
      "share": 0.0502283105022831,
      "lift": 0.3234066196350945
+    }
+   ],
+   "sets": [
+    {
+     "item": "Cameruptite",
+     "ability": "Solid Rock",
+     "nature": "Quiet",
+     "moves": [
+      "Ancient Power",
+      "Earth Power",
+      "Heat Wave",
+      "Protect"
+     ],
+     "sheets": 257,
+     "share": 0.58675799086758
+    },
+    {
+     "item": "Cameruptite",
+     "ability": "Anger Point",
+     "nature": "Quiet",
+     "moves": [
+      "Ancient Power",
+      "Earth Power",
+      "Heat Wave",
+      "Protect"
+     ],
+     "sheets": 52,
+     "share": 0.1187214611872146
+    },
+    {
+     "item": "Cameruptite",
+     "ability": "Magma Armor",
+     "nature": "Quiet",
+     "moves": [
+      "Ancient Power",
+      "Earth Power",
+      "Heat Wave",
+      "Protect"
+     ],
+     "sheets": 38,
+     "share": 0.0867579908675799
     }
    ]
   },
@@ -10922,6 +12685,47 @@
      "sheets": 34,
      "share": 0.08232445520581114,
      "lift": 2.689504158332456
+    }
+   ],
+   "sets": [
+    {
+     "item": "Baxcalibrite",
+     "ability": "Thermal Exchange",
+     "nature": "Adamant",
+     "moves": [
+      "Glaive Rush",
+      "High Horsepower",
+      "Ice Shard",
+      "Protect"
+     ],
+     "sheets": 99,
+     "share": 0.2397094430992736
+    },
+    {
+     "item": "Baxcalibrite",
+     "ability": "Thermal Exchange",
+     "nature": "Adamant",
+     "moves": [
+      "Glaive Rush",
+      "Ice Shard",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 80,
+     "share": 0.1937046004842615
+    },
+    {
+     "item": "Baxcalibrite",
+     "ability": "Thermal Exchange",
+     "nature": "Jolly",
+     "moves": [
+      "Glaive Rush",
+      "High Horsepower",
+      "Ice Shard",
+      "Protect"
+     ],
+     "sheets": 27,
+     "share": 0.06537530266343826
     }
    ]
   },
@@ -11177,6 +12981,47 @@
      "share": 0.14532019704433496,
      "lift": 1.7277467730872358
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Liquid Voice",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Hyper Voice",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 65,
+     "share": 0.16009852216748768
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Liquid Voice",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Hyper Voice",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 57,
+     "share": 0.14039408866995073
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Liquid Voice",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Hyper Voice",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 46,
+     "share": 0.11330049261083744
+    }
    ]
   },
   "torkoal": {
@@ -11420,6 +13265,47 @@
      "sheets": 43,
      "share": 0.10804020100502512,
      "lift": 0.33169114212533557
+    }
+   ],
+   "sets": [
+    {
+     "item": "Charcoal",
+     "ability": "Drought",
+     "nature": "Quiet",
+     "moves": [
+      "Earth Power",
+      "Eruption",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 80,
+     "share": 0.20100502512562815
+    },
+    {
+     "item": "Charcoal",
+     "ability": "Drought",
+     "nature": "Quiet",
+     "moves": [
+      "Eruption",
+      "Helping Hand",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 78,
+     "share": 0.19597989949748743
+    },
+    {
+     "item": "Charcoal",
+     "ability": "Drought",
+     "nature": "Quiet",
+     "moves": [
+      "Eruption",
+      "Heat Wave",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 34,
+     "share": 0.08542713567839195
     }
    ]
   },
@@ -11665,6 +13551,47 @@
      "share": 0.10187667560321716,
      "lift": 0.8003150449373484
     }
+   ],
+   "sets": [
+    {
+     "item": "Light Clay",
+     "ability": "Snow Warning",
+     "nature": "Timid",
+     "moves": [
+      "Aurora Veil",
+      "Blizzard",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 118,
+     "share": 0.3163538873994638
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Snow Warning",
+     "nature": "Timid",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Icy Wind",
+      "Moonblast"
+     ],
+     "sheets": 23,
+     "share": 0.06166219839142091
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Snow Warning",
+     "nature": "Modest",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Icy Wind",
+      "Moonblast"
+     ],
+     "sheets": 20,
+     "share": 0.05361930294906166
+    }
    ]
   },
   "delphox": {
@@ -11858,6 +13785,47 @@
      "sheets": 45,
      "share": 0.13313609467455623,
      "lift": 10.208006279434851
+    }
+   ],
+   "sets": [
+    {
+     "item": "Delphoxite",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Nasty Plot",
+      "Protect",
+      "Psychic"
+     ],
+     "sheets": 119,
+     "share": 0.3520710059171598
+    },
+    {
+     "item": "Delphoxite",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Nasty Plot",
+      "Protect",
+      "Psyshock"
+     ],
+     "sheets": 93,
+     "share": 0.27514792899408286
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Flamethrower",
+      "Nasty Plot",
+      "Protect"
+     ],
+     "sheets": 15,
+     "share": 0.04437869822485207
     }
    ]
   },
@@ -12118,6 +14086,47 @@
      "share": 0.12258064516129032,
      "lift": 2.203519061583578
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Iron Fist",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Double Shock",
+      "Fake Out",
+      "Revival Blessing"
+     ],
+     "sheets": 87,
+     "share": 0.2806451612903226
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Iron Fist",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Double Shock",
+      "Fake Out",
+      "Protect"
+     ],
+     "sheets": 44,
+     "share": 0.14193548387096774
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Iron Fist",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Double Shock",
+      "Ice Punch",
+      "Protect"
+     ],
+     "sheets": 18,
+     "share": 0.05806451612903226
+    }
    ]
   },
   "blaziken": {
@@ -12331,6 +14340,47 @@
      "sheets": 38,
      "share": 0.1296928327645051,
      "lift": 0.977934716901647
+    }
+   ],
+   "sets": [
+    {
+     "item": "Blazikenite",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Detect",
+      "Flare Blitz",
+      "Rock Slide"
+     ],
+     "sheets": 90,
+     "share": 0.30716723549488056
+    },
+    {
+     "item": "Blazikenite",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Flare Blitz",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 75,
+     "share": 0.25597269624573377
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Speed Boost",
+     "nature": "Modest",
+     "moves": [
+      "Aura Sphere",
+      "Coaching",
+      "Detect",
+      "Heat Wave"
+     ],
+     "sheets": 30,
+     "share": 0.10238907849829351
     }
    ]
   },
@@ -12576,6 +14626,47 @@
      "share": 0.1552346570397112,
      "lift": 1.1860022501234264
     }
+   ],
+   "sets": [
+    {
+     "item": "Sharp Beak",
+     "ability": "Gale Wings",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Flare Blitz",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 47,
+     "share": 0.16967509025270758
+    },
+    {
+     "item": "Sharp Beak",
+     "ability": "Gale Wings",
+     "nature": "Jolly",
+     "moves": [
+      "Dual Wingbeat",
+      "Flare Blitz",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 23,
+     "share": 0.08303249097472924
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Gale Wings",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Flare Blitz",
+      "Quick Guard",
+      "Tailwind"
+     ],
+     "sheets": 23,
+     "share": 0.08303249097472924
+    }
    ]
   },
   "blastoise": {
@@ -12769,6 +14860,47 @@
      "sheets": 25,
      "share": 0.1,
      "lift": 0.30513705583756345
+    }
+   ],
+   "sets": [
+    {
+     "item": "Blastoisinite",
+     "ability": "Rain Dish",
+     "nature": "Modest",
+     "moves": [
+      "Protect",
+      "Shell Smash",
+      "Terrain Pulse",
+      "Water Spout"
+     ],
+     "sheets": 106,
+     "share": 0.424
+    },
+    {
+     "item": "Blastoisinite",
+     "ability": "Torrent",
+     "nature": "Modest",
+     "moves": [
+      "Protect",
+      "Shell Smash",
+      "Terrain Pulse",
+      "Water Spout"
+     ],
+     "sheets": 34,
+     "share": 0.136
+    },
+    {
+     "item": "Blastoisinite",
+     "ability": "Rain Dish",
+     "nature": "Modest",
+     "moves": [
+      "Dark Pulse",
+      "Protect",
+      "Shell Smash",
+      "Water Spout"
+     ],
+     "sheets": 29,
+     "share": 0.116
     }
    ]
   },
@@ -12993,6 +15125,47 @@
      "sheets": 33,
      "share": 0.15865384615384615,
      "lift": 1.3797743055555554
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Dark Pulse",
+      "Draco Meteor",
+      "Earth Power",
+      "Snarl"
+     ],
+     "sheets": 34,
+     "share": 0.16346153846153846
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Dark Pulse",
+      "Draco Meteor",
+      "Focus Blast",
+      "Snarl"
+     ],
+     "sheets": 33,
+     "share": 0.15865384615384615
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Draco Meteor",
+      "Snarl",
+      "Tailwind",
+      "U-turn"
+     ],
+     "sheets": 17,
+     "share": 0.08173076923076923
     }
    ]
   },
@@ -13232,6 +15405,47 @@
      "sheets": 28,
      "share": 0.14285714285714285,
      "lift": 0.33862100045065346
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Stance Change",
+     "nature": "Adamant",
+     "moves": [
+      "Poltergeist",
+      "Sacred Sword",
+      "Shadow Sneak",
+      "Wide Guard"
+     ],
+     "sheets": 45,
+     "share": 0.22959183673469388
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Stance Change",
+     "nature": "Modest",
+     "moves": [
+      "Flash Cannon",
+      "King's Shield",
+      "Shadow Ball",
+      "Wide Guard"
+     ],
+     "sheets": 30,
+     "share": 0.15306122448979592
+    },
+    {
+     "item": "Spell Tag",
+     "ability": "Stance Change",
+     "nature": "Adamant",
+     "moves": [
+      "Iron Head",
+      "King's Shield",
+      "Poltergeist",
+      "Shadow Sneak"
+     ],
+     "sheets": 11,
+     "share": 0.05612244897959184
     }
    ]
   },
@@ -13487,6 +15701,47 @@
      "share": 0.1242603550295858,
      "lift": 0.9761550524749688
     }
+   ],
+   "sets": [
+    {
+     "item": "Occa Berry",
+     "ability": "Hospitality",
+     "nature": "Calm",
+     "moves": [
+      "Matcha Gotcha",
+      "Protect",
+      "Rage Powder",
+      "Trick Room"
+     ],
+     "sheets": 15,
+     "share": 0.08875739644970414
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Hospitality",
+     "nature": "Bold",
+     "moves": [
+      "Matcha Gotcha",
+      "Protect",
+      "Rage Powder",
+      "Trick Room"
+     ],
+     "sheets": 9,
+     "share": 0.05325443786982249
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Hospitality",
+     "nature": "Calm",
+     "moves": [
+      "Matcha Gotcha",
+      "Rage Powder",
+      "Shadow Ball",
+      "Trick Room"
+     ],
+     "sheets": 9,
+     "share": 0.05325443786982249
+    }
    ]
   },
   "ceruledge": {
@@ -13721,6 +15976,47 @@
      "share": 0.0783132530120482,
      "lift": 0.240427286264568
     }
+   ],
+   "sets": [
+    {
+     "item": "Colbur Berry",
+     "ability": "Flash Fire",
+     "nature": "Adamant",
+     "moves": [
+      "Bitter Blade",
+      "Bulk Up",
+      "Protect",
+      "Shadow Sneak"
+     ],
+     "sheets": 73,
+     "share": 0.4397590361445783
+    },
+    {
+     "item": "Passho Berry",
+     "ability": "Flash Fire",
+     "nature": "Modest",
+     "moves": [
+      "Bitter Blade",
+      "Bulk Up",
+      "Poltergeist",
+      "Protect"
+     ],
+     "sheets": 14,
+     "share": 0.08433734939759036
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Flash Fire",
+     "nature": "Adamant",
+     "moves": [
+      "Bitter Blade",
+      "Bulk Up",
+      "Protect",
+      "Shadow Sneak"
+     ],
+     "sheets": 10,
+     "share": 0.060240963855421686
+    }
    ]
   },
   "corviknight": {
@@ -13950,6 +16246,47 @@
      "share": 0.11392405063291139,
      "lift": 3.248672927725602
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Mirror Armor",
+     "nature": "Careful",
+     "moves": [
+      "Brave Bird",
+      "Bulk Up",
+      "Roost",
+      "Tailwind"
+     ],
+     "sheets": 16,
+     "share": 0.10126582278481013
+    },
+    {
+     "item": "Psychic Seed",
+     "ability": "Mirror Armor",
+     "nature": "Careful",
+     "moves": [
+      "Brave Bird",
+      "Bulk Up",
+      "Power Trip",
+      "Roost"
+     ],
+     "sheets": 15,
+     "share": 0.0949367088607595
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Mirror Armor",
+     "nature": "Impish",
+     "moves": [
+      "Brave Bird",
+      "Bulk Up",
+      "Roost",
+      "Tailwind"
+     ],
+     "sheets": 13,
+     "share": 0.08227848101265822
+    }
    ]
   },
   "scovillain": {
@@ -14138,6 +16475,47 @@
      "sheets": 15,
      "share": 0.09615384615384616,
      "lift": 0.8362268518518519
+    }
+   ],
+   "sets": [
+    {
+     "item": "Scovillainite",
+     "ability": "Moody",
+     "nature": "Bold",
+     "moves": [
+      "Giga Drain",
+      "Overheat",
+      "Protect",
+      "Rage Powder"
+     ],
+     "sheets": 55,
+     "share": 0.3525641025641026
+    },
+    {
+     "item": "Scovillainite",
+     "ability": "Moody",
+     "nature": "Bold",
+     "moves": [
+      "Leech Seed",
+      "Overheat",
+      "Protect",
+      "Rage Powder"
+     ],
+     "sheets": 28,
+     "share": 0.1794871794871795
+    },
+    {
+     "item": "Scovillainite",
+     "ability": "Moody",
+     "nature": "Modest",
+     "moves": [
+      "Giga Drain",
+      "Overheat",
+      "Protect",
+      "Rage Powder"
+     ],
+     "sheets": 15,
+     "share": 0.09615384615384616
     }
    ]
   },
@@ -14383,6 +16761,47 @@
      "share": 0.1390728476821192,
      "lift": 1.6868335391177458
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Infiltrator",
+     "nature": "Modest",
+     "moves": [
+      "Draco Meteor",
+      "Protect",
+      "Shadow Ball",
+      "Will-O-Wisp"
+     ],
+     "sheets": 28,
+     "share": 0.18543046357615894
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Clear Body",
+     "nature": "Modest",
+     "moves": [
+      "Draco Meteor",
+      "Protect",
+      "Shadow Ball",
+      "Will-O-Wisp"
+     ],
+     "sheets": 15,
+     "share": 0.09933774834437085
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Clear Body",
+     "nature": "Jolly",
+     "moves": [
+      "Dragon Darts",
+      "Phantom Force",
+      "Protect",
+      "Substitute"
+     ],
+     "sheets": 9,
+     "share": 0.059602649006622516
+    }
    ]
   },
   "mawile": {
@@ -14571,6 +16990,47 @@
      "sheets": 19,
      "share": 0.12666666666666668,
      "lift": 0.8086434437836308
+    }
+   ],
+   "sets": [
+    {
+     "item": "Mawilite",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Iron Head",
+      "Play Rough",
+      "Protect",
+      "Sucker Punch"
+     ],
+     "sheets": 38,
+     "share": 0.25333333333333335
+    },
+    {
+     "item": "Mawilite",
+     "ability": "Hyper Cutter",
+     "nature": "Brave",
+     "moves": [
+      "Iron Head",
+      "Play Rough",
+      "Protect",
+      "Sucker Punch"
+     ],
+     "sheets": 22,
+     "share": 0.14666666666666667
+    },
+    {
+     "item": "Mawilite",
+     "ability": "Hyper Cutter",
+     "nature": "Adamant",
+     "moves": [
+      "Play Rough",
+      "Protect",
+      "Sucker Punch",
+      "Swords Dance"
+     ],
+     "sheets": 10,
+     "share": 0.06666666666666667
     }
    ]
   },
@@ -14780,6 +17240,47 @@
      "sheets": 15,
      "share": 0.10067114093959731,
      "lift": 2.870751244858194
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Bold",
+     "moves": [
+      "Baneful Bunker",
+      "Infestation",
+      "Toxic",
+      "Wide Guard"
+     ],
+     "sheets": 86,
+     "share": 0.5771812080536913
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Relaxed",
+     "moves": [
+      "Baneful Bunker",
+      "Infestation",
+      "Toxic",
+      "Wide Guard"
+     ],
+     "sheets": 18,
+     "share": 0.12080536912751678
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Sassy",
+     "moves": [
+      "Baneful Bunker",
+      "Infestation",
+      "Toxic",
+      "Wide Guard"
+     ],
+     "sheets": 9,
+     "share": 0.06040268456375839
     }
    ]
   },
@@ -15015,6 +17516,47 @@
      "share": 0.08843537414965986,
      "lift": 0.2698490969992058
     }
+   ],
+   "sets": [
+    {
+     "item": "Chople Berry",
+     "ability": "Friend Guard",
+     "nature": "Jolly",
+     "moves": [
+      "Beat Up",
+      "Follow Me",
+      "Protect",
+      "Taunt"
+     ],
+     "sheets": 45,
+     "share": 0.30612244897959184
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Friend Guard",
+     "nature": "Bold",
+     "moves": [
+      "Encore",
+      "Follow Me",
+      "Protect",
+      "Super Fang"
+     ],
+     "sheets": 12,
+     "share": 0.08163265306122448
+    },
+    {
+     "item": "Wide Lens",
+     "ability": "Technician",
+     "nature": "Jolly",
+     "moves": [
+      "Encore",
+      "Follow Me",
+      "Population Bomb",
+      "Protect"
+     ],
+     "sheets": 11,
+     "share": 0.07482993197278912
+    }
    ]
   },
   "rotomheat": {
@@ -15249,6 +17791,47 @@
      "share": 0.15753424657534246,
      "lift": 2.3865167918692
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Discharge",
+      "Electroweb",
+      "Overheat",
+      "Volt Switch"
+     ],
+     "sheets": 27,
+     "share": 0.18493150684931506
+    },
+    {
+     "item": "Passho Berry",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Overheat",
+      "Protect",
+      "Thunderbolt",
+      "Will-O-Wisp"
+     ],
+     "sheets": 17,
+     "share": 0.11643835616438356
+    },
+    {
+     "item": "Magnet",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Overheat",
+      "Protect",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 12,
+     "share": 0.0821917808219178
+    }
    ]
   },
   "absol": {
@@ -15442,6 +18025,47 @@
      "sheets": 24,
      "share": 0.16783216783216784,
      "lift": 0.5121181356714352
+    }
+   ],
+   "sets": [
+    {
+     "item": "Absolite Z",
+     "ability": "Justified",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Detect",
+      "Night Slash",
+      "Shadow Claw"
+     ],
+     "sheets": 18,
+     "share": 0.1258741258741259
+    },
+    {
+     "item": "Absolite Z",
+     "ability": "Super Luck",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Detect",
+      "Night Slash",
+      "Shadow Claw"
+     ],
+     "sheets": 11,
+     "share": 0.07692307692307693
+    },
+    {
+     "item": "Absolite Z",
+     "ability": "Pressure",
+     "nature": "Adamant",
+     "moves": [
+      "Night Slash",
+      "Protect",
+      "Shadow Claw",
+      "X-Scissor"
+     ],
+     "sheets": 6,
+     "share": 0.04195804195804196
     }
    ]
   },
@@ -15647,6 +18271,47 @@
      "share": 0.10144927536231885,
      "lift": 1.487394839165783
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Sharpness",
+     "nature": "Adamant",
+     "moves": [
+      "Night Slash",
+      "Protect",
+      "Stone Axe",
+      "X-Scissor"
+     ],
+     "sheets": 71,
+     "share": 0.5144927536231884
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Sharpness",
+     "nature": "Adamant",
+     "moves": [
+      "Feint",
+      "Protect",
+      "Stone Axe",
+      "X-Scissor"
+     ],
+     "sheets": 13,
+     "share": 0.09420289855072464
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Sharpness",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Protect",
+      "Stone Axe",
+      "X-Scissor"
+     ],
+     "sheets": 7,
+     "share": 0.050724637681159424
+    }
    ]
   },
   "lycanrocdusk": {
@@ -15800,6 +18465,47 @@
      "sheets": 14,
      "share": 0.10218978102189781,
      "lift": 4.117179702941234
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Tough Claws",
+     "nature": "Adamant",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 95,
+     "share": 0.6934306569343066
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Tough Claws",
+     "nature": "Jolly",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 27,
+     "share": 0.19708029197080293
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Tough Claws",
+     "nature": "Serious",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 9,
+     "share": 0.06569343065693431
     }
    ]
   },
@@ -16055,6 +18761,47 @@
      "share": 0.12030075187969924,
      "lift": 0.7680032707086323
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Prankster",
+     "nature": "Careful",
+     "moves": [
+      "Encore",
+      "Knock Off",
+      "Thunder Wave",
+      "Will-O-Wisp"
+     ],
+     "sheets": 12,
+     "share": 0.09022556390977443
+    },
+    {
+     "item": "Roseli Berry",
+     "ability": "Prankster",
+     "nature": "Impish",
+     "moves": [
+      "Light Screen",
+      "Quash",
+      "Rain Dance",
+      "Will-O-Wisp"
+     ],
+     "sheets": 5,
+     "share": 0.03759398496240601
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Prankster",
+     "nature": "Sassy",
+     "moves": [
+      "Encore",
+      "Fake Out",
+      "Taunt",
+      "Thunder Wave"
+     ],
+     "sheets": 5,
+     "share": 0.03759398496240601
+    }
    ]
   },
   "maushold": {
@@ -16278,6 +19025,47 @@
      "sheets": 15,
      "share": 0.12096774193548387,
      "lift": 1.05081111318292
+    }
+   ],
+   "sets": [
+    {
+     "item": "Chople Berry",
+     "ability": "Friend Guard",
+     "nature": "Jolly",
+     "moves": [
+      "Encore",
+      "Follow Me",
+      "Protect",
+      "U-turn"
+     ],
+     "sheets": 35,
+     "share": 0.28225806451612906
+    },
+    {
+     "item": "Wide Lens",
+     "ability": "Technician",
+     "nature": "Jolly",
+     "moves": [
+      "Follow Me",
+      "Population Bomb",
+      "Protect",
+      "Taunt"
+     ],
+     "sheets": 12,
+     "share": 0.0967741935483871
+    },
+    {
+     "item": "Chople Berry",
+     "ability": "Friend Guard",
+     "nature": "Jolly",
+     "moves": [
+      "Feint",
+      "Follow Me",
+      "Protect",
+      "Taunt"
+     ],
+     "sheets": 11,
+     "share": 0.08870967741935484
     }
    ]
   },
@@ -16513,6 +19301,47 @@
      "share": 0.10810810810810811,
      "lift": 1.5015237048508767
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Sharpness",
+     "nature": "Brave",
+     "moves": [
+      "Psycho Cut",
+      "Sacred Sword",
+      "Trick Room",
+      "Wide Guard"
+     ],
+     "sheets": 30,
+     "share": 0.2702702702702703
+    },
+    {
+     "item": "White Herb",
+     "ability": "Sharpness",
+     "nature": "Adamant",
+     "moves": [
+      "Psycho Cut",
+      "Sacred Sword",
+      "Trick Room",
+      "Wide Guard"
+     ],
+     "sheets": 15,
+     "share": 0.13513513513513514
+    },
+    {
+     "item": "White Herb",
+     "ability": "Sharpness",
+     "nature": "Adamant",
+     "moves": [
+      "Protect",
+      "Psycho Cut",
+      "Sacred Sword",
+      "Trick Room"
+     ],
+     "sheets": 13,
+     "share": 0.11711711711711711
+    }
    ]
   },
   "typhlosionhisui": {
@@ -16707,6 +19536,47 @@
      "share": 0.09345794392523364,
      "lift": 2.665058788061501
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Eruption",
+      "Heat Wave",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 38,
+     "share": 0.35514018691588783
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Blaze",
+     "nature": "Modest",
+     "moves": [
+      "Eruption",
+      "Heat Wave",
+      "Overheat",
+      "Shadow Ball"
+     ],
+     "sheets": 25,
+     "share": 0.2336448598130841
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Frisk",
+     "nature": "Modest",
+     "moves": [
+      "Eruption",
+      "Heat Wave",
+      "Overheat",
+      "Shadow Ball"
+     ],
+     "sheets": 8,
+     "share": 0.07476635514018691
+    }
    ]
   },
   "scizor": {
@@ -16891,6 +19761,47 @@
      "share": 0.06451612903225806,
      "lift": 60.59677419354838
     }
+   ],
+   "sets": [
+    {
+     "item": "Scizorite",
+     "ability": "Technician",
+     "nature": "Adamant",
+     "moves": [
+      "Bug Bite",
+      "Bullet Punch",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 64,
+     "share": 0.6881720430107527
+    },
+    {
+     "item": "Scizorite",
+     "ability": "Technician",
+     "nature": "Adamant",
+     "moves": [
+      "Bullet Punch",
+      "Close Combat",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 6,
+     "share": 0.06451612903225806
+    },
+    {
+     "item": "Scizorite",
+     "ability": "Technician",
+     "nature": "Careful",
+     "moves": [
+      "Bug Bite",
+      "Bullet Punch",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 3,
+     "share": 0.03225806451612903
+    }
    ]
   },
   "pidgeot": {
@@ -17024,6 +19935,47 @@
      "sheets": 1,
      "share": 0.01098901098901099,
      "lift": 5.694581280788178
+    }
+   ],
+   "sets": [
+    {
+     "item": "Pidgeotite",
+     "ability": "Keen Eye",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Hurricane",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 87,
+     "share": 0.9560439560439561
+    },
+    {
+     "item": "Pidgeotite",
+     "ability": "Big Pecks",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Hurricane",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 3,
+     "share": 0.03296703296703297
+    },
+    {
+     "item": "Pidgeotite",
+     "ability": "Keen Eye",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Hurricane",
+      "Protect",
+      "Roost"
+     ],
+     "sheets": 1,
+     "share": 0.01098901098901099
     }
    ]
   },
@@ -17218,6 +20170,47 @@
      "sheets": 3,
      "share": 0.03409090909090909,
      "lift": 0.10466152846132416
+    }
+   ],
+   "sets": [
+    {
+     "item": "Greninjite",
+     "ability": "Protean",
+     "nature": "Adamant",
+     "moves": [
+      "Gunk Shot",
+      "Protect",
+      "Rock Slide",
+      "Water Shuriken"
+     ],
+     "sheets": 49,
+     "share": 0.5568181818181818
+    },
+    {
+     "item": "Greninjite",
+     "ability": "Protean",
+     "nature": "Jolly",
+     "moves": [
+      "Gunk Shot",
+      "Protect",
+      "Rock Slide",
+      "Water Shuriken"
+     ],
+     "sheets": 13,
+     "share": 0.14772727272727273
+    },
+    {
+     "item": "Greninjite",
+     "ability": "Protean",
+     "nature": "Timid",
+     "moves": [
+      "Dark Pulse",
+      "Hydro Pump",
+      "Ice Beam",
+      "Icy Wind"
+     ],
+     "sheets": 11,
+     "share": 0.125
     }
    ]
   },
@@ -17423,6 +20416,47 @@
      "share": 0.09411764705882353,
      "lift": 0.16556244878848178
     }
+   ],
+   "sets": [
+    {
+     "item": "Alakazite",
+     "ability": "Inner Focus",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Nasty Plot",
+      "Protect"
+     ],
+     "sheets": 10,
+     "share": 0.11764705882352941
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Magic Guard",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Focus Blast",
+      "Protect",
+      "Psyshock"
+     ],
+     "sheets": 8,
+     "share": 0.09411764705882353
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Inner Focus",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Psychic Terrain",
+      "Shadow Ball"
+     ],
+     "sheets": 5,
+     "share": 0.058823529411764705
+    }
    ]
   },
   "empoleon": {
@@ -17622,6 +20656,47 @@
      "share": 0.10714285714285714,
      "lift": 0.9317956349206349
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Competitive",
+     "nature": "Bold",
+     "moves": [
+      "Hydro Pump",
+      "Icy Wind",
+      "Protect",
+      "Roost"
+     ],
+     "sheets": 49,
+     "share": 0.5833333333333334
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Competitive",
+     "nature": "Modest",
+     "moves": [
+      "Flash Cannon",
+      "Hydro Pump",
+      "Protect",
+      "Vacuum Wave"
+     ],
+     "sheets": 10,
+     "share": 0.11904761904761904
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Competitive",
+     "nature": "Modest",
+     "moves": [
+      "Flash Cannon",
+      "Hydro Pump",
+      "Ice Beam",
+      "Protect"
+     ],
+     "sheets": 9,
+     "share": 0.10714285714285714
+    }
    ]
   },
   "mamoswine": {
@@ -17820,6 +20895,47 @@
      "sheets": 11,
      "share": 0.13580246913580246,
      "lift": 0.7564267999158041
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Oblivious",
+     "nature": "Jolly",
+     "moves": [
+      "High Horsepower",
+      "Ice Shard",
+      "Icicle Crash",
+      "Protect"
+     ],
+     "sheets": 17,
+     "share": 0.20987654320987653
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Oblivious",
+     "nature": "Adamant",
+     "moves": [
+      "High Horsepower",
+      "Ice Shard",
+      "Icicle Crash",
+      "Protect"
+     ],
+     "sheets": 15,
+     "share": 0.18518518518518517
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Oblivious",
+     "nature": "Adamant",
+     "moves": [
+      "Earthquake",
+      "Ice Shard",
+      "Icicle Crash",
+      "Protect"
+     ],
+     "sheets": 6,
+     "share": 0.07407407407407407
     }
    ]
   },
@@ -18030,6 +21146,45 @@
      "share": 0.11428571428571428,
      "lift": 31.805291005291004
     }
+   ],
+   "sets": [
+    {
+     "item": "Kangaskhanite",
+     "ability": "Scrappy",
+     "nature": "Brave",
+     "moves": [
+      "Double-Edge",
+      "Fake Out",
+      "Ice Punch",
+      "Sucker Punch"
+     ],
+     "sheets": 14,
+     "share": 0.2
+    },
+    {
+     "item": "Kangaskhanite",
+     "ability": "Early Bird",
+     "nature": "Brave",
+     "moves": [
+      "Double-Edge",
+      "Fake Out",
+      "Ice Punch",
+      "Sucker Punch"
+     ],
+     "sheets": 11,
+     "share": 0.15714285714285714
+    },
+    {
+     "item": "Silk Scarf",
+     "ability": "Scrappy",
+     "nature": "Brave",
+     "moves": [
+      "Fake Out",
+      "Last Resort"
+     ],
+     "sheets": 8,
+     "share": 0.11428571428571428
+    }
    ]
   },
   "scrafty": {
@@ -18238,6 +21393,47 @@
      "sheets": 8,
      "share": 0.11594202898550725,
      "lift": 0.6748167357065077
+    }
+   ],
+   "sets": [
+    {
+     "item": "Scraftinite",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 26,
+     "share": 0.37681159420289856
+    },
+    {
+     "item": "Scraftinite",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Drain Punch",
+      "Fake Out",
+      "Protect",
+      "Throat Chop"
+     ],
+     "sheets": 9,
+     "share": 0.13043478260869565
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Intimidate",
+     "nature": "Impish",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 6,
+     "share": 0.08695652173913043
     }
    ]
   },
@@ -18458,6 +21654,47 @@
      "share": 0.11940298507462686,
      "lift": 0.9122460903413789
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Levitate",
+     "nature": "Quiet",
+     "moves": [
+      "Hydro Pump",
+      "Protect",
+      "Thunderbolt",
+      "Will-O-Wisp"
+     ],
+     "sheets": 8,
+     "share": 0.11940298507462686
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Levitate",
+     "nature": "Bold",
+     "moves": [
+      "Foul Play",
+      "Hydro Pump",
+      "Volt Switch",
+      "Will-O-Wisp"
+     ],
+     "sheets": 4,
+     "share": 0.05970149253731343
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Levitate",
+     "nature": "Calm",
+     "moves": [
+      "Hydro Pump",
+      "Protect",
+      "Thunderbolt",
+      "Will-O-Wisp"
+     ],
+     "sheets": 4,
+     "share": 0.05970149253731343
+    }
    ]
   },
   "krookodile": {
@@ -18626,6 +21863,47 @@
      "sheets": 6,
      "share": 0.09090909090909091,
      "lift": 0.2154860911958704
+    }
+   ],
+   "sets": [
+    {
+     "item": "Chople Berry",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "High Horsepower",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 35,
+     "share": 0.5303030303030303
+    },
+    {
+     "item": "Chople Berry",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Earthquake",
+      "High Horsepower",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 17,
+     "share": 0.25757575757575757
+    },
+    {
+     "item": "Chople Berry",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Gunk Shot",
+      "High Horsepower",
+      "Protect",
+      "Throat Chop"
+     ],
+     "sheets": 6,
+     "share": 0.09090909090909091
     }
    ]
   },
@@ -18800,6 +22078,47 @@
      "sheets": 9,
      "share": 0.13636363636363635,
      "lift": 7.398096488349195
+    }
+   ],
+   "sets": [
+    {
+     "item": "Grassy Seed",
+     "ability": "Punk Rock",
+     "nature": "Modest",
+     "moves": [
+      "Nuzzle",
+      "Overdrive",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 22,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Punk Rock",
+     "nature": "Modest",
+     "moves": [
+      "Boomburst",
+      "Overdrive",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 17,
+     "share": 0.25757575757575757
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Punk Rock",
+     "nature": "Modest",
+     "moves": [
+      "Overdrive",
+      "Psychic Noise",
+      "Sludge Bomb",
+      "Volt Switch"
+     ],
+     "sheets": 11,
+     "share": 0.16666666666666666
     }
    ]
   },
@@ -19020,6 +22339,47 @@
      "share": 0.1111111111111111,
      "lift": 3.8122780314561133
     }
+   ],
+   "sets": [
+    {
+     "item": "Leek",
+     "ability": "Scrappy",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Detect",
+      "Feint",
+      "Meteor Assault"
+     ],
+     "sheets": 10,
+     "share": 0.15873015873015872
+    },
+    {
+     "item": "Leek",
+     "ability": "Scrappy",
+     "nature": "Brave",
+     "moves": [
+      "Detect",
+      "Leaf Blade",
+      "Meteor Assault",
+      "Poison Jab"
+     ],
+     "sheets": 4,
+     "share": 0.06349206349206349
+    },
+    {
+     "item": "Leek",
+     "ability": "Scrappy",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Feint",
+      "Meteor Assault",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.06349206349206349
+    }
    ]
   },
   "tsareena": {
@@ -19228,6 +22588,47 @@
      "sheets": 10,
      "share": 0.15873015873015872,
      "lift": 1.1968875190149648
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Queenly Majesty",
+     "nature": "Jolly",
+     "moves": [
+      "Low Kick",
+      "Triple Axel",
+      "Trop Kick",
+      "U-turn"
+     ],
+     "sheets": 15,
+     "share": 0.23809523809523808
+    },
+    {
+     "item": "Wide Lens",
+     "ability": "Queenly Majesty",
+     "nature": "Adamant",
+     "moves": [
+      "Helping Hand",
+      "Low Kick",
+      "Power Whip",
+      "Triple Axel"
+     ],
+     "sheets": 7,
+     "share": 0.1111111111111111
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Queenly Majesty",
+     "nature": "Jolly",
+     "moves": [
+      "Low Kick",
+      "Power Whip",
+      "Protect",
+      "Triple Axel"
+     ],
+     "sheets": 5,
+     "share": 0.07936507936507936
     }
    ]
   },
@@ -19438,6 +22839,47 @@
      "share": 0.11290322580645161,
      "lift": 0.657130006746458
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Illusion",
+     "nature": "Modest",
+     "moves": [
+      "Bitter Malice",
+      "Hyper Beam",
+      "Icy Wind",
+      "Psychic"
+     ],
+     "sheets": 13,
+     "share": 0.20967741935483872
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Illusion",
+     "nature": "Timid",
+     "moves": [
+      "Bitter Malice",
+      "Dark Pulse",
+      "Icy Wind",
+      "Protect"
+     ],
+     "sheets": 8,
+     "share": 0.12903225806451613
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Illusion",
+     "nature": "Timid",
+     "moves": [
+      "Bitter Malice",
+      "Flamethrower",
+      "Icy Wind",
+      "Protect"
+     ],
+     "sheets": 8,
+     "share": 0.12903225806451613
+    }
    ]
   },
   "palafin": {
@@ -19642,6 +23084,47 @@
      "share": 0.1,
      "lift": 4.847741935483871
     }
+   ],
+   "sets": [
+    {
+     "item": "Mystic Water",
+     "ability": "Zero to Hero",
+     "nature": "Adamant",
+     "moves": [
+      "Flip Turn",
+      "Jet Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 11,
+     "share": 0.18333333333333332
+    },
+    {
+     "item": "Mystic Water",
+     "ability": "Zero to Hero",
+     "nature": "Adamant",
+     "moves": [
+      "Bulk Up",
+      "Jet Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 10,
+     "share": 0.16666666666666666
+    },
+    {
+     "item": "Mystic Water",
+     "ability": "Zero to Hero",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Jet Punch",
+      "Protect",
+      "Wave Crash"
+     ],
+     "sheets": 8,
+     "share": 0.13333333333333333
+    }
    ]
   },
   "weavile": {
@@ -19830,6 +23313,47 @@
      "sheets": 8,
      "share": 0.13559322033898305,
      "lift": 3.3133250654540443
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Pickpocket",
+     "nature": "Jolly",
+     "moves": [
+      "Fake Out",
+      "Icicle Crash",
+      "Knock Off",
+      "Low Kick"
+     ],
+     "sheets": 11,
+     "share": 0.1864406779661017
+    },
+    {
+     "item": "Wide Lens",
+     "ability": "Pressure",
+     "nature": "Jolly",
+     "moves": [
+      "Fake Out",
+      "Knock Off",
+      "Protect",
+      "Triple Axel"
+     ],
+     "sheets": 9,
+     "share": 0.15254237288135594
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Pickpocket",
+     "nature": "Jolly",
+     "moves": [
+      "Beat Up",
+      "Fake Out",
+      "Ice Spinner",
+      "Knock Off"
+     ],
+     "sheets": 7,
+     "share": 0.11864406779661017
     }
    ]
   },
@@ -20029,6 +23553,47 @@
      "sheets": 5,
      "share": 0.08771929824561403,
      "lift": 41.195175438596486
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sceptilite",
+     "ability": "Overgrow",
+     "nature": "Timid",
+     "moves": [
+      "Detect",
+      "Dragon Pulse",
+      "Earth Power",
+      "Leaf Storm"
+     ],
+     "sheets": 25,
+     "share": 0.43859649122807015
+    },
+    {
+     "item": "Sceptilite",
+     "ability": "Overgrow",
+     "nature": "Timid",
+     "moves": [
+      "Detect",
+      "Dragon Pulse",
+      "Earth Power",
+      "Giga Drain"
+     ],
+     "sheets": 9,
+     "share": 0.15789473684210525
+    },
+    {
+     "item": "Sceptilite",
+     "ability": "Overgrow",
+     "nature": "Modest",
+     "moves": [
+      "Detect",
+      "Dragon Pulse",
+      "Earth Power",
+      "Energy Ball"
+     ],
+     "sheets": 5,
+     "share": 0.08771929824561403
     }
    ]
   },
@@ -20234,6 +23799,47 @@
      "share": 0.16071428571428573,
      "lift": 0.4903988397389413
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Speed Boost",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Protect"
+     ],
+     "sheets": 11,
+     "share": 0.19642857142857142
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Speed Boost",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Lumina Crash",
+      "Protect"
+     ],
+     "sheets": 6,
+     "share": 0.10714285714285714
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Speed Boost",
+     "nature": "Timid",
+     "moves": [
+      "Baton Pass",
+      "Calm Mind",
+      "Lumina Crash",
+      "Protect"
+     ],
+     "sheets": 5,
+     "share": 0.08928571428571429
+    }
    ]
   },
   "vivillon": {
@@ -20387,6 +23993,47 @@
      "sheets": 5,
      "share": 0.08928571428571429,
      "lift": 0.5196691379882704
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 45,
+     "share": 0.8035714285714286
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Sleep Powder",
+      "Tailwind"
+     ],
+     "sheets": 4,
+     "share": 0.07142857142857142
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Compound Eyes",
+     "nature": "Modest",
+     "moves": [
+      "Hurricane",
+      "Sleep Powder",
+      "U-turn",
+      "Weather Ball"
+     ],
+     "sheets": 3,
+     "share": 0.05357142857142857
     }
    ]
   },
@@ -20597,6 +24244,47 @@
      "share": 0.1111111111111111,
      "lift": 0.618894654476567
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Technician",
+     "nature": "Brave",
+     "moves": [
+      "Ice Punch",
+      "Payback",
+      "Protect",
+      "Storm Throw"
+     ],
+     "sheets": 17,
+     "share": 0.3148148148148148
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Technician",
+     "nature": "Brave",
+     "moves": [
+      "Detect",
+      "Mach Punch",
+      "Payback",
+      "Storm Throw"
+     ],
+     "sheets": 7,
+     "share": 0.12962962962962962
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Technician",
+     "nature": "Brave",
+     "moves": [
+      "Mach Punch",
+      "Payback",
+      "Soak",
+      "Storm Throw"
+     ],
+     "sheets": 4,
+     "share": 0.07407407407407407
+    }
    ]
   },
   "meganium": {
@@ -20750,6 +24438,47 @@
      "sheets": 6,
      "share": 0.11538461538461539,
      "lift": 0.35423901940755875
+    }
+   ],
+   "sets": [
+    {
+     "item": "Meganiumite",
+     "ability": "Overgrow",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Protect",
+      "Solar Beam",
+      "Weather Ball"
+     ],
+     "sheets": 24,
+     "share": 0.46153846153846156
+    },
+    {
+     "item": "Meganiumite",
+     "ability": "Leaf Guard",
+     "nature": "Modest",
+     "moves": [
+      "Ancient Power",
+      "Dazzling Gleam",
+      "Solar Beam",
+      "Weather Ball"
+     ],
+     "sheets": 11,
+     "share": 0.21153846153846154
+    },
+    {
+     "item": "Meganiumite",
+     "ability": "Leaf Guard",
+     "nature": "Modest",
+     "moves": [
+      "Dazzling Gleam",
+      "Protect",
+      "Solar Beam",
+      "Weather Ball"
+     ],
+     "sheets": 8,
+     "share": 0.15384615384615385
     }
    ]
   },
@@ -20934,6 +24663,47 @@
      "sheets": 5,
      "share": 0.1,
      "lift": 2.4435772357723575
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Flash Fire",
+     "nature": "Quiet",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Shadow Ball",
+      "Trick Room"
+     ],
+     "sheets": 27,
+     "share": 0.54
+    },
+    {
+     "item": "Chandelurite",
+     "ability": "Flash Fire",
+     "nature": "Modest",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Shadow Ball",
+      "Trick Room"
+     ],
+     "sheets": 5,
+     "share": 0.1
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Flash Fire",
+     "nature": "Modest",
+     "moves": [
+      "Dark Pulse",
+      "Heat Wave",
+      "Overheat",
+      "Shadow Ball"
+     ],
+     "sheets": 4,
+     "share": 0.08
     }
    ]
   },
@@ -21129,6 +24899,47 @@
      "share": 0.125,
      "lift": 49.434210526315795
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Sharpness",
+     "nature": "Jolly",
+     "moves": [
+      "Aqua Cutter",
+      "Flip Turn",
+      "Night Slash",
+      "Sacred Sword"
+     ],
+     "sheets": 27,
+     "share": 0.5625
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Sharpness",
+     "nature": "Jolly",
+     "moves": [
+      "Flip Turn",
+      "Night Slash",
+      "Razor Shell",
+      "Sacred Sword"
+     ],
+     "sheets": 6,
+     "share": 0.125
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Sharpness",
+     "nature": "Jolly",
+     "moves": [
+      "Aqua Cutter",
+      "Detect",
+      "Night Slash",
+      "Sacred Sword"
+     ],
+     "sheets": 3,
+     "share": 0.0625
+    }
    ]
   },
   "steelix": {
@@ -21322,6 +25133,47 @@
      "sheets": 6,
      "share": 0.125,
      "lift": 12.866438356164384
+    }
+   ],
+   "sets": [
+    {
+     "item": "Steelixite",
+     "ability": "Sturdy",
+     "nature": "Brave",
+     "moves": [
+      "Heavy Slam",
+      "High Horsepower",
+      "Protect",
+      "Wide Guard"
+     ],
+     "sheets": 15,
+     "share": 0.3125
+    },
+    {
+     "item": "Steelixite",
+     "ability": "Sturdy",
+     "nature": "Brave",
+     "moves": [
+      "Curse",
+      "Heavy Slam",
+      "High Horsepower",
+      "Protect"
+     ],
+     "sheets": 6,
+     "share": 0.125
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Sturdy",
+     "nature": "Adamant",
+     "moves": [
+      "Earthquake",
+      "Heavy Slam",
+      "Rock Slide",
+      "Wide Guard"
+     ],
+     "sheets": 5,
+     "share": 0.10416666666666667
     }
    ]
   },
@@ -21537,6 +25389,47 @@
      "share": 0.13043478260869565,
      "lift": 2.0482486029712414
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Magic Guard",
+     "nature": "Modest",
+     "moves": [
+      "Follow Me",
+      "Moonblast",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 6,
+     "share": 0.13043478260869565
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Unaware",
+     "nature": "Calm",
+     "moves": [
+      "Charm",
+      "Cosmic Power",
+      "Follow Me",
+      "Moonlight"
+     ],
+     "sheets": 4,
+     "share": 0.08695652173913043
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Unaware",
+     "nature": "Bold",
+     "moves": [
+      "Follow Me",
+      "Helping Hand",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.08695652173913043
+    }
    ]
   },
   "aggron": {
@@ -21725,6 +25618,47 @@
      "sheets": 6,
      "share": 0.13953488372093023,
      "lift": 0.8984276917558438
+    }
+   ],
+   "sets": [
+    {
+     "item": "Aggronite",
+     "ability": "Sturdy",
+     "nature": "Adamant",
+     "moves": [
+      "Body Press",
+      "Heavy Slam",
+      "Iron Defense",
+      "Protect"
+     ],
+     "sheets": 22,
+     "share": 0.5116279069767442
+    },
+    {
+     "item": "Aggronite",
+     "ability": "Sturdy",
+     "nature": "Careful",
+     "moves": [
+      "Body Press",
+      "Heavy Slam",
+      "Iron Defense",
+      "Protect"
+     ],
+     "sheets": 7,
+     "share": 0.16279069767441862
+    },
+    {
+     "item": "Aggronite",
+     "ability": "Sturdy",
+     "nature": "Impish",
+     "moves": [
+      "Body Press",
+      "Heavy Slam",
+      "Iron Defense",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.06976744186046512
     }
    ]
   },
@@ -21920,6 +25854,47 @@
      "share": 0.046511627906976744,
      "lift": 58.248062015503876
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Sand Stream",
+     "nature": "Careful",
+     "moves": [
+      "High Horsepower",
+      "Protect",
+      "Stone Edge",
+      "Yawn"
+     ],
+     "sheets": 35,
+     "share": 0.813953488372093
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Sand Stream",
+     "nature": "Impish",
+     "moves": [
+      "Curse",
+      "Earthquake",
+      "Slack Off",
+      "Yawn"
+     ],
+     "sheets": 2,
+     "share": 0.046511627906976744
+    },
+    {
+     "item": "Smooth Rock",
+     "ability": "Sand Stream",
+     "nature": "Impish",
+     "moves": [
+      "Body Press",
+      "Earthquake",
+      "Ice Fang",
+      "Slack Off"
+     ],
+     "sheets": 2,
+     "share": 0.046511627906976744
+    }
    ]
   },
   "pyroar": {
@@ -22093,6 +26068,47 @@
      "sheets": 5,
      "share": 0.12195121951219512,
      "lift": 32.72648083623693
+    }
+   ],
+   "sets": [
+    {
+     "item": "Pyroarite",
+     "ability": "Unnerve",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Overheat",
+      "Protect",
+      "Solar Beam"
+     ],
+     "sheets": 9,
+     "share": 0.21951219512195122
+    },
+    {
+     "item": "Pyroarite",
+     "ability": "Rivalry",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Overheat",
+      "Protect",
+      "Scorching Sands"
+     ],
+     "sheets": 6,
+     "share": 0.14634146341463414
+    },
+    {
+     "item": "Pyroarite",
+     "ability": "Unnerve",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Overheat",
+      "Protect",
+      "Snarl"
+     ],
+     "sheets": 5,
+     "share": 0.12195121951219512
     }
    ]
   },
@@ -22302,6 +26318,47 @@
      "sheets": 5,
      "share": 0.13157894736842105,
      "lift": 1.005271185080138
+    }
+   ],
+   "sets": [
+    {
+     "item": "Gyaradosite",
+     "ability": "Intimidate",
+     "nature": "Lonely",
+     "moves": [
+      "Crunch",
+      "Dragon Dance",
+      "Protect",
+      "Waterfall"
+     ],
+     "sheets": 12,
+     "share": 0.3157894736842105
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Dragon Dance",
+      "Power Whip",
+      "Protect",
+      "Waterfall"
+     ],
+     "sheets": 4,
+     "share": 0.10526315789473684
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Crunch",
+      "Earthquake",
+      "Protect",
+      "Waterfall"
+     ],
+     "sheets": 3,
+     "share": 0.07894736842105263
     }
    ]
   },
@@ -22527,6 +26584,47 @@
      "share": 0.13157894736842105,
      "lift": 0.5337026777469991
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Electric Surge",
+     "nature": "Quiet",
+     "moves": [
+      "Protect",
+      "Rising Voltage",
+      "Scald",
+      "Sucker Punch"
+     ],
+     "sheets": 6,
+     "share": 0.15789473684210525
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Electric Surge",
+     "nature": "Quiet",
+     "moves": [
+      "Rising Voltage",
+      "Scald",
+      "Sucker Punch",
+      "Venoshock"
+     ],
+     "sheets": 5,
+     "share": 0.13157894736842105
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Electric Surge",
+     "nature": "Sassy",
+     "moves": [
+      "Electroweb",
+      "Protect",
+      "Scald",
+      "Sucker Punch"
+     ],
+     "sheets": 3,
+     "share": 0.07894736842105263
+    }
    ]
   },
   "vanilluxe": {
@@ -22690,6 +26788,47 @@
      "sheets": 6,
      "share": 0.15789473684210525,
      "lift": 5.417447728911319
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Snow Warning",
+     "nature": "Timid",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Icy Wind",
+      "Sheer Cold"
+     ],
+     "sheets": 27,
+     "share": 0.7105263157894737
+    },
+    {
+     "item": "Never-Melt Ice",
+     "ability": "Snow Warning",
+     "nature": "Quiet",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Ice Shard",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.07894736842105263
+    },
+    {
+     "item": "Never-Melt Ice",
+     "ability": "Snow Warning",
+     "nature": "Quiet",
+     "moves": [
+      "Aurora Veil",
+      "Blizzard",
+      "Freeze-Dry",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.07894736842105263
     }
    ]
   },
@@ -22879,6 +27018,47 @@
      "sheets": 4,
      "share": 0.1111111111111111,
      "lift": 0.33904117315284826
+    }
+   ],
+   "sets": [
+    {
+     "item": "Scope Lens",
+     "ability": "Sniper",
+     "nature": "Timid",
+     "moves": [
+      "Focus Energy",
+      "Protect",
+      "Snipe Shot",
+      "Vacuum Wave"
+     ],
+     "sheets": 8,
+     "share": 0.2222222222222222
+    },
+    {
+     "item": "Scope Lens",
+     "ability": "Sniper",
+     "nature": "Modest",
+     "moves": [
+      "Focus Energy",
+      "Ice Beam",
+      "Protect",
+      "Snipe Shot"
+     ],
+     "sheets": 3,
+     "share": 0.08333333333333333
+    },
+    {
+     "item": "Scope Lens",
+     "ability": "Sniper",
+     "nature": "Timid",
+     "moves": [
+      "Air Cutter",
+      "Dark Pulse",
+      "Ice Beam",
+      "Snipe Shot"
+     ],
+     "sheets": 3,
+     "share": 0.08333333333333333
     }
    ]
   },
@@ -23094,6 +27274,47 @@
      "share": 0.14285714285714285,
      "lift": 3.2726480836236935
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Libero",
+     "nature": "Jolly",
+     "moves": [
+      "High Jump Kick",
+      "Protect",
+      "Pyro Ball",
+      "Sucker Punch"
+     ],
+     "sheets": 11,
+     "share": 0.3142857142857143
+    },
+    {
+     "item": "Charcoal",
+     "ability": "Libero",
+     "nature": "Jolly",
+     "moves": [
+      "High Jump Kick",
+      "Protect",
+      "Pyro Ball",
+      "Sucker Punch"
+     ],
+     "sheets": 5,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Libero",
+     "nature": "Serious",
+     "moves": [
+      "Iron Head",
+      "Pyro Ball",
+      "Sucker Punch",
+      "U-turn"
+     ],
+     "sheets": 3,
+     "share": 0.08571428571428572
+    }
    ]
   },
   "meowscarada": {
@@ -23298,6 +27519,47 @@
      "share": 0.14285714285714285,
      "lift": 1.0914372866584354
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Overgrow",
+     "nature": "Adamant",
+     "moves": [
+      "Flower Trick",
+      "Knock Off",
+      "Low Kick",
+      "Sucker Punch"
+     ],
+     "sheets": 7,
+     "share": 0.2
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Protean",
+     "nature": "Jolly",
+     "moves": [
+      "Flower Trick",
+      "Knock Off",
+      "Low Kick",
+      "Triple Axel"
+     ],
+     "sheets": 5,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Protean",
+     "nature": "Jolly",
+     "moves": [
+      "Flower Trick",
+      "Knock Off",
+      "Triple Axel",
+      "U-turn"
+     ],
+     "sheets": 4,
+     "share": 0.11428571428571428
+    }
    ]
   },
   "starmie": {
@@ -23501,6 +27763,47 @@
      "sheets": 4,
      "share": 0.11764705882352941,
      "lift": 0.4060633899862196
+    }
+   ],
+   "sets": [
+    {
+     "item": "Starminite",
+     "ability": "Natural Cure",
+     "nature": "Jolly",
+     "moves": [
+      "Ice Spinner",
+      "Liquidation",
+      "Protect",
+      "Zen Headbutt"
+     ],
+     "sheets": 7,
+     "share": 0.20588235294117646
+    },
+    {
+     "item": "Starminite",
+     "ability": "Illuminate",
+     "nature": "Jolly",
+     "moves": [
+      "Aqua Jet",
+      "Protect",
+      "Waterfall",
+      "Zen Headbutt"
+     ],
+     "sheets": 4,
+     "share": 0.11764705882352941
+    },
+    {
+     "item": "Starminite",
+     "ability": "Natural Cure",
+     "nature": "Naive",
+     "moves": [
+      "Expanding Force",
+      "Ice Spinner",
+      "Liquidation",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.08823529411764706
     }
    ]
   },
@@ -23721,6 +28024,47 @@
      "share": 0.125,
      "lift": 156.54166666666666
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Water Bubble",
+     "nature": "Brave",
+     "moves": [
+      "Icy Wind",
+      "Liquidation",
+      "Protect",
+      "Wide Guard"
+     ],
+     "sheets": 9,
+     "share": 0.28125
+    },
+    {
+     "item": "Mystic Water",
+     "ability": "Water Bubble",
+     "nature": "Adamant",
+     "moves": [
+      "Leech Life",
+      "Liquidation",
+      "Mirror Coat",
+      "Wide Guard"
+     ],
+     "sheets": 5,
+     "share": 0.15625
+    },
+    {
+     "item": "Big Root",
+     "ability": "Water Bubble",
+     "nature": "Sassy",
+     "moves": [
+      "Leech Life",
+      "Liquidation",
+      "Protect",
+      "Wide Guard"
+     ],
+     "sheets": 3,
+     "share": 0.09375
+    }
    ]
   },
   "gliscor": {
@@ -23940,6 +28284,47 @@
      "share": 0.15625,
      "lift": 3.5794588414634148
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Hyper Cutter",
+     "nature": "Careful",
+     "moves": [
+      "Crabhammer",
+      "Dual Wingbeat",
+      "High Horsepower",
+      "Tailwind"
+     ],
+     "sheets": 5,
+     "share": 0.15625
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Hyper Cutter",
+     "nature": "Adamant",
+     "moves": [
+      "Dual Wingbeat",
+      "High Horsepower",
+      "Protect",
+      "Tailwind"
+     ],
+     "sheets": 4,
+     "share": 0.125
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Hyper Cutter",
+     "nature": "Adamant",
+     "moves": [
+      "Dual Wingbeat",
+      "Earthquake",
+      "Feint",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.09375
+    }
    ]
   },
   "houndoom": {
@@ -24088,6 +28473,47 @@
      "sheets": 3,
      "share": 0.09375,
      "lift": 17.39351851851852
+    }
+   ],
+   "sets": [
+    {
+     "item": "Houndoominite",
+     "ability": "Flash Fire",
+     "nature": "Timid",
+     "moves": [
+      "Dark Pulse",
+      "Heat Wave",
+      "Overheat",
+      "Protect"
+     ],
+     "sheets": 21,
+     "share": 0.65625
+    },
+    {
+     "item": "Houndoominite",
+     "ability": "Early Bird",
+     "nature": "Timid",
+     "moves": [
+      "Dark Pulse",
+      "Heat Wave",
+      "Protect",
+      "Scorching Sands"
+     ],
+     "sheets": 4,
+     "share": 0.125
+    },
+    {
+     "item": "Houndoominite",
+     "ability": "Flash Fire",
+     "nature": "Timid",
+     "moves": [
+      "Dark Pulse",
+      "Heat Wave",
+      "Nasty Plot",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.125
     }
    ]
   },
@@ -24303,6 +28729,47 @@
      "share": 0.10344827586206896,
      "lift": 0.41960072595281306
     }
+   ],
+   "sets": [
+    {
+     "item": "Eject Button",
+     "ability": "Mold Breaker",
+     "nature": "Jolly",
+     "moves": [
+      "Encore",
+      "Fake Out",
+      "Gigaton Hammer",
+      "Protect"
+     ],
+     "sheets": 8,
+     "share": 0.27586206896551724
+    },
+    {
+     "item": "Metal Coat",
+     "ability": "Mold Breaker",
+     "nature": "Adamant",
+     "moves": [
+      "Fake Out",
+      "Gigaton Hammer",
+      "Helping Hand",
+      "Thunder Wave"
+     ],
+     "sheets": 3,
+     "share": 0.10344827586206896
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Own Tempo",
+     "nature": "Adamant",
+     "moves": [
+      "Gigaton Hammer",
+      "Protect",
+      "Rock Slide",
+      "Wood Hammer"
+     ],
+     "sheets": 3,
+     "share": 0.10344827586206896
+    }
    ]
   },
   "feraligatr": {
@@ -24486,6 +28953,47 @@
      "sheets": 4,
      "share": 0.14285714285714285,
      "lift": 36.38740920096852
+    }
+   ],
+   "sets": [
+    {
+     "item": "Feraligite",
+     "ability": "Torrent",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Jet",
+      "Double-Edge",
+      "Liquidation",
+      "Protect"
+     ],
+     "sheets": 8,
+     "share": 0.2857142857142857
+    },
+    {
+     "item": "Feraligite",
+     "ability": "Sheer Force",
+     "nature": "Careful",
+     "moves": [
+      "Double-Edge",
+      "Dragon Dance",
+      "Psychic Fangs",
+      "Waterfall"
+     ],
+     "sheets": 4,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Sheer Force",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Jet",
+      "Ice Punch",
+      "Liquidation",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.10714285714285714
     }
    ]
   },
@@ -24696,6 +29204,47 @@
      "share": 0.10714285714285714,
      "lift": 0.4345864661654135
     }
+   ],
+   "sets": [
+    {
+     "item": "Mental Herb",
+     "ability": "Prankster",
+     "nature": "Bold",
+     "moves": [
+      "Dazzling Gleam",
+      "Light Screen",
+      "Protect",
+      "Rain Dance"
+     ],
+     "sheets": 13,
+     "share": 0.4642857142857143
+    },
+    {
+     "item": "Light Clay",
+     "ability": "Prankster",
+     "nature": "Serious",
+     "moves": [
+      "Light Screen",
+      "Reflect",
+      "Thunder Wave",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.10714285714285714
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Prankster",
+     "nature": "Calm",
+     "moves": [
+      "Calm Mind",
+      "Draining Kiss",
+      "Psych Up",
+      "Substitute"
+     ],
+     "sheets": 2,
+     "share": 0.07142857142857142
+    }
    ]
   },
   "abomasnow": {
@@ -24829,6 +29378,47 @@
      "sheets": 3,
      "share": 0.1111111111111111,
      "lift": 1.321026722925457
+    }
+   ],
+   "sets": [
+    {
+     "item": "Abomasite",
+     "ability": "Snow Warning",
+     "nature": "Quiet",
+     "moves": [
+      "Blizzard",
+      "Energy Ball",
+      "Ice Shard",
+      "Protect"
+     ],
+     "sheets": 11,
+     "share": 0.4074074074074074
+    },
+    {
+     "item": "Abomasite",
+     "ability": "Snow Warning",
+     "nature": "Quiet",
+     "moves": [
+      "Blizzard",
+      "Earth Power",
+      "Energy Ball",
+      "Protect"
+     ],
+     "sheets": 7,
+     "share": 0.25925925925925924
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Snow Warning",
+     "nature": "Quiet",
+     "moves": [
+      "Blizzard",
+      "Earth Power",
+      "Energy Ball",
+      "Protect"
+     ],
+     "sheets": 5,
+     "share": 0.18518518518518517
     }
    ]
   },
@@ -25003,6 +29593,47 @@
      "sheets": 3,
      "share": 0.11538461538461539,
      "lift": 0.5715227422544497
+    }
+   ],
+   "sets": [
+    {
+     "item": "Ampharosite",
+     "ability": "Static",
+     "nature": "Quiet",
+     "moves": [
+      "Discharge",
+      "Dragon Pulse",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 10,
+     "share": 0.38461538461538464
+    },
+    {
+     "item": "Ampharosite",
+     "ability": "Static",
+     "nature": "Quiet",
+     "moves": [
+      "Dragon Pulse",
+      "Power Gem",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
+    },
+    {
+     "item": "Ampharosite",
+     "ability": "Static",
+     "nature": "Quiet",
+     "moves": [
+      "Dragon Pulse",
+      "Focus Blast",
+      "Protect",
+      "Thunder"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
     }
    ]
   },
@@ -25228,6 +29859,47 @@
      "share": 0.11538461538461539,
      "lift": 133.3846153846154
     }
+   ],
+   "sets": [
+    {
+     "item": "Malamarite",
+     "ability": "Contrary",
+     "nature": "Relaxed",
+     "moves": [
+      "Night Slash",
+      "Protect",
+      "Superpower",
+      "Trick Room"
+     ],
+     "sheets": 7,
+     "share": 0.2692307692307692
+    },
+    {
+     "item": "Bright Powder",
+     "ability": "Contrary",
+     "nature": "Impish",
+     "moves": [
+      "Gravity",
+      "Helping Hand",
+      "Skill Swap",
+      "Topsy-Turvy"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
+    },
+    {
+     "item": "Malamarite",
+     "ability": "Contrary",
+     "nature": "Sassy",
+     "moves": [
+      "Night Slash",
+      "Protect",
+      "Superpower",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
+    }
    ]
   },
   "skarmory": {
@@ -25422,6 +30094,47 @@
      "share": 0.15384615384615385,
      "lift": 4.056140350877193
     }
+   ],
+   "sets": [
+    {
+     "item": "Skarmorite",
+     "ability": "Sturdy",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Drill Run",
+      "Iron Head",
+      "Protect"
+     ],
+     "sheets": 5,
+     "share": 0.19230769230769232
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Sturdy",
+     "nature": "Careful",
+     "moves": [
+      "Body Press",
+      "Brave Bird",
+      "Iron Defense",
+      "Roost"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
+    },
+    {
+     "item": "Skarmorite",
+     "ability": "Sturdy",
+     "nature": "Adamant",
+     "moves": [
+      "Brave Bird",
+      "Iron Head",
+      "Rock Tomb",
+      "Taunt"
+     ],
+     "sheets": 3,
+     "share": 0.11538461538461539
+    }
    ]
   },
   "orthworm": {
@@ -25600,6 +30313,47 @@
      "sheets": 3,
      "share": 0.12,
      "lift": 34.68
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Earth Eater",
+     "nature": "Impish",
+     "moves": [
+      "Body Press",
+      "Heavy Slam",
+      "Iron Defense",
+      "Protect"
+     ],
+     "sheets": 13,
+     "share": 0.52
+    },
+    {
+     "item": "Chesto Berry",
+     "ability": "Earth Eater",
+     "nature": "Careful",
+     "moves": [
+      "Iron Head",
+      "Protect",
+      "Rest",
+      "Shed Tail"
+     ],
+     "sheets": 5,
+     "share": 0.2
+    },
+    {
+     "item": "Black Belt",
+     "ability": "Earth Eater",
+     "nature": "Relaxed",
+     "moves": [
+      "Body Press",
+      "Flash Cannon",
+      "Iron Defense",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.08
     }
    ]
   },
@@ -25820,6 +30574,47 @@
      "share": 0.12,
      "lift": 163.94181818181818
     }
+   ],
+   "sets": [
+    {
+     "item": "Bright Powder",
+     "ability": "Swift Swim",
+     "nature": "Adamant",
+     "moves": [
+      "Poison Jab",
+      "Protect",
+      "Taunt",
+      "Throat Chop"
+     ],
+     "sheets": 8,
+     "share": 0.32
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Swift Swim",
+     "nature": "Adamant",
+     "moves": [
+      "Liquidation",
+      "Poison Jab",
+      "Protect",
+      "Throat Chop"
+     ],
+     "sheets": 5,
+     "share": 0.2
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Swift Swim",
+     "nature": "Jolly",
+     "moves": [
+      "Gunk Shot",
+      "Protect",
+      "Swords Dance",
+      "Throat Chop"
+     ],
+     "sheets": 3,
+     "share": 0.12
+    }
    ]
   },
   "vivillonmarine": {
@@ -25907,6 +30702,21 @@
      "sheets": 2,
      "share": 0.08333333333333333,
      "lift": 0.25583929179434794
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 24,
+     "share": 1.0
     }
    ]
   },
@@ -26071,6 +30881,47 @@
      "sheets": 3,
      "share": 0.13043478260869565,
      "lift": 56.00496894409938
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Cloud Nine",
+     "nature": "Quiet",
+     "moves": [
+      "Dragon Pulse",
+      "Hyper Voice",
+      "Ice Beam",
+      "Protect"
+     ],
+     "sheets": 8,
+     "share": 0.34782608695652173
+    },
+    {
+     "item": "Drampanite",
+     "ability": "Cloud Nine",
+     "nature": "Quiet",
+     "moves": [
+      "Dragon Pulse",
+      "Heat Wave",
+      "Protect",
+      "Roost"
+     ],
+     "sheets": 8,
+     "share": 0.34782608695652173
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Cloud Nine",
+     "nature": "Quiet",
+     "moves": [
+      "Dragon Pulse",
+      "Earth Power",
+      "Hyper Voice",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.13043478260869565
     }
    ]
   },
@@ -26250,6 +31101,47 @@
      "sheets": 3,
      "share": 0.13043478260869565,
      "lift": 3.187274655355249
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Infiltrator",
+     "nature": "Timid",
+     "moves": [
+      "Draco Meteor",
+      "Protect",
+      "Super Fang",
+      "Tailwind"
+     ],
+     "sheets": 11,
+     "share": 0.4782608695652174
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Telepathy",
+     "nature": "Timid",
+     "moves": [
+      "Draco Meteor",
+      "Protect",
+      "Super Fang",
+      "Tailwind"
+     ],
+     "sheets": 3,
+     "share": 0.13043478260869565
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Frisk",
+     "nature": "Timid",
+     "moves": [
+      "Defog",
+      "Super Fang",
+      "Tailwind",
+      "Taunt"
+     ],
+     "sheets": 3,
+     "share": 0.13043478260869565
     }
    ]
   },
@@ -26455,6 +31347,47 @@
      "share": 0.13636363636363635,
      "lift": 409.8545454545454
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Volt Absorb",
+     "nature": "Modest",
+     "moves": [
+      "Discharge",
+      "Shadow Ball",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 5,
+     "share": 0.22727272727272727
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Volt Absorb",
+     "nature": "Modest",
+     "moves": [
+      "Electric Terrain",
+      "Electroweb",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.13636363636363635
+    },
+    {
+     "item": "Focus Band",
+     "ability": "Volt Absorb",
+     "nature": "Timid",
+     "moves": [
+      "Alluring Voice",
+      "Electric Terrain",
+      "Electroweb",
+      "Rising Voltage"
+     ],
+     "sheets": 3,
+     "share": 0.13636363636363635
+    }
    ]
   },
   "lopunny": {
@@ -26628,6 +31561,47 @@
      "sheets": 4,
      "share": 0.18181818181818182,
      "lift": 1.5812289562289563
+    }
+   ],
+   "sets": [
+    {
+     "item": "Lopunnite",
+     "ability": "Limber",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Ice Punch",
+      "Protect"
+     ],
+     "sheets": 5,
+     "share": 0.22727272727272727
+    },
+    {
+     "item": "Lopunnite",
+     "ability": "Limber",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Mega Kick",
+      "Rain Dance",
+      "Triple Axel"
+     ],
+     "sheets": 4,
+     "share": 0.18181818181818182
+    },
+    {
+     "item": "Lopunnite",
+     "ability": "Limber",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Protect",
+      "Triple Axel"
+     ],
+     "sheets": 4,
+     "share": 0.18181818181818182
     }
    ]
   },
@@ -26848,6 +31822,47 @@
      "share": 0.13636363636363635,
      "lift": 0.41864611384529665
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Regenerator",
+     "nature": "Relaxed",
+     "moves": [
+      "Belch",
+      "Chilly Reception",
+      "Psychic Noise",
+      "Trick Room"
+     ],
+     "sheets": 4,
+     "share": 0.18181818181818182
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Curious Medicine",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Protect",
+      "Sludge Wave",
+      "Snarl"
+     ],
+     "sheets": 3,
+     "share": 0.13636363636363635
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Modest",
+     "moves": [
+      "Blizzard",
+      "Calm Mind",
+      "Expanding Force",
+      "Sludge Bomb"
+     ],
+     "sheets": 2,
+     "share": 0.09090909090909091
+    }
    ]
   },
   "vileplume": {
@@ -27026,6 +32041,47 @@
      "sheets": 3,
      "share": 0.13636363636363635,
      "lift": 0.979107848673066
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Chlorophyll",
+     "nature": "Timid",
+     "moves": [
+      "After You",
+      "Leaf Storm",
+      "Protect",
+      "Sleep Powder"
+     ],
+     "sheets": 10,
+     "share": 0.45454545454545453
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Chlorophyll",
+     "nature": "Timid",
+     "moves": [
+      "After You",
+      "Leaf Storm",
+      "Sleep Powder",
+      "Sludge Bomb"
+     ],
+     "sheets": 4,
+     "share": 0.18181818181818182
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Chlorophyll",
+     "nature": "Timid",
+     "moves": [
+      "After You",
+      "Sleep Powder",
+      "Sludge Bomb",
+      "Solar Beam"
+     ],
+     "sheets": 3,
+     "share": 0.13636363636363635
     }
    ]
   },
@@ -27221,6 +32277,47 @@
      "share": 0.14285714285714285,
      "lift": 1.9841563242672298
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Inner Focus",
+     "nature": "Relaxed",
+     "moves": [
+      "Instruct",
+      "Protect",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Inner Focus",
+     "nature": "Relaxed",
+     "moves": [
+      "Encore",
+      "Instruct",
+      "Trick Room",
+      "Yawn"
+     ],
+     "sheets": 3,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Telepathy",
+     "nature": "Bold",
+     "moves": [
+      "Instruct",
+      "Knock Off",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "rhyperior": {
@@ -27384,6 +32481,47 @@
      "sheets": 3,
      "share": 0.15,
      "lift": 0.5177308222324299
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Solid Rock",
+     "nature": "Adamant",
+     "moves": [
+      "High Horsepower",
+      "Ice Punch",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 8,
+     "share": 0.4
+    },
+    {
+     "item": "White Herb",
+     "ability": "Solid Rock",
+     "nature": "Brave",
+     "moves": [
+      "Earthquake",
+      "High Horsepower",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 3,
+     "share": 0.15
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Lightning Rod",
+     "nature": "Brave",
+     "moves": [
+      "Drill Run",
+      "Ice Punch",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 3,
+     "share": 0.15
     }
    ]
   },
@@ -27579,6 +32717,47 @@
      "share": 0.15,
      "lift": 3.6653658536585363
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Inner Focus",
+     "nature": "Sassy",
+     "moves": [
+      "Detect",
+      "Foul Play",
+      "Snarl",
+      "Toxic"
+     ],
+     "sheets": 4,
+     "share": 0.2
+    },
+    {
+     "item": "Chople Berry",
+     "ability": "Inner Focus",
+     "nature": "Calm",
+     "moves": [
+      "Foul Play",
+      "Helping Hand",
+      "Moonlight",
+      "Taunt"
+     ],
+     "sheets": 3,
+     "share": 0.15
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Inner Focus",
+     "nature": "Sassy",
+     "moves": [
+      "Detect",
+      "Foul Play",
+      "Snarl",
+      "Swagger"
+     ],
+     "sheets": 3,
+     "share": 0.15
+    }
    ]
   },
   "arcanine": {
@@ -27758,6 +32937,47 @@
      "share": 0.10526315789473684,
      "lift": 790.9473684210525
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Extreme Speed",
+      "Flare Blitz",
+      "Howl",
+      "Will-O-Wisp"
+     ],
+     "sheets": 8,
+     "share": 0.42105263157894735
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Intimidate",
+     "nature": "Timid",
+     "moves": [
+      "Heat Wave",
+      "Protect",
+      "Snarl",
+      "Sunny Day"
+     ],
+     "sheets": 7,
+     "share": 0.3684210526315789
+    },
+    {
+     "item": "Shuca Berry",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Extreme Speed",
+      "Fire Spin",
+      "Flare Blitz"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
+    }
    ]
   },
   "crabominable": {
@@ -27911,6 +33131,47 @@
      "sheets": 3,
      "share": 0.15789473684210525,
      "lift": 0.8794818774140688
+    }
+   ],
+   "sets": [
+    {
+     "item": "Crabominite",
+     "ability": "Hyper Cutter",
+     "nature": "Brave",
+     "moves": [
+      "Drain Punch",
+      "Ice Hammer",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 7,
+     "share": 0.3684210526315789
+    },
+    {
+     "item": "Crabominite",
+     "ability": "Iron Fist",
+     "nature": "Brave",
+     "moves": [
+      "Bulk Up",
+      "Drain Punch",
+      "Ice Hammer",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.21052631578947367
+    },
+    {
+     "item": "Crabominite",
+     "ability": "Hyper Cutter",
+     "nature": "Adamant",
+     "moves": [
+      "Drain Punch",
+      "Ice Hammer",
+      "Mach Punch",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.15789473684210525
     }
    ]
   },
@@ -28095,6 +33356,47 @@
      "sheets": 3,
      "share": 0.15789473684210525,
      "lift": 5.844438682914182
+    }
+   ],
+   "sets": [
+    {
+     "item": "Dragalgite",
+     "ability": "Adaptability",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Muddy Water",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 5,
+     "share": 0.2631578947368421
+    },
+    {
+     "item": "Dragalgite",
+     "ability": "Poison Point",
+     "nature": "Modest",
+     "moves": [
+      "Draco Meteor",
+      "Flip Turn",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 3,
+     "share": 0.15789473684210525
+    },
+    {
+     "item": "Dragalgite",
+     "ability": "Adaptability",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Protect",
+      "Sludge Bomb",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.15789473684210525
     }
    ]
   },
@@ -28320,6 +33622,47 @@
      "share": 0.15789473684210525,
      "lift": 1.3582381827493748
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Sap Sipper",
+     "nature": "Adamant",
+     "moves": [
+      "Bulldoze",
+      "Dragon Claw",
+      "Ice Spinner",
+      "Shelter"
+     ],
+     "sheets": 5,
+     "share": 0.2631578947368421
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Shell Armor",
+     "nature": "Relaxed",
+     "moves": [
+      "Body Press",
+      "Dragon Pulse",
+      "Life Dew",
+      "Shelter"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
+    },
+    {
+     "item": "Wise Glasses",
+     "ability": "Sap Sipper",
+     "nature": "Quiet",
+     "moves": [
+      "Body Slam",
+      "Flash Cannon",
+      "Muddy Water",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
+    }
    ]
   },
   "manectric": {
@@ -28488,6 +33831,47 @@
      "sheets": 3,
      "share": 0.15789473684210525,
      "lift": 1.371585031944022
+    }
+   ],
+   "sets": [
+    {
+     "item": "Manectite",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Protect",
+      "Snarl",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 4,
+     "share": 0.21052631578947367
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Lightning Rod",
+     "nature": "Modest",
+     "moves": [
+      "Flamethrower",
+      "Thunder",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 3,
+     "share": 0.15789473684210525
+    },
+    {
+     "item": "Air Balloon",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Flamethrower",
+      "Protect",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 3,
+     "share": 0.15789473684210525
     }
    ]
   },
@@ -28677,6 +34061,47 @@
      "sheets": 2,
      "share": 0.10526315789473684,
      "lift": 29.294346978557503
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Prankster",
+     "nature": "Calm",
+     "moves": [
+      "Fake Out",
+      "Helping Hand",
+      "Light Screen",
+      "Psychic"
+     ],
+     "sheets": 11,
+     "share": 0.5789473684210527
+    },
+    {
+     "item": "Bright Powder",
+     "ability": "Prankster",
+     "nature": "Bold",
+     "moves": [
+      "Fake Out",
+      "Light Screen",
+      "Skill Swap",
+      "Yawn"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
+    },
+    {
+     "item": "Light Clay",
+     "ability": "Prankster",
+     "nature": "Gentle",
+     "moves": [
+      "Fake Out",
+      "Light Screen",
+      "Psychic",
+      "Reflect"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
     }
    ]
   },
@@ -28872,6 +34297,47 @@
      "share": 0.15789473684210525,
      "lift": 0.3742653162875643
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Drought",
+     "nature": "Modest",
+     "moves": [
+      "Heat Wave",
+      "Hypnosis",
+      "Overheat",
+      "Solar Beam"
+     ],
+     "sheets": 7,
+     "share": 0.3684210526315789
+    },
+    {
+     "item": "Heat Rock",
+     "ability": "Drought",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Helping Hand",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 4,
+     "share": 0.21052631578947367
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Drought",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Flamethrower",
+      "Protect",
+      "Snarl"
+     ],
+     "sheets": 2,
+     "share": 0.10526315789473684
+    }
    ]
   },
   "ditto": {
@@ -29000,6 +34466,38 @@
      "sheets": 3,
      "share": 0.17647058823529413,
      "lift": 3.905743740795287
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Imposter",
+     "nature": "Naive",
+     "moves": [
+      "Transform"
+     ],
+     "sheets": 10,
+     "share": 0.5882352941176471
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Imposter",
+     "nature": "Jolly",
+     "moves": [
+      "Transform"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Imposter",
+     "nature": "Bold",
+     "moves": [
+      "Transform"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
     }
    ]
   },
@@ -29195,6 +34693,47 @@
      "share": 0.17647058823529413,
      "lift": 2.7711598746081507
     }
+   ],
+   "sets": [
+    {
+     "item": "Electric Seed",
+     "ability": "Unburden",
+     "nature": "Adamant",
+     "moves": [
+      "Acrobatics",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 4,
+     "share": 0.23529411764705882
+    },
+    {
+     "item": "Hawluchanite",
+     "ability": "Limber",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Cross Chop",
+      "Detect",
+      "Dual Wingbeat"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
+    },
+    {
+     "item": "Electric Seed",
+     "ability": "Unburden",
+     "nature": "Adamant",
+     "moves": [
+      "Acrobatics",
+      "Close Combat",
+      "Detect",
+      "Swords Dance"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
+    }
    ]
   },
   "heracross": {
@@ -29349,6 +34888,47 @@
      "share": 0.11764705882352941,
      "lift": 13.293233082706767
     }
+   ],
+   "sets": [
+    {
+     "item": "Heracronite",
+     "ability": "Moxie",
+     "nature": "Adamant",
+     "moves": [
+      "Bullet Seed",
+      "Close Combat",
+      "Detect",
+      "Pin Missile"
+     ],
+     "sheets": 10,
+     "share": 0.5882352941176471
+    },
+    {
+     "item": "Heracronite",
+     "ability": "Swarm",
+     "nature": "Adamant",
+     "moves": [
+      "Bullet Seed",
+      "Close Combat",
+      "Detect",
+      "Pin Missile"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
+    },
+    {
+     "item": "Heracronite",
+     "ability": "Moxie",
+     "nature": "Sassy",
+     "moves": [
+      "Bullet Seed",
+      "Megahorn",
+      "Protect",
+      "Rock Blast"
+     ],
+     "sheets": 2,
+     "share": 0.11764705882352941
+    }
    ]
   },
   "vivillonpokeball": {
@@ -29497,6 +35077,47 @@
      "sheets": 3,
      "share": 0.17647058823529413,
      "lift": 102.0
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Rage Powder",
+      "Sleep Powder",
+      "Stun Spore"
+     ],
+     "sheets": 8,
+     "share": 0.47058823529411764
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 4,
+     "share": 0.23529411764705882
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Giga Drain",
+      "Rage Powder",
+      "Sleep Powder",
+      "Tailwind"
+     ],
+     "sheets": 3,
+     "share": 0.17647058823529413
     }
    ]
   },
@@ -29687,6 +35308,47 @@
      "share": 0.1875,
      "lift": 30.298387096774192
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Solar Power",
+     "nature": "Modest",
+     "moves": [
+      "Electroweb",
+      "Hyper Beam",
+      "Thunderbolt",
+      "Weather Ball"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Dry Skin",
+     "nature": "Modest",
+     "moves": [
+      "Focus Blast",
+      "Protect",
+      "Shed Tail",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Solar Power",
+     "nature": "Timid",
+     "moves": [
+      "Grass Knot",
+      "Shed Tail",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    }
    ]
   },
   "meowsticf": {
@@ -29860,6 +35522,47 @@
      "sheets": 2,
      "share": 0.125,
      "lift": 0.6962564862861379
+    }
+   ],
+   "sets": [
+    {
+     "item": "Meowsticite",
+     "ability": "Competitive",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Protect",
+      "Substitute",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Meowsticite",
+     "ability": "Competitive",
+     "nature": "Hasty",
+     "moves": [
+      "Expanding Force",
+      "Fake Out",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Meowsticite",
+     "ability": "Competitive",
+     "nature": "Timid",
+     "moves": [
+      "Alluring Voice",
+      "Fake Out",
+      "Protect",
+      "Psyshock"
+     ],
+     "sheets": 2,
+     "share": 0.125
     }
    ]
   },
@@ -30055,6 +35758,47 @@
      "share": 0.1875,
      "lift": 78.27083333333334
     }
+   ],
+   "sets": [
+    {
+     "item": "Lum Berry",
+     "ability": "Disguise",
+     "nature": "Adamant",
+     "moves": [
+      "Play Rough",
+      "Shadow Sneak",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Electric Seed",
+     "ability": "Disguise",
+     "nature": "Brave",
+     "moves": [
+      "Play Rough",
+      "Shadow Claw",
+      "Swords Dance",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Disguise",
+     "nature": "Sassy",
+     "moves": [
+      "Night Shade",
+      "Protect",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.1875
+    }
    ]
   },
   "banette": {
@@ -30203,6 +35947,34 @@
      "sheets": 2,
      "share": 0.13333333333333333,
      "lift": 58.93333333333333
+    }
+   ],
+   "sets": [
+    {
+     "item": "Banettite",
+     "ability": "Cursed Body",
+     "nature": "Adamant",
+     "moves": [
+      "Curse",
+      "Destiny Bond",
+      "Phantom Force",
+      "Skitter Smack"
+     ],
+     "sheets": 13,
+     "share": 0.8666666666666667
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Insomnia",
+     "nature": "Adamant",
+     "moves": [
+      "Phantom Force",
+      "Poltergeist",
+      "Shadow Claw",
+      "Shadow Sneak"
+     ],
+     "sheets": 2,
+     "share": 0.13333333333333333
     }
    ]
   },
@@ -30377,6 +36149,47 @@
      "sheets": 2,
      "share": 0.14285714285714285,
      "lift": 6.351648351648351
+    }
+   ],
+   "sets": [
+    {
+     "item": "Electric Seed",
+     "ability": "Electromorphosis",
+     "nature": "Quiet",
+     "moves": [
+      "Light Screen",
+      "Parabolic Charge",
+      "Protect",
+      "Soak"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Electromorphosis",
+     "nature": "Modest",
+     "moves": [
+      "Discharge",
+      "Hyper Voice",
+      "Parabolic Charge",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Electromorphosis",
+     "nature": "Bold",
+     "moves": [
+      "Parabolic Charge",
+      "Protect",
+      "Soak",
+      "Weather Ball"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
     }
    ]
   },
@@ -30561,6 +36374,47 @@
      "sheets": 2,
      "share": 0.14285714285714285,
      "lift": 0.9120038839665008
+    }
+   ],
+   "sets": [
+    {
+     "item": "Eelektrossite",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Discharge",
+      "Flamethrower",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Eelektrossite",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Giga Drain",
+      "Protect",
+      "Thunder",
+      "Volt Switch"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Eelektrossite",
+     "ability": "Levitate",
+     "nature": "Timid",
+     "moves": [
+      "Dragon Pulse",
+      "Flash Cannon",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
     }
    ]
   },
@@ -30761,6 +36615,47 @@
      "share": 0.14285714285714285,
      "lift": 8.587428571428571
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Steely Spirit",
+     "nature": "Adamant",
+     "moves": [
+      "Crunch",
+      "Fake Out",
+      "Iron Head",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Tough Claws",
+     "nature": "Adamant",
+     "moves": [
+      "Curse",
+      "Fake Out",
+      "Iron Head",
+      "Play Rough"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Battle Armor",
+     "nature": "Brave",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Iron Head",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "pikachu": {
@@ -30955,6 +36850,47 @@
      "share": 0.14285714285714285,
      "lift": 536.7142857142857
     }
+   ],
+   "sets": [
+    {
+     "item": "Light Ball",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Protect",
+      "Thunder",
+      "Volt Switch"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Light Ball",
+     "ability": "Lightning Rod",
+     "nature": "Jolly",
+     "moves": [
+      "Fake Out",
+      "Protect",
+      "Volt Switch",
+      "Volt Tackle"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Light Ball",
+     "ability": "Lightning Rod",
+     "nature": "Timid",
+     "moves": [
+      "Discharge",
+      "Fake Out",
+      "Grass Knot",
+      "Rising Voltage"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "skeledirge": {
@@ -31124,6 +37060,46 @@
      "share": 0.14285714285714285,
      "lift": 0.9120038839665008
     }
+   ],
+   "sets": [
+    {
+     "item": "Psychic Seed",
+     "ability": "Unaware",
+     "nature": "Modest",
+     "moves": [
+      "Protect",
+      "Shadow Ball",
+      "Slack Off",
+      "Torch Song"
+     ],
+     "sheets": 4,
+     "share": 0.2857142857142857
+    },
+    {
+     "item": "Psychic Seed",
+     "ability": "Unaware",
+     "nature": "Modest",
+     "moves": [
+      "Protect",
+      "Shadow Ball",
+      "Torch Song"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Unaware",
+     "nature": "Bold",
+     "moves": [
+      "Earth Power",
+      "Overheat",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 2,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "toxtricitylowkey": {
@@ -31287,6 +37263,47 @@
      "sheets": 3,
      "share": 0.21428571428571427,
      "lift": 3.3649798477384683
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Punk Rock",
+     "nature": "Timid",
+     "moves": [
+      "Boomburst",
+      "Overdrive",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Magnet",
+     "ability": "Punk Rock",
+     "nature": "Modest",
+     "moves": [
+      "Overdrive",
+      "Protect",
+      "Sludge Bomb",
+      "Snarl"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Punk Rock",
+     "nature": "Timid",
+     "moves": [
+      "Helping Hand",
+      "Overdrive",
+      "Protect",
+      "Sludge Bomb"
+     ],
+     "sheets": 3,
+     "share": 0.21428571428571427
     }
    ]
   },
@@ -31472,6 +37489,47 @@
      "share": 0.15384615384615385,
      "lift": 26.272727272727273
     }
+   ],
+   "sets": [
+    {
+     "item": "Rocky Helmet",
+     "ability": "Cloud Nine",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Fire Spin",
+      "Perish Song",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.3076923076923077
+    },
+    {
+     "item": "Altarianite",
+     "ability": "Cloud Nine",
+     "nature": "Modest",
+     "moves": [
+      "Dragon Pulse",
+      "Heat Wave",
+      "Hyper Voice",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Altarianite",
+     "ability": "Cloud Nine",
+     "nature": "Modest",
+     "moves": [
+      "Hyper Voice",
+      "Perish Song",
+      "Protect",
+      "Will-O-Wisp"
+     ],
+     "sheets": 2,
+     "share": 0.15384615384615385
+    }
    ]
   },
   "falinks": {
@@ -31620,6 +37678,47 @@
      "sheets": 2,
      "share": 0.15384615384615385,
      "lift": 15.727891156462587
+    }
+   ],
+   "sets": [
+    {
+     "item": "Falinksite",
+     "ability": "Defiant",
+     "nature": "Careful",
+     "moves": [
+      "Close Combat",
+      "No Retreat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 5,
+     "share": 0.38461538461538464
+    },
+    {
+     "item": "Falinksite",
+     "ability": "Defiant",
+     "nature": "Careful",
+     "moves": [
+      "Close Combat",
+      "Knock Off",
+      "No Retreat",
+      "Rock Tomb"
+     ],
+     "sheets": 5,
+     "share": 0.38461538461538464
+    },
+    {
+     "item": "Falinksite",
+     "ability": "Defiant",
+     "nature": "Adamant",
+     "moves": [
+      "Brick Break",
+      "No Retreat",
+      "Protect",
+      "Throat Chop"
+     ],
+     "sheets": 2,
+     "share": 0.15384615384615385
     }
    ]
   },
@@ -31810,6 +37909,47 @@
      "share": 0.23076923076923078,
      "lift": 266.7692307692308
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Prankster",
+     "nature": "Jolly",
+     "moves": [
+      "Charm",
+      "Copycat",
+      "Fake Out",
+      "Fake Tears"
+     ],
+     "sheets": 5,
+     "share": 0.38461538461538464
+    },
+    {
+     "item": "Electric Seed",
+     "ability": "Unburden",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Foul Play",
+      "Protect",
+      "Snarl"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Psychic Seed",
+     "ability": "Unburden",
+     "nature": "Serious",
+     "moves": [
+      "Encore",
+      "Fake Out",
+      "Snarl",
+      "U-turn"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    }
    ]
   },
   "quaquaval": {
@@ -31968,6 +38108,47 @@
      "sheets": 2,
      "share": 0.15384615384615385,
      "lift": 13.927710843373495
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Moxie",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Step",
+      "Close Combat",
+      "Ice Spinner",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Metronome",
+     "ability": "Moxie",
+     "nature": "Jolly",
+     "moves": [
+      "Aqua Step",
+      "Close Combat",
+      "Ice Spinner",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Moxie",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Step",
+      "Brave Bird",
+      "Close Combat",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.15384615384615385
     }
    ]
   },
@@ -32163,6 +38344,47 @@
      "share": 0.23076923076923078,
      "lift": 8.713567839195981
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Wandering Spirit",
+     "nature": "Careful",
+     "moves": [
+      "Hex",
+      "Power Split",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Wandering Spirit",
+     "nature": "Sassy",
+     "moves": [
+      "Body Press",
+      "Protect",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Wandering Spirit",
+     "nature": "Bold",
+     "moves": [
+      "Ally Switch",
+      "Body Press",
+      "Curse",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.23076923076923078
+    }
    ]
   },
   "scolipede": {
@@ -32316,6 +38538,47 @@
      "sheets": 1,
      "share": 0.07692307692307693,
      "lift": 17.253731343283583
+    }
+   ],
+   "sets": [
+    {
+     "item": "Expert Belt",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Leech Life",
+      "Poison Jab",
+      "Protect",
+      "Swords Dance"
+     ],
+     "sheets": 6,
+     "share": 0.46153846153846156
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Poison Jab",
+      "Protect",
+      "Swords Dance",
+      "Throat Chop"
+     ],
+     "sheets": 4,
+     "share": 0.3076923076923077
+    },
+    {
+     "item": "Scolipite",
+     "ability": "Speed Boost",
+     "nature": "Naughty",
+     "moves": [
+      "Leech Life",
+      "Protect",
+      "Rock Slide",
+      "Superpower"
+     ],
+     "sheets": 2,
+     "share": 0.15384615384615385
     }
    ]
   },
@@ -32511,6 +38774,47 @@
      "share": 0.25,
      "lift": 144.5
     }
+   ],
+   "sets": [
+    {
+     "item": "Spell Tag",
+     "ability": "Sand Rush",
+     "nature": "Adamant",
+     "moves": [
+      "Last Respects",
+      "Protect",
+      "Snarl",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.25
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Sand Rush",
+     "nature": "Adamant",
+     "moves": [
+      "Last Respects",
+      "Play Rough",
+      "Shadow Sneak",
+      "Yawn"
+     ],
+     "sheets": 3,
+     "share": 0.25
+    },
+    {
+     "item": "Spell Tag",
+     "ability": "Fluffy",
+     "nature": "Jolly",
+     "moves": [
+      "Ally Switch",
+      "Charm",
+      "Howl",
+      "Last Respects"
+     ],
+     "sheets": 3,
+     "share": 0.25
+    }
    ]
   },
   "luxray": {
@@ -32674,6 +38978,47 @@
      "share": 0.16666666666666666,
      "lift": 71.56190476190477
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Intimidate",
+     "nature": "Sassy",
+     "moves": [
+      "Crunch",
+      "Protect",
+      "Volt Switch",
+      "Wild Charge"
+     ],
+     "sheets": 8,
+     "share": 0.6666666666666666
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Baby-Doll Eyes",
+      "Roar",
+      "Thunder Wave",
+      "Wild Charge"
+     ],
+     "sheets": 2,
+     "share": 0.16666666666666666
+    },
+    {
+     "item": "Wide Lens",
+     "ability": "Intimidate",
+     "nature": "Adamant",
+     "moves": [
+      "Snarl",
+      "Supercell Slam",
+      "Superpower",
+      "Thunder Wave"
+     ],
+     "sheets": 2,
+     "share": 0.16666666666666666
+    }
    ]
   },
   "basculegionf": {
@@ -32828,6 +39173,47 @@
      "share": 0.09090909090909091,
      "lift": 2.221433850702143
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Adaptability",
+     "nature": "Modest",
+     "moves": [
+      "Hydro Pump",
+      "Ice Beam",
+      "Icy Wind",
+      "Shadow Ball"
+     ],
+     "sheets": 5,
+     "share": 0.45454545454545453
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Adaptability",
+     "nature": "Modest",
+     "moves": [
+      "Flip Turn",
+      "Hydro Pump",
+      "Icy Wind",
+      "Shadow Ball"
+     ],
+     "sheets": 3,
+     "share": 0.2727272727272727
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Swift Swim",
+     "nature": "Timid",
+     "moves": [
+      "Ice Beam",
+      "Muddy Water",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 2,
+     "share": 0.18181818181818182
+    }
    ]
   },
   "rampardos": {
@@ -32981,6 +39367,47 @@
      "sheets": 2,
      "share": 0.18181818181818182,
      "lift": 2.2052975273314255
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Sheer Force",
+     "nature": "Brave",
+     "moves": [
+      "Hammer Arm",
+      "Ice Beam",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 6,
+     "share": 0.5454545454545454
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Sheer Force",
+     "nature": "Brave",
+     "moves": [
+      "Fire Punch",
+      "Protect",
+      "Rock Slide",
+      "Zen Headbutt"
+     ],
+     "sheets": 3,
+     "share": 0.2727272727272727
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Mold Breaker",
+     "nature": "Brave",
+     "moves": [
+      "Focus Punch",
+      "Iron Head",
+      "Rock Slide",
+      "Whirlwind"
+     ],
+     "sheets": 2,
+     "share": 0.18181818181818182
     }
    ]
   },
@@ -33155,6 +39582,47 @@
      "sheets": 2,
      "share": 0.18181818181818182,
      "lift": 1.170678507439433
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Shell Armor",
+     "nature": "Naive",
+     "moves": [
+      "Grassy Glide",
+      "High Horsepower",
+      "Swords Dance",
+      "Wide Guard"
+     ],
+     "sheets": 5,
+     "share": 0.45454545454545453
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Overgrow",
+     "nature": "Adamant",
+     "moves": [
+      "Headlong Rush",
+      "Leech Seed",
+      "Protect",
+      "Wood Hammer"
+     ],
+     "sheets": 3,
+     "share": 0.2727272727272727
+    },
+    {
+     "item": "White Herb",
+     "ability": "Shell Armor",
+     "nature": "Adamant",
+     "moves": [
+      "Headlong Rush",
+      "Protect",
+      "Shell Smash",
+      "Wood Hammer"
+     ],
+     "sheets": 2,
+     "share": 0.18181818181818182
     }
    ]
   },
@@ -33340,6 +39808,47 @@
      "share": 0.2,
      "lift": 1.2768054375531013
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Grass Pelt",
+     "nature": "Impish",
+     "moves": [
+      "Horn Leech",
+      "Leech Seed",
+      "Milk Drink",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.4
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Sap Sipper",
+     "nature": "Serious",
+     "moves": [
+      "Bulk Up",
+      "Horn Leech",
+      "Milk Drink",
+      "Rock Slide"
+     ],
+     "sheets": 3,
+     "share": 0.3
+    },
+    {
+     "item": "Occa Berry",
+     "ability": "Sap Sipper",
+     "nature": "Careful",
+     "moves": [
+      "Helping Hand",
+      "Leaf Blade",
+      "Leech Seed",
+      "Milk Drink"
+     ],
+     "sheets": 2,
+     "share": 0.2
+    }
    ]
   },
   "snorlax": {
@@ -33481,6 +39990,34 @@
      "sheets": 3,
      "share": 0.3,
      "lift": 155.46206896551723
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Thick Fat",
+     "nature": "Relaxed",
+     "moves": [
+      "Encore",
+      "Fissure",
+      "Protect",
+      "Yawn"
+     ],
+     "sheets": 7,
+     "share": 0.7
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Thick Fat",
+     "nature": "Brave",
+     "moves": [
+      "Curse",
+      "High Horsepower",
+      "Ice Punch",
+      "Rock Slide"
+     ],
+     "sheets": 3,
+     "share": 0.3
     }
    ]
   },
@@ -33629,6 +40166,47 @@
      "sheets": 2,
      "share": 0.2,
      "lift": 1.2768054375531013
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Sand Veil",
+     "nature": "Quiet",
+     "moves": [
+      "Protect",
+      "Sludge Wave",
+      "Thunderbolt",
+      "Yawn"
+     ],
+     "sheets": 4,
+     "share": 0.4
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Static",
+     "nature": "Modest",
+     "moves": [
+      "Earth Power",
+      "Fissure",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.3
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Static",
+     "nature": "Bold",
+     "moves": [
+      "Earth Power",
+      "Fissure",
+      "Protect",
+      "Thunderbolt"
+     ],
+     "sheets": 3,
+     "share": 0.3
     }
    ]
   },
@@ -33788,6 +40366,47 @@
      "sheets": 2,
      "share": 0.2,
      "lift": 4.089251700680273
+    }
+   ],
+   "sets": [
+    {
+     "item": "Expert Belt",
+     "ability": "Dry Skin",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Gunk Shot",
+      "Sucker Punch"
+     ],
+     "sheets": 6,
+     "share": 0.6
+    },
+    {
+     "item": "Shuca Berry",
+     "ability": "Dry Skin",
+     "nature": "Naughty",
+     "moves": [
+      "Fake Out",
+      "Knock Off",
+      "Low Kick",
+      "Poison Jab"
+     ],
+     "sheets": 2,
+     "share": 0.2
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Dry Skin",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Gunk Shot",
+      "Helping Hand"
+     ],
+     "sheets": 2,
+     "share": 0.2
     }
    ]
   },
@@ -33957,6 +40576,47 @@
      "sheets": 1,
      "share": 0.1111111111111111,
      "lift": 2.4129736673089273
+    }
+   ],
+   "sets": [
+    {
+     "item": "Chesnaughtite",
+     "ability": "Bulletproof",
+     "nature": "Adamant",
+     "moves": [
+      "Belly Drum",
+      "Drain Punch",
+      "Grassy Glide",
+      "Spiky Shield"
+     ],
+     "sheets": 5,
+     "share": 0.5555555555555556
+    },
+    {
+     "item": "Chesnaughtite",
+     "ability": "Bulletproof",
+     "nature": "Impish",
+     "moves": [
+      "Body Press",
+      "Iron Defense",
+      "Spiky Shield",
+      "Wood Hammer"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Bulletproof",
+     "nature": "Brave",
+     "moves": [
+      "Belly Drum",
+      "Drain Punch",
+      "Grassy Glide",
+      "Protect"
+     ],
+     "sheets": 1,
+     "share": 0.1111111111111111
     }
    ]
   },
@@ -34147,6 +40807,47 @@
      "share": 0.2222222222222222,
      "lift": 417.4444444444444
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Iron Fist",
+     "nature": "Impish",
+     "moves": [
+      "Close Combat",
+      "Fire Punch",
+      "Protect",
+      "Wide Guard"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Iron Fist",
+     "nature": "Adamant",
+     "moves": [
+      "Drain Punch",
+      "Ice Punch",
+      "Mach Punch",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Black Belt",
+     "ability": "Guts",
+     "nature": "Brave",
+     "moves": [
+      "Drain Punch",
+      "Mach Punch",
+      "Protect",
+      "Thunder Punch"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
+    }
    ]
   },
   "glaceon": {
@@ -34310,6 +41011,47 @@
      "sheets": 2,
      "share": 0.2222222222222222,
      "lift": 53.00881834215167
+    }
+   ],
+   "sets": [
+    {
+     "item": "Never-Melt Ice",
+     "ability": "Snow Cloak",
+     "nature": "Modest",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Protect",
+      "Weather Ball"
+     ],
+     "sheets": 5,
+     "share": 0.5555555555555556
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Ice Body",
+     "nature": "Calm",
+     "moves": [
+      "Blizzard",
+      "Freeze-Dry",
+      "Protect",
+      "Substitute"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Snow Cloak",
+     "nature": "Serious",
+     "moves": [
+      "Calm Mind",
+      "Freeze-Dry",
+      "Protect",
+      "Shadow Ball"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
     }
    ]
   },
@@ -34479,6 +41221,47 @@
      "sheets": 2,
      "share": 0.2222222222222222,
      "lift": 3.994683678894205
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Hunger Switch",
+     "nature": "Adamant",
+     "moves": [
+      "Aura Wheel",
+      "Ice Fang",
+      "Protect",
+      "Stomping Tantrum"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Hunger Switch",
+     "nature": "Adamant",
+     "moves": [
+      "Aura Wheel",
+      "Ice Fang",
+      "Protect",
+      "Rapid Spin"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Hunger Switch",
+     "nature": "Jolly",
+     "moves": [
+      "Aura Wheel",
+      "Fake Out",
+      "Parting Shot",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
     }
    ]
   },
@@ -34654,6 +41437,47 @@
      "share": 0.2222222222222222,
      "lift": 1.237789308953134
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Pressure",
+     "nature": "Bold",
+     "moves": [
+      "Icy Wind",
+      "Pain Split",
+      "Protect",
+      "Snarl"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Roseli Berry",
+     "ability": "Infiltrator",
+     "nature": "Sassy",
+     "moves": [
+      "Poltergeist",
+      "Protect",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Pressure",
+     "nature": "Bold",
+     "moves": [
+      "Ally Switch",
+      "Helping Hand",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
+    }
    ]
   },
   "trevenant": {
@@ -34822,6 +41646,47 @@
      "sheets": 2,
      "share": 0.2222222222222222,
      "lift": 47.70793650793651
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Harvest",
+     "nature": "Calm",
+     "moves": [
+      "Ally Switch",
+      "Leech Seed",
+      "Protect",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Harvest",
+     "nature": "Impish",
+     "moves": [
+      "Ally Switch",
+      "Horn Leech",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Harvest",
+     "nature": "Brave",
+     "moves": [
+      "Forest's Curse",
+      "Horn Leech",
+      "Poltergeist",
+      "Sucker Punch"
+     ],
+     "sheets": 2,
+     "share": 0.2222222222222222
     }
    ]
   },
@@ -35002,6 +41867,47 @@
      "share": 0.25,
      "lift": 170.77272727272728
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Aroma Veil",
+     "nature": "Sassy",
+     "moves": [
+      "Alluring Voice",
+      "Decorate",
+      "Encore",
+      "Helping Hand"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Aroma Veil",
+     "nature": "Calm",
+     "moves": [
+      "Dazzling Gleam",
+      "Decorate",
+      "Encore",
+      "Mystical Fire"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Aroma Veil",
+     "nature": "Bold",
+     "moves": [
+      "Dazzling Gleam",
+      "Decorate",
+      "Misty Terrain",
+      "Recover"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    }
    ]
   },
   "azumarill": {
@@ -35130,6 +42036,34 @@
      "sheets": 2,
      "share": 0.25,
      "lift": 0.5925867507886435
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Huge Power",
+     "nature": "Adamant",
+     "moves": [
+      "Aqua Jet",
+      "Belly Drum",
+      "Play Rough",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.5
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Huge Power",
+     "nature": "Brave",
+     "moves": [
+      "Aqua Jet",
+      "Belly Drum",
+      "Play Rough",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.5
     }
    ]
   },
@@ -35279,6 +42213,47 @@
      "sheets": 1,
      "share": 0.125,
      "lift": 43.68604651162791
+    }
+   ],
+   "sets": [
+    {
+     "item": "Beedrillite",
+     "ability": "Swarm",
+     "nature": "Impish",
+     "moves": [
+      "Drill Run",
+      "Poison Jab",
+      "Protect",
+      "U-turn"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    },
+    {
+     "item": "Beedrillite",
+     "ability": "Swarm",
+     "nature": "Jolly",
+     "moves": [
+      "Fell Stinger",
+      "Knock Off",
+      "Poison Jab",
+      "U-turn"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    },
+    {
+     "item": "Beedrillite",
+     "ability": "Sniper",
+     "nature": "Jolly",
+     "moves": [
+      "Drill Run",
+      "Fell Stinger",
+      "Poison Jab",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.25
     }
    ]
   },
@@ -35444,6 +42419,47 @@
      "share": 0.25,
      "lift": 1878.4999999999998
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Magic Guard",
+     "nature": "Quiet",
+     "moves": [
+      "Energy Ball",
+      "Night Shade",
+      "Psyshock",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.375
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Magic Guard",
+     "nature": "Quiet",
+     "moves": [
+      "Energy Ball",
+      "Focus Blast",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Magic Guard",
+     "nature": "Quiet",
+     "moves": [
+      "Energy Ball",
+      "Protect",
+      "Psychic",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    }
    ]
   },
   "wigglytuff": {
@@ -35603,6 +42619,47 @@
      "share": 0.25,
      "lift": 234.81249999999997
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Competitive",
+     "nature": "Relaxed",
+     "moves": [
+      "Moonblast",
+      "Perish Song",
+      "Protect",
+      "Sing"
+     ],
+     "sheets": 3,
+     "share": 0.375
+    },
+    {
+     "item": "Fairy Feather",
+     "ability": "Competitive",
+     "nature": "Modest",
+     "moves": [
+      "Flamethrower",
+      "Icy Wind",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.375
+    },
+    {
+     "item": "Kebia Berry",
+     "ability": "Competitive",
+     "nature": "Relaxed",
+     "moves": [
+      "Chilling Water",
+      "Hyper Voice",
+      "Moonblast",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.25
+    }
    ]
   },
   "decidueyehisui": {
@@ -35752,6 +42809,47 @@
      "share": 0.2857142857142857,
      "lift": 29.2089407191448
     }
+   ],
+   "sets": [
+    {
+     "item": "Scope Lens",
+     "ability": "Scrappy",
+     "nature": "Adamant",
+     "moves": [
+      "Brave Bird",
+      "Leaf Blade",
+      "Protect",
+      "Triple Arrows"
+     ],
+     "sheets": 3,
+     "share": 0.42857142857142855
+    },
+    {
+     "item": "Black Belt",
+     "ability": "Scrappy",
+     "nature": "Brave",
+     "moves": [
+      "Dual Wingbeat",
+      "Focus Punch",
+      "Protect",
+      "Triple Arrows"
+     ],
+     "sheets": 2,
+     "share": 0.2857142857142857
+    },
+    {
+     "item": "Scope Lens",
+     "ability": "Scrappy",
+     "nature": "Brave",
+     "moves": [
+      "Grassy Glide",
+      "Leaf Blade",
+      "Protect",
+      "Triple Arrows"
+     ],
+     "sheets": 2,
+     "share": 0.2857142857142857
+    }
    ]
   },
   "emboar": {
@@ -35883,6 +42981,34 @@
      "sheets": 3,
      "share": 0.42857142857142855,
      "lift": 1.3077302393038432
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Reckless",
+     "nature": "Adamant",
+     "moves": [
+      "Drain Punch",
+      "Flare Blitz",
+      "Protect",
+      "Wild Charge"
+     ],
+     "sheets": 4,
+     "share": 0.5714285714285714
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Reckless",
+     "nature": "Naive",
+     "moves": [
+      "Body Slam",
+      "Close Combat",
+      "Flare Blitz",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.42857142857142855
     }
    ]
   },
@@ -36043,6 +43169,47 @@
      "share": 0.14285714285714285,
      "lift": 14.6044703595724
     }
+   ],
+   "sets": [
+    {
+     "item": "Roseli Berry",
+     "ability": "Fur Coat",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Foul Play",
+      "Parting Shot",
+      "Taunt"
+     ],
+     "sheets": 3,
+     "share": 0.42857142857142855
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Fur Coat",
+     "nature": "Careful",
+     "moves": [
+      "Fake Out",
+      "Icy Wind",
+      "Knock Off",
+      "Parting Shot"
+     ],
+     "sheets": 3,
+     "share": 0.42857142857142855
+    },
+    {
+     "item": "Rocky Helmet",
+     "ability": "Fur Coat",
+     "nature": "Jolly",
+     "moves": [
+      "Beat Up",
+      "Fake Out",
+      "Parting Shot",
+      "Taunt"
+     ],
+     "sheets": 1,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "raichualola": {
@@ -36197,6 +43364,47 @@
      "share": 0.14285714285714285,
      "lift": 0.8314706207812326
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Surge Surfer",
+     "nature": "Timid",
+     "moves": [
+      "Encore",
+      "Expanding Force",
+      "Fake Out",
+      "Rising Voltage"
+     ],
+     "sheets": 5,
+     "share": 0.7142857142857143
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Surge Surfer",
+     "nature": "Timid",
+     "moves": [
+      "Expanding Force",
+      "Nasty Plot",
+      "Surf",
+      "Thunderbolt"
+     ],
+     "sheets": 1,
+     "share": 0.14285714285714285
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Surge Surfer",
+     "nature": "Modest",
+     "moves": [
+      "Expanding Force",
+      "Fake Out",
+      "Protect",
+      "Rising Voltage"
+     ],
+     "sheets": 1,
+     "share": 0.14285714285714285
+    }
    ]
   },
   "vivillonfancy": {
@@ -36340,6 +43548,47 @@
      "sheets": 2,
      "share": 0.2857142857142857,
      "lift": 3.2726480836236935
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Serious",
+     "moves": [
+      "Hurricane",
+      "Rage Powder",
+      "Sleep Powder",
+      "Tailwind"
+     ],
+     "sheets": 3,
+     "share": 0.42857142857142855
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Pollen Puff",
+      "Protect",
+      "Sleep Powder",
+      "Thief"
+     ],
+     "sheets": 2,
+     "share": 0.2857142857142857
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 2,
+     "share": 0.2857142857142857
     }
    ]
   },
@@ -36500,6 +43749,47 @@
      "share": 0.3333333333333333,
      "lift": 357.8095238095238
     }
+   ],
+   "sets": [
+    {
+     "item": "Mental Herb",
+     "ability": "Mummy",
+     "nature": "Relaxed",
+     "moves": [
+      "Guard Split",
+      "Memento",
+      "Night Shade",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Mummy",
+     "nature": "Relaxed",
+     "moves": [
+      "Body Press",
+      "Protect",
+      "Skill Swap",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Mummy",
+     "nature": "Relaxed",
+     "moves": [
+      "Body Press",
+      "Iron Defense",
+      "Trick Room",
+      "Will-O-Wisp"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    }
    ]
   },
   "glalie": {
@@ -36654,6 +43944,47 @@
      "share": 0.3333333333333333,
      "lift": 10.038744154976618
     }
+   ],
+   "sets": [
+    {
+     "item": "Glalitite",
+     "ability": "Ice Body",
+     "nature": "Adamant",
+     "moves": [
+      "Explosion",
+      "Icicle Crash",
+      "Protect",
+      "Steel Roller"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Glalitite",
+     "ability": "Inner Focus",
+     "nature": "Adamant",
+     "moves": [
+      "Blizzard",
+      "Explosion",
+      "Freeze-Dry",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Glalitite",
+     "ability": "Inner Focus",
+     "nature": "Jolly",
+     "moves": [
+      "Freeze-Dry",
+      "Hyper Beam",
+      "Ice Shard",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    }
    ]
   },
   "hydrapple": {
@@ -36795,6 +44126,34 @@
      "sheets": 3,
      "share": 0.5,
      "lift": 119.26984126984127
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Calm",
+     "moves": [
+      "Fickle Beam",
+      "Giga Drain",
+      "Infestation",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.5
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Supersweet Syrup",
+     "nature": "Bold",
+     "moves": [
+      "Dragon Cheer",
+      "Fickle Beam",
+      "Recover",
+      "Syrup Bomb"
+     ],
+     "sheets": 3,
+     "share": 0.5
     }
    ]
   },
@@ -36948,6 +44307,34 @@
      "sheets": 2,
      "share": 0.3333333333333333,
      "lift": 4.887154471544715
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Stamina",
+     "nature": "Sassy",
+     "moves": [
+      "Body Press",
+      "High Horsepower",
+      "Iron Head",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 0.6666666666666666
+    },
+    {
+     "item": "Soft Sand",
+     "ability": "Inner Focus",
+     "nature": "Brave",
+     "moves": [
+      "Earthquake",
+      "Heavy Slam",
+      "Rock Slide",
+      "Stomping Tantrum"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
     }
    ]
   },
@@ -37113,6 +44500,47 @@
      "share": 0.16666666666666666,
      "lift": 313.0833333333333
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Scrappy",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Detect",
+      "Taunt",
+      "Throat Chop"
+     ],
+     "sheets": 3,
+     "share": 0.5
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Iron Fist",
+     "nature": "Impish",
+     "moves": [
+      "Close Combat",
+      "Parting Shot",
+      "Protect",
+      "Throat Chop"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Scrappy",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Darkest Lariat",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 1,
+     "share": 0.16666666666666666
+    }
    ]
   },
   "rotommow": {
@@ -37244,6 +44672,34 @@
      "sheets": 3,
      "share": 0.5,
      "lift": 3.7701956848971396
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Levitate",
+     "nature": "Timid",
+     "moves": [
+      "Electroweb",
+      "Leaf Storm",
+      "Thunderbolt",
+      "Volt Switch"
+     ],
+     "sheets": 3,
+     "share": 0.5
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Leaf Storm",
+      "Nasty Plot",
+      "Volt Switch",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 0.5
     }
    ]
   },
@@ -37414,6 +44870,47 @@
      "share": 0.16666666666666666,
      "lift": 12.041666666666666
     }
+   ],
+   "sets": [
+    {
+     "item": "Psychic Seed",
+     "ability": "Regenerator",
+     "nature": "Bold",
+     "moves": [
+      "Calm Mind",
+      "Expanding Force",
+      "Protect",
+      "Scald"
+     ],
+     "sheets": 3,
+     "share": 0.5
+    },
+    {
+     "item": "Slowbronite",
+     "ability": "Regenerator",
+     "nature": "Sassy",
+     "moves": [
+      "Body Press",
+      "Iron Defense",
+      "Slack Off",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.3333333333333333
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Regenerator",
+     "nature": "Relaxed",
+     "moves": [
+      "Heal Pulse",
+      "Protect",
+      "Scald",
+      "Trick Room"
+     ],
+     "sheets": 1,
+     "share": 0.16666666666666666
+    }
    ]
   },
   "clawitzer": {
@@ -37550,6 +45047,34 @@
      "sheets": 2,
      "share": 0.4,
      "lift": 1.6224561403508773
+    }
+   ],
+   "sets": [
+    {
+     "item": "Wise Glasses",
+     "ability": "Mega Launcher",
+     "nature": "Modest",
+     "moves": [
+      "Dark Pulse",
+      "Protect",
+      "Water Pulse",
+      "Weather Ball"
+     ],
+     "sheets": 3,
+     "share": 0.6
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Mega Launcher",
+     "nature": "Quiet",
+     "moves": [
+      "Aura Sphere",
+      "Dragon Pulse",
+      "Sludge Bomb",
+      "Water Pulse"
+     ],
+     "sheets": 2,
+     "share": 0.4
     }
    ]
   },
@@ -37704,6 +45229,44 @@
      "sheets": 1,
      "share": 0.2,
      "lift": 1.164058869093726
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leek",
+     "ability": "Defiant",
+     "nature": "Serious",
+     "moves": [
+      "Brave Bird",
+      "Close Combat",
+      "Feint",
+      "Slash"
+     ],
+     "sheets": 3,
+     "share": 0.6
+    },
+    {
+     "item": "(none)",
+     "ability": "Keen Eye",
+     "nature": "Serious",
+     "moves": [
+      "Round"
+     ],
+     "sheets": 1,
+     "share": 0.2
+    },
+    {
+     "item": "Leek",
+     "ability": "Defiant",
+     "nature": "Brave",
+     "moves": [
+      "Brave Bird",
+      "Leaf Blade",
+      "Protect",
+      "Slash"
+     ],
+     "sheets": 1,
+     "share": 0.2
     }
    ]
   },
@@ -37879,6 +45442,47 @@
      "share": 0.2,
      "lift": 158.18947368421055
     }
+   ],
+   "sets": [
+    {
+     "item": "Air Balloon",
+     "ability": "Blaze",
+     "nature": "Timid",
+     "moves": [
+      "Aura Sphere",
+      "Fake Out",
+      "Flamethrower",
+      "Grass Knot"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Iron Fist",
+     "nature": "Jolly",
+     "moves": [
+      "Drain Punch",
+      "Fire Punch",
+      "Protect",
+      "Thunder Punch"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Iron Fist",
+     "nature": "Adamant",
+     "moves": [
+      "Fake Out",
+      "Fire Punch",
+      "Mach Punch",
+      "Thunder Punch"
+     ],
+     "sheets": 1,
+     "share": 0.2
+    }
    ]
   },
   "lycanroc": {
@@ -38017,6 +45621,47 @@
      "sheets": 1,
      "share": 0.2,
      "lift": 19.904635761589404
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Keen Eye",
+     "nature": "Jolly",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Steadfast",
+     "nature": "Jolly",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Sand Rush",
+     "nature": "Adamant",
+     "moves": [
+      "Accelerock",
+      "Close Combat",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 1,
+     "share": 0.2
     }
    ]
   },
@@ -38158,6 +45803,34 @@
      "sheets": 2,
      "share": 0.4,
      "lift": 3.4746820809248558
+    }
+   ],
+   "sets": [
+    {
+     "item": "Colbur Berry",
+     "ability": "Soundproof",
+     "nature": "Timid",
+     "moves": [
+      "Ally Switch",
+      "Fake Out",
+      "Power Swap",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 0.6
+    },
+    {
+     "item": "Expert Belt",
+     "ability": "Filter",
+     "nature": "Calm",
+     "moves": [
+      "Dazzling Gleam",
+      "Light Screen",
+      "Thunder",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.4
     }
    ]
   },
@@ -38323,6 +45996,47 @@
      "share": 0.2,
      "lift": 0.35182020367552386
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Contrary",
+     "nature": "Timid",
+     "moves": [
+      "Dragon Pulse",
+      "Leaf Storm",
+      "Scary Face",
+      "Taunt"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Miracle Seed",
+     "ability": "Contrary",
+     "nature": "Timid",
+     "moves": [
+      "Giga Drain",
+      "Leaf Storm",
+      "Protect",
+      "Solar Beam"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Miracle Seed",
+     "ability": "Contrary",
+     "nature": "Hasty",
+     "moves": [
+      "Dragon Tail",
+      "Leaf Storm",
+      "Substitute",
+      "Synthesis"
+     ],
+     "sheets": 1,
+     "share": 0.2
+    }
    ]
   },
   "victreebel": {
@@ -38472,6 +46186,47 @@
      "share": 0.2,
      "lift": 1.164058869093726
     }
+   ],
+   "sets": [
+    {
+     "item": "Victreebelite",
+     "ability": "Chlorophyll",
+     "nature": "Calm",
+     "moves": [
+      "Energy Ball",
+      "Protect",
+      "Sleep Powder",
+      "Sludge Bomb"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Victreebelite",
+     "ability": "Chlorophyll",
+     "nature": "Calm",
+     "moves": [
+      "Protect",
+      "Sleep Powder",
+      "Sludge Bomb",
+      "Toxic"
+     ],
+     "sheets": 2,
+     "share": 0.4
+    },
+    {
+     "item": "Victreebelite",
+     "ability": "Chlorophyll",
+     "nature": "Mild",
+     "moves": [
+      "Giga Drain",
+      "Sludge Bomb",
+      "Strength Sap",
+      "Sucker Punch"
+     ],
+     "sheets": 1,
+     "share": 0.2
+    }
    ]
   },
   "wyrdeer": {
@@ -38603,6 +46358,47 @@
      "sheets": 1,
      "share": 0.2,
      "lift": 4.426509572901326
+    }
+   ],
+   "sets": [
+    {
+     "item": "Colbur Berry",
+     "ability": "Intimidate",
+     "nature": "Bold",
+     "moves": [
+      "Protect",
+      "Psychic",
+      "Skill Swap",
+      "Trick Room"
+     ],
+     "sheets": 3,
+     "share": 0.6
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Intimidate",
+     "nature": "Relaxed",
+     "moves": [
+      "Protect",
+      "Psyshield Bash",
+      "Rain Dance",
+      "Trick Room"
+     ],
+     "sheets": 1,
+     "share": 0.2
+    },
+    {
+     "item": "Colbur Berry",
+     "ability": "Intimidate",
+     "nature": "Relaxed",
+     "moves": [
+      "High Horsepower",
+      "Protect",
+      "Psyshield Bash",
+      "Trick Room"
+     ],
+     "sheets": 1,
+     "share": 0.2
     }
    ]
   },
@@ -38741,6 +46537,34 @@
      "share": 0.5,
      "lift": 56.49624060150376
     }
+   ],
+   "sets": [
+    {
+     "item": "Eject Button",
+     "ability": "Seed Sower",
+     "nature": "Calm",
+     "moves": [
+      "Giga Drain",
+      "Helping Hand",
+      "Hyper Voice",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    },
+    {
+     "item": "Grassy Seed",
+     "ability": "Seed Sower",
+     "nature": "Serious",
+     "moves": [
+      "Encore",
+      "Leaf Storm",
+      "Leech Seed",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    }
    ]
   },
   "aurorus": {
@@ -38822,6 +46646,21 @@
      "sheets": 4,
      "share": 1.0,
      "lift": 15.703239289446186
+    }
+   ],
+   "sets": [
+    {
+     "item": "Never-Melt Ice",
+     "ability": "Snow Warning",
+     "nature": "Modest",
+     "moves": [
+      "Ancient Power",
+      "Blizzard",
+      "Freeze-Dry",
+      "Protect"
+     ],
+     "sheets": 4,
+     "share": 1.0
     }
    ]
   },
@@ -38959,6 +46798,34 @@
      "sheets": 2,
      "share": 0.5,
      "lift": 0.8795505091888095
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Plus",
+     "nature": "Timid",
+     "moves": [
+      "Electroweb",
+      "Entrainment",
+      "Helping Hand",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    },
+    {
+     "item": "Shuca Berry",
+     "ability": "Cheek Pouch",
+     "nature": "Timid",
+     "moves": [
+      "Dazzling Gleam",
+      "Helping Hand",
+      "Nuzzle",
+      "Super Fang"
+     ],
+     "sheets": 2,
+     "share": 0.5
     }
    ]
   },
@@ -39114,6 +46981,47 @@
      "share": 0.25,
      "lift": 30.298387096774192
     }
+   ],
+   "sets": [
+    {
+     "item": "Charti Berry",
+     "ability": "Static",
+     "nature": "Timid",
+     "moves": [
+      "Air Slash",
+      "Encore",
+      "Protect",
+      "Volt Switch"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Static",
+     "nature": "Hasty",
+     "moves": [
+      "Electroweb",
+      "Helping Hand",
+      "Nuzzle",
+      "Volt Switch"
+     ],
+     "sheets": 1,
+     "share": 0.25
+    },
+    {
+     "item": "Focus Sash",
+     "ability": "Static",
+     "nature": "Hasty",
+     "moves": [
+      "Electro Ball",
+      "Nuzzle",
+      "Protect",
+      "Volt Switch"
+     ],
+     "sheets": 1,
+     "share": 0.25
+    }
    ]
   },
   "passimian": {
@@ -39241,6 +47149,34 @@
      "share": 0.5,
      "lift": 220.99999999999997
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Receiver",
+     "nature": "Jolly",
+     "moves": [
+      "Drain Punch",
+      "Knock Off",
+      "Pain Split",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Receiver",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Drain Punch",
+      "Knock Off",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    }
    ]
   },
   "sharpedo": {
@@ -39362,6 +47298,34 @@
      "sheets": 2,
      "share": 0.5,
      "lift": 3.7701956848971396
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sharpedonite",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Crunch",
+      "Liquidation",
+      "Protect",
+      "Psychic Fangs"
+     ],
+     "sheets": 2,
+     "share": 0.5
+    },
+    {
+     "item": "Sharpedonite",
+     "ability": "Speed Boost",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Crunch",
+      "Protect",
+      "Waterfall"
+     ],
+     "sheets": 2,
+     "share": 0.5
     }
    ]
   },
@@ -39494,6 +47458,34 @@
      "sheets": 1,
      "share": 0.25,
      "lift": 939.2499999999999
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Intimidate",
+     "nature": "Impish",
+     "moves": [
+      "Brave Bird",
+      "Final Gambit",
+      "Parting Shot",
+      "Tailwind"
+     ],
+     "sheets": 3,
+     "share": 0.75
+    },
+    {
+     "item": "Mental Herb",
+     "ability": "Intimidate",
+     "nature": "Timid",
+     "moves": [
+      "Foul Play",
+      "Parting Shot",
+      "Tailwind",
+      "Taunt"
+     ],
+     "sheets": 1,
+     "share": 0.25
     }
    ]
   },
@@ -39637,6 +47629,34 @@
      "share": 0.25,
      "lift": 939.2499999999999
     }
+   ],
+   "sets": [
+    {
+     "item": "Psychic Seed",
+     "ability": "Unburden",
+     "nature": "Timid",
+     "moves": [
+      "Fake Tears",
+      "Foul Play",
+      "Protect",
+      "Snarl"
+     ],
+     "sheets": 3,
+     "share": 0.75
+    },
+    {
+     "item": "Choice Scarf",
+     "ability": "Stakeout",
+     "nature": "Timid",
+     "moves": [
+      "Burning Jealousy",
+      "Dark Pulse",
+      "Grass Knot",
+      "Parting Shot"
+     ],
+     "sheets": 1,
+     "share": 0.25
+    }
    ]
   },
   "audino": {
@@ -39769,6 +47789,34 @@
      "share": 0.3333333333333333,
      "lift": 0.7901156677181913
     }
+   ],
+   "sets": [
+    {
+     "item": "Audinite",
+     "ability": "Regenerator",
+     "nature": "Relaxed",
+     "moves": [
+      "Dazzling Gleam",
+      "Grass Knot",
+      "Reflect",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 0.6666666666666666
+    },
+    {
+     "item": "Audinite",
+     "ability": "Regenerator",
+     "nature": "Modest",
+     "moves": [
+      "Calm Mind",
+      "Dazzling Gleam",
+      "Icy Wind",
+      "Thunder Wave"
+     ],
+     "sheets": 1,
+     "share": 0.3333333333333333
+    }
    ]
   },
   "bastiodon": {
@@ -39851,6 +47899,21 @@
      "share": 1.0,
      "lift": 11.889240506329115
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Soundproof",
+     "nature": "Relaxed",
+     "moves": [
+      "Body Press",
+      "Iron Defense",
+      "Metal Burst",
+      "Protect"
+     ],
+     "sheets": 3,
+     "share": 1.0
+    }
    ]
   },
   "diggersby": {
@@ -39932,6 +47995,21 @@
      "sheets": 3,
      "share": 1.0,
      "lift": 20.44625850340136
+    }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Huge Power",
+     "nature": "Jolly",
+     "moves": [
+      "High Horsepower",
+      "Iron Head",
+      "Protect",
+      "Rock Slide"
+     ],
+     "sheets": 3,
+     "share": 1.0
     }
    ]
   },
@@ -40060,6 +48138,34 @@
      "share": 0.3333333333333333,
      "lift": 29.64102564102564
     }
+   ],
+   "sets": [
+    {
+     "item": "Rocky Helmet",
+     "ability": "Purifying Salt",
+     "nature": "Careful",
+     "moves": [
+      "Fissure",
+      "Protect",
+      "Recover",
+      "Salt Cure"
+     ],
+     "sheets": 2,
+     "share": 0.6666666666666666
+    },
+    {
+     "item": "Leftovers",
+     "ability": "Sturdy",
+     "nature": "Careful",
+     "moves": [
+      "Earthquake",
+      "Protect",
+      "Recover",
+      "Salt Cure"
+     ],
+     "sheets": 1,
+     "share": 0.3333333333333333
+    }
    ]
   },
   "medicham": {
@@ -40141,6 +48247,21 @@
      "sheets": 3,
      "share": 1.0,
      "lift": 20.44625850340136
+    }
+   ],
+   "sets": [
+    {
+     "item": "Medichamite",
+     "ability": "Pure Power",
+     "nature": "Adamant",
+     "moves": [
+      "Close Combat",
+      "Fake Out",
+      "Fire Punch",
+      "Zen Headbutt"
+     ],
+     "sheets": 3,
+     "share": 1.0
     }
    ]
   },
@@ -40224,6 +48345,21 @@
      "share": 1.0,
      "lift": 11.889240506329115
     }
+   ],
+   "sets": [
+    {
+     "item": "Pinsirite",
+     "ability": "Hyper Cutter",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Earthquake",
+      "Lunge",
+      "Quick Attack"
+     ],
+     "sheets": 3,
+     "share": 1.0
+    }
    ]
   },
   "rotomfrost": {
@@ -40305,6 +48441,21 @@
      "sheets": 3,
      "share": 1.0,
      "lift": 5.0244065529923105
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Blizzard",
+      "Pain Split",
+      "Volt Switch",
+      "Will-O-Wisp"
+     ],
+     "sheets": 3,
+     "share": 1.0
     }
    ]
   },
@@ -40438,6 +48589,34 @@
      "share": 0.3333333333333333,
      "lift": 3.9630801687763713
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Oblivious",
+     "nature": "Relaxed",
+     "moves": [
+      "Expanding Force",
+      "Scald",
+      "Slack Off",
+      "Yawn"
+     ],
+     "sheets": 2,
+     "share": 0.6666666666666666
+    },
+    {
+     "item": "Sitrus Berry",
+     "ability": "Regenerator",
+     "nature": "Sassy",
+     "moves": [
+      "Expanding Force",
+      "Protect",
+      "Scald",
+      "Trick Room"
+     ],
+     "sheets": 1,
+     "share": 0.3333333333333333
+    }
    ]
   },
   "tauros": {
@@ -40519,6 +48698,21 @@
      "sheets": 3,
      "share": 1.0,
      "lift": 54.25270758122743
+    }
+   ],
+   "sets": [
+    {
+     "item": "Silk Scarf",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Close Combat",
+      "Outrage",
+      "Protect",
+      "Raging Bull"
+     ],
+     "sheets": 3,
+     "share": 1.0
     }
    ]
   },
@@ -40602,6 +48796,21 @@
      "share": 1.0,
      "lift": 242.38709677419354
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Aroma Veil",
+     "nature": "Modest",
+     "moves": [
+      "Alluring Voice",
+      "Mystical Fire",
+      "Psychic",
+      "Tri Attack"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "alcremierainbowswirl": {
@@ -40683,6 +48892,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 14.661463414634147
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Aroma Veil",
+     "nature": "Sassy",
+     "moves": [
+      "Alluring Voice",
+      "Decorate",
+      "Encore",
+      "Helping Hand"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -40766,6 +48990,21 @@
      "share": 1.0,
      "lift": 22.035190615835777
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Insomnia",
+     "nature": "Impish",
+     "moves": [
+      "Knock Off",
+      "Protect",
+      "Rage Powder",
+      "String Shot"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "beartic": {
@@ -40847,6 +49086,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 37.01477832512315
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Slush Rush",
+     "nature": "Jolly",
+     "moves": [
+      "Ice Punch",
+      "Icicle Crash",
+      "Liquidation",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -40980,6 +49234,34 @@
      "share": 0.5,
      "lift": 5.944620253164557
     }
+   ],
+   "sets": [
+    {
+     "item": "Life Orb",
+     "ability": "Magic Bounce",
+     "nature": "Timid",
+     "moves": [
+      "Detect",
+      "Expanding Force",
+      "Power Gem",
+      "Weather Ball"
+     ],
+     "sheets": 1,
+     "share": 0.5
+    },
+    {
+     "item": "Life Orb",
+     "ability": "Synchronize",
+     "nature": "Timid",
+     "moves": [
+      "Dazzling Gleam",
+      "Expanding Force",
+      "Protect",
+      "Psychic"
+     ],
+     "sheets": 1,
+     "share": 0.5
+    }
    ]
   },
   "forretress": {
@@ -41061,6 +49343,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 11.889240506329115
+    }
+   ],
+   "sets": [
+    {
+     "item": "Rocky Helmet",
+     "ability": "Sturdy",
+     "nature": "Bold",
+     "moves": [
+      "Protect",
+      "Spikes",
+      "Stealth Rock",
+      "Toxic Spikes"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -41184,6 +49481,34 @@
      "share": 0.5,
      "lift": 6.57968476357268
     }
+   ],
+   "sets": [
+    {
+     "item": "Golurkite",
+     "ability": "Iron Fist",
+     "nature": "Adamant",
+     "moves": [
+      "Headlong Rush",
+      "Ice Punch",
+      "Poltergeist",
+      "Protect"
+     ],
+     "sheets": 1,
+     "share": 0.5
+    },
+    {
+     "item": "Golurkite",
+     "ability": "Iron Fist",
+     "nature": "Adamant",
+     "moves": [
+      "Drain Punch",
+      "Ice Punch",
+      "Poltergeist",
+      "Stomping Tantrum"
+     ],
+     "sheets": 1,
+     "share": 0.5
+    }
    ]
   },
   "mrrime": {
@@ -41265,6 +49590,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 112.99248120300751
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Tangled Feet",
+     "nature": "Relaxed",
+     "moves": [
+      "Calm Mind",
+      "Focus Blast",
+      "Iron Defense",
+      "Stored Power"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -41348,6 +49688,21 @@
      "share": 1.0,
      "lift": 441.99999999999994
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Forewarn",
+     "nature": "Sassy",
+     "moves": [
+      "Expanding Force",
+      "Imprison",
+      "Protect",
+      "Trick Room"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "qwilfish": {
@@ -41429,6 +49784,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 441.99999999999994
+    }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Barb Barrage",
+      "Flip Turn",
+      "Self-Destruct",
+      "Throat Chop"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -41512,6 +49882,21 @@
      "share": 1.0,
      "lift": 30.11623246492986
     }
+   ],
+   "sets": [
+    {
+     "item": "Coba Berry",
+     "ability": "Natural Cure",
+     "nature": "Timid",
+     "moves": [
+      "Leech Seed",
+      "Protect",
+      "Rest",
+      "Toxic"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "rotom": {
@@ -41593,6 +49978,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 242.38709677419354
+    }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Levitate",
+     "nature": "Calm",
+     "moves": [
+      "Discharge",
+      "Protect",
+      "Shadow Ball",
+      "Will-O-Wisp"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -41676,6 +50076,21 @@
      "share": 1.0,
      "lift": 536.7142857142857
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Sand Spit",
+     "nature": "Impish",
+     "moves": [
+      "Body Press",
+      "Coil",
+      "High Horsepower",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "slowbrogalar": {
@@ -41757,6 +50172,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 22.035190615835777
+    }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Quick Draw",
+     "nature": "Sassy",
+     "moves": [
+      "Belly Drum",
+      "Drain Punch",
+      "Liquidation",
+      "Shell Side Arm"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -41840,6 +50270,21 @@
      "share": 1.0,
      "lift": 2.370347003154574
     }
+   ],
+   "sets": [
+    {
+     "item": "Leftovers",
+     "ability": "Liquid Ooze",
+     "nature": "Sassy",
+     "moves": [
+      "Destiny Bond",
+      "Encore",
+      "Helping Hand",
+      "Protect"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "vivillonjungle": {
@@ -41921,6 +50366,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 20.44625850340136
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -42004,6 +50464,21 @@
      "share": 1.0,
      "lift": 601.12
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 2,
+     "share": 1.0
+    }
    ]
   },
   "vivillonocean": {
@@ -42085,6 +50560,21 @@
      "sheets": 2,
      "share": 1.0,
      "lift": 1.759101018377619
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Compound Eyes",
+     "nature": "Timid",
+     "moves": [
+      "Hurricane",
+      "Protect",
+      "Rage Powder",
+      "Sleep Powder"
+     ],
+     "sheets": 2,
+     "share": 1.0
     }
    ]
   },
@@ -42168,6 +50658,21 @@
      "share": 1.0,
      "lift": 238.53968253968253
     }
+   ],
+   "sets": [
+    {
+     "item": "Black Belt",
+     "ability": "Intimidate",
+     "nature": "Careful",
+     "moves": [
+      "Coil",
+      "Glare",
+      "Gunk Shot",
+      "Leech Life"
+     ],
+     "sheets": 1,
+     "share": 1.0
+    }
    ]
   },
   "chimecho": {
@@ -42249,6 +50754,21 @@
      "sheets": 1,
      "share": 1.0,
      "lift": 11.889240506329115
+    }
+   ],
+   "sets": [
+    {
+     "item": "Chimechite",
+     "ability": "Levitate",
+     "nature": "Modest",
+     "moves": [
+      "Cosmic Power",
+      "Flash Cannon",
+      "Recover",
+      "Trick Room"
+     ],
+     "sheets": 1,
+     "share": 1.0
     }
    ]
   },
@@ -42332,6 +50852,21 @@
      "share": 1.0,
      "lift": 11.454268292682928
     }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Cursed Body",
+     "nature": "Timid",
+     "moves": [
+      "Shadow Ball",
+      "Shell Smash",
+      "Strength Sap",
+      "Will-O-Wisp"
+     ],
+     "sheets": 1,
+     "share": 1.0
+    }
    ]
   },
   "salazzle": {
@@ -42413,6 +50948,21 @@
      "sheets": 1,
      "share": 1.0,
      "lift": 441.99999999999994
+    }
+   ],
+   "sets": [
+    {
+     "item": "Focus Sash",
+     "ability": "Corrosion",
+     "nature": "Timid",
+     "moves": [
+      "Fake Out",
+      "Heat Wave",
+      "Sludge Wave",
+      "Toxic"
+     ],
+     "sheets": 1,
+     "share": 1.0
     }
    ]
   },
@@ -42496,6 +51046,21 @@
      "share": 1.0,
      "lift": 1669.7777777777778
     }
+   ],
+   "sets": [
+    {
+     "item": "Choice Scarf",
+     "ability": "Intimidate",
+     "nature": "Jolly",
+     "moves": [
+      "Brave Bird",
+      "Double-Edge",
+      "Final Gambit",
+      "Parting Shot"
+     ],
+     "sheets": 1,
+     "share": 1.0
+    }
    ]
   },
   "toucannon": {
@@ -42578,6 +51143,21 @@
      "share": 1.0,
      "lift": 13.15936952714536
     }
+   ],
+   "sets": [
+    {
+     "item": "Sitrus Berry",
+     "ability": "Skill Link",
+     "nature": "Adamant",
+     "moves": [
+      "Beak Blast",
+      "Brick Break",
+      "Bullet Seed",
+      "Rock Blast"
+     ],
+     "sheets": 1,
+     "share": 1.0
+    }
    ]
   },
   "typhlosion": {
@@ -42659,6 +51239,21 @@
      "sheets": 1,
      "share": 1.0,
      "lift": 54.25270758122743
+    }
+   ],
+   "sets": [
+    {
+     "item": "Charcoal",
+     "ability": "Flash Fire",
+     "nature": "Modest",
+     "moves": [
+      "Eruption",
+      "Flamethrower",
+      "Protect",
+      "Solar Beam"
+     ],
+     "sheets": 1,
+     "share": 1.0
     }
    ]
   }

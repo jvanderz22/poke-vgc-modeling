@@ -21,6 +21,7 @@ BATTLES     ?= 60000
 PER_PAIR    ?= 20
 USAGE_ALPHA ?= 0.7
 SEED        ?= 7
+TEAM        ?= tests/fixtures/teams/valid_basic.txt
 WORKERS     ?= 8
 POOL_TAG    ?= full
 EPOCHS      ?= 12
@@ -39,7 +40,7 @@ HUMAN     := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
 MANIFILE  := data/snapshots/$(REG)/manifests/$(MANIFEST).json
 FEATURES  := data/features/$(REG)/$(DATASET)/info.json
 
-.PHONY: data models sweep sim-validity collect gates test clean-derived usage help
+.PHONY: data models sweep sim-validity collect gates test clean-derived usage weakness help
 .DEFAULT_GOAL := help
 
 help:
@@ -58,6 +59,13 @@ pool: $(REPLAYS)
 
 # Counts the cached sheets directly, so it needs the replays and not the pool. ~10s for 15k sheets.
 usage: $(REPLAYS)
+	$(VGC) meta usage --regulation $(REG)
+
+# The weakness report reads the saved usage report, so it is the one target that takes a TEAM.
+weakness: data/teams/$(REG)/usage_$(shell date +%F).json
+	$(VGC) team weakness --regulation $(REG) $(TEAM)
+
+data/teams/$(REG)/usage_%.json:
 	$(VGC) meta usage --regulation $(REG)
 
 # Self-play is the expensive step (~26 min for 60k on 8 cores), so it is keyed on the run id:

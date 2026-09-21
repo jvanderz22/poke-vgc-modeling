@@ -106,6 +106,74 @@ def _set_from_spec(spec: str) -> PokemonSet:
     return parse_set("\n".join(part.strip() for part in spec.split("|")))
 
 
+def cmd_team_weakness(args: argparse.Namespace) -> int:
+    from vgc.building import weakness
+    from vgc.engine.calc import DamageCalc
+
+    reg = _reg(args)
+    team = parse_team(Path(args.team).read_text())
+    with DamageCalc() as dc:
+        r = weakness.build(reg, team, n=args.threats, dc=dc)
+    if args.json:
+        print(json.dumps(r, indent=1))
+        return 0
+
+    print(f"{' / '.join(r['team'])}")
+    print(f"vs the top {r['threats']} by per-game usage · {r['usage_sheets']} sheets, built {r['usage_built']}")
+    print(f"field: {r['field']}")
+    print(f"their spreads: {r['spreads']}")
+
+    print("\nWHAT TO READ FIRST")
+    for line in r["headlines"]:
+        print(f"  · {line}")
+
+    print("\nINCOMING — the Stat Points they need for the KO ('0' = they need none)")
+    print(f"  {'threat':18} {'games':>6} {'set':>5}  {'OHKOs':>6}  worst case")
+    for t in sorted(r["incoming"], key=lambda x: (-x["ohkos"], -x["share"]))[:args.rows]:
+        kills = [row for row in t["rows"] if row["ohko_at"] is not None]
+        worst = min(kills, key=lambda row: (row["ohko_at"], row["sure_at"] is None)) if kills else None
+        tail = (f"{worst['move']} KOes {worst['target']} at {worst['ohko_at']} SP"
+                + (f", always at {worst['sure_at']}" if worst["sure_at"] is not None else ", never guaranteed")
+                ) if worst else "nothing OHKOes"
+        print(f"  {t['species']:18} {t['share']:>6.0%} {t['set_share']:>5.0%}  {t['ohkos']:>4}/6  {tail}")
+
+    print("\nSPEED — the Speed SP they need to outrun you (— = not even 32 does it)")
+    yours = r["speed"]["yours"]
+    print("  yours: " + ", ".join(f"{m['species']} {m['speed']}" for m in sorted(yours, key=lambda m: -m["speed"])))
+    print(f"  {'threat':18} {'0 SP':>5} {'32 SP':>6}  {'free':>5}  {'max':>4}  slowest of yours it needs points for")
+    for row in sorted(r["speed"]["threats"], key=lambda x: (-x["beats_uninvested"], -x["share"]))[:args.rows]:
+        needs = [m for m in row["per_mon"] if m["outspeeds_at"]]
+        tail = ", ".join(f"{m['species']} {m['outspeeds_at']}" for m in sorted(
+            needs, key=lambda m: m["outspeeds_at"])[:3]) or "—"
+        print(f"  {row['species']:18} {row['speed_0']:>5} {row['speed_max']:>6}  "
+              f"{row['beats_uninvested']:>3}/6  {row['beats_at_max']:>2}/6  {tail}")
+    print(f"  {r['speed']['note']}")
+
+    print("\nOUTGOING — threats you cannot guarantee a KO on, even against zero investment")
+    holes = [row for row in weakness._by_species(r["outgoing"])
+             if not any(m["ohko_frail"] for m in row["attempts"])]
+    for row in sorted(holes, key=lambda x: -x["share"])[:args.rows]:
+        best = max(row["attempts"], key=lambda m: m["pct_frail"], default=None)
+        if best is None:
+            continue
+        print(f"  {row['species']:18} {row['share']:>6.0%}  best {best['by']}'s {best['move']}: "
+              f"{best['pct_frail']:.0f}% uninvested → {best['pct_bulky']:.0f}% invested"
+              + ("  (rolls the KO)" if best["maybe_frail"] else ""))
+    if not holes:
+        print("  none — something on your team guarantees a KO on every threat at zero investment")
+
+    print("\nTYPES — weighted by how much of the threat pool carries one")
+    for row in r["types"][:8]:
+        who = ", ".join(f"{h['species']}{'' if h['multiplier'] < 4 else ' (4×)'}" for h in row["weak"])
+        print(f"  {row['type']:10} {row['count']}/6  {row['carriers']:>4.2f} attackers per enemy team  {who}")
+
+    print("\nSTRUCTURE — yours, against how often the meta brings one")
+    for s in r["structure"]:
+        print(f"  {s['trait']:18} you {s['yours']}/6   meta {s['meta_share']:>5.1%} of teams, "
+              f"{s['meta_per_team']:.2f} per team")
+    return 0
+
+
 def cmd_calc(args: argparse.Namespace) -> int:
     from vgc.engine.calc import DamageCalc
 
@@ -698,6 +766,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--showdown", action="store_true", help="also run Showdown's validator and compare")
     p.add_argument("--errors-only", action="store_true")
     p.set_defaults(func=cmd_team_validate)
+    p = with_reg(team.add_parser("weakness", help="what the meta does to this team: KO breakpoints, speed, holes"))
+    p.add_argument("team", help="Showdown export file")
+    p.add_argument("--threats", type=int, default=30, help="how many of the most-used species to check")
+    p.add_argument("--rows", type=int, default=12, help="rows per section")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_team_weakness)
     p = with_reg(team.add_parser("stats", help="actual level-50 stats, including Mega formes"))
     p.add_argument("team")
     p.set_defaults(func=cmd_team_stats)
