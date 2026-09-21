@@ -454,3 +454,104 @@ rather than trust the aggregate.
 they state nothing false — they cost power. The residue is diffuse: no single species, move,
 ability or item accounts for more than a few percent of it after the five fixes above. It is
 recorded rather than argued away.
+
+---
+
+# Phase 8, step 1 — the two channels joined by the budget
+
+_Measured 2026-09-20 on 2,000 battles of the sampled-spread corpus (6,421 opposing Pokémon).
+Script: [`scripts/analysis/sp_belief.py`](../scripts/analysis/sp_belief.py); result:
+[`data/analysis/sp_belief_spreads.json`](../data/analysis/sp_belief_spreads.json)._
+
+Reported side by side, the two channels are two facts about the same Pokémon that never speak to
+each other. They are not independent: a spread is **one allocation of 66 points over six stats, at
+most 32 each**, so every point the speed channel proves they bought is a point the damage channel's
+stat cannot also have — and a point that is not in their bulk either.
+
+That last clause is what the joint object is for. Neither channel observes HP, Defence or Special
+Defence at all. Together, under the budget, they bound all three.
+
+| | rules only | shipped | + spends all 66 |
+| --- | --- | --- | --- |
+| Pokémon checked | 6,421 | 6,421 | 6,421 |
+| **silently wrong** | **40 (0.623%)** | **40 (0.623%)** | **40 (0.623%)** |
+| contradicted by the budget | 0 | 0 | 0 |
+| mean share of allocations ruled out | 19.9% | 19.4% | 18.9% |
+| narrowed at all | 50.7% | 50.7% | 50.7% |
+| **bulk bounded** | **28.1%** | 28.1% | **48.2%** |
+
+`rules only` assumes nothing past the regulation. `shipped` adds the structural zero — a stat no
+move of theirs scales off gets nothing. `spent` adds the assumption that they used all 66 points.
+
+## The joint adds no unsoundness of its own
+
+The three columns are identical to the unit, and that is not a coincidence to be explained away —
+it is provable. Under `rules only` the only constraints are the two channels' per-stat sets and
+`sum ≤ 66`, and a real spread always satisfies the second. So every one of the 40 violations is a
+channel's, and the budget propagation contributes none.
+
+The rate sits between its two inputs: 0.029% for speed, 0.66% for damage over 2,897 attackers. It
+reads slightly better than the damage channel alone only because 6,421 includes Pokémon that only
+the sound channel ever touched, which is dilution rather than improvement and is said here so the
+number is not read as one.
+
+## What the budget actually buys, and what it cannot
+
+**It never narrows the two stats that were observed.** The cap is 32 and the budget is 66, so Speed
+and one offensive stat can both be maxed (64 ≤ 66) and no pair of observations on those two can
+ever rule out a value of either. Everything the budget adds lands on bulk. The same arithmetic is
+why `contradicted by the budget` is 0 and will stay 0: at most 64 of 66 points are ever claimed and
+the three bulk stats hold 96 between them, so the two channels cannot conflict. The guard stays
+because a channel that bounds bulk *from below* — reading how much a known move of yours took off
+them — makes it reachable, and that is the obvious next channel.
+
+**On bulk it is worth about twelve points, less than a third of the time.** 28.1% of Pokémon had
+the range of their total bulk investment moved off 0–66, and across those it shrank by 11.9 points
+on average. Assuming they spent all 66 nearly doubles the hit rate to 48.2%, which is the clearest
+statement of what that assumption is worth — and it is the one assumption this corpus cannot
+referee, because `prior.sample_spread` spends every point by construction. The same goes for the
+structural zero. Both are on the honest side of the line only because they are parameters with the
+default stated, not because anything here tested them.
+
+## The budget is a maximum, not an equation
+
+`validate_team` errors above 66 and only **warns** below it, so `sum = 66` is a statement about how
+people build and `sum ≤ 66` is the rule. Whether any real sheet leaves points unspent is not known
+here and the corpus cannot say, since it spends all 66 by construction — which is the argument for
+constraining the rule and leaving the habit as a flag. Every wrong answer this phase has produced
+came from the same place: something the code treated as given that the source did not actually
+say, and each one excluded a truth rather than merely failing to find it.
+
+## Calibration measures the prior's shape, not the channel
+
+The plan asks that the truth land in the belief's 80% credible set about 80% of the time. It does
+not, and the reason is worth more than the number.
+
+| | hp | atk | def | spa | spd | spe |
+| --- | --- | --- | --- | --- | --- | --- |
+| weighted by allocations (`shipped`) | 0.762 | 0.723 | 0.767 | 0.849 | 0.758 | **0.589** |
+| weighted flat over the feasible set | 0.920 | 0.879 | 0.927 | 0.933 | 0.910 | 0.822 |
+
+The second row is the question this phase can answer: **is the feasible set the right size?** At
+0.82–0.93 it is, slightly conservatively. The first row is a different question, and on this corpus
+it is unanswerable: `prior.sample_spread` draws Speed and the live offensive stat from a *flat*
+marginal on purpose, so that a channel cannot score well by echoing the prior back. A belief
+weighted by allocations is decreasing, not flat, so the two stats the generator deliberately
+flattened — Speed at 0.589 and Attack at 0.723 — are scoring the generator's shape against the
+prior's. The tell is that assuming a spent budget, which moves the prior toward the generator,
+lifts every one of the six (Speed 0.589 → 0.702) without any evidence being added.
+
+There is a real open question underneath the artefact. `vgc.belief.prior` measured a flat Speed
+marginal as the best of the priors it scored on 19,255 **real** turn orders, and a joint
+distribution over the budget cannot have flat marginals on all six stats. So the validated marginal
+and the self-consistent joint disagree, and the measured size of that disagreement on real data is
+0.004 nats a pair — small, and recorded rather than tuned away.
+
+## What it produces
+
+`SPBelief` carries the feasible region, exact per-stat marginals, the range still possible for any
+subset of stats, and K particles drawn from one dynamic program rather than by rejection — so a
+tight belief costs no more to sample than a wide one, which is what Phase 9's determinization needs
+of it. Blocks rather than six independent stats because a defensive observation will constrain HP
+and a defensive stat *jointly*, and the pair of one-dimensional projections is strictly weaker than
+the region.

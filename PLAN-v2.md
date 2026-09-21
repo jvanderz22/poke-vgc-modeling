@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | **both channels built and gated**: speed 0.029% silently wrong (54,904 Pokémon), damage 0.66% (2,897 attackers) ([findings](docs/phase8-findings.md)). Next: combine into an SP belief, then WP_v2 |
+| 8 — Belief over hidden sets | 🟡 In progress | **step 1 done**: both channels gated (speed 0.029% silently wrong over 54,904 Pokémon, damage 0.66% over 2,897 attackers) and joined by the 66-point budget — 0.623% over 6,421, all of it the channels', none of it the join ([findings](docs/phase8-findings.md)). Next: a bulk channel, then closed-sheet full-set belief and WP_v2 |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -384,17 +384,41 @@ against the pinned calc rather than anything learned:
 
 Build, in the order the evidence supports:
 
-1. **SP belief, open sheets.** Everything but the spread is on the sheet, so the belief is over one
-   object: the allocation of 66 points, ≤32 per stat. ~~Prior from `impute_sp`~~ — **not from
-   `impute_sp`**: scored against 19,255 observed turn orders it is 2.9 nats a pair *worse than a
-   flat prior*, because a point mass assigns near-zero probability to everything it did not
-   predict. The prior is now `vgc.belief.prior`, tiered so a rotated regulation with no corpus
-   still has one, and the honest default is flat — the structural zeros (90.9% of Pokémon have a
-   dead offensive stat) and the benchmark classes are both real and neither demonstrably beats
-   uniform where it counts. Prior from the sheet corpus,
-   updated by the two channels above. This is the piece that can be gated on **7,459 battles** —
-   though the Speed half was gated on 25,000 self-play battles instead, because soundness needs a
-   truth the human corpus does not contain.
+1. **SP belief, open sheets. ✅ Built and gated** (`vgc belief sp`, `vgc.belief.sp`). Everything but
+   the spread is on the sheet, so the belief is over one object: the allocation of 66 points, ≤32
+   per stat. ~~Prior from `impute_sp`~~ — **not from `impute_sp`**: scored against 19,255 observed
+   turn orders it is 2.9 nats a pair *worse than a flat prior*, because a point mass assigns
+   near-zero probability to everything it did not predict. The prior is now `vgc.belief.prior`,
+   tiered so a rotated regulation with no corpus still has one, and the honest default is flat —
+   the structural zeros (90.9% of Pokémon have a dead offensive stat) and the benchmark classes are
+   both real and neither demonstrably beats uniform where it counts.
+
+   The two channels are joined by the budget, and **the joint adds no unsoundness of its own**:
+   over 6,421 opposing Pokémon in 2,000 battles, 40 (0.623%) had the truth excluded and every one
+   of them is a channel's, provably — under the rules-only setting the only constraints are the
+   channels' sets and `sum ≤ 66`, which a real spread always satisfies. It rules out 19.9% of the
+   legal allocations.
+
+   What the budget buys is **bulk**, which neither channel observes: 28.1% of Pokémon had the range
+   of their total HP/Def/SpD investment moved, by 11.9 points on average. What it cannot buy is
+   anything about the two stats that *were* observed — the cap is 32 and the budget 66, so Speed
+   and one offensive stat can both be maxed and no pair of observations on them can conflict. That
+   also makes a bulk-from-below channel (how much your own move took off them) the obvious next
+   one, and it is what would make the contradiction guard reachable.
+
+   Two assumptions are parameters rather than defaults-in-hiding, because **the corpus cannot
+   referee either**: `spend_all` (the budget is a maximum — `validate_team` only warns on unspent
+   points) and `dead_zero`. `prior.sample_spread` satisfies both by construction. Assuming a spent
+   budget nearly doubles the bulk hit rate, 28.1% → 48.2%, which is the measure of what it is worth.
+
+   The plan's calibration criterion needed splitting to mean anything. *Is the feasible set the
+   right size* — the truth in an 80% set weighted flat — comes back 0.82–0.93 across the six stats,
+   slightly conservative. *Is the weight inside it in the right place* is unanswerable on this
+   corpus: `sample_spread` flattens Speed and the live offensive stat deliberately, so scoring an
+   allocation-weighted belief against it scores the generator's shape (Speed 0.589). The real
+   question underneath is that a joint distribution over the budget cannot have flat marginals on
+   all six stats while `prior` measured flat as the best Speed marginal on real turn orders —
+   a disagreement worth 0.004 nats a pair, recorded rather than tuned away.
 
    The Speed half also produced a diagnostic worth keeping: when the belief contradicts itself, it
    is usually because the spread *you* supplied for your own team is wrong. The contradiction rate

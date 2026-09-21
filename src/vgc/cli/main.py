@@ -795,6 +795,74 @@ def cmd_belief_speed(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_belief_sp(args: argparse.Namespace) -> int:
+    """Both channels at once, over the whole 66-point allocation rather than one stat at a time."""
+    from vgc.belief import sp as sp_belief
+    from vgc.data.observe import Observer
+    from vgc.engine.calc import DamageCalc
+    from vgc.meta import replays
+    from vgc.teams import parse_team
+
+    reg = _reg(args)
+    if Path(args.replay).exists():
+        rep = json.loads(Path(args.replay).read_text())
+    else:
+        rep = replays.fetch(args.replay, args.replay.rsplit("-", 1)[0])
+    obs = Observer("spectator", reg.dex)
+    obs.feed_many(rep["log"] if isinstance(rep["log"], list) else rep["log"].split("\n"))
+
+    # The damage channel measures their attacker against a defender whose spread you actually
+    # wrote, so it needs your team file — not a guess at it. Without one, only turn order is read.
+    known, speed_known = {}, {}
+    if args.team:
+        for mon in parse_team(Path(args.team).read_text()):
+            known[(args.known, mon.species)] = mon
+    else:
+        # Enough for turn order, and honestly not enough for damage: a Speed you assumed cannot
+        # measure how hard something hit you.
+        speed_known = {(args.known, m.species): args.assume for m in obs.sides[args.known].mons}
+        print(f"no --team given, so only the turn-order channel runs, assuming {args.known} ran "
+              f"{args.assume} Speed SP throughout (the damage channel needs their real spreads)")
+
+    def run(dc):
+        return sp_belief.infer(reg, obs, known, dc, speed_known=speed_known,
+                               dead_zero=not args.no_dead_zero, spend_all=args.spend_all)
+
+    if known:
+        with DamageCalc() as dc:
+            beliefs = run(dc)
+    else:
+        beliefs = run(None)
+
+    if args.json:
+        print(json.dumps({"summary": sp_belief.summary(beliefs),
+                          "beliefs": [b.to_json() for b in beliefs.values()]}, indent=1))
+        return 0
+
+    players = rep.get("players", ["p1", "p2"])
+    print(f"{rep.get('id', args.replay)}: {players[0]} (p1) vs {players[1]} (p2)")
+    print(f"\n{'':4}{'pokemon':20} {'Speed SP':>9} {'offence':>14} {'bulk total':>11} {'ruled out':>10}  from")
+    for b in sorted(beliefs.values(), key=lambda x: (-x.narrowed, x.species)):
+        bounds = b.bounds()
+        off = next((s for s in ("atk", "spa") if s in b.sources), None)
+        span = lambda t: f"{t[0]}-{t[1]}" if t else "—"  # noqa: E731
+        note = ", ".join(filter(None, [
+            f"{b.speed_used} pairs" if b.speed_used else "",
+            f"{b.damage_used} hits" if b.damage_used else ""])) or "nothing read"
+        if b.contradicted:
+            note += f"  ⚠ {b.contradicted} contradiction, widened back"
+        print(f"{b.side:4}{b.species:20} {span(bounds.get('spe')):>9} "
+              f"{(off + ' ' + span(bounds.get(off))) if off else '—':>14} "
+              f"{span(b.spent_on(('hp', 'def', 'spd'))):>11} {b.narrowed:>10.1%}  {note}")
+    s = sp_belief.summary(beliefs)
+    print(f"\n{s['any_narrowed']}/{s['pokemon']} narrowed at all; {s['bulk_bounded']} had their bulk "
+          f"bounded — which no single channel observes, only the 66-point budget does.")
+    if not args.spend_all:
+        print("the budget is read as a maximum: `validate_team` only warns on unspent points "
+              "(--spend-all to assume they spent all 66).")
+    return 0
+
+
 def cmd_wp_endgames(args: argparse.Namespace) -> int:
     """Build the browsable set of decided endgames, and report how often the call was right."""
     from vgc import paths
@@ -1082,6 +1150,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--assume", type=int, default=32, help="Speed SP to assume for --known")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_belief_speed)
+    p = with_reg(bsub.add_parser("sp", help="both channels, over the whole 66-point allocation"))
+    p.add_argument("replay", help="replay id or a JSON file")
+    p.add_argument("--known", choices=["p1", "p2"], default="p1", help="the side whose spreads you know")
+    p.add_argument("--team", help="that side's team file — the damage channel needs real spreads")
+    p.add_argument("--assume", type=int, default=32,
+                   help="Speed SP to assume for --known when no --team is given")
+    p.add_argument("--spend-all", action="store_true",
+                   help="assume they spent all 66 points; the rule is only that they spent no more")
+    p.add_argument("--no-dead-zero", action="store_true",
+                   help="do not assume 0 in a stat no move of theirs scales off")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_belief_sp)
 
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)
