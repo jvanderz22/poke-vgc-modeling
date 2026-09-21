@@ -239,3 +239,18 @@ def test_the_self_boost_is_subtracted_before_the_calc_sees_it(reg):
     Ev.move = "flashcannon"
     Ev.attacker_boosts = {"spa": 1}
     assert damage.attacker_boosts_for(Ev()) == {"spa": 1}
+
+
+def test_the_runtime_type_table_still_matches_the_pinned_build(reg):
+    """Weather Ball is Water and 100 base power in rain and Normal at 50 outside it. The export
+    carries the unconditional type, so under Drizzle the calc was understating by 2x before type
+    effectiveness applied. Derived from `onModifyType`, like `MULTI_HIT`, and re-derived here."""
+    import re
+
+    from vgc import paths
+
+    src = (paths.SHOWDOWN / "data" / "moves.ts").read_text()
+    found = {m.group(1) for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M)
+             if "onModifyType" in m.group(2) and m.group(1) in reg.dex.moves}
+    assert found == damage.RUNTIME_TYPE
+    assert "weatherball" in damage.ABSTAIN_MOVES

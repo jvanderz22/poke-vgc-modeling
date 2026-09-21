@@ -1,63 +1,73 @@
 {
  "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
- "battles": 2000,
+ "battles": 1000,
  "damage_channel": true,
- "note": "the corpus spends all 66 points and zeroes dead stats by construction, so only `rules_only` can falsify those two assumptions",
+ "note": "the corpus spends all 66 points and zeroes dead stats by construction, so nothing here can falsify either convention; only `rules_only` can falsify the channels",
  "configs": {
   "rules_only": {
-   "pokemon_checked": 6421,
-   "silently_wrong": 40,
-   "rate": 0.006229559258682448,
+   "dead_zero": false,
+   "spend_all": false,
+   "pokemon_checked": 3783,
+   "silently_wrong": 6,
+   "rate": 0.0015860428231562252,
    "contradicted_by_budget": 0,
-   "narrowed_mean": 0.19906509070014755,
-   "any_narrowing": 0.5072418626382184,
-   "bulk_bounded": 0.2814203395109796,
-   "bulk_total_width_mean": 62.660021803457404,
+   "narrowed_mean": 0.36310956607559947,
+   "any_narrowing": 0.7768966428760243,
+   "bulk_bounded": 0.6037536346814697,
+   "bulk_total_width_mean": 57.067935500925195,
    "in_80_credible": {
-    "hp": 0.7118,
-    "atk": 0.6836,
-    "def": 0.7116,
-    "spa": 0.8204,
-    "spd": 0.7005,
-    "spe": 0.5341
+    "hp": 0.7503,
+    "atk": 0.663,
+    "def": 0.7172,
+    "spa": 0.808,
+    "spd": 0.7297,
+    "spe": 0.5285
    },
    "in_80_credible_flat": {
-    "hp": 0.9202,
-    "atk": 0.879,
-    "def": 0.9268,
-    "spa": 0.9332,
-    "spd": 0.9099,
-    "spe": 0.8224
+    "hp": 0.9298,
+    "atk": 0.884,
+    "def": 0.9224,
+    "spa": 0.9335,
+    "spd": 0.9105,
+    "spe": 0.8266
    },
    "credible_size_mean": {
-    "hp": 16.41,
-    "atk": 16.01,
-    "def": 16.4,
-    "spa": 16.0,
-    "spd": 16.41,
-    "spe": 15.51
+    "hp": 16.92,
+    "atk": 15.5,
+    "def": 15.86,
+    "spa": 15.49,
+    "spd": 15.92,
+    "spe": 15.1
    },
    "examples": [
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-88",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
      "mon": [
       "p2",
-      "Basculegion"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 17,
-      "atk": 20,
-      "def": 20,
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
       "spa": 0,
-      "spd": 7,
-      "spe": 2
+      "spd": 19,
+      "spe": 14
      },
      "bounds": {
-      "hp": [
+      "atk": [
        0,
        32
       ],
-      "atk": [
+      "spa": [
+       0,
+       32
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
        0,
        2
       ],
@@ -65,96 +75,187 @@
        0,
        32
       ],
+      "spd": [
+       0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
+     "mon": [
+      "p2",
+      "Baxcalibur"
+     ],
+     "true": {
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
+     },
+     "bounds": {
+      "atk": [
+       0,
+       32
+      ],
       "spa": [
        0,
        32
       ],
-      "spd": [
-       0,
+      "spe": [
+       2,
        32
       ],
-      "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "atk": "damage"
-     },
-     "speed_used": 0,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-278",
-     "mon": [
-      "p2",
-      "Mawile"
-     ],
-     "true": {
-      "hp": 14,
-      "atk": 4,
-      "def": 3,
-      "spa": 0,
-      "spd": 23,
-      "spe": 22
-     },
-     "bounds": {
       "hp": [
        0,
-       32
-      ],
-      "atk": [
-       19,
-       32
+       2
       ],
       "def": [
        0,
        32
       ],
+      "spd": [
+       0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+     "mon": [
+      "p2",
+      "Baxcalibur"
+     ],
+     "true": {
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
+     },
+     "bounds": {
+      "atk": [
+       4,
+       32
+      ],
       "spa": [
+       0,
+       32
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
+       0,
+       2
+      ],
+      "def": [
        0,
        32
       ],
       "spd": [
        0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-279",
+     "mon": [
+      "p2",
+      "Rillaboom"
+     ],
+     "true": {
+      "hp": 14,
+      "atk": 6,
+      "def": 20,
+      "spa": 0,
+      "spd": 16,
+      "spe": 10
+     },
+     "bounds": {
+      "atk": [
+       0,
+       32
+      ],
+      "spa": [
+       0,
        32
       ],
       "spe": [
+       0,
+       32
+      ],
+      "hp": [
+       0,
+       3
+      ],
+      "def": [
+       0,
+       0
+      ],
+      "spd": [
        0,
        32
       ]
      },
      "sources": {
       "spe": "turn order",
-      "atk": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
      "speed_used": 1,
      "damage_used": 1
     },
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-370",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-296",
      "mon": [
       "p2",
-      "Annihilape"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 24,
-      "atk": 17,
-      "def": 3,
+      "hp": 5,
+      "atk": 19,
+      "def": 22,
       "spa": 0,
-      "spd": 14,
-      "spe": 8
+      "spd": 5,
+      "spe": 15
      },
      "bounds": {
-      "hp": [
-       0,
-       32
-      ],
       "atk": [
-       0,
-       14
-      ],
-      "def": [
        0,
        32
       ],
@@ -162,172 +263,387 @@
        0,
        32
       ],
+      "spe": [
+       7,
+       32
+      ],
+      "hp": [
+       0,
+       10
+      ],
+      "def": [
+       0,
+       6
+      ],
       "spd": [
        0,
        32
-      ],
-      "spe": [
-       0,
-       17
       ]
      },
      "sources": {
       "spe": "turn order",
-      "atk": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
-     "speed_used": 3,
+     "speed_used": 1,
      "damage_used": 1
-    },
+    }
+   ]
+  },
+  "dead_stat_only": {
+   "dead_zero": true,
+   "spend_all": false,
+   "pokemon_checked": 3783,
+   "silently_wrong": 6,
+   "rate": 0.0015860428231562252,
+   "contradicted_by_budget": 0,
+   "narrowed_mean": 0.356367245195795,
+   "any_narrowing": 0.7768966428760243,
+   "bulk_bounded": 0.6037536346814697,
+   "bulk_total_width_mean": 57.067935500925195,
+   "in_80_credible": {
+    "hp": 0.7951,
+    "atk": 0.7167,
+    "def": 0.7699,
+    "spa": 0.8441,
+    "spd": 0.7829,
+    "spe": 0.6002
+   },
+   "in_80_credible_flat": {
+    "hp": 0.9298,
+    "atk": 0.884,
+    "def": 0.9224,
+    "spa": 0.9335,
+    "spd": 0.9105,
+    "spe": 0.8266
+   },
+   "credible_size_mean": {
+    "hp": 18.52,
+    "atk": 11.54,
+    "def": 17.68,
+    "spa": 7.81,
+    "spd": 17.74,
+    "spe": 17.13
+   },
+   "examples": [
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-435",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
      "mon": [
       "p2",
-      "Gholdengo"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
      },
      "bounds": {
-      "hp": [
-       0,
-       32
-      ],
       "atk": [
        0,
        32
+      ],
+      "spa": [
+       0,
+       0
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
+       0,
+       2
       ],
       "def": [
        0,
        32
       ],
-      "spa": [
-       19,
-       32
-      ],
       "spd": [
        0,
-       32
-      ],
-      "spe": [
-       0,
-       32
+       1
       ]
      },
      "sources": {
       "spe": "turn order",
-      "spa": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
      "speed_used": 2,
      "damage_used": 1
     },
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-439",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
      "mon": [
       "p2",
-      "Gholdengo"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
      },
      "bounds": {
-      "hp": [
-       0,
-       32
-      ],
       "atk": [
        0,
        32
+      ],
+      "spa": [
+       0,
+       0
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
+       0,
+       2
       ],
       "def": [
        0,
        32
       ],
+      "spd": [
+       0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+     "mon": [
+      "p2",
+      "Baxcalibur"
+     ],
+     "true": {
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
+     },
+     "bounds": {
+      "atk": [
+       4,
+       32
+      ],
       "spa": [
-       24,
+       0,
+       0
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
+       0,
+       2
+      ],
+      "def": [
+       0,
        32
       ],
       "spd": [
        0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-279",
+     "mon": [
+      "p2",
+      "Rillaboom"
+     ],
+     "true": {
+      "hp": 14,
+      "atk": 6,
+      "def": 20,
+      "spa": 0,
+      "spd": 16,
+      "spe": 10
+     },
+     "bounds": {
+      "atk": [
+       0,
        32
       ],
+      "spa": [
+       0,
+       0
+      ],
       "spe": [
+       0,
+       32
+      ],
+      "hp": [
+       0,
+       3
+      ],
+      "def": [
+       0,
+       0
+      ],
+      "spd": [
        0,
        32
       ]
      },
      "sources": {
       "spe": "turn order",
-      "spa": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
-     "speed_used": 2,
+     "speed_used": 1,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-296",
+     "mon": [
+      "p2",
+      "Baxcalibur"
+     ],
+     "true": {
+      "hp": 5,
+      "atk": 19,
+      "def": 22,
+      "spa": 0,
+      "spd": 5,
+      "spe": 15
+     },
+     "bounds": {
+      "atk": [
+       0,
+       32
+      ],
+      "spa": [
+       0,
+       0
+      ],
+      "spe": [
+       7,
+       32
+      ],
+      "hp": [
+       0,
+       10
+      ],
+      "def": [
+       0,
+       6
+      ],
+      "spd": [
+       0,
+       32
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 1,
      "damage_used": 1
     }
    ]
   },
   "shipped": {
-   "pokemon_checked": 6421,
-   "silently_wrong": 40,
-   "rate": 0.006229559258682448,
+   "dead_zero": true,
+   "spend_all": true,
+   "pokemon_checked": 3783,
+   "silently_wrong": 6,
+   "rate": 0.0015860428231562252,
    "contradicted_by_budget": 0,
-   "narrowed_mean": 0.19443080588674677,
-   "any_narrowing": 0.5072418626382184,
-   "bulk_bounded": 0.2814203395109796,
-   "bulk_total_width_mean": 62.660021803457404,
+   "narrowed_mean": 0.3536748041504899,
+   "any_narrowing": 0.7768966428760243,
+   "bulk_bounded": 0.6553000264340471,
+   "bulk_total_width_mean": 54.28865979381443,
    "in_80_credible": {
-    "hp": 0.7615,
-    "atk": 0.7228,
-    "def": 0.7671,
-    "spa": 0.8492,
-    "spd": 0.758,
-    "spe": 0.5888
+    "hp": 0.8554,
+    "atk": 0.8107,
+    "def": 0.8364,
+    "spa": 0.9015,
+    "spd": 0.8459,
+    "spe": 0.7514
    },
    "in_80_credible_flat": {
-    "hp": 0.9202,
-    "atk": 0.879,
-    "def": 0.9268,
-    "spa": 0.9332,
-    "spd": 0.9099,
-    "spe": 0.8224
+    "hp": 0.9298,
+    "atk": 0.8843,
+    "def": 0.9224,
+    "spa": 0.9335,
+    "spd": 0.9105,
+    "spe": 0.8266
    },
    "credible_size_mean": {
-    "hp": 18.47,
-    "atk": 11.73,
-    "def": 18.47,
-    "spa": 7.84,
-    "spd": 18.47,
-    "spe": 17.23
+    "hp": 21.26,
+    "atk": 13.64,
+    "def": 20.59,
+    "spa": 9.16,
+    "spd": 20.7,
+    "spe": 20.3
    },
    "examples": [
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-88",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
      "mon": [
       "p2",
-      "Basculegion"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 17,
-      "atk": 20,
-      "def": 20,
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
       "spa": 0,
-      "spd": 7,
-      "spe": 2
+      "spd": 19,
+      "spe": 14
      },
      "bounds": {
-      "hp": [
+      "atk": [
        0,
        32
       ],
-      "atk": [
+      "spa": [
+       0,
+       0
+      ],
+      "spe": [
+       2,
+       32
+      ],
+      "hp": [
        0,
        2
       ],
@@ -335,269 +651,49 @@
        0,
        32
       ],
-      "spa": [
-       0,
-       0
-      ],
       "spd": [
        0,
-       32
-      ],
-      "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "atk": "damage"
-     },
-     "speed_used": 0,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-278",
-     "mon": [
-      "p2",
-      "Mawile"
-     ],
-     "true": {
-      "hp": 14,
-      "atk": 4,
-      "def": 3,
-      "spa": 0,
-      "spd": 23,
-      "spe": 22
-     },
-     "bounds": {
-      "hp": [
-       0,
-       32
-      ],
-      "atk": [
-       19,
-       32
-      ],
-      "def": [
-       0,
-       32
-      ],
-      "spa": [
-       0,
-       0
-      ],
-      "spd": [
-       0,
-       32
-      ],
-      "spe": [
-       0,
-       32
+       1
       ]
      },
      "sources": {
       "spe": "turn order",
-      "atk": "damage"
-     },
-     "speed_used": 1,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-370",
-     "mon": [
-      "p2",
-      "Annihilape"
-     ],
-     "true": {
-      "hp": 24,
-      "atk": 17,
-      "def": 3,
-      "spa": 0,
-      "spd": 14,
-      "spe": 8
-     },
-     "bounds": {
-      "hp": [
-       0,
-       32
-      ],
-      "atk": [
-       0,
-       14
-      ],
-      "def": [
-       0,
-       32
-      ],
-      "spa": [
-       0,
-       0
-      ],
-      "spd": [
-       0,
-       32
-      ],
-      "spe": [
-       0,
-       17
-      ]
-     },
-     "sources": {
-      "spe": "turn order",
-      "atk": "damage"
-     },
-     "speed_used": 3,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-435",
-     "mon": [
-      "p2",
-      "Gholdengo"
-     ],
-     "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
-     },
-     "bounds": {
-      "hp": [
-       0,
-       32
-      ],
-      "atk": [
-       0,
-       0
-      ],
-      "def": [
-       0,
-       32
-      ],
-      "spa": [
-       19,
-       32
-      ],
-      "spd": [
-       0,
-       32
-      ],
-      "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "spe": "turn order",
-      "spa": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
      "speed_used": 2,
      "damage_used": 1
     },
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-439",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
      "mon": [
       "p2",
-      "Gholdengo"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
      },
      "bounds": {
-      "hp": [
-       0,
-       32
-      ],
       "atk": [
-       0,
-       0
-      ],
-      "def": [
        0,
        32
       ],
       "spa": [
-       24,
-       32
-      ],
-      "spd": [
        0,
-       32
+       0
       ],
       "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "spe": "turn order",
-      "spa": "damage"
-     },
-     "speed_used": 2,
-     "damage_used": 1
-    }
-   ]
-  },
-  "spent": {
-   "pokemon_checked": 6421,
-   "silently_wrong": 40,
-   "rate": 0.006229559258682448,
-   "contradicted_by_budget": 0,
-   "narrowed_mean": 0.18890294832315485,
-   "any_narrowing": 0.5072418626382184,
-   "bulk_bounded": 0.48154493069615323,
-   "bulk_total_width_mean": 57.82230182214608,
-   "in_80_credible": {
-    "hp": 0.8441,
-    "atk": 0.7963,
-    "def": 0.8463,
-    "spa": 0.8847,
-    "spd": 0.8402,
-    "spe": 0.7018
-   },
-   "in_80_credible_flat": {
-    "hp": 0.9202,
-    "atk": 0.879,
-    "def": 0.9268,
-    "spa": 0.9332,
-    "spd": 0.9099,
-    "spe": 0.8224
-   },
-   "credible_size_mean": {
-    "hp": 22.25,
-    "atk": 13.88,
-    "def": 22.25,
-    "spa": 9.18,
-    "spd": 22.25,
-    "spe": 20.44
-   },
-   "examples": [
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-88",
-     "mon": [
-      "p2",
-      "Basculegion"
-     ],
-     "true": {
-      "hp": 17,
-      "atk": 20,
-      "def": 20,
-      "spa": 0,
-      "spd": 7,
-      "spe": 2
-     },
-     "bounds": {
-      "hp": [
-       0,
+       2,
        32
       ],
-      "atk": [
+      "hp": [
        0,
        2
       ],
@@ -605,96 +701,137 @@
        0,
        32
       ],
+      "spd": [
+       0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+     "mon": [
+      "p2",
+      "Baxcalibur"
+     ],
+     "true": {
+      "hp": 1,
+      "atk": 32,
+      "def": 0,
+      "spa": 0,
+      "spd": 19,
+      "spe": 14
+     },
+     "bounds": {
+      "atk": [
+       4,
+       32
+      ],
       "spa": [
        0,
        0
       ],
-      "spd": [
-       0,
+      "spe": [
+       2,
        32
       ],
-      "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "atk": "damage"
-     },
-     "speed_used": 0,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-278",
-     "mon": [
-      "p2",
-      "Mawile"
-     ],
-     "true": {
-      "hp": 14,
-      "atk": 4,
-      "def": 3,
-      "spa": 0,
-      "spd": 23,
-      "spe": 22
-     },
-     "bounds": {
       "hp": [
        0,
-       32
-      ],
-      "atk": [
-       19,
-       32
+       2
       ],
       "def": [
        0,
        32
       ],
+      "spd": [
+       0,
+       1
+      ]
+     },
+     "sources": {
+      "spe": "turn order",
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
+     },
+     "speed_used": 2,
+     "damage_used": 1
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-279",
+     "mon": [
+      "p2",
+      "Rillaboom"
+     ],
+     "true": {
+      "hp": 14,
+      "atk": 6,
+      "def": 20,
+      "spa": 0,
+      "spd": 16,
+      "spe": 10
+     },
+     "bounds": {
+      "atk": [
+       0,
+       32
+      ],
       "spa": [
        0,
        0
       ],
-      "spd": [
+      "spe": [
        0,
        32
       ],
-      "spe": [
+      "hp": [
+       0,
+       3
+      ],
+      "def": [
+       0,
+       0
+      ],
+      "spd": [
        0,
        32
       ]
      },
      "sources": {
       "spe": "turn order",
-      "atk": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
      "speed_used": 1,
      "damage_used": 1
     },
     {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-370",
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-296",
      "mon": [
       "p2",
-      "Annihilape"
+      "Baxcalibur"
      ],
      "true": {
-      "hp": 24,
-      "atk": 17,
-      "def": 3,
+      "hp": 5,
+      "atk": 19,
+      "def": 22,
       "spa": 0,
-      "spd": 14,
-      "spe": 8
+      "spd": 5,
+      "spe": 15
      },
      "bounds": {
-      "hp": [
-       0,
-       32
-      ],
       "atk": [
-       0,
-       14
-      ],
-      "def": [
        0,
        32
       ],
@@ -702,114 +839,31 @@
        0,
        0
       ],
-      "spd": [
-       0,
+      "spe": [
+       7,
        32
       ],
-      "spe": [
-       0,
-       17
-      ]
-     },
-     "sources": {
-      "spe": "turn order",
-      "atk": "damage"
-     },
-     "speed_used": 3,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-435",
-     "mon": [
-      "p2",
-      "Gholdengo"
-     ],
-     "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
-     },
-     "bounds": {
       "hp": [
        0,
-       32
-      ],
-      "atk": [
-       0,
-       0
+       10
       ],
       "def": [
        0,
-       32
-      ],
-      "spa": [
-       19,
-       32
+       6
       ],
       "spd": [
-       0,
-       32
-      ],
-      "spe": [
        0,
        32
       ]
      },
      "sources": {
       "spe": "turn order",
-      "spa": "damage"
+      "atk": "damage",
+      "hp": "your damage",
+      "def": "your damage",
+      "spd": "your damage"
      },
-     "speed_used": 2,
-     "damage_used": 1
-    },
-    {
-     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-439",
-     "mon": [
-      "p2",
-      "Gholdengo"
-     ],
-     "true": {
-      "hp": 6,
-      "atk": 0,
-      "def": 29,
-      "spa": 5,
-      "spd": 25,
-      "spe": 1
-     },
-     "bounds": {
-      "hp": [
-       0,
-       32
-      ],
-      "atk": [
-       0,
-       0
-      ],
-      "def": [
-       0,
-       32
-      ],
-      "spa": [
-       24,
-       32
-      ],
-      "spd": [
-       0,
-       32
-      ],
-      "spe": [
-       0,
-       32
-      ]
-     },
-     "sources": {
-      "spe": "turn order",
-      "spa": "damage"
-     },
-     "speed_used": 2,
+     "speed_used": 1,
      "damage_used": 1
     }
    ]

@@ -826,7 +826,7 @@ def cmd_belief_sp(args: argparse.Namespace) -> int:
 
     def run(dc):
         return sp_belief.infer(reg, obs, known, dc, speed_known=speed_known,
-                               dead_zero=not args.no_dead_zero, spend_all=args.spend_all)
+                               dead_zero=not args.no_dead_zero, spend_all=not args.allow_unspent)
 
     if known:
         with DamageCalc() as dc:
@@ -848,7 +848,8 @@ def cmd_belief_sp(args: argparse.Namespace) -> int:
         span = lambda t: f"{t[0]}-{t[1]}" if t else "—"  # noqa: E731
         note = ", ".join(filter(None, [
             f"{b.speed_used} pairs" if b.speed_used else "",
-            f"{b.damage_used} hits" if b.damage_used else ""])) or "nothing read"
+            f"{b.damage_used} of their hits" if b.damage_used else "",
+            f"{b.bulk_used} of yours" if b.bulk_used else ""])) or "nothing read"
         if b.contradicted:
             note += f"  ⚠ {b.contradicted} contradiction, widened back"
         print(f"{b.side:4}{b.species:20} {span(bounds.get('spe')):>9} "
@@ -856,10 +857,9 @@ def cmd_belief_sp(args: argparse.Namespace) -> int:
               f"{span(b.spent_on(('hp', 'def', 'spd'))):>11} {b.narrowed:>10.1%}  {note}")
     s = sp_belief.summary(beliefs)
     print(f"\n{s['any_narrowed']}/{s['pokemon']} narrowed at all; {s['bulk_bounded']} had their bulk "
-          f"bounded — which no single channel observes, only the 66-point budget does.")
-    if not args.spend_all:
-        print("the budget is read as a maximum: `validate_team` only warns on unspent points "
-              "(--spend-all to assume they spent all 66).")
+          f"bounded — by your own damage where it landed, and by the 66-point budget elsewhere.")
+    if args.allow_unspent:
+        print("reading the budget as the format enforces it — ≤66, points may be left unspent.")
     return 0
 
 
@@ -1156,8 +1156,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--team", help="that side's team file — the damage channel needs real spreads")
     p.add_argument("--assume", type=int, default=32,
                    help="Speed SP to assume for --known when no --team is given")
-    p.add_argument("--spend-all", action="store_true",
-                   help="assume they spent all 66 points; the rule is only that they spent no more")
+    p.add_argument("--allow-unspent", action="store_true",
+                   help="do not assume they spent all 66 points (the format only enforces ≤66)")
     p.add_argument("--no-dead-zero", action="store_true",
                    help="do not assume 0 in a stat no move of theirs scales off")
     p.add_argument("--json", action="store_true")

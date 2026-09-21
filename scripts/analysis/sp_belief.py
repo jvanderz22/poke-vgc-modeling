@@ -9,8 +9,8 @@ Three things it is built to report and not to flatter:
   zeroes every dead stat, so a run scored with `spend_all=True, dead_zero=True` is scoring two
   assumptions the corpus was built to satisfy. The `rules_only` row assumes nothing past the
   regulation (sum ≤ 66, ≤32 a stat) and is the only soundness figure that can be falsified here.
-- **Bulk, which no channel observes.** HP, Defence and Special Defence are bounded only through
-  the budget, so `bulk_bounded` is the number this module exists to produce.
+- **Bulk**, which the budget bounds as a total and `vgc.belief.bulk` bounds directly, so
+  `bulk_bounded` is the number this module exists to produce.
 - **Calibration**, as the plan states it: the truth lands in the 80% credible set ~80% of the time.
 
     .venv/bin/python scripts/analysis/sp_belief.py --run data/selfplay/<run> --battles 2000
@@ -27,6 +27,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from vgc.belief import bulk as bulk_channel             # noqa: E402
 from vgc.belief import damage as damage_channel        # noqa: E402
 from vgc.belief import speed as speed_channel          # noqa: E402
 from vgc.belief import sp as sp_belief                 # noqa: E402
@@ -37,14 +38,17 @@ from vgc.regulation import STAT_IDS, load_regulation   # noqa: E402
 from scripts.analysis.damage_belief import sets_from_log   # noqa: E402
 from scripts.analysis.speed_belief import battles, true_spreads   # noqa: E402
 
-# The settings worth separating. `rules_only` is the honest soundness gate; `shipped` is the
-# default the app would run; `spent` adds the assumption that nobody leaves points unspent.
 BULK = ("hp", "def", "spd")
 
+# `rules_only` assumes nothing the format does not enforce and is the only falsifiable soundness
+# gate here. `shipped` is the default: both build conventions on, each confirmed against play
+# rather than measured here. `dead_stat_only` isolates what assuming a spent budget adds.
+# The settings are echoed into the result, because a label that drifts from what it names is worse
+# than no label — this table was read wrong once already.
 CONFIGS = {
     "rules_only": dict(dead_zero=False, spend_all=False),
-    "shipped": dict(dead_zero=True, spend_all=False),
-    "spent": dict(dead_zero=True, spend_all=True),
+    "dead_stat_only": dict(dead_zero=True, spend_all=False),
+    "shipped": dict(dead_zero=True, spend_all=True),
 }
 
 
@@ -146,24 +150,26 @@ def main() -> None:
 
             speeds = speed_channel.infer(reg, obs, {k: v.sp.spe for k, v in known.items()})
             damages = {} if args.no_damage else damage_channel.infer(reg, obs, known, dc)
+            bulks = {} if args.no_damage else bulk_channel.infer(reg, obs, known, dc)
             sheets = {(sid, m.species): m for sid, s in obs.sides.items() for m in s.mons}
 
-            for key in sorted(set(speeds) | set(damages)):
+            for key in sorted(set(speeds) | set(damages) | set(bulks)):
                 mon, real = sheets.get(key), truth.get(key)
                 if mon is None or real is None or key in known:
                     continue
                 for name, cfg in CONFIGS.items():
                     belief = sp_belief.combine(reg, key, mon.nature, mon.moves or [],
-                                               speeds.get(key), damages.get(key), **cfg)
+                                               speeds.get(key), damages.get(key), bulks.get(key),
+                                               **cfg)
                     tallies[name].add(belief, real, rec["battle_id"])
 
     print(json.dumps({
         "run": str(path.parent),
         "battles": n_battles,
         "damage_channel": not args.no_damage,
-        "note": "the corpus spends all 66 points and zeroes dead stats by construction, so only "
-                "`rules_only` can falsify those two assumptions",
-        "configs": {name: t.report() for name, t in tallies.items()},
+        "note": "the corpus spends all 66 points and zeroes dead stats by construction, so nothing "
+                "here can falsify either convention; only `rules_only` can falsify the channels",
+        "configs": {name: dict(CONFIGS[name], **t.report()) for name, t in tallies.items()},
     }, indent=1))
 
 

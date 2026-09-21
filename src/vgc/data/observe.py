@@ -116,7 +116,8 @@ class DamageEvent:
                  "target_side", "target_slot", "target", "target_forme",
                  "hp_before", "hp_after", "hp_max",
                  "exact", "fainted", "spread", "crit", "field", "attacker_boosts",
-                 "attacker_status", "target_boosts", "target_status", "target_side_conditions")
+                 "attacker_status", "target_item", "target_ability", "target_boosts",
+                 "target_status", "target_side_conditions")
 
     def __init__(self, **kw: Any):
         for k in self.__slots__:
@@ -550,6 +551,10 @@ class Observer:
                    "pseudo": sorted(self.pseudo)},
             attacker_boosts=dict(sorted(self._boosts_of(ev.side, ev.slot).items())),
             attacker_status=ev.status,
+            # As of this moment, for the same reason the formes are: a Pokémon that has its item
+            # knocked off, or Mega Evolves, is a different defender afterwards, and reading either
+            # off the final state answers a question about a Pokémon that no longer existed.
+            target_item=m.item, target_ability=self._active_ability(m),
             target_boosts={k: v for k, v in sorted(m.boosts.items()) if v},
             target_status=m.status,
             target_side_conditions=sorted(target_side.conditions),

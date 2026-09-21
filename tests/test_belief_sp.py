@@ -94,18 +94,19 @@ def test_two_offensive_bounds_bound_their_bulk(reg):
     belief = _combine(reg, speed_belief=_speed(range(24, 33)),
                       damage_belief=_damage("atk", range(28, 33)))
     bulk = ("hp", "def", "spd")
-    assert belief.spent_on(bulk) == (0, reg.sp_budget - 24 - 28)
+    cap = reg.sp_per_stat_cap
+    assert belief.spent_on(bulk) == (reg.sp_budget - cap - cap, reg.sp_budget - 24 - 28)
     # Either bound alone already says something, through the same budget — which is itself a
     # statement neither channel's own report makes. Together they compound, and the joint bound is
     # strictly tighter than both.
     speed_only = _combine(reg, speed_belief=_speed(range(24, 33)))
     damage_only = _combine(reg, damage_belief=_damage("atk", range(28, 33)))
-    assert speed_only.spent_on(bulk) == (0, reg.sp_budget - 24)
-    assert damage_only.spent_on(bulk) == (0, reg.sp_budget - 28)
+    assert speed_only.spent_on(bulk)[1] == reg.sp_budget - 24
+    assert damage_only.spent_on(bulk)[1] == reg.sp_budget - 28
     assert belief.spent_on(bulk)[1] < min(speed_only.spent_on(bulk)[1],
                                           damage_only.spent_on(bulk)[1])
-    # Nothing observed, nothing said.
-    assert _combine(reg).spent_on(bulk) == (0, reg.sp_budget)
+    # Nothing observed, and only the budget's own floor is left.
+    assert _combine(reg).spent_on(bulk) == (reg.sp_budget - cap - cap, reg.sp_budget)
 
 
 def test_bulk_is_all_the_budget_can_narrow_from_these_two_channels(reg):
@@ -148,16 +149,17 @@ def test_a_channel_that_contradicted_itself_is_not_used_at_all(reg):
 
 # --- soundness ---------------------------------------------------------------------------
 
-def test_the_budget_is_a_maximum_not_an_equation(reg):
-    """`validate_team` errors above 66 and only *warns* below it, so a spread that leaves points
-    unspent is legal and a belief that excludes it is unsound. `spend_all` is the assumption, and
-    it is off by default."""
+def test_the_budget_is_spent_by_assumption_and_capped_by_rule(reg):
+    """`validate_team` errors above 66 and only *warns* below it, so `sum ≤ 66` is what the format
+    enforces and `sum = 66` is a fact about how people build — every point can always be moved into
+    a defensive stat, so none is left behind. The default assumes it and `spend_all=False` restores
+    the rule alone, because the assumption comes from outside anything here can measure."""
     thrifty = {"hp": 10, "atk": 10, "def": 10, "spa": 0, "spd": 10, "spe": 10}
     assert sum(thrifty.values()) < reg.sp_budget
-    assert _combine(reg).contains(thrifty)
-    assert not _combine(reg, spend_all=True).contains(thrifty)
+    assert not _combine(reg).contains(thrifty)
+    assert _combine(reg, spend_all=False).contains(thrifty)
     over = dict.fromkeys(STATS, 32)
-    assert not _combine(reg).contains(over)
+    assert not _combine(reg).contains(over) and not _combine(reg, spend_all=False).contains(over)
 
 
 def test_the_truth_survives_every_bound_that_contains_it(reg):
@@ -186,7 +188,8 @@ def test_a_dead_stat_is_an_assumption_with_a_switch(reg):
     special = ["Hyper Voice", "Protect"]
     assert _combine(reg, moves=special, nature="Timid").bounds()["atk"] == (0, 0)
     assert _combine(reg, moves=special, nature="Timid", dead_zero=False).bounds()["atk"][1] == 32
-    wasteful = {"hp": 0, "atk": 20, "def": 0, "spa": 20, "spd": 0, "spe": 20}
+    wasteful = {"hp": 2, "atk": 20, "def": 0, "spa": 22, "spd": 0, "spe": 22}
+    assert sum(wasteful.values()) == reg.sp_budget       # legal, and nobody builds it
     assert not _combine(reg, moves=special, nature="Timid").contains(wasteful)
     assert _combine(reg, moves=special, nature="Timid", dead_zero=False).contains(wasteful)
 

@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | **step 1 done**: both channels gated (speed 0.029% silently wrong over 54,904 Pokémon, damage 0.66% over 2,897 attackers) and joined by the 66-point budget — 0.623% over 6,421, all of it the channels', none of it the join ([findings](docs/phase8-findings.md)). Next: a bulk channel, then closed-sheet full-set belief and WP_v2 |
+| 8 — Belief over hidden sets | 🟡 In progress | **step 1 done**: three channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178% — and joined by the 66-point budget at **0.159% over 3,783**, all of it the channels', none of it the join ([findings](docs/phase8-findings.md)). Building the third fixed six faults in the second. Next: closed-sheet full-set belief, then WP_v2 |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -360,27 +360,36 @@ against the pinned calc rather than anything learned:
   The prerequisite this phase already had now has a second reason: the evidence log lives outside
   `observation()` deliberately, because snapshots embed it and are fingerprinted at VERSION 3.
 - **Damage magnitude → a bound on their offensive investment. ✅ Built and gated**
-  (`vgc.belief.damage`). 0.66% of 2,897 attackers had the truth silently excluded; a further 9.4%
-  contradicted themselves and widened back. It narrows 20.8% of the prior on a hit the target
-  survived and 6.0% on a KO — right-censoring working as intended, since a kill says the move did
-  *at least* the remaining HP and nothing about how much more.
+  (`vgc.belief.damage`). **0 of 2,866 attackers** had the truth silently excluded and 1.95%
+  contradicted themselves and widened back — from 0.66% and 9.39% at first gating. It narrows 22.1%
+  of the prior on a hit the target survived and 5.8% on a KO: right-censoring working as intended,
+  since a kill says the move did *at least* the remaining HP and nothing about how much more.
 
-  It is **twenty times less sound than the speed channel** and structurally so: turn order needs one
-  comparison to come out right, damage needs the whole calc reproduced. Five bugs got it there and
-  four were the same shape — something handed to the calc that was silently not what it looked
-  like, with no error raised. The fifth is the one worth remembering: Electro Shot's damage looked
-  unboosted across 52 hits, contradicting both the pinned `onTryMove` and the log, because
-  `@smogon/calc` applies that move's own boost itself and the log's boost was being counted twice.
-  The first instinct — abstain on charge moves as a class — would have "fixed" it by discarding the
-  evidence.
+  **None of that improvement came from working on this channel.** Eleven faults have now been found
+  in it, and the last six were found by building the *third* channel — the same arithmetic pointed
+  the other way — which is the single most transferable thing this phase has produced. A diffuse
+  residue that resists inspection is not evidence that the remainder is irreducible; it is evidence
+  that inspection is the wrong instrument. Every one of the eleven was the same shape: something
+  handed to the calc that was silently not what it looked like, with no error raised.
 
-  The evidence is already recorded — `vgc.data.observe` now attributes each `|-damage|` to the move that caused it, with the
-  field, both sides' boosts, crits, spread flags and a `fainted` marker for the right-censored case
-  — and `vgc team weakness` already runs this arithmetic forwards. A move that did 71% to a known defender
-  narrows the attacker's offensive SP and item jointly, through the same calc the rest of the stack
-  treats as ground truth. `_on_damage` currently writes the defender's new HP and nothing else.
-  PLAN-v2 already listed "a calc-based damage likelihood" in this phase; finding 8 says it applies at
-  open sheets too, which is where the model is actually trained and gated.
+  The one worth remembering on its own is Electro Shot, whose damage looked unboosted across 52
+  hits, contradicting both the pinned `onTryMove` and the log, because `@smogon/calc` applies that
+  move's own boost itself and the log's boost was being counted twice. The first instinct — abstain
+  on charge moves as a class — would have "fixed" it by discarding the evidence.
+- **Your damage → a bound on their bulk. ✅ Built and gated** (`vgc.belief.bulk`). The mirror of the
+  channel above and the first that reads your *own* moves: a hit whose every term you know took a
+  measured fraction of their health, so the only unknowns are their HP and the stat that resisted
+  it. **6 of 3,373 Pokémon (0.178%)** silently wrong, 1.01% contradicted.
+
+  Its shape is the interesting part. The fraction lost goes roughly as `1/(hp × defence)`, so the
+  indistinguishable direction is a hyperbola: one observation locates the *product* — which is what
+  a player means by "bulky" — and not the split. It rules out **27.8% of the 33×33 grid while the
+  per-stat axes give up only 3.1%, 7.1% and 9.7%**, so reporting ranges instead of the region would
+  have thrown away nearly nine tenths of it. That is why `vgc.belief.sp.Block` carries regions over
+  several stats. The honest way to split HP from a defensive stat is not a convention but a second
+  observation of a different kind — a physical hit and a special hit share their HP term, which
+  happened for 21.6% of Pokémon. 49.5% of what it sees is censored, which is intrinsic: you are
+  reading your own attacks, and the ones that work end the exchange.
 
 Build, in the order the evidence supports:
 
@@ -393,32 +402,38 @@ Build, in the order the evidence supports:
    the structural zeros (90.9% of Pokémon have a dead offensive stat) and the benchmark classes are
    both real and neither demonstrably beats uniform where it counts.
 
-   The two channels are joined by the budget, and **the joint adds no unsoundness of its own**:
-   over 6,421 opposing Pokémon in 2,000 battles, 40 (0.623%) had the truth excluded and every one
-   of them is a channel's, provably — under the rules-only setting the only constraints are the
-   channels' sets and `sum ≤ 66`, which a real spread always satisfies. It rules out 19.9% of the
-   legal allocations.
+   The three channels are joined by the budget, and **the joint adds no unsoundness of its own**:
+   over 3,783 opposing Pokémon in 1,000 battles, 6 (0.159%) had the truth excluded and every one of
+   them is a channel's, provably — under the rules-only setting the only constraints are the
+   channels' sets and `sum ≤ 66`, which a real spread always satisfies. It rules out 35.4% of the
+   legal allocations and narrows 77.7% of opposing Pokémon at all.
 
-   What the budget buys is **bulk**, which neither channel observes: 28.1% of Pokémon had the range
-   of their total HP/Def/SpD investment moved, by 11.9 points on average. What it cannot buy is
-   anything about the two stats that *were* observed — the cap is 32 and the budget 66, so Speed
-   and one offensive stat can both be maxed and no pair of observations on them can conflict. That
-   also makes a bulk-from-below channel (how much your own move took off them) the obvious next
-   one, and it is what would make the contradiction guard reachable.
+   **Adding the third channel roughly doubled the power and quartered the error** — 0.623% → 0.159%
+   silently wrong, 19.9% → 35.4% of allocations ruled out, 28.1% → 65.5% with bulk bounded. That is
+   not the usual trade, and the reason is the transferable one: six of the faults building it
+   exposed were shared with the damage channel, so it made the existing evidence more trustworthy
+   at the same time as it added new evidence.
 
-   Two assumptions are parameters rather than defaults-in-hiding, because **the corpus cannot
-   referee either**: `spend_all` (the budget is a maximum — `validate_team` only warns on unspent
-   points) and `dead_zero`. `prior.sample_spread` satisfies both by construction. Assuming a spent
-   budget nearly doubles the bulk hit rate, 28.1% → 48.2%, which is the measure of what it is worth.
+   What the budget can never buy is anything about the two stats a channel observed directly — the
+   cap is 32 and the budget 66, so Speed and one offensive stat can both be maxed and no pair of
+   observations on them can conflict. The contradiction guard is reachable only because the bulk
+   channel bounds bulk from *below*; it has not yet fired.
+
+   Two build conventions are parameters rather than defaults-in-hiding, **confirmed against play
+   and not measurable here**: every point is spent (`validate_team` only warns on unspent ones) and
+   a stat no move scales off gets nothing. `prior.sample_spread` satisfies both by construction, so
+   the corpus cannot referee either. Between them they are worth 233× of the allocation space —
+   more than all three evidence channels manage — which is why what they rest on is stated rather
+   than assumed.
 
    The plan's calibration criterion needed splitting to mean anything. *Is the feasible set the
-   right size* — the truth in an 80% set weighted flat — comes back 0.82–0.93 across the six stats,
+   right size* — the truth in an 80% set weighted flat — comes back 0.83–0.93 across the six stats,
    slightly conservative. *Is the weight inside it in the right place* is unanswerable on this
    corpus: `sample_spread` flattens Speed and the live offensive stat deliberately, so scoring an
-   allocation-weighted belief against it scores the generator's shape (Speed 0.589). The real
-   question underneath is that a joint distribution over the budget cannot have flat marginals on
-   all six stats while `prior` measured flat as the best Speed marginal on real turn orders —
-   a disagreement worth 0.004 nats a pair, recorded rather than tuned away.
+   allocation-weighted belief against it scores the generator's shape (Speed 0.751). The real
+   question underneath is that a joint distribution over a budget cannot have flat marginals on all
+   six stats while `prior` measured flat as the best Speed marginal on real turn orders — a
+   disagreement worth 0.004 nats a pair, recorded rather than tuned away.
 
    The Speed half also produced a diagnostic worth keeping: when the belief contradicts itself, it
    is usually because the spread *you* supplied for your own team is wrong. The contradiction rate

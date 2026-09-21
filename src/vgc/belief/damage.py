@@ -76,6 +76,13 @@ RUNTIME_POWER = {
     "wringout",
 }
 
+# Moves whose *type* is decided at run time, which the dex export records as the unconditional one
+# and no single calc reproduces from a name. Weather Ball is Water and 100 base power in rain and
+# Normal at 50 outside it, so reading the export's Normal/50 under Drizzle understates the damage
+# by 2x before type effectiveness even applies — 11 of the bulk channel's first 39 misses. Derived
+# from `onModifyType` in the pinned build, like `MULTI_HIT`, and re-derived in the tests.
+RUNTIME_TYPE = {"aurawheel", "electrify", "ragingbull", "terrainpulse", "weatherball"}
+
 # Fixed-damage moves carry no signal about investment at all: the sweep is flat, and reporting
 # "every value is possible" is true and useless.
 FIXED_DAMAGE = {"seismictoss", "nightshade", "endeavor", "superfang", "finalgambit", "counter",
@@ -115,7 +122,8 @@ def attacker_boosts_for(ev: DamageEvent) -> dict[str, int]:
     return boosts
 
 
-ABSTAIN_MOVES = MULTI_HIT | RUNTIME_POWER | FIXED_DAMAGE | (CHARGE_MOVES - set(CALC_APPLIES_SELF_BOOST))
+ABSTAIN_MOVES = (MULTI_HIT | RUNTIME_POWER | RUNTIME_TYPE | FIXED_DAMAGE
+                 | (CHARGE_MOVES - set(CALC_APPLIES_SELF_BOOST)))
 
 
 @dataclass
@@ -371,8 +379,9 @@ def _sweep(dc: DamageCalc, reg: Regulation, ev: DamageEvent, forme: str, stat: s
                     "boosts": attacker_boosts_for(ev) if boosts is None else boosts,
                     "status": "", "curHP": None}
         target = {"species": target_forme,
-                  "item": proper(reg.dex.items, defender.item),
-                  "ability": proper(reg.dex.abilities, defender.ability),
+                  "item": proper(reg.dex.items, ev.target_item if ev.target_item is not None
+                                 else defender.item),
+                  "ability": proper(reg.dex.abilities, ev.target_ability or defender.ability),
                   "nature": defender.nature,
                   "sp": defender.sp.as_dict(), "boosts": ev.target_boosts or {},
                   "status": ev.target_status or "", "curHP": None}

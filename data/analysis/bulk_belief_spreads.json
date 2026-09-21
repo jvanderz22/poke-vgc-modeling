@@ -1,0 +1,174 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "battles": 1000,
+ "pokemon_checked": 3373,
+ "soundness": {
+  "silently_wrong": 6,
+  "rate": 0.0017788319003854136,
+  "contradicted": 34,
+  "contradicted_rate": 0.010080047435517344,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-279",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "stat": [
+     "def"
+    ],
+    "true": {
+     "hp": 14,
+     "atk": 6,
+     "def": 20,
+     "spa": 0,
+     "spd": 16,
+     "spe": 10
+    },
+    "bounds": {
+     "hp": [
+      0,
+      3
+     ],
+     "def": [
+      0,
+      0
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-296",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "def"
+    ],
+    "true": {
+     "hp": 5,
+     "atk": 19,
+     "def": 22,
+     "spa": 0,
+     "spd": 5,
+     "spe": 15
+    },
+    "bounds": {
+     "hp": [
+      0,
+      10
+     ],
+     "def": [
+      0,
+      6
+     ]
+    },
+    "used": 1
+   }
+  ]
+ },
+ "power": {
+  "grid_ruled_out": 0.27758116553715856,
+  "axis_ruled_out": {
+   "hp": 0.030926610544444937,
+   "def": 0.07146519424176691,
+   "spd": 0.09662181749970157
+  },
+  "observations_per_pokemon": 1.7213163356062853,
+  "censored_share": 0.49466069583189803,
+  "hit_both_ways": 0.21553513193003263
+ },
+ "events_by_reason": {
+  "usable": 5819,
+  "move_power_hidden": 457,
+  "not_a_damaging_move": 1
+ }
+}

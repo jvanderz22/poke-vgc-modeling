@@ -2,90 +2,59 @@
  "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
  "battles": 1000,
  "damage_events": 12409,
- "pokemon_checked": 2897,
+ "pokemon_checked": 2866,
  "soundness": {
-  "silently_wrong": 2,
-  "rate": 0.0006903693476009665,
-  "contradicted": 129,
-  "contradicted_rate": 0.04452882292026234,
-  "examples": [
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-273",
-    "mon": [
-     "p2",
-     "Pelipper"
-    ],
-    "stat": "spa",
-    "true": 19,
-    "bounds": [
-     25,
-     32
-    ],
-    "used": 2,
-    "censored": 2
-   },
-   {
-    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-922",
-    "mon": [
-     "p2",
-     "Arcanine-Hisui"
-    ],
-    "stat": "atk",
-    "true": 16,
-    "bounds": [
-     27,
-     32
-    ],
-    "used": 2,
-    "censored": 2
-   }
-  ]
+  "silently_wrong": 0,
+  "rate": 0.0,
+  "contradicted": 56,
+  "contradicted_rate": 0.019539427773900907,
+  "examples": []
  },
  "power": {
-  "narrowed_mean": 0.10592985429022708,
-  "any_narrowing": 0.33897134967207454,
-  "observations_per_pokemon": 1.9768726268553676,
-  "narrowed_mean_uncensored": 0.2138935223797609,
-  "narrowed_mean_with_a_ko": 0.059438832772166106
+  "narrowed_mean": 0.10745627947302755,
+  "any_narrowing": 0.34647592463363575,
+  "observations_per_pokemon": 1.9773203070481506,
+  "narrowed_mean_uncensored": 0.22123306800726156,
+  "narrowed_mean_with_a_ko": 0.05802772469439136
  },
  "events_by_reason": {
-  "usable": 11658,
-  "move_power_hidden": 748,
+  "usable": 11535,
+  "move_power_hidden": 871,
   "not_a_damaging_move": 3
  },
  "truth_distribution": {
-  "0": 211,
-  "1": 85,
+  "0": 210,
+  "1": 83,
   "2": 80,
   "3": 81,
   "4": 78,
-  "5": 60,
+  "5": 54,
   "6": 84,
   "7": 97,
-  "8": 74,
-  "9": 82,
+  "8": 71,
+  "9": 81,
   "10": 50,
   "11": 80,
   "12": 80,
   "13": 73,
   "14": 84,
   "15": 89,
-  "16": 98,
-  "17": 72,
+  "16": 96,
+  "17": 69,
   "18": 92,
-  "19": 116,
+  "19": 112,
   "20": 80,
   "21": 77,
   "22": 88,
-  "23": 65,
-  "24": 106,
-  "25": 73,
-  "26": 100,
+  "23": 64,
+  "24": 104,
+  "25": 71,
+  "26": 99,
   "27": 79,
   "28": 73,
   "29": 102,
-  "30": 112,
-  "31": 85,
+  "30": 110,
+  "31": 84,
   "32": 91
  }
 }

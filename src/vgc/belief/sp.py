@@ -13,13 +13,15 @@ of bulk across three stats, which is a conclusion drawn from two offensive obser
 defensive one. It is also the conclusion a player draws instinctively — *they're fast and they hit
 hard, so they're frail* — and it is arithmetic, not intuition.
 
-**The budget is a maximum, not an equation.** `validate_team` errors above 66 and only *warns*
-below it, so `sum = 66` is a statement about how people build and `sum ≤ 66` is the rule. This
-module constrains the rule and takes `spend_all` as an argument, because the difference is exactly
-the kind of assumption that produced five wrong answers in `vgc.belief.speed` — and because the
-self-play corpus cannot referee it: `prior.sample_spread` spends every point by construction, so a
-gate run against that corpus would be marking its own generator's homework. The same caveat
-applies, for the same reason, to `dead_zero`.
+**The budget is an equation in practice and a maximum in the rules.** `validate_team` errors above
+66 and only *warns* below it, so `sum ≤ 66` is what the format enforces. It is nonetheless safe to
+assume every point is spent, confirmed against play rather than derived here: unlike an EV
+remainder, which is dead weight, a leftover Stat Point can always be moved into a defensive stat,
+so nobody leaves one. `spend_all` defaults to `True` for that reason and stays an argument, since
+the assumption comes from outside the codebase and the self-play corpus cannot referee it —
+`prior.sample_spread` spends every point by construction, so a gate run there would be marking its
+own generator's homework. The same holds for `dead_zero`, and it is confirmed the same way: a stat
+no move of theirs scales off gets nothing, universally.
 
 **Representation.** A belief is a list of blocks, each block being a set of allowed combinations
 for one or more stats, plus a slack block absorbing anything unspent. Everything else — how many
@@ -35,6 +37,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Sequence
 
+from vgc.belief import bulk as bulk_channel
 from vgc.belief import damage as damage_channel
 from vgc.belief import speed as speed_channel
 from vgc.belief.prior import dead_stats
@@ -43,6 +46,7 @@ from vgc.regulation import STAT_IDS, Regulation
 from vgc.teams.sets import PokemonSet
 
 SLACK = "_unspent"
+BULK = ("hp", "def", "spd")
 
 
 @dataclass(frozen=True)
@@ -73,34 +77,49 @@ class Block:
 
 # --- the dynamic program ------------------------------------------------------------------
 
+def _totals(blk: Block) -> dict[int, int]:
+    """How many of a block's entries cost each total.
+
+    The dynamic program only ever asks what a block *costs*, never which entry paid, so a block
+    with 35,937 entries — a bulk observation is a region over three stats — collapses to at most
+    67 numbers before the DP sees it. Without this the cost of a joint block is its entry count
+    times the budget on every pass, which is what would make reading damage backwards to bulk too
+    slow to gate.
+    """
+    out: dict[int, int] = {}
+    for _, t in blk.entries:
+        out[t] = out.get(t, 0) + 1
+    return out
+
+
 def _prefix(blocks: Sequence[Block], budget: int) -> list[list[int]]:
     """`pre[i][b]` = ways `blocks[:i]` can sum to exactly `b`."""
     pre = [[0] * (budget + 1) for _ in range(len(blocks) + 1)]
     pre[0][0] = 1
     for i, blk in enumerate(blocks):
         row, prev = pre[i + 1], pre[i]
-        for _, t in blk.entries:
+        for t, n in _totals(blk).items():
             if t > budget:
                 continue
             for b in range(t, budget + 1):
                 if prev[b - t]:
-                    row[b] += prev[b - t]
+                    row[b] += prev[b - t] * n
     return pre
 
 
 def _suffix(blocks: Sequence[Block], budget: int) -> list[list[int]]:
     """`suf[i][r]` = ways `blocks[i:]` can sum to exactly `r`."""
-    n = len(blocks)
-    suf = [[0] * (budget + 1) for _ in range(n + 1)]
-    suf[n][0] = 1
-    for i in range(n - 1, -1, -1):
+    n_blocks = len(blocks)
+    suf = [[0] * (budget + 1) for _ in range(n_blocks + 1)]
+    suf[n_blocks][0] = 1
+    for i in range(n_blocks - 1, -1, -1):
         row, nxt = suf[i], suf[i + 1]
-        for _, t in blocks[i].entries:
+        for t, n in _totals(blocks[i]).items():
             if t > budget:
                 continue
             for r in range(t, budget + 1):
                 if nxt[r - t]:
-                    row[r] += nxt[r - t]
+                    row[r] += nxt[r - t] * n
     return suf
 
 
@@ -114,11 +133,12 @@ def entry_counts(blocks: Sequence[Block], budget: int) -> list[dict[tuple[int, .
     pre, suf = _prefix(blocks, budget), _suffix(blocks, budget)
     out = []
     for i, blk in enumerate(blocks):
-        counts: dict[tuple[int, ...], int] = {}
-        for v, t in blk.entries:
-            counts[v] = sum(pre[i][b] * suf[i + 1][budget - b - t]
-                            for b in range(0, budget - t + 1))
-        out.append(counts)
+        # Two entries of the same block that cost the same appear in the same number of whole
+        # allocations, so the sum is computed once per total rather than once per entry.
+        by_total = {t: sum(pre[i][b] * suf[i + 1][budget - b - t]
+                           for b in range(0, budget - t + 1))
+                    for t in _totals(blk)}
+        out.append({v: by_total[t] for v, t in blk.entries})
     return out
 
 
@@ -193,13 +213,15 @@ def sample(blocks: Sequence[Block], budget: int, rng: Any, k: int = 1) -> list[d
             if not total:   # unreachable: every prefix drawn so far had a completion by construction
                 raise AssertionError(f"no completion for {blk.stats} with {left} points left")
             pick = int(rng.integers(0, total)) if hasattr(rng, "integers") else int(rng.random() * total)
+            chosen = weights[-1][0]
             for v, w in weights:
                 pick -= w
                 if pick < 0:
+                    chosen = v
                     break
             for j, stat in enumerate(blk.stats):
-                drawn[stat] = v[j]
-            left -= sum(v)
+                drawn[stat] = chosen[j]
+            left -= sum(chosen)
         out.append(drawn)
     return out
 
@@ -220,6 +242,8 @@ class SPBelief:
     sources: dict[str, str] = field(default_factory=dict)
     speed_used: int = 0
     damage_used: int = 0
+    bulk_used: int = 0
+    _marginals: dict[str, list[float]] | None = field(default=None, repr=False)
     contradicted: str | None = None     # which stage had no solution left
 
     @property
@@ -249,7 +273,13 @@ class SPBelief:
         return out
 
     def marginals(self) -> dict[str, list[float]]:
-        return {s: m for s, m in marginals(self.blocks, self.budget).items() if s != SLACK}
+        """Cached: the blocks do not change after `combine`, and a bulk observation makes one of
+        them a region over three stats with up to 35,937 entries. Recomputing it per stat per
+        credible set — which is what the gate does — turns a millisecond into a minute."""
+        if self._marginals is None:
+            self._marginals = {s: m for s, m in marginals(self.blocks, self.budget).items()
+                               if s != SLACK}
+        return self._marginals
 
     def particles(self, rng: Any, k: int = 16) -> list[dict[str, int]]:
         return [{s: v for s, v in p.items() if s != SLACK}
@@ -305,18 +335,20 @@ class SPBelief:
                 "bounds": self.bounds(), "allocations": self.allocations,
                 "narrowed": round(self.narrowed, 4), "dead": self.dead,
                 "sources": self.sources, "speed_used": self.speed_used,
-                "damage_used": self.damage_used, "contradicted": self.contradicted}
+                "damage_used": self.damage_used, "bulk_used": self.bulk_used,
+                "contradicted": self.contradicted}
 
 
 def structural_blocks(reg: Regulation, moves: Iterable[str], nature: str | None,
-                      dead_zero: bool = True, spend_all: bool = False) -> tuple[list[Block], dict[str, str]]:
+                      dead_zero: bool = True, spend_all: bool = True) -> tuple[list[Block], dict[str, str]]:
     """The prior: one block per stat, plus slack, before any observation.
 
-    `dead_zero` pins a stat no move of theirs scales off to 0. 90.9% of weighted Pokémon-sheets
-    have exactly one such stat, and spending there is strictly wasted — but *strictly wasted* is an
-    argument about play, not a rule, and the corpus that would test it was generated under the same
-    assumption. It is on by default because it is what a player would assume, and it is a parameter
-    because the belief's whole claim is that it does not quietly assume things.
+    Both flags are assumptions about how people build rather than rules the format enforces, and
+    both are confirmed universal in play: a stat no move scales off gets nothing, and no point is
+    ever left unspent. They stay parameters because the belief's claim is that it does not quietly
+    assume things, and because nothing measurable here can check either — `prior.sample_spread`
+    satisfies both by construction. Together they are worth 233× the allocation space, which is
+    more than both evidence channels manage, so what they rest on is worth stating.
     """
     dead = dead_stats(reg, moves, nature) if dead_zero else {}
     blocks = [Block.over(s, [0] if s in dead else range(reg.sp_per_stat_cap + 1))
@@ -327,7 +359,7 @@ def structural_blocks(reg: Regulation, moves: Iterable[str], nature: str | None,
 
 def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSet],
           dc: Any | None = None, *, speed_known: dict[tuple[str, str], int] | None = None,
-          dead_zero: bool = True, spend_all: bool = False) -> dict[tuple[str, str], SPBelief]:
+          dead_zero: bool = True, spend_all: bool = True) -> dict[tuple[str, str], SPBelief]:
     """One belief per opposing Pokémon, over the whole allocation.
 
     `known` is the side whose spreads you wrote — your own team, in a real game. Both channels need
@@ -345,24 +377,25 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
     yours = {k: v.sp.spe for k, v in known.items()} | dict(speed_known or {})
     speeds = speed_channel.infer(reg, obs, yours)
     damages = damage_channel.infer(reg, obs, known, dc) if dc is not None else {}
+    bulks = bulk_channel.infer(reg, obs, known, dc) if dc is not None else {}
 
     sheets = {(sid, mon.species): mon
               for sid, side in obs.sides.items() for mon in side.mons}
 
     out: dict[tuple[str, str], SPBelief] = {}
-    for key in sorted(set(speeds) | set(damages)):
+    for key in sorted(set(speeds) | set(damages) | set(bulks)):
         mon = sheets.get(key)
         if mon is None or key in yours:
             continue
         out[key] = combine(reg, key, mon.nature, mon.moves or [],
-                           speeds.get(key), damages.get(key),
+                           speeds.get(key), damages.get(key), bulks.get(key),
                            dead_zero=dead_zero, spend_all=spend_all)
     return out
 
 
 def combine(reg: Regulation, key: tuple[str, str], nature: str | None, moves: Iterable[str],
-            speed_belief: Any = None, damage_belief: Any = None, *,
-            dead_zero: bool = True, spend_all: bool = False) -> SPBelief:
+            speed_belief: Any = None, damage_belief: Any = None, bulk_belief: Any = None, *,
+            dead_zero: bool = True, spend_all: bool = True) -> SPBelief:
     """One Pokémon's channel results, assembled into one belief under the budget.
 
     Split out from `infer` because the channels are the expensive part and the assembly is not:
@@ -384,7 +417,20 @@ def combine(reg: Regulation, key: tuple[str, str], nature: str | None, moves: It
         belief.damage_used = damage_belief.used
         belief.sources[damage_belief.stat] = "damage"
 
-    belief.blocks = _narrow(blocks, narrow)
+    working = blocks
+    if bulk_belief is not None and not bulk_belief.contradicted:
+        triples = bulk_belief.triples()
+        if triples:
+            # HP, Defence and Special Defence stop being three independent stats here: what was
+            # observed is a region, and splitting it into three ranges would keep the corners the
+            # observation ruled out. This is the case `Block` carries several stats for.
+            working = [b for b in blocks if b.stats[0] not in BULK]
+            working.append(Block.joint(BULK, triples))
+            belief.bulk_used = bulk_belief.used
+            for stat in BULK:
+                belief.sources[stat] = "your damage"
+
+    belief.blocks = _narrow(working, narrow)
     if not count(belief.blocks, belief.budget):
         # Each channel was satisfiable alone and the two cannot both be true under the budget.
         # That is a new detection, not a channel bug — and the only sound response is the one the
@@ -406,10 +452,9 @@ def _narrow(blocks: Sequence[Block], limits: dict[str, set[int]]) -> list[Block]
 
 def summary(beliefs: dict[tuple[str, str], SPBelief]) -> dict[str, Any]:
     vals = list(beliefs.values())
-    bulk = ("hp", "def", "spd")
     defensive = [b for b in vals
-                 if b.spent_on(bulk) != SPBelief(b.side, b.species, b.nature, b.prior, b.prior,
-                                                 b.budget).spent_on(bulk)]
+                 if b.spent_on(BULK) != SPBelief(b.side, b.species, b.nature, b.prior, b.prior,
+                                                 b.budget).spent_on(BULK)]
     return {
         "pokemon": len(vals),
         "narrowed_mean": sum(b.narrowed for b in vals) / len(vals) if vals else 0.0,

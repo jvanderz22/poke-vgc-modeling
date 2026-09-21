@@ -64,7 +64,7 @@ vgc wp registry                                  # every model, with the gates i
 vgc wp endgames                                  # held-out human games it called at 90%+ before the end
 
 vgc belief speed <replay> --known p1             # turn order → a bound on their Speed Stat Points
-vgc belief sp <replay> --known p1 --team a.txt   # both channels, over the whole 66-point allocation
+vgc belief sp <replay> --known p1 --team a.txt   # all three channels, over the whole 66-point allocation
 
 vgc web                                          # battle companion on localhost:8001
 ```
