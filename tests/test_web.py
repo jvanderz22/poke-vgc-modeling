@@ -234,3 +234,175 @@ def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
     monkeypatch.setattr(wp_models, "registered",
                         lambda reg: [dict(r, gates={"in_battle_pass": False}) for r in rows])
     assert wp_models.in_battle_version("reg_mc") == "shiny-set"
+
+
+# --- a battle in progress ---------------------------------------------------------------------
+#
+# The journal is the battle and the state is replayed from it, so the API is thin by construction:
+# every write appends to a list and every read replays it. What is worth protecting is that the
+# thinness holds — that a reload, an undo and a walk back to turn 3 all agree — and that the WP
+# number never arrives without the caveat that makes it honest.
+
+THEIR_SIX = ["Kingambit", "Milotic", "Archaludon", "Torkoal", "Gholdengo", "Pelipper"]
+
+
+@pytest.fixture
+def battles_dir(tmp_path, monkeypatch):
+    from vgc.web import live
+
+    monkeypatch.setattr(live, "BATTLES", tmp_path / "battles")
+    return tmp_path
+
+
+@pytest.fixture
+def started(client, teams, battles_dir):
+    r = client.post("/api/battles", json={"name": "test", "my_team": teams[0],
+                                          "their_species": THEIR_SIX})
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def entries(client, battle_id, *items):
+    r = client.post(f"/api/battles/{battle_id}/entries", json={"entries": list(items)})
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def test_a_battle_starts_at_preview_with_their_six_and_nothing_else(started):
+    assert started["turn"] == 0 and not started["started"]
+    theirs = started["sides"]["p2"]["mons"]
+    assert [m["species"] for m in theirs] == THEIR_SIX
+    assert all(m["ability"] is None and m["item"] is None for m in theirs)
+    # Yours is fully known, because you built it.
+    assert all(m["ability"] and m["stats"] for m in started["sides"]["p1"]["mons"])
+
+
+def test_a_species_that_is_not_legal_is_refused_rather_than_tracked(client, teams, battles_dir):
+    r = client.post("/api/battles", json={"my_team": teams[0],
+                                          "their_species": ["Mewtwo"] + THEIR_SIX[1:]})
+    assert r.status_code == 422 and "Mewtwo" in r.json()["detail"]
+
+
+def test_the_wrong_number_of_species_is_refused(client, teams, battles_dir):
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_species": THEIR_SIX[:4]})
+    assert r.status_code == 422
+
+
+def test_wp_never_arrives_without_saying_what_it_assumed(started):
+    wp = started["wp"]
+    assert 0 <= wp["wp"] <= 1 and 0 <= wp["wp_open"] <= 1
+    # The models are open-sheet models; a Team Preview Only battle is not a position they were
+    # trained on. Both readings are reported and the caveat travels with them.
+    assert wp["guessed"] and {g["species"] for g in wp["guessed"]} <= set(THEIR_SIX)
+    assert "open-sheet" in wp["regime"]
+
+
+def test_logging_a_lead_raises_the_question_the_rules_cannot_answer(client, started):
+    v = entries(client, started["id"],
+                {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"})
+    q = next(x for x in v["questions"] if x["species"] == "Torkoal")
+    assert q["kind"] == "switch_in"
+    assert any(o["ability"] == "drought" for o in q["options"])
+    assert any(o["label"].startswith("nothing announced") for o in q["options"])
+
+
+def test_answering_applies_the_effect_and_pins_the_ability(client, started):
+    bid = started["id"]
+    v = entries(client, bid, {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"})
+    q = next(x for x in v["questions"] if x["species"] == "Torkoal")
+    pick = next(i for i, o in enumerate(q["options"]) if o["ability"] == "drought")
+    v = entries(client, bid, {"kind": "answer", "question": q["id"], "option": pick})
+    assert v["field"]["weather"] == "sunnyday"
+    torkoal = next(m for m in v["sides"]["p2"]["mons"] if m["species"] == "Torkoal")
+    assert torkoal["ability"] == "drought" and torkoal["ability_source"] == "revealed"
+
+
+def test_undo_walks_the_journal_back(client, started):
+    bid = started["id"]
+    v = entries(client, bid, {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"})
+    before = v["entries"]
+    v = client.post(f"/api/battles/{bid}/undo").json()
+    assert v["entries"] == before - 1
+    assert not any(m["state"] == "active" for m in v["sides"]["p2"]["mons"])
+
+
+def test_a_battle_survives_a_reload(client, started):
+    bid = started["id"]
+    entries(client, bid, {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"},
+            {"kind": "turn", "n": 1})
+    again = client.get(f"/api/battles/{bid}").json()
+    assert again["turn"] == 1 and again["entries"] == 2
+    assert bid in [b["id"] for b in client.get("/api/battles").json()["battles"]]
+
+
+def test_walking_back_to_a_turn_shows_that_turn(client, started):
+    bid = started["id"]
+    entries(client, bid,
+            {"kind": "lead", "side": "p1", "slot": 0, "species": "Incineroar"},
+            {"kind": "lead", "side": "p2", "slot": 0, "species": "Gholdengo"},
+            {"kind": "turn", "n": 1}, {"kind": "turn", "n": 2}, {"kind": "turn", "n": 3})
+    v = client.get(f"/api/battles/{bid}/at/4").json()
+    assert v["turn"] == 2 and v["at"] == 4 and v["entries_total"] == 5
+    # ...and asking past the end is the end, not an error.
+    assert client.get(f"/api/battles/{bid}/at/99").json()["turn"] == 3
+
+
+def test_the_trajectory_is_one_row_a_turn(client, started):
+    bid = started["id"]
+    entries(client, bid,
+            {"kind": "lead", "side": "p1", "slot": 0, "species": "Incineroar"},
+            {"kind": "lead", "side": "p2", "slot": 0, "species": "Gholdengo"},
+            {"kind": "turn", "n": 1},
+            {"kind": "move", "side": "p1", "slot": 0, "move": "Flare Blitz",
+             "target": {"side": "p2", "slot": 0}},
+            {"kind": "damage", "side": "p2", "slot": 0, "pct": 40},
+            {"kind": "turn", "n": 2})
+    t = client.get(f"/api/battles/{bid}/trajectory").json()
+    assert [row["turn"] for row in t["turns"]] == [1, 2, 2]
+    assert all(0 <= row["wp"] <= 1 for row in t["turns"])
+    assert t["gates"]["version"] == t["version"]
+
+
+def test_the_speed_read_is_a_bound_and_says_undecided_rather_than_guessing(
+        client, team_text, battles_dir):
+    """A local team, so the two Pokémon in the claim are certainly on it.
+
+    Their Speed comes back as a *range* because neither their investment nor their nature is
+    known — an open sheet hides the spread as surely as a closed one does. The verdict is only
+    `faster` or `slower` when the ranges do not overlap; anything else is `undecided`, which is
+    reported as often as it is true rather than resolved to whichever end looks likelier.
+    """
+    bid = client.post("/api/battles", json={"my_team": team_text("valid_basic"),
+                                            "their_species": THEIR_SIX}).json()["id"]
+    v = entries(client, bid,
+                {"kind": "lead", "side": "p1", "slot": 0, "species": "Garchomp"},
+                {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"})
+    assert not v["errors"]
+    read = next(r for r in v["speed"] if r["theirs"] == "Torkoal")
+    # Garchomp is base 102 and Torkoal base 20: nothing Torkoal could invest closes that.
+    assert read["verdict"] == "faster"
+    assert read["my_speed"][0] == read["my_speed"][1]        # yours is known exactly
+    assert read["their_speed"][0] < read["their_speed"][1]   # theirs is not
+
+    # Your Incineroar sits at 80 and Pelipper's range is 76–128: the bound has not separated
+    # them, and the honest answer is that it has not.
+    v = entries(client, bid,
+                {"kind": "lead", "side": "p1", "slot": 1, "species": "Incineroar"},
+                {"kind": "lead", "side": "p2", "slot": 1, "species": "Pelipper"})
+    pair = next(r for r in v["speed"] if r["mine"] == "Incineroar" and r["theirs"] == "Pelipper")
+    assert pair["verdict"] == "undecided"
+    assert pair["their_speed"][0] < pair["my_speed"][0] < pair["their_speed"][1]
+    assert all(r["their_speed"][0] <= r["their_speed"][1] for r in v["speed"])
+
+
+def test_an_entry_that_could_not_have_happened_comes_back_as_an_error(client, started):
+    v = entries(client, started["id"],
+                {"kind": "move", "side": "p1", "slot": 0, "move": "Flare Blitz"})
+    assert v["errors"] and "nothing active" in v["errors"][0]
+    assert not v["started"]
+
+
+def test_deleting_a_battle_removes_it(client, started):
+    bid = started["id"]
+    assert client.delete(f"/api/battles/{bid}").status_code == 200
+    assert client.get(f"/api/battles/{bid}").status_code == 404
