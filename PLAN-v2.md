@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 In progress | **step 1 done**: three channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178% — and joined by the 66-point budget at **0.159% over 3,783**, all of it the channels', none of it the join ([findings](docs/phase8-findings.md)). Building the third fixed six faults in the second. Next: closed-sheet full-set belief, then WP_v2 |
+| 8 — Belief over hidden sets | 🟡 Built, blocked on its own prerequisite | **All three steps built.** Four channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178%, switch-in order **0 of 6,000 battles** — joined by the 66-point budget at **0.159% over 3,783**, all of it the channels'. The set prior is right **94.3%** of the time on held-out teams against 59.1% alphabetical, and WP_v2 beats the mode on every model tried ([findings](docs/phase8-findings.md)). **What is not done is the verification**: step 3's criterion does not hold, for the reason this phase already named — the training mix. See the prerequisite below |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -66,7 +66,7 @@ the transfer test in §2, and then Phase 6's direct check, which is the one the 
 | 3 | What moves should each Pokémon run? | **Partly Phase 7** (legal movepool, coverage gaps, breakpoints are analytic); ranking by win rate is blocked with Q2. |
 | 4 | What do I bring, lead, and click? | **Phases 9–10.** Bring/lead is on-demand simulation of *this* matchup, not a learned function — but Phase 6 means the simulation has to be run by a policy stronger than the heuristic to mean anything. |
 | 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. In-battle still improves on closed sheets (0.693 → 0.475 by t5–6) but calibrates worse, and finding 8 says why: it has never been trained through an unknown. |
-| 6 | All of the above in a web app during a real game | Staged; W2 lands with Phase 5, and **Phase 8 is the real unlock** — not only for closed sheets: finding 8 shows the spread is hidden at open sheets too, so speed and damage inference pay in every game. |
+| 6 | All of the above in a web app during a real game | **Partly answered.** W3 ships the live battle: a journal of taps replayed into state, pop-ups that pin an ability as they log its effect, a Speed read that says *undecided* when it is, and WP per turn with the band their hidden sets are worth. What it reports is bounded by the training mix — see Phase 8's prerequisite — and by the damage and bulk channels not yet being gated in this regime. |
 
 ---
 
@@ -138,6 +138,14 @@ the model has never had the chance to learn what "unknown" means. *Consequence: 
 7,459-battle open-sheet shard rather than the 779 closed-sheet one. The training mix gains a reason
 to include closed sheets that is independent of the closed-sheet product.*
 
+**Since confirmed downstream, which is what turns it from a caveat into a blocker.** Phase 8 step 3
+built the belief-weighted WP this finding was aimed at, and its verification failed in the shape the
+finding predicts: masking the opponent entirely *improves* held-out log-loss on the served model
+(0.5830 against the oracle's 0.5900), and whether averaging over the belief beats masking flips
+between models. A model with no representation of "unknown" has no reason to treat one consistently,
+so nothing built on top of it can be read cleanly. The closed-sheet human shard exists on disk and
+is absent from the training manifest; that is now the first thing in the queue, not a note.
+
 ---
 
 ## Architecture
@@ -149,11 +157,12 @@ L4  Team building      weakness report · slot completion · moveset & SP search
 L3  Team evaluation    matchup evaluation vs meta gauntlet · racing allocator
 WP  Win probability    WP(observation) per perspective · belief over hidden sets · EWP(action)
 L2  Battle policy      heuristic → search (expectiminimax, EWP at the leaves)
+L1b Battle state       what a battle *is* · forward derivation from a named cause · entry journal
 L1  Engine             pinned Showdown (Champions) · @smogon/calc 0.12.0 · poke-env 0.16.1
 L0  Regulation config  legal pool · clauses · mechanics flags · SP rules · format id
 ```
 
-Three amendments:
+Four amendments:
 
 - **L2 drops behaviour cloning from the critical path.** v1 had BC as tier 2 and the search prior.
   Finding 5 says BC on this corpus clones ~1100-rated play. The heuristic remains the prior; BC
@@ -165,6 +174,14 @@ Three amendments:
 - **WP splits into two models with separate verdicts**, because they are two tasks that happen to
   share a featurizer: an in-battle model (works) and a pre-battle model (does not exist). One
   all-or-nothing gate set across both is what made a working capability report as failing.
+- **L1b is new, and it is the layer the product turned out to need.** `vgc.battle.state` is what a
+  battle *is*, separately from how you found out: `vgc.data.observe.Observer` is one adapter onto
+  it, driven by Showdown protocol lines, and `vgc.battle.entry` is the other, driven by a person
+  watching a cartridge. Both call the same verbs, so the belief channels and WP read one object and
+  never learn which filled it in. `vgc.battle.rules` sits beside it and does the thing the state
+  must never do — derive a consequence forward from a named cause, for the adapter whose input
+  reports causes rather than effects. The split was made under `observation()`'s VERSION 3
+  fingerprint and moved no bytes.
 
 ---
 
@@ -366,10 +383,20 @@ against the pinned calc rather than anything learned:
   and state that moved inside the turn. Quick Claw is abstained on outright.
 
   Power is the separate question and it is modest: 7.2–7.8 racing pairs a game, 28–31% of their
-  Pokémon narrowed at all, 13.8–16.8% of the prior ruled out on average. The self-play figure is a
-  *floor* and a bad one — the pool's spreads are `impute_sp`'s output, so the truth takes two
-  values and the channel is being asked an easy question. A randomized-spread self-play run is the
-  next measurement.
+  Pokémon narrowed at all, 13.8–16.8% of the prior ruled out on average. The self-play figure was a
+  *floor* and a bad one — the pool's spreads are `impute_sp`'s output, so the truth took two values
+  and the channel was being asked an easy question. **The randomized-spread run has since been
+  generated and re-gated** (`--spreads sampled`), and it doubled the silently-wrong rate, 0.014% →
+  0.029%, which is what the degenerate truth was hiding.
+
+  **Every one of those numbers is an Open Team Sheets number, and that turned out to matter.** All
+  of this was measured on self-play, and every self-play game shows both sheets — so the opponent's
+  nature is always known and `speed_stat` always has one answer. On a cartridge at Team Preview Only
+  it does not, and the missing nature was being read as neutral, which is not a default but an
+  assumption. Re-scored over the same 2,500 battles with the opponent's natures blanked: **296 of
+  6,884 silently wrong, 4.30%**. Spanning the natures instead of assuming one brings that to **0**
+  and costs most of the power — 14.23% of the prior ruled out falls to 4.81%. The Open Team Sheets
+  gate re-runs byte-identical, which is the evidence that nothing already measured moved.
 
   The prerequisite this phase already had now has a second reason: the evidence log lives outside
   `observation()` deliberately, because snapshots embed it and are fingerprinted at VERSION 3.
@@ -453,12 +480,53 @@ Build, in the order the evidence supports:
    is usually because the spread *you* supplied for your own team is wrong. The contradiction rate
    is 0.035% against true spreads and 9.8–12.2% against assumed ones, so the flag is a detector for
    bad input and the app should show it rather than swallow it.
-2. **Full-set belief, closed sheets.** Set prior from the sheet corpus and usage
-   (`P(item, ability, moves, nature | species)`), updated by hard reveals *and* the same two
-   channels; K complete-set particles per opponent Pokémon.
-3. `WP_v2(o) = E_belief[WP_v1(o completed by particle)]`, reusing the in-battle model as the inner
-   model. The app's current stopgap — fill each species with its most common set and evaluate one
-   guessed team at full confidence — is replaced; a wrong item becomes uncertain rather than wrong.
+2. **Full-set belief, closed sheets. ✅ Built and gated** (`vgc belief sets`, `vgc.belief.sets`).
+   `P(item, ability, nature, moves | species)` over 21,376 sheets, conditioned on every hard reveal
+   — the item seen, the ability watched firing, a move used, an ability that would have announced
+   and did not.
+
+   **It is the one object in `vgc.belief` that is a ranking rather than a bound, and it is gated on
+   different terms.** A bound is asked whether the truth ever leaves the feasible set; a ranking is
+   asked how often the first option is right, and being wrong costs a tap rather than an answer.
+   The contract that keeps them apart is that usage may never make anything *impossible* — only a
+   sound observation does that, and every legal option keeps a non-zero share however rare it is.
+
+   Held out by **team**, on the frozen 15%, over 19,677 opposing Pokémon the prior had never seen:
+   the likeliest ability is the true one **94.3%** of the time against **59.1%** alphabetical, items
+   68.1% against 8.1%, and **the truth is in the support 1.000** of the time. Alphabetical is the
+   honest baseline because it is what the pop-up did before — Incineroar's menu led with Blaze,
+   and 99.7% of Incineroar are Intimidate.
+
+   The number that changed step 3: **the whole set is right 12.6% of the time.** Not a weakness of
+   the prior — Incineroar has 268 distinct sets and its most common is 17.7% of them. It means a
+   point estimate over the mode is the wrong *object*.
+
+   No spreads, in either direction. Sheets do not carry Stat Points, so this stops where a sheet
+   does; the spread is step 1's, from this battle's own evidence.
+3. `WP_v2(o) = E_belief[WP_v1(o completed by particle)]` **✅ Built** (`vgc.web.live.wp`), **⚠️ not
+   verified**. The app's stopgap — fill each species with its most common set and evaluate one
+   guessed team at full confidence — is gone. WP is an average over 24 complete opponents drawn
+   from the belief, and the 10th-to-90th spread of those draws is what their hidden sets are worth
+   in the position.
+
+   Gated on 400 held-out human replays and 4,075 positions against what actually happened, with the
+   prior counted from training teams only. **Averaging beats the mode on every model tried** — the
+   claim the change rests on — but it is a small win, 0.005 of log-loss on the served model.
+
+   **The verification criterion below does not hold, and that is the finding.** v2's log loss is
+   supposed to sit *between* v1-with-oracle-sets and v1-with-prior-only. It does not: on the served
+   model it comes in **below the oracle** (0.5860 against 0.5900), and leaving the opponent unknown
+   entirely scores better still (0.5830). On `wp-v1-set-full` the ordering flips. It is not a
+   shrinkage artefact — shrinking the oracle arm to matched confidence leaves it at 0.5891. The
+   explanation is the prerequisite this phase already carried, and it is now measured rather than
+   predicted: see below.
+
+   One thing the gate caught in the implementation, worth recording because the design was the
+   attractive one. A particle was carrying a spread drawn from step 1's SP belief, so that both
+   halves of the phase met in one object. An opponent's `stats` is `None` in **every** training row
+   — a player row carries your own and nobody else's — so setting it flips a feature no model has
+   seen set. Removing it reversed the gate's first reading. The SP belief earns its keep on screen
+   and is kept out of the model that cannot use it.
 
 _Verification:_ v2 log loss sits between v1-with-oracle-sets (lower bound) and v1-with-prior-only
 (upper bound), and moves toward the oracle as information arrives. Belief calibration: the true
@@ -467,11 +535,30 @@ value lands in the belief's 80% set ~80% of the time — for SP on open sheets, 
 size on every verdict**; the closed-sheet half has 779 battles and a gate that ignores that will
 mislead, while the SP half has 7,459 and does not have that problem.
 
-_A prerequisite this phase inherits:_ the training mix has to stop being degenerate first. Finding 8
-measures the opponent's item/ability/move known-flags at **1.000** across 433,052 in-battle training
-rows, so the model has never seen an unknown and cannot have learned what one means. Adding the
-closed-sheet shard, and self-play generated with `ots=False`, comes before the belief layer is
-evaluated on top of it.
+_The prerequisite this phase inherits, now the thing actually blocking it:_ **the training mix.**
+Finding 8 measured the opponent's item/ability/move known-flags at **1.000** across 433,052
+in-battle training rows, so the model has never seen an unknown and cannot have learned what one
+means. That was a prediction about what would go wrong. Step 3 is where it went wrong, and the
+symptoms are diagnostic rather than mysterious: masking the opponent entirely *improves* held-out
+log-loss on the served model, and whether averaging beats masking flips between models. A model
+with no representation of "unknown" has no reason to treat one consistently.
+
+Re-measured against the served model's own manifest (`wp-v1-train.json`, two shards):
+
+| shard | rows | opponent item known | both sheets open |
+| --- | --- | --- | --- |
+| `human/…regmcbo3/train` | 50,000+ | 1.000 | 1.000 |
+| `selfplay/…s7-p3000x20/train` | 50,000+ | 1.000 | 1.000 |
+| `human/…regmc/train` — **present on disk, absent from the manifest** | 19,238 | **0.208** | 0.010 |
+
+So half the fix already exists and is one manifest away: the non-Bo3 ladder shard is a closed-sheet
+corpus at snapshot VERSION 3, 654 battles, and nothing has ever been trained on it. The other half
+is self-play generated with `ots=False`, which needs `ots` threaded through `vgc.sim.selfplay.run`
+— it is not exposed there at all today.
+
+Order of work: add the shard, retrain, re-run step 3's gate, and only then read the belief layer's
+numbers. **Everything Phase 8 produces is currently being read by a model that has never seen an
+unknown**, which bounds how much any of it can be worth.
 
 ### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC — now the prerequisite for 10 and 11)_
 
@@ -549,6 +636,13 @@ Phase 4 failed its gates for reasons the gates could not express. These rules ar
    evidence of strength.
 6. **A failing gate is recorded in the model card and the UI refuses to present that number.** Carried
    unchanged from v1 — it worked, and it is why finding 1 surfaced instead of shipping.
+7. **A gate names the information regime it was scored in, and a number does not travel out of it.**
+   Every belief gate runs on self-play, and every self-play game is Open Team Sheets — so "0 silently
+   wrong" was a claim about a channel *and* a regime, reported as a claim about a channel. The
+   turn-order channel carried that number into Team Preview Only and was 4.3% wrong there. Two
+   channels are still in the position that one was: `damage` and `bulk` read the opponent's item and
+   ability off a sheet a cartridge does not show, and neither has been re-gated. Under this rule
+   they are not sound in that regime until measured, and the app runs neither.
 
 ---
 
@@ -566,6 +660,8 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 | **PPO self-play fine-tuning** | Nothing. Optional-and-last in v1 for technical reasons; cost and the paper's results both confirm it. |
 | **The precomputed 30×30 matchup matrix** | Cancelled outright, not deferred. Finding 7 removed the quantity it would have been made of. |
 | **Regulation-portable models** (global vocabulary, pretrain on M-B, fine-tune) | Was "do after the Phase 4 gates pass". Now: do after there is a model worth porting. The M-B transfer measurement is still worth having before the 2026-12-02 rotation. |
+| **The damage and bulk channels under Team Preview Only** | A re-gate in that regime. Both were measured only on self-play, which is Open Team Sheets, so both read the opponent's item and ability off a sheet that a cartridge does not show. The turn-order channel made exactly this mistake with the nature and was 4.3% wrong because of it, so these are not assumed sound until measured. It is why `vgc.web.live` runs only the turn-order channel live — a cost argument that now has a correctness one behind it. |
+| **Any more weight on opponent set features** | An explanation for `wp-v1-gbt`. Masking the opponent's entire sheet changes nothing it predicts — all four arms of step 3's gate agree to four decimals — and it still outscores both set models there. Either the set features carry less than assumed or the GBT is being scored on something else; worth knowing which before building on them. |
 
 ---
 
@@ -595,7 +691,12 @@ v1's nine practices stand. Four are amended or added by the evidence:
 13. **New — check what a format actually reveals before calling it full information.** "Open team
     sheet" reveals five of six things; the sixth is the spread, and the whole speed-and-damage layer
     of the game hangs off it. Eight phases of plan treated OTS as though nothing were hidden.
-14. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
+14. **New — a soundness number is a property of a channel *and* a regime.** The turn-order channel
+    was "0 silently wrong over 6,000 battles" and was 4.3% wrong the moment it met the regime the
+    app runs in, because every gate had been measured on self-play and every self-play game is Open
+    Team Sheets. `docs/phase8-findings.md` had been reporting a two-place fact in one place. Ask
+    which regime a number was measured in before carrying it into another one.
+15. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
     reliability of 0.96 is what makes its negative a statement about the simulator rather than about
     a 15-battle budget. A null result from an unmeasured predictor says nothing.
 
