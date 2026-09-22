@@ -706,3 +706,53 @@ the total that fires when nothing else has fired is not the same as a channel wo
 Six abilities are excluded for having a second trigger — Forecast and Mimicry react to weather and
 terrain, Ice Face and Flash Fire to being hit, Shields Down to its own HP — since each announces
 the same line from something that is not an arrival.
+
+---
+
+# The regime every gate was measured in was not the regime the app runs in
+
+Building the entry adapter surfaced the most serious fault found in this phase, and it was
+invisible from inside the corpus. The turn-order channel's soundness result — **0 silently wrong
+over 6,000 battles** — was measured on self-play replays, which are Open Team Sheets games. A
+`|showteam|` line prints the nature, so `Mon.nature` is always populated and `speed_stat` has one
+answer for a given investment.
+
+On a cartridge at Team Preview Only nothing is printed. `speed_stat` read the missing nature as
+`Serious`, and a neutral reading of an unknown nature is not a default — it is an assumption, and
+it can exclude the truth. A Pokémon whose investment puts it at 85 at neutral is anywhere from 76
+to 93, so a Timid opponent really does outrun something the neutral reading says it cannot.
+
+## 4.3% wrong, in the only regime the app has
+
+Scored over the same 2,500 battles and the same 6,884 opposing Pokémon, with the opponent's
+natures blanked to match what the app actually sees:
+
+| Team Preview Only | unknown nature read as neutral | unknown nature spans the natures |
+| --- | --- | --- |
+| **silently wrong** | **296 (4.30%)** | **0 (0.00%)** |
+| contradicted | 81 (1.18%) | 0 |
+| share of the prior ruled out | 14.23% | 4.81% |
+| narrowed at all | 37.64% | 17.90% |
+| constraints used | 16,130 | 16,130 |
+
+The same number of observations is read either way. What changes is what each one is allowed to
+conclude: the order test now asks whether **some** nature permits what was seen, comparing the
+first mover's best case against the second's worst. Where the nature is known — your own side
+always, an opponent's under Open Team Sheets — the band is a single point and the comparison is
+the plain inequality it replaced. Re-running the Open Team Sheets gate confirms this: the output
+is **byte-identical** over 2,500 battles.
+
+So the cost is real and it is paid where the belief was already weakest — 14.23% of the prior
+ruled out becomes 4.81%, and a third of Pokémon narrowed becomes a sixth. That is the trade this
+package makes everywhere, and 4.3% of beliefs excluding the truth is not a price worth paying for
+three times the narrowing.
+
+## What it says about the other channels
+
+The transferable point is not about Speed. **A soundness number is a property of a channel *and*
+a regime, and this document reported it as a property of a channel.** Every gate here ran on
+self-play, every self-play game is Open Team Sheets, and Team Preview Only differs in more than
+the nature: the item and the ability are hidden too, and both feed the damage and bulk channels
+directly. Those channels were not re-gated in this regime and are not yet known to be sound in
+it. `vgc.web.live` therefore runs only the turn-order channel live, which is defensible on cost
+grounds and is now also the only one whose Team Preview Only behaviour has been measured.

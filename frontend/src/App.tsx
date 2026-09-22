@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, type Health, type ModelRow, type SavedTeam, type Species } from "./api";
 import { BattlePanel } from "./components/BattlePanel";
-import { BattleSession, startSession, type Session } from "./components/BattleSession";
+import { BattleSession } from "./components/BattleSession";
 import { EndgamesPanel } from "./components/EndgamesPanel";
 import { SimulatePanel } from "./components/SimulatePanel";
 import { TeamLibrary } from "./components/TeamLibrary";
@@ -33,7 +33,6 @@ export default function App() {
   const [pool, setPool] = useState<Species[]>([]);
   const [teams, setTeams] = useState<SavedTeam[]>([]);
   const [active, setActiveState] = useState<SavedTeam | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [offline, setOffline] = useState(false);
 
   const setActive = useCallback((t: SavedTeam | null) => {
@@ -77,7 +76,6 @@ export default function App() {
             <a key={t} className="tab" aria-selected={route.tab === t}
                {...linkProps(tabRoute(t), navigate)}>
               {TITLES[t]}
-              {t === "battle" && session && <span className="tab-dot" aria-hidden="true" />}
             </a>
           ))}
         </nav>
@@ -94,14 +92,11 @@ export default function App() {
           <BattlePanel
             reg={REG} health={health} pool={pool}
             teams={teams} active={active} onActive={setActive}
-            onStart={(result, option, teamText) => {
-              setSession(startSession(result, option, active, teamText));
-              navigate(tabRoute("battle"));
-            }}
+            onStart={() => navigate(tabRoute("battle"))}
           />
         )}
         {route.tab === "battle" && (
-          <BattleSession session={session} onBack={() => navigate(tabRoute("preview"))} />
+          <BattleSession reg={REG} route={route} navigate={navigate} teams={teams} />
         )}
         {route.tab === "simulate" && <SimulatePanel reg={REG} teams={teams} />}
         {route.tab === "endgames" && <EndgamesPanel reg={REG} route={route} navigate={navigate} />}

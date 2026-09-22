@@ -66,6 +66,14 @@ REORDERING_MOVES = {"afteryou", "quash", "instruct"}
 # belief to narrow.
 UNMODELLED = object()
 
+# Only the Speed-affecting natures matter here; everything else is neutral for this purpose.
+_NATURES = {
+    "timid": {"plus": "spe"}, "hasty": {"plus": "spe"}, "jolly": {"plus": "spe"},
+    "naive": {"plus": "spe"},
+    "brave": {"minus": "spe"}, "relaxed": {"minus": "spe"}, "quiet": {"minus": "spe"},
+    "sassy": {"minus": "spe"},
+}
+
 
 @dataclass
 class SpeedBelief:
@@ -123,9 +131,37 @@ def speed_stat(reg: Regulation, species: str, nature: str | None, sp: int) -> in
     base = base_speed(reg, species)
     if base is None:
         return None
-    n = reg.dex.get_nature(nature or "Serious") or {}
-    pct = 110 if n.get("plus") == "spe" else 90 if n.get("minus") == "spe" else 100
-    return (base + sp + 20) * pct // 100
+    return (base + sp + 20) * _nature_pct(nature) // 100
+
+
+def _nature_pct(nature: str | None, reg: Regulation | None = None) -> int:
+    n = (reg.dex.get_nature(nature) if reg and nature else None) or _NATURES.get((nature or "").lower(), {})
+    return 110 if n.get("plus") == "spe" else 90 if n.get("minus") == "spe" else 100
+
+
+def speed_band(reg: Regulation, species: str, nature: str | None,
+               sp: int) -> tuple[int, int] | None:
+    """The Speed this investment could produce — a *range* when the nature is unknown.
+
+    This is the whole difference between the two regimes the app runs in, and it was found the
+    hard way. Under Open Team Sheets the nature is printed, so the band is one number and every
+    gate in `docs/phase8-findings.md` was measured that way. Under Team Preview Only nothing has
+    been printed: a Pokémon whose investment would put it at 85 at a neutral nature is anywhere
+    from 76 to 93, and reading it as 85 is an assumption that can exclude the truth — a Timid
+    opponent really does outrun something the neutral reading says it cannot.
+
+    So an unknown nature widens rather than defaults, and the order test asks whether *some*
+    nature permits what was seen. That costs power in exactly the regime where the belief was
+    already widest, which is the trade this package makes everywhere.
+    """
+    base = base_speed(reg, species)
+    if base is None:
+        return None
+    raw = base + sp + 20
+    if nature:
+        pct = _nature_pct(nature, reg)
+        return raw * pct // 100, raw * pct // 100
+    return raw * 90 // 100, raw * 110 // 100
 
 
 def effective_speed(stat: int, ev: MoveEvent) -> float:
@@ -311,12 +347,19 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | No
                                        feasible=list(range(cap + 1)), prior=list(range(cap + 1)))
         return beliefs[key]
 
-    def speed_of(ev: MoveEvent, sp: int | None) -> float | None:
+    def speed_of(ev: MoveEvent, sp: int | None) -> tuple[float, float] | None:
+        """The band this Pokémon's Speed could be in, after everything that scaled it.
+
+        A band rather than a number because the nature may be unknown, which is the Team Preview
+        Only case and the one the gates never saw. When it is known — your own side always, and
+        an opponent's under Open Team Sheets — the two ends are equal and every comparison below
+        behaves exactly as it did before.
+        """
         key = (ev.side, ev.species)
         points = known[key] if sp is None else sp
         # The base stats come from the forme that was on the field, not the preview identity.
-        stat = speed_stat(reg, ev.forme or ev.species, natures.get(key), points)
-        return None if stat is None else effective_speed(stat, ev)
+        band = speed_band(reg, ev.forme or ev.species, natures.get(key), points)
+        return None if band is None else (effective_speed(band[0], ev), effective_speed(band[1], ev))
 
     evidence = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
     for first, second, sign in evidence:
@@ -342,12 +385,19 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | No
     return beliefs
 
 
-def _ordered(first: float | None, second: float | None, sign: int) -> bool:
-    """Did the first mover's speed permit it to go first? Ties are allowed, because Showdown
-    breaks them at random — so observing an order never rules out equality."""
+def _ordered(first: tuple[float, float] | None, second: tuple[float, float] | None,
+             sign: int) -> bool:
+    """Could the first mover have gone first? Both sides are *bands*, and the question is whether
+    any pair of points in them permits what was seen — so the comparison is between the best case
+    for the first mover and the worst for the second.
+
+    Ties are allowed, because Showdown breaks them at random: observing an order never rules out
+    equality. Where both bands are single points, which is every comparison involving a known
+    nature, this is the plain inequality it replaced.
+    """
     if first is None or second is None:
         return True
-    return first >= second if sign > 0 else first <= second
+    return first[1] >= second[0] if sign > 0 else first[0] <= second[1]
 
 
 def summary(beliefs: dict[tuple[str, str], SpeedBelief]) -> dict[str, Any]:

@@ -165,8 +165,24 @@ def test_a_reordering_move_drops_the_whole_turn(reg):
 
 def test_a_tie_is_never_ruled_out(reg):
     """Showdown breaks a speed tie at random, so observing an order can never exclude equality."""
-    assert speed._ordered(100.0, 100.0, 1) and speed._ordered(100.0, 100.0, -1)
-    assert speed._ordered(120.0, 100.0, 1) and not speed._ordered(100.0, 120.0, 1)
+    at = lambda x: (x, x)  # noqa: E731 — a known nature is a band of width zero
+    assert speed._ordered(at(100.0), at(100.0), 1) and speed._ordered(at(100.0), at(100.0), -1)
+    assert speed._ordered(at(120.0), at(100.0), 1) and not speed._ordered(at(100.0), at(120.0), 1)
+
+
+def test_an_unknown_nature_widens_rather_than_defaults_to_neutral(reg):
+    """The regime difference the gates never saw. Under Open Team Sheets the nature is printed
+    and the band is one number; under Team Preview Only it is not, and reading it as neutral is
+    an assumption that can exclude the truth — a Timid opponent really does outrun something the
+    neutral reading says it cannot.
+    """
+    assert speed.speed_band(reg, "Pelipper", "Timid", 0) == (93, 93)
+    assert speed.speed_band(reg, "Pelipper", None, 0) == (76, 93)
+    # So an order that is impossible at a neutral nature is merely *possible* at an unknown one,
+    # and the belief keeps the spread rather than throwing it away.
+    known, unknown = (80.0, 80.0), speed.speed_band(reg, "Pelipper", None, 0)
+    assert not speed._ordered(known, (85.0, 85.0), 1)     # neutral: it could not have gone first
+    assert speed._ordered(known, unknown, 1)              # unknown: a minus nature allows it
 
 
 def test_the_feasible_set_starts_as_the_whole_budget(reg, obs):

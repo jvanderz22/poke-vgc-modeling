@@ -180,6 +180,134 @@ export type EndgameDetail = {
   steps: EndgameStep[];
 };
 
+
+// --- a battle in progress ---------------------------------------------------------------------
+//
+// The journal is the battle: every tap is one `Entry` appended to a list, and the state is what
+// the backend gets by replaying it. That is why there is no "edit" call — you undo back to the
+// tap you want to change. It is also why the client keeps no battle state of its own: whatever
+// `LiveView` says is the truth, and anything derived here could disagree with it.
+
+export type Entry = { kind: string; [k: string]: unknown };
+
+/** One answer to a question, and what picking it would prove.
+ *
+ *  `conditional` marks an ability that announces only *sometimes* here — Static is a 30% chance,
+ *  Supreme Overlord needs a fallen ally. Picking it still pins the ability; what it means is that
+ *  its *silence* proves nothing, so it is still on the list next time. */
+export type Option = {
+  label: string;
+  effects: { kind: string; stat?: string; stages?: number; value?: string }[];
+  ability: string | null;
+  excludes: string[];
+  item: string | null;
+  consumed: boolean;
+  conditional: boolean;
+};
+
+/** Something the app cannot work out on its own. `forced` means there is one possible answer and
+ *  it is asked anyway, because *when* it happened is evidence — a switch-in ability announces in
+ *  Speed order. The UI renders those as one button, not a menu of one. */
+export type Question = {
+  id: string;
+  kind: "switch_in" | "stat_drop" | "on_hit" | "terrain";
+  prompt: string;
+  side: "p1" | "p2";
+  species: string;
+  slot: number | null;
+  source: { side: string; slot: number | null; species: string } | null;
+  forced: boolean;
+  options: Option[];
+};
+
+export type LiveMon = {
+  species: string; forme: string;
+  state: "unrevealed" | "active" | "bench" | "fainted" | "not_brought";
+  slot: number | null;
+  hp: number; hp_max: number | null; hp_exact: number | null;
+  status: string | null;
+  boosts: Record<string, number>;
+  volatiles: string[];
+  mega: boolean;
+  item: string | null; item_source: string | null; lost_item: string | null;
+  ability: string | null; ability_source: string | null;
+  moves: string[]; moves_used: string[];
+  nature: string | null; stats: Record<string, number> | null;
+  ability_unknown: string[];
+};
+
+export type MoveOption = { id: string; name: string; target: string | null; category: string | null };
+
+export type SideMenu = {
+  actives: ({ slot: number; species: string; moves: MoveOption[]; moves_known: boolean } | null)[];
+  bench: { species: string; hp: number; state: string }[];
+};
+
+/** Whether you move first, as a bound rather than a guess. `undecided` is reported as often as it
+ *  is true: their range spans both the investment and the nature, because an open sheet hides the
+ *  spread as surely as a closed one does. */
+export type SpeedRead = {
+  mine: string; my_slot: number; theirs: string; their_slot: number;
+  verdict: "faster" | "slower" | "undecided" | "unknown";
+  trick_room: boolean;
+  my_speed: [number, number] | null;
+  their_speed: [number, number] | null;
+};
+
+export type SPBelief = {
+  side: string; species: string; nature: string | null;
+  bounds: Record<string, [number, number]>;
+  allocations: number; narrowed: number;
+  dead: Record<string, string>; sources: Record<string, string>;
+  speed_used: number; damage_used: number; bulk_used: number;
+  contradicted: string | null;
+};
+
+/** `wp` fills their unknowns from usage so the input is one the model was trained on; `wp_open`
+ *  leaves them unknown, which is the true position and a kind of row no model has ever seen. The
+ *  gap between the two is the size of the guess, and the UI shows it rather than picking one. */
+export type LiveWP = {
+  version?: string;
+  wp?: number; wp_open?: number;
+  kind?: string;
+  guessed?: { species: string; filled: string[]; source: string; share: number | null }[];
+  regime?: string;
+  error?: string;
+};
+
+export type LiveView = {
+  id: string; name: string;
+  turn: number; started: boolean; ended: boolean; winner: string | null;
+  entries: number;
+  journal: Entry[];
+  sides: Record<"p1" | "p2", { mons: LiveMon[]; conditions: Record<string, number>; sheet: boolean }>;
+  field: { weather: string | null; terrain: string | null; pseudo: Record<string, number> };
+  menu: Record<"p1" | "p2", SideMenu>;
+  questions: Question[];
+  derived: string[];
+  errors: string[];
+  speed: SpeedRead[];
+  beliefs: SPBelief[];
+  /** Evidence that cannot all be true. Not a discovery about the opponent — they did have some
+   *  spread — so it means something logged here is wrong, and the fix is a tap. */
+  contradictions: { species: string; channel: string; note: string }[];
+  wp?: LiveWP;
+  /** Only on `/at/<index>`: which prefix this is, out of how many taps. */
+  at?: number;
+  entries_total?: number;
+};
+
+export type BattleRow = {
+  id: string; name: string; created: string; updated: string;
+  turn: number; entries: number; theirs: string[]; result: string | null;
+};
+
+export type TrajectoryRow = {
+  index: number; turn: number; wp: number;
+  left: Record<"p1" | "p2", number>;
+  active: Record<"p1" | "p2", string[]>;
+};
+
 export class ApiError extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -228,4 +356,25 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ my_team, regulation, limit, ...opponent }),
     }),
+  battles: (reg: string) => call<{ battles: BattleRow[] }>(`/api/battles?regulation=${reg}`),
+  newBattle: (body: {
+    name?: string; my_team?: string; team_id?: string;
+    their_species?: string[]; their_team?: string; regulation: string;
+  }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
+  battle: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}`),
+  /** Several entries in one call when they belong together — a spread move and both its damage
+   *  numbers — so the screen never renders the half-applied state in between. */
+  log: (id: string, entries: Entry[], reg: string) =>
+    call<LiveView>(`/api/battles/${id}/entries`, {
+      method: "POST", body: JSON.stringify({ entries, regulation: reg }),
+    }),
+  undo: (id: string, reg: string, count = 1) =>
+    call<LiveView>(`/api/battles/${id}/undo?regulation=${reg}&count=${count}`, { method: "POST" }),
+  battleAt: (id: string, index: number, reg: string) =>
+    call<LiveView>(`/api/battles/${id}/at/${index}?regulation=${reg}`),
+  trajectory: (id: string, reg: string) =>
+    call<{ version: string; gates: Gates; turns: TrajectoryRow[] }>(
+      `/api/battles/${id}/trajectory?regulation=${reg}`),
+  deleteBattle: (id: string, reg: string) =>
+    call<{ deleted: string }>(`/api/battles/${id}?regulation=${reg}`, { method: "DELETE" }),
 };

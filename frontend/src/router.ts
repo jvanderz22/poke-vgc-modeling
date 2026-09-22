@@ -8,7 +8,9 @@
  *  Paths, all served by the Python app (see the SPA fallback in `web/app.py`):
  *
  *    /preview                          rank your brings
- *    /battle                           the in-battle companion
+ *    /battle                           your battles, and a form to start one
+ *    /battle/<id>                      one battle, live
+ *    /battle/<id>/<step>               that battle as it stood after <step> taps
  *    /simulate                         play two teams against each other
  *    /endgames                         the decided-endgame set        ?filter=played_out|misses
  *    /endgames/<replay>                one game, opened where it was decided
@@ -29,7 +31,8 @@ export const TABS: Tab[] = ["preview", "battle", "simulate", "endgames", "teams"
 const FILTERS: EndgameFilter[] = ["all", "played_out", "misses"];
 
 export type Route =
-  | { tab: "preview" | "battle" | "simulate" }
+  | { tab: "preview" | "simulate" }
+  | { tab: "battle"; battle: string | null; step: number | null }
   | { tab: "endgames"; replay: string | null; step: number | null; filter: EndgameFilter }
   | { tab: "teams"; team: string | null };
 
@@ -37,6 +40,7 @@ export type Route =
 export function tabRoute(tab: Tab): Route {
   if (tab === "endgames") return { tab, replay: null, step: null, filter: "all" };
   if (tab === "teams") return { tab, team: null };
+  if (tab === "battle") return { tab, battle: null, step: null };
   return { tab };
 }
 
@@ -57,6 +61,17 @@ export function parseRoute(url: URL): Route {
     };
   }
   if (tab === "teams") return { tab, team: second || null };
+  if (tab === "battle") {
+    const step = Number(third);
+    return {
+      tab,
+      battle: second || null,
+      // A step is a count of taps, so 0 — the battle at team preview, before anything — is a
+      // real position and must survive the round trip. Only a non-integer or a negative is
+      // dropped, which is why this reads differently from the endgame stepper above.
+      step: second && Number.isInteger(step) && step >= 0 ? step : null,
+    };
+  }
   return { tab };
 }
 
@@ -71,6 +86,11 @@ export function routeUrl(route: Route): string {
   }
   if (route.tab === "teams") {
     return route.team ? `/teams/${encodeURIComponent(route.team)}` : "/teams";
+  }
+  if (route.tab === "battle") {
+    if (!route.battle) return "/battle";
+    const path = `/battle/${encodeURIComponent(route.battle)}`;
+    return route.step === null ? path : `${path}/${route.step}`;
   }
   return `/${route.tab}`;
 }

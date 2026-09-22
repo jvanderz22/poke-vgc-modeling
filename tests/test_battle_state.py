@@ -81,29 +81,53 @@ def test_what_you_saw_becomes_what_is_known(reg):
     assert them.ability == "intimidate"
 
 
-def test_a_hand_entered_turn_is_readable_by_the_speed_channel(reg):
-    """The point of the whole split: a battle nobody logged still produces evidence. Entering
-    that their Garchomp moved after your Rillaboom, at equal priority, bounds their Speed."""
+def _raced(reg, *, their_nature=None):
+    """Your Rillaboom moved, then their Garchomp, at equal priority — entered by hand."""
     st = _battle(reg)
     mine, theirs = st.sides["p1"].mons[0], st.sides["p2"].mons[0]
+    mine.nature = "Jolly"
+    theirs.nature = their_nature
     st.begin_turn(1)
     st.switch_in("p1", 0, mine, "Rillaboom")
     st.switch_in("p2", 0, theirs, "Garchomp")
     st.begin_turn(2)
     st.record_move(mine, "woodhammer")
     st.record_move(theirs, "earthquake")
+    return st
 
+
+def test_a_hand_entered_turn_is_readable_by_the_speed_channel(reg):
+    """The point of the whole split: a battle nobody logged still produces evidence.
+
+    Under Open Team Sheets their nature is printed, so this is the tight case: a maxed Jolly
+    Rillaboom at base 85 outran a Garchomp at base 102, which is only possible if the Garchomp is
+    not far off uninvested. A real bound, entered by hand and nothing else.
+    """
+    st = _raced(reg, their_nature="Adamant")
     assert [e.species for e in st.moves_log] == ["Rillaboom", "Garchomp"]
     assert speed.pairs(reg, st.moves_log), "the two moves should be read as having raced"
 
     # You know your own spread; theirs is what is being inferred.
-    beliefs = speed.infer(reg, st, {("p1", "Rillaboom"): 32})
-    them = beliefs[("p2", "Garchomp")]
+    them = speed.infer(reg, st, {("p1", "Rillaboom"): 32})[("p2", "Garchomp")]
     assert not them.contradicted and them.used == 1
-    # Rillaboom is base 85 and maxed, so it outran Garchomp's base 102 — which is only possible if
-    # Garchomp is not far off uninvested. That is a real bound, entered by hand and nothing else.
-    assert them.bounds[1] < 32
-    assert them.narrowed > 0
+    assert them.bounds[1] < 32 and them.narrowed > 0
+
+
+def test_the_same_turn_says_less_when_the_nature_is_hidden(reg):
+    """Team Preview Only, and the cost of being sound in it.
+
+    Nothing has been printed, so a Garchomp that could be Adamant could also be Jolly — and at
+    Jolly, 32 points really would have gone second to that Rillaboom. Reading the nature as
+    neutral instead makes this look like a bound, and over 2,500 self-play battles that reading
+    put the truth outside the feasible set for 4.3% of the opponent's Pokémon. This is what
+    buying that back costs: a weaker bound from the same observation.
+    """
+    them = speed.infer(reg, _raced(reg), {("p1", "Rillaboom"): 32})[("p2", "Garchomp")]
+    assert them.used == 1 and not them.contradicted
+    assert them.bounds[1] == 32          # the top of the range survives, because it could be true
+    tight = speed.infer(reg, _raced(reg, their_nature="Adamant"),
+                        {("p1", "Rillaboom"): 32})[("p2", "Garchomp")]
+    assert tight.narrowed > them.narrowed
 
 
 def test_the_two_adapters_are_one_implementation(reg):

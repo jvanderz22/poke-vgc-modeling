@@ -203,7 +203,7 @@ def speed_read(reg: Regulation, state, beliefs: dict) -> list[dict[str, Any]]:
     return out
 
 
-def beliefs(reg: Regulation, state) -> dict:
+def beliefs(reg: Regulation, state) -> tuple[dict, list[dict[str, Any]]]:
     """Each opposing Pokémon's 66-point allocation, from the channels the app can afford per turn.
 
     Only the turn-order channel runs live. The damage and bulk channels each need a sweep through
@@ -222,11 +222,26 @@ def beliefs(reg: Regulation, state) -> dict:
     known = {(mine, m.species): m.sp["spe"] for m in state.sides[mine].mons if m.sp}
     speeds = speed_channel.infer(reg, state, known)
     them = "p2" if mine == "p1" else "p1"
-    out = {}
+    out, contradictions = {}, []
     for m in state.sides[them].mons:
         key = (them, m.species)
         out[key] = sp_belief.combine(reg, key, m.nature, m.moves or m.moves_used, speeds.get(key))
-    return out
+        # A contradiction is not a discovery about the opponent — they did have *some* spread — so
+        # it is a proof that something logged here is wrong. The channel's own answer is to widen
+        # back to the prior, which is right and silent; saying so is the other half, because the
+        # fix is a tap the person has to make.
+        belief = speeds.get(key)
+        if belief is not None and belief.contradicted:
+            contradictions.append({
+                "species": m.species, "channel": "turn order",
+                "note": f"no Speed investment fits the order logged for {m.species}. "
+                        "Check the order you logged the arrivals or the moves in — the bound has "
+                        "been widened back to nothing in the meantime."})
+        if out[key].contradicted:
+            contradictions.append({
+                "species": m.species, "channel": out[key].contradicted,
+                "note": f"two channels disagree about {m.species} under the 66-point budget."})
+    return out, contradictions
 
 
 # --- win probability -------------------------------------------------------------------------
@@ -340,7 +355,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     the Speed bound says, and the number — in that order of trustworthiness."""
     state = battle.rp.state
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
-    belief = beliefs(reg, state)
+    belief, contradictions = beliefs(reg, state)
     out: dict[str, Any] = {
         "id": blob["id"], "name": blob.get("name", ""), "turn": state.turn,
         "started": state.started, "ended": state.ended, "winner": state.winner,
@@ -357,6 +372,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "errors": battle.rp.errors,
         "speed": speed_read(reg, state, belief),
         "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] == theirs],
+        "contradictions": contradictions,
     }
     if with_wp and version:
         try:
