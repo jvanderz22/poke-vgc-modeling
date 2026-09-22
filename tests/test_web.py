@@ -288,13 +288,27 @@ def test_the_wrong_number_of_species_is_refused(client, teams, battles_dir):
     assert r.status_code == 422
 
 
-def test_wp_never_arrives_without_saying_what_it_assumed(started):
+def test_wp_is_an_average_over_drawn_opponents_and_says_how_wide(started):
+    """The models are open-sheet models and a Team Preview Only position is not a row any of them
+    has seen. So the number is an expectation over `k` complete opponents drawn from the belief —
+    each of *those* is a row they were trained on — and the 10th-to-90th spread is what their
+    hidden sets are worth here. `wp_open` is the true position, kept as a diagnostic."""
     wp = started["wp"]
-    assert 0 <= wp["wp"] <= 1 and 0 <= wp["wp_open"] <= 1
-    # The models are open-sheet models; a Team Preview Only battle is not a position they were
-    # trained on. Both readings are reported and the caveat travels with them.
-    assert wp["guessed"] and {g["species"] for g in wp["guessed"]} <= set(THEIR_SIX)
+    assert 0 <= wp["lo"] <= wp["wp"] <= wp["hi"] <= 1
+    assert 0 <= wp["wp_open"] <= 1
+    assert wp["k"] >= 8
+    assert {b["species"] for b in wp["belief"]} <= set(THEIR_SIX)
+    assert all(0 <= b["concentration"] <= 1 for b in wp["belief"])
     assert "open-sheet" in wp["regime"]
+
+
+def test_the_same_position_gives_the_same_number_twice(client, started):
+    """A Monte-Carlo estimate that jitters when nothing happened is a number nobody can read, so
+    the draw is seeded on how much has been logged."""
+    bid = started["id"]
+    a = client.get(f"/api/battles/{bid}").json()["wp"]["wp"]
+    b = client.get(f"/api/battles/{bid}").json()["wp"]["wp"]
+    assert a == b
 
 
 def test_logging_a_lead_raises_the_question_the_rules_cannot_answer(client, started):
@@ -359,7 +373,7 @@ def test_the_trajectory_is_one_row_a_turn(client, started):
             {"kind": "turn", "n": 2})
     t = client.get(f"/api/battles/{bid}/trajectory").json()
     assert [row["turn"] for row in t["turns"]] == [1, 2, 2]
-    assert all(0 <= row["wp"] <= 1 for row in t["turns"])
+    assert all(0 <= row["lo"] <= row["wp"] <= row["hi"] <= 1 for row in t["turns"])
     assert t["gates"]["version"] == t["version"]
 
 

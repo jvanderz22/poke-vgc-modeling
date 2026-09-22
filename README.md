@@ -65,6 +65,8 @@ vgc wp endgames                                  # held-out human games it calle
 
 vgc belief speed <replay> --known p1             # turn order → a bound on their Speed Stat Points
 vgc belief sp <replay> --known p1 --team a.txt   # all three channels, over the whole 66-point allocation
+vgc belief sets --build                          # count P(item, ability, nature, moves | species)
+vgc belief sets Incineroar                       # ...and what that says about one species
 
 vgc web                                          # battle companion on localhost:8001
                                                  #   /battle — log a game as you play it

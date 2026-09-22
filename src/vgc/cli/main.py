@@ -795,6 +795,60 @@ def cmd_belief_speed(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_belief_sets(args: argparse.Namespace) -> int:
+    """The ranking half of the belief: what an opponent is *likely* to be holding.
+
+    Unlike every other `vgc belief` command this reads no battle. It counts the open-team-sheet
+    corpus once into `data/teams/<reg>/setprior.json`, and after that answers questions about a
+    species. The distinction matters and the output says so: a bound can only be wrong because of
+    a bug, and a ranking can be wrong because somebody brought something unusual.
+    """
+    from vgc.belief import sets as set_belief
+
+    reg = _reg(args)
+    if args.build:
+        report = set_belief.build(reg)
+        path = set_belief.save(reg, report)
+        set_belief.corpus.cache_clear()
+        n = sum(len(s["sets"]) for s in report["species"].values())
+        print(f"{path}  ·  {len(report['species'])} species, {n} distinct sets, "
+              f"{report['sheets']} sheets")
+        if not args.species:
+            return 0
+
+    if not set_belief.prior_path(reg).exists():
+        print(f"no set prior for {reg.id}. Build it with `vgc belief sets --build` "
+              f"(reads every cached open-team-sheet replay; about half a minute).")
+        return 1
+    if not args.species:
+        print("give a species, or --build to count the corpus")
+        return 2
+
+    b = set_belief.for_species(reg, args.species)
+    if args.json:
+        print(json.dumps(b.to_json(), indent=1))
+        return 0
+    if not b.sheets:
+        print(f"{args.species}: nobody in the corpus has brought one. "
+              f"Every legal option is equally likely as far as this knows.")
+        return 0
+    print(f"{b.species}: {b.seen} sheets, {len(b.sheets)} distinct sets")
+    print(f"the single most common one is {b.concentration:.1%} of them — which is why a point "
+          f"estimate over it is a guess and not an answer")
+    for label, dist in (("ability", b.ability()), ("item", b.item()), ("nature", b.nature())):
+        top = ", ".join(f"{k or '(none)'} {v:.1%}" for k, v in list(dist.items())[:4])
+        print(f"  {label:8} {top}")
+    print("  moves    " + ", ".join(f"{m} {q:.0%}" for m, q in b.moves(6)))
+    best = b.top()
+    if best:
+        print(f"\nmost common set ({best.count / max(b.seen, 1):.1%}): "
+              f"{best.item or 'no item'} · {best.ability} · {best.nature} · "
+              + "/".join(best.moves))
+    print("\nno spreads: sheets do not carry Stat Points. That is what `vgc belief sp` is for, "
+          "and it reads this battle rather than other people's.")
+    return 0
+
+
 def cmd_belief_sp(args: argparse.Namespace) -> int:
     """Both channels at once, over the whole 66-point allocation rather than one stat at a time."""
     from vgc.belief import sp as sp_belief
@@ -1162,6 +1216,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help="do not assume 0 in a stat no move of theirs scales off")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_belief_sp)
+    p = with_reg(bsub.add_parser("sets", help="P(item, ability, nature, moves | species) from usage"))
+    p.add_argument("species", nargs="?", help="whose sets to show")
+    p.add_argument("--build", action="store_true", help="recount the corpus first")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_belief_sets)
 
     p = wp.add_parser("registry", help="all WP model versions")
     p.set_defaults(func=cmd_wp_registry)

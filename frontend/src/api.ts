@@ -263,14 +263,21 @@ export type SPBelief = {
   contradicted: string | null;
 };
 
-/** `wp` fills their unknowns from usage so the input is one the model was trained on; `wp_open`
- *  leaves them unknown, which is the true position and a kind of row no model has ever seen. The
- *  gap between the two is the size of the guess, and the UI shows it rather than picking one. */
+/** `wp` is an average over `k` complete opponents drawn from the belief — each draw is a
+ *  fully-known position, which is the only kind any model was trained on — and `lo`/`hi` are the
+ *  10th and 90th percentile of those draws, so the width is what their hidden sets are worth
+ *  here. `wp_open` is the true position with the unknowns left unknown: no model has seen one,
+ *  so it is a diagnostic rather than an answer. */
 export type LiveWP = {
   version?: string;
-  wp?: number; wp_open?: number;
+  wp?: number; lo?: number; hi?: number; k?: number;
+  wp_open?: number;
   kind?: string;
-  guessed?: { species: string; filled: string[]; source: string; share: number | null }[];
+  /** What is still open about each of their six, and how concentrated the belief is. */
+  belief?: {
+    species: string; sets: number; off_meta: boolean;
+    concentration: number; evidence: string[];
+  }[];
   regime?: string;
   error?: string;
 };
@@ -303,7 +310,7 @@ export type BattleRow = {
 };
 
 export type TrajectoryRow = {
-  index: number; turn: number; wp: number;
+  index: number; turn: number; wp: number; lo: number; hi: number; draws: number;
   left: Record<"p1" | "p2", number>;
   active: Record<"p1" | "p2", string[]>;
 };

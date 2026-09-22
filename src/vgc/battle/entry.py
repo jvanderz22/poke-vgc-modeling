@@ -436,10 +436,40 @@ def _ask(rp: Replay, reg: Regulation, mon: Mon, kind: str, outcomes: list[rules.
         return
     rp.questions.append(Question(
         id=_qid(rp), kind=kind, prompt=_prompt(kind, mon, source), side=rp.state._side_of(mon),
-        species=mon.species, slot=mon.position, outcomes=outcomes,
+        species=mon.species, slot=mon.position, outcomes=_likeliest_first(reg, mon, outcomes),
         source=({"side": rp.state._side_of(source), "slot": source.position,
                  "species": source.species} if source is not None else None),
         forced=len(outcomes) == 1))
+
+
+def _likeliest_first(reg: Regulation, mon: Mon, outcomes: list[rules.Outcome]) -> list[rules.Outcome]:
+    """Order a pop-up's buttons by how often the ability behind each one is actually run.
+
+    Alphabetical is the worst possible order for something tapped under a clock: Incineroar's
+    menu led with Blaze because B sorts before I, and 99.7% of Incineroar are Intimidate. This is
+    the only place the usage prior touches the entry path, and it touches *order* and nothing
+    else — every option the rules produced is still on the list, and the one nobody runs is last
+    rather than absent. A prior that removed options would be a prior that can be wrong about
+    what is possible; one that sorts them can only ever be wrong about how many taps it took.
+
+    The "nothing announced" option is pinned to the bottom whatever its ability's share, because
+    it is the answer you reach for when none of the others happened.
+    """
+    from vgc.belief import sets as set_belief
+
+    try:
+        p = set_belief.given(reg, mon).ability()
+    except Exception:                    # no corpus built: alphabetical is still a usable order
+        return outcomes
+    if not p:
+        return outcomes
+
+    def key(item: tuple[int, rules.Outcome]) -> tuple:
+        i, o = item
+        quiet = o.label.startswith("nothing announced")
+        return (quiet, -(p.get(o.ability or "", 0.0)), i)
+
+    return [o for _, o in sorted(enumerate(outcomes), key=key)]
 
 
 def _prompt(kind: str, mon: Mon, source: Mon | None) -> str:

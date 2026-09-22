@@ -756,3 +756,83 @@ the nature: the item and the ability are hidden too, and both feed the damage an
 directly. Those channels were not re-gated in this regime and are not yet known to be sound in
 it. `vgc.web.live` therefore runs only the turn-order channel live, which is defensible on cost
 grounds and is now also the only one whose Team Preview Only behaviour has been measured.
+
+---
+
+# Step 2 — the set prior, which is a ranking and not a bound
+
+Every other channel in `vgc.belief` produces a **bound**: a feasible set the truth is never allowed
+to leave, bought by abstaining whenever the evidence does not settle something. `vgc.belief.sets`
+is a different kind of object and is gated on different terms.
+
+| | `speed` / `damage` / `bulk` / `sp` | `sets` |
+| --- | --- | --- |
+| what it says | what is *possible* | what is *likely* |
+| where it comes from | this battle | 21,376 other people's sheets |
+| when it is wrong | a bug, measured as `silently_wrong` | a tap |
+
+The contract that keeps them apart: **usage may never make anything impossible.** Only a sound
+observation can — seeing the item, watching the ability fire, an ability that would have announced
+and did not. Every legal option keeps a non-zero share however rare it is, because somebody is
+always running the thing nobody runs.
+
+## Held out by team: the first option is right 94.3% of the time
+
+Held out by **team**, using the frozen 15% in `data/splits/reg_mc.json` — the right unit, because
+one player's team appears in every game they played, and the question is whether the prior
+generalises to somebody else's team rather than whether it can recite its own corpus. 18,094
+training sheets, 3,282 held out, 19,677 opposing Pokémon scored.
+
+| | likeliest first | alphabetical | 
+| --- | --- | --- |
+| **ability, top-1** | **94.3%** | 59.1% |
+| item, top-1 | 68.1% | 8.1% |
+| whole set, top-1 | 12.6% | — |
+| **truth in the support** | **1.000** | — |
+
+Alphabetical is the honest baseline because it is what the pop-up did before, and what the person
+was actually tapping through — Incineroar's menu led with Blaze, and 99.7% of Incineroar are
+Intimidate. `truth in the support` at 1.000 is the number that would be a bug rather than a
+disappointment: the floor is doing its job and nothing legal is ever reported as impossible.
+
+**The whole set is right 12.6% of the time**, and that is the finding that matters most. It is not
+a weakness of the prior — Incineroar has 268 distinct sets in the corpus and its most common one
+is 17.7% of them. It means a point estimate over the mode is the wrong *object*: it answers a
+question about a set five opponents in six are not holding.
+
+## Averaging over draws beats guessing one set, on every model tried
+
+So win probability became an average over `k` complete opponents drawn from the belief rather than
+one guess. Scored on 400 held-out human OTS replays and 4,075 positions, against what actually
+happened, with the set prior counted from training teams only. Four arms: `true` is the model
+given the real sheets, `mode` fills each species with its single most common set, `particles`
+averages over 24 draws, `open` hands over the masked position unfilled.
+
+| log-loss | true | mode | particles | open |
+| --- | --- | --- | --- | --- |
+| `wp-v1-sw-split-small` *(served)* | 0.5900 | 0.5910 | **0.5860** | 0.5830 |
+| `wp-v1-set-full` | 0.5826 | 0.5819 | **0.5799** | 0.5846 |
+| `wp-v1-gbt` | 0.5661 | 0.5661 | 0.5661 | 0.5661 |
+
+**`particles` beats `mode` on every model tested**, which is the claim the change rests on and the
+only one that is stable across them. It is a small win — 0.005 of log-loss on the served model —
+and it is a win in the right direction for the right reason.
+
+## Three things this gate says that were not the question
+
+**`open` and `particles` swap places between models.** Leaving the opponent unknown beats averaging
+on the served model and loses to it on `wp-v1-set-full`, so neither dominates and the app reports
+both. It is not a shrinkage artefact: shrinking `true` toward 0.5 until it is exactly as confident
+as the particle arm leaves it at 0.5891, still behind both.
+
+**`wp-v1-gbt` is completely insensitive to the opponent's sets.** All four arms agree to four
+decimals — masking their entire sheet changes nothing it predicts — and it still scores better
+than either set model here. Worth knowing before any more weight is put on set features.
+
+**Filling the opponent's spread made things worse, and the first version of this gate hid it.**
+An opponent's `stats` is `None` in *every* training row: a player row carries your own and nobody
+else's, a spectator row carries none at all. The elegant design was for a particle to carry a
+spread drawn from `vgc.belief.sp`, so that both halves of Phase 8 met in one object — but setting
+that field flips a feature no model has seen set, and both the gate's filled arms and the app were
+doing it. Removing it is what turned the gate's first reading around. The SP belief earns its keep
+on screen, in the Speed read and the belief panel; it is kept out of the model that cannot use it.

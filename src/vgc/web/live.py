@@ -246,86 +246,116 @@ def beliefs(reg: Regulation, state) -> tuple[dict, list[dict[str, Any]]]:
 
 # --- win probability -------------------------------------------------------------------------
 
-def _filled(reg: Regulation, obs: dict[str, Any]) -> dict[str, Any]:
-    """A copy of the observation with the opponent's unknowns filled from usage.
+def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
+              note: dict[str, Any]) -> dict[str, Any]:
+    """One complete opponent, drawn from what is still possible.
 
-    The models were trained with the opponent fully visible, so a closed-sheet observation is not
-    a position they have ever been shown. Filling it keeps the input in distribution at the price
-    of stating one guess as fact — a Choice Scarf guessed as an Assault Vest is wrong rather than
-    uncertain. The copy is what the model sees; nothing written here can reach the journal or any
-    belief channel.
+    Their item, ability, nature and moves are drawn from `vgc.belief.sets` — 15,000 other people's
+    sheets, in proportion to how often each set was actually brought.
+
+    **The spread is not filled, and that is a measurement rather than an oversight.** It would be
+    the elegant thing to do: `vgc.belief.sp` bounds the 66 points from this battle's own turn
+    orders, so a particle could carry a spread the opponent could really have. But an opponent's
+    `stats` is `None` in *every* row any WP model was trained on — a player row carries your own
+    and nobody else's, a spectator row carries none at all — so setting it flips a feature the
+    model has never seen set, and hands it a number it has no weights for. Scored on held-out
+    games, filling it made the answer worse. The SP belief earns its keep on screen, in the Speed
+    read and the belief panel, and is kept out of the model that cannot use it.
     """
-    from vgc.teams.sets import calc_stats
-    from vgc.web.prior import fill
+    from vgc.belief import sets as set_belief
 
     out = json.loads(json.dumps(obs))
     them = "p2" if obs["perspective"] == "p1" else "p1"
-    guessed = []
     for m in out["sides"][them]["mons"]:
-        try:
-            guess, note = fill(m["species"], reg)
-        except ValueError:
+        mon = next((x for x in state.sides[them].mons if x.species == m["species"]), None)
+        if mon is None:
             continue
-        changed = []
+        sb = set_belief.given(reg, mon)
+        drawn = sb.particles(rng, 1)
+        if not drawn:
+            continue
+        pick = drawn[0]
         if m["item"] is None:
-            m["item"], m["item_source"] = to_id(guess.item or ""), "guess"
-            changed.append("item")
+            m["item"], m["item_source"] = pick.item, "belief"
         if m["ability"] is None:
-            m["ability"], m["ability_source"] = to_id(guess.ability or ""), "guess"
-            changed.append("ability")
+            m["ability"], m["ability_source"] = pick.ability, "belief"
         if not m["moves"]:
-            m["moves"] = [to_id(x) for x in guess.moves][:4]
-            changed.append("moves")
+            m["moves"] = list(pick.moves)
         if not m["nature"]:
-            m["nature"] = guess.nature
-            changed.append("nature")
-        if not m["stats"]:
-            try:
-                m["stats"] = calc_stats(guess, reg.dex, reg)
-                changed.append("spread")
-            except Exception:
-                pass
-        if changed:
-            guessed.append({"species": m["species"], "filled": changed,
-                            "source": note["source"], "share": note["share"]})
+            m["nature"] = pick.nature or None
+        note.setdefault(m["species"], {"sets": len(sb.sheets), "off_meta": sb.off_meta,
+                                       "concentration": round(sb.concentration, 3),
+                                       "evidence": sb.evidence})
     out["sides"][them]["sheet"] = True
-    return {"obs": out, "guessed": guessed}
+    return out
 
 
-def wp(reg: Regulation, state, version: str) -> dict[str, Any]:
-    """P(you win) from here, with what had to be assumed to say it.
+def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
+    """P(you win) from here — an average over what they might be holding, not one guess.
 
-    Two numbers, deliberately. `wp` fills the opponent's unknowns from usage, which is the regime
-    the model was trained in and the same convention `/api/preview` already uses. `wp_open` asks
-    the same question with their unknowns left unknown, which is the true position and a kind of
-    row the model never saw. When the two disagree, the gap is the size of the guess — and that is
-    worth showing rather than picking one and being confident.
+    Every WP model was trained with the opponent fully visible; the known-flags are 1.000 across
+    all 433,052 rows. A Team Preview Only position is therefore not a row any model has seen, and
+    there are two ways to handle that. The one this used to do was fill the unknowns with each
+    species' single most common set, which keeps the input in distribution and states one guess as
+    fact — and Incineroar's most common set is **17.7% of its sheets**, so that guess is wrong
+    five times in six.
+
+    The one it does now is draw `k` complete opponents from the belief and average. Every one of
+    them is a fully-known row, so every one is in distribution; the mean is a Monte-Carlo estimate
+    of the expectation the plan calls `WP_v2(o) = E_belief[...]`, and the spread between the 10th
+    and 90th percentile is what their hidden sets are actually worth in this position.
+
+    `wp_open` is kept alongside: the true position with the unknowns left unknown. No model has
+    ever been shown one, so it is a diagnostic rather than an answer — but when it disagrees with
+    the mean, the disagreement is worth seeing rather than hiding.
     """
-    from vgc.wp.tools import _load, _record
+    import random
+
     from vgc.wp.features import featurize
+    from vgc.wp.tools import _load, _record
 
     model, fz = _load(reg, version)
     obs = state.observation()
     kind = "preview" if not state.started else "turn"
-    filled = _filled(reg, obs)
-    recs = [_record(filled["obs"], kind, "human"), _record(obs, kind, "human")]
+    # Seeded on the journal length, so the same position gives the same number twice running and
+    # the WP does not jitter when nothing happened.
+    rng = random.Random(seed)
+    note: dict[str, Any] = {}
+    particles = [_particle(reg, obs, state, rng, note) for _ in range(k)]
+    recs = [_record(p, kind, "human") for p in particles] + [_record(obs, kind, "human")]
     d = featurize(recs, fz)
     p, _ = model.predict(d)
-    return {"version": version, "wp": float(p[0]), "wp_open": float(p[1]),
-            "kind": kind, "guessed": filled["guessed"],
-            "regime": ("Their sets are guessed from usage — the models are open-sheet models and "
-                       "have never been shown a position where the opponent is unknown.")}
+    draws = sorted(float(x) for x in p[:k])
+    mean = sum(draws) / max(len(draws), 1)
+    lo = draws[max(0, int(0.1 * len(draws)) - 1)] if draws else 0.0
+    hi = draws[min(len(draws) - 1, int(0.9 * len(draws)))] if draws else 0.0
+    return {"version": version, "wp": mean, "lo": lo, "hi": hi, "k": k,
+            "wp_open": float(p[-1]), "kind": kind,
+            "belief": [{"species": sp} | v for sp, v in sorted(note.items())],
+            "regime": ("An average over " + str(k) + " complete opponents drawn from the belief: "
+                       "their sets from 15,000 open team sheets, their spreads from this battle's "
+                       "own turn orders. The models are open-sheet models, so each draw is a "
+                       "position they were trained on and the average is over the ones they "
+                       "were not.")}
 
 
-def trajectory(reg: Regulation, battle: entry.Battle, version: str) -> list[dict[str, Any]]:
+def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
+               k: int = 8) -> list[dict[str, Any]]:
     """WP at every turn mark of the battle so far — the walk-back the UI steps through.
 
     One row per turn rather than per tap: within a turn the state churns through partial
-    information (a move logged before its damage) and a curve drawn over that measures data entry,
-    not the game.
+    information (a move logged before its damage), and a curve drawn over that measures data
+    entry, not the game.
+
+    Each turn is still an average over drawn opponents, with fewer draws than the live number
+    because this is a whole game at once and a curve does not need the precision a decision does.
+    What the curve is really showing is the belief narrowing as well as the position changing —
+    the two are not separable here and the page says so.
     """
-    from vgc.wp.tools import _load, _record
+    import random
+
     from vgc.wp.features import featurize
+    from vgc.wp.tools import _load, _record
 
     marks = [(i, e["n"]) for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
     marks.append((len(battle.journal), battle.rp.state.turn))
@@ -333,19 +363,26 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str) -> list[dict
     for index, turn in marks:
         rp = battle.at(index)
         obs = rp.state.observation()
-        rows.append({"index": index, "turn": turn,
+        rng = random.Random(index)
+        kind = "preview" if not rp.state.started else "turn"
+        rows.append({"index": index, "turn": turn, "draws": k,
                      "left": {sid: sum(m.state != "fainted" for m in rp.state.sides[sid].mons[:4])
                               for sid in ("p1", "p2")},
                      "active": {sid: [m.species for m in rp.state.sides[sid].mons if m.state == "active"]
                                 for sid in ("p1", "p2")}})
-        recs.append(_record(_filled(reg, obs)["obs"], "preview" if not rp.state.started else "turn",
-                            "human"))
+        recs.append([_record(_particle(reg, obs, rp.state, rng, {}), kind, "human")
+                     for _ in range(k)])
     if not recs:
         return []
     model, fz = _load(reg, version)
-    p, _ = model.predict(featurize(recs, fz))
-    for row, q in zip(rows, p):
-        row["wp"] = float(q)
+    flat = [r for group in recs for r in group]
+    p, _ = model.predict(featurize(flat, fz))
+    at = 0
+    for row, group in zip(rows, recs):
+        draws = [float(x) for x in p[at:at + len(group)]]
+        at += len(group)
+        row["wp"] = sum(draws) / max(len(draws), 1)
+        row["lo"], row["hi"] = min(draws), max(draws)
     return rows
 
 
@@ -376,7 +413,9 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     }
     if with_wp and version:
         try:
-            out["wp"] = wp(reg, state, version)
+            # Seeded on how much has been logged, so the same position gives the same number
+            # twice running and the bar does not jitter when nothing has happened.
+            out["wp"] = wp(reg, state, version, seed=len(battle.journal))
         except Exception as e:                  # a missing model must not take the screen down
             out["wp"] = {"error": str(e)}
     return out

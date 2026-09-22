@@ -121,26 +121,44 @@ export function BattleSession({ reg, route, navigate, teams }: {
   );
 }
 
-/** Two numbers, and the gap between them said out loud.
+/** The number, and how much of it is still guesswork.
  *
- *  Every WP model was trained with the opponent's sets visible, so a Team Preview Only position is
- *  not one any of them has been shown. The headline fills their unknowns from usage, which keeps
- *  the input in the distribution the model knows; the second leaves them unknown, which is the
- *  true position. When they disagree, the difference is the size of the guess — and a number
- *  shown without that is a number that will be believed more than it has earned.
+ *  Every WP model was trained with the opponent's sets visible — the known-flags are 1.000 across
+ *  all 433,052 rows — so a Team Preview Only position is not one any of them has been shown. The
+ *  bar is therefore an average over `k` complete opponents drawn from the belief: each draw is a
+ *  fully-known position, so each is a row the model knows, and the mean is an estimate of the
+ *  expectation over the ones it does not.
+ *
+ *  The band is the 10th-to-90th spread of those draws, and it is the honest part. A wide band
+ *  means their hidden sets decide this position and the single number is not worth much; a narrow
+ *  one means it barely matters what they are holding. That is a different thing from the model
+ *  being uncertain, and it is the thing you can do something about — every reveal narrows it.
+ *
+ *  `wp_open` sits beside it rather than being hidden, because the gate would not settle between
+ *  them: over 400 held-out games the averaged number beats filling in one guessed set on every
+ *  model tried, but whether it beats leaving the opponent unknown depends on which model is
+ *  serving (docs/phase8-findings.md). Two numbers that disagree by a point are worth showing as
+ *  two numbers.
  */
 function WPBar({ view }: { view: LiveView }) {
   const wp = view.wp;
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
-  const pct = Math.round((wp.wp ?? 0) * 100);
-  const open = Math.round((wp.wp_open ?? 0) * 100);
+  const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
+  const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
   return (
     <div className="wp">
-      <div className="wp-bar"><span className="wp-fill" style={{ width: `${pct}%` }} /></div>
-      <div className="row tiny dim" style={{ justifyContent: "space-between", marginTop: 4 }}>
-        <span><b className="wp-num">{pct}%</b> you win, against their most likely sets</span>
+      <div className="wp-bar">
+        <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
+        <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
+      </div>
+      <div className="row tiny dim" style={{ justifyContent: "space-between", marginTop: 5 }}>
+        <span>
+          <b className="wp-num">{pct(wp.wp)}%</b> you win
+          {wp.hi !== wp.lo && <> · {pct(wp.lo)}–{pct(wp.hi)}% depending on what they are holding</>}
+        </span>
         <span title={wp.regime}>
-          {open}% with their sets left unknown — the gap is the size of the guess
+          {wp.wp_open != null && <>{pct(wp.wp_open)}% with their sets left unknown · </>}
+          averaged over {wp.k} draws{open > 0 ? ` · ${open} of their six still open` : ""}
         </span>
       </div>
     </div>
@@ -229,7 +247,12 @@ function Timeline({ id, reg, view, route, navigate }: {
           <button key={i} className={`traj-row${route.step === row.index ? " on" : ""}`}
                   onClick={() => navigate({ tab: "battle", battle: id, step: row.index }, { replace: true })}>
             <span className="traj-turn">turn {row.turn}</span>
-            <span className="traj-bar"><span className="wp-fill" style={{ width: `${Math.round(row.wp * 100)}%` }} /></span>
+            <span className="traj-bar">
+              <span className="wp-range"
+                    style={{ left: `${Math.round(row.lo * 100)}%`,
+                             width: `${Math.round((row.hi - row.lo) * 100)}%` }} />
+              <span className="wp-mark" style={{ left: `${Math.round(row.wp * 100)}%` }} />
+            </span>
             <span className="traj-wp">{Math.round(row.wp * 100)}%</span>
             <span className="traj-left dim tiny">{row.left.p1}v{row.left.p2}</span>
           </button>
@@ -245,32 +268,63 @@ function Timeline({ id, reg, view, route, navigate }: {
   );
 }
 
-/** What has been worked out about their spreads. This is a *bound*, not an estimate: `narrowed`
- *  is the share of the 66-point space ruled out, and a Pokémon nothing has been seen from reads
- *  0% because nothing has been seen from it — which is the honest number, not a missing one. */
+/** What is still open about their six — the two halves of the belief, side by side, because they
+ *  are different kinds of claim and the screen should not blur them.
+ *
+ *  **The spread** is a bound from this battle's own turn orders: `ruled out` is the share of the
+ *  66-point space that is gone, and 0% means nothing has been seen yet rather than something
+ *  missing. It can only be wrong because of a bug.
+ *
+ *  **The set** is a ranking from 15,000 other people's sheets: `sets left` is how many of them are
+ *  still consistent with what you have seen, and it falls as items and moves reveal themselves.
+ *  It can be wrong because somebody brought something unusual — and when nobody's sheet matches
+ *  at all, it says so rather than pretending.
+ */
 function Belief({ view }: { view: LiveView }) {
-  const seen = view.beliefs.filter((b) => b.narrowed > 0);
-  if (!seen.length) return null;
+  const spreads = new Map(view.beliefs.map((b) => [b.species, b]));
+  const rows = view.wp?.belief ?? [];
+  if (!rows.length && !view.beliefs.some((b) => b.narrowed > 0)) return null;
   return (
     <div className="panel">
-      <h2>What their spreads can still be</h2>
+      <h2>What is still open about their six</h2>
       <table className="belief">
+        <thead>
+          <tr className="tiny dim">
+            <th>Pokémon</th><th>spread (a bound)</th><th>ruled out</th>
+            <th>set (a ranking)</th><th>from</th>
+          </tr>
+        </thead>
         <tbody>
-          {seen.map((b) => (
-            <tr key={b.species}>
-              <td>{b.species}</td>
-              <td className="tiny dim">
-                {Object.entries(b.bounds)
-                  .filter(([s, [lo, hi]]) => s !== "_unspent" && (lo > 0 || hi < 32))
-                  .map(([s, [lo, hi]]) => `${s} ${lo}–${hi}`)
-                  .join(" · ") || "—"}
-              </td>
-              <td className="tiny dim">{Math.round(b.narrowed * 100)}% ruled out</td>
-              <td className="tiny dim">{Object.values(b.sources).join(", ")}</td>
-            </tr>
-          ))}
+          {rows.map((b) => {
+            const sp = spreads.get(b.species);
+            const bounds = sp
+              ? Object.entries(sp.bounds)
+                  .filter(([st, [lo, hi]]) => st !== "_unspent" && (lo > 0 || hi < 32))
+                  .map(([st, [lo, hi]]) => `${st} ${lo}–${hi}`).join(" · ")
+              : "";
+            return (
+              <tr key={b.species}>
+                <td>{b.species}</td>
+                <td className="tiny dim">{bounds || "nothing seen yet"}</td>
+                <td className="tiny dim">{sp ? `${Math.round(sp.narrowed * 100)}%` : "—"}</td>
+                <td className="tiny dim">
+                  {b.off_meta
+                    ? <span className="warn-text">nobody&apos;s sheet matches</span>
+                    : <>{b.sets} set{b.sets === 1 ? "" : "s"} left
+                        {b.sets > 1 && <> · top {Math.round(b.concentration * 100)}%</>}</>}
+                </td>
+                <td className="tiny dim">
+                  {[...(sp ? Object.values(sp.sources) : []), ...b.evidence].join(", ") || "—"}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+      <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
+        The spread is a bound — the truth is inside it. The set is a ranking — it can be wrong,
+        and being wrong costs a tap.
+      </p>
     </div>
   );
 }
