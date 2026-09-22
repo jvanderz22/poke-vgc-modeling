@@ -67,6 +67,7 @@ vgc belief speed <replay> --known p1             # turn order → a bound on the
 vgc belief sp <replay> --known p1 --team a.txt   # all three channels, over the whole 66-point allocation
 
 vgc web                                          # battle companion on localhost:8001
+                                                 #   /battle — log a game as you play it
 ```
 
 `make` wraps the pipeline: `make data` (scrape → pool → self-play → snapshots → features),

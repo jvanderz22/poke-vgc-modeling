@@ -30,6 +30,8 @@ access_token
 # Your saved teams: personal state, not part of the tool. Plain JSON — back it up or un-ignore
 # this line if you want version history for your teams.
 data/library/
+# Battles you are in the middle of: your journals, not the project's.
+data/battles/
 
 # Built frontend (npm --prefix frontend run build). Source lives in frontend/.
 src/vgc/web/static/

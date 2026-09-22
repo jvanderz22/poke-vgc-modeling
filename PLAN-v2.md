@@ -637,8 +637,8 @@ Kaggle before paid.
 | --- | --- | --- |
 | W1 | Phase 3 ✅ partial | `vgc web`, team library, validation, active team, bring/lead ranking. **Still missing:** pokepast.es fetching, calc panel, per-turn input, WP timeline |
 | **W2** | **Phase 5** 🟡 | In-battle WP routed to a gate-passing model and banner-flagged ✅; **left:** the per-turn WP timeline |
-| **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — **the next web work** now that both exist on the CLI, and Phase 6 made it the next *useful* work too |
-| W3 | Phase 8 | Belief panel — **for open-sheet games too**, where the unknown is the spread: inferred speed ranges and damage-implied SP, with manual corrections. The stopgap's share display survives |
+| **W2b** | **Phase 7** ⏳ | Weakness report and usage report in the library — still outstanding on the CLI side being done |
+| **W3** | **Phase 8** ✅ partial | **The live battle.** `vgc.battle.entry` (a journal of taps, replayed), `/api/battles/*`, and the Battle page: fast entry, pop-ups that pin an ability as they log its effect, a Speed read that says *undecided* when it is, the SP belief per opposing Pokémon, WP with the size of its guess beside it, undo, and a turn-by-turn walk-back. **Left:** the closed-sheet set belief (Phase 8 step 2), which is what makes each pop-up's first option the likely one; damage snapped to calc-predicted buckets |
 | W4 | Phases 9–10 | EWP action table with intervals and worst-case replies; on-demand bring/lead simulation; state-reconstruction parity checks; post-game review. Gated on Phase 6 passing against the Phase 9 policy — an app that ranks brings under a policy that fails it would be presenting the bot's opinion as the game's |
 | W5 | Phase 11 | Complete-my-team and moveset/SP suggestions |
 
