@@ -143,6 +143,8 @@ def setup_state(reg: Regulation, setup: dict[str, Any]) -> BattleState:
             if spec.get("stats"):
                 m.stats = {k: int(v) for k, v in spec["stats"].items()}
                 m.hp_max = m.stats.get("hp")
+            if spec.get("sp"):
+                m.sp = {k: int(v) for k, v in spec["sp"].items()}
             side.mons.append(m)
             side.sheet = side.sheet or (not own and spec.get("ability") is not None)
         side.team_size = len(side.mons)

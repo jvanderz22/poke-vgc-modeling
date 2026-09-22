@@ -128,7 +128,7 @@ def test_defiant_answers_the_drop_and_pins_the_ability_that_answered(battle):
     lead(battle, ("p2", 0, "Kingambit"), ("p1", 0, "Incineroar"))
     q = next(x for x in battle.rp.questions if x.kind == "switch_in" and x.side == "p1")
     rp = battle.append({"kind": "answer", "question": q.id, "option": 0})
-    drop = next(x for x in rp.questions if x.species == "Kingambit")
+    drop = next(x for x in rp.questions if x.species == "Kingambit" and x.kind == "stat_drop")
     assert any("Defiant" in o.label for o in drop.outcomes)
     defiant = next(i for i, o in enumerate(drop.outcomes) if o.ability == "defiant")
     rp = battle.append({"kind": "answer", "question": drop.id, "option": defiant})
@@ -141,9 +141,10 @@ def test_not_sure_closes_the_question_and_concludes_nothing(battle):
     lead(battle, ("p2", 0, "Kingambit"), ("p1", 0, "Incineroar"))
     q = next(x for x in battle.rp.questions if x.side == "p1")
     rp = battle.append({"kind": "answer", "question": q.id, "option": None})
-    assert not rp.questions
+    assert q.id not in [x.id for x in rp.questions]
     assert rp.state.at("p2", 0).boosts.get("atk", 0) == 0
     assert rp.state.at("p1", 0).ability_ruled_out == set()
+    assert rp.state.at("p1", 0).ability == "intimidate"     # from your own sheet, not from this
 
 
 def test_silence_settles_the_ability_when_it_leaves_one_candidate(battle):
@@ -197,7 +198,7 @@ def test_a_response_is_not_a_race(battle):
     lead(battle, ("p1", 0, "Incineroar"), ("p2", 0, "Milotic"))
     q = next(x for x in battle.rp.questions if x.side == "p1" and x.kind == "switch_in")
     rp = battle.append({"kind": "answer", "question": q.id, "option": 0})
-    drop = next(x for x in rp.questions if x.species == "Milotic")
+    drop = next(x for x in rp.questions if x.species == "Milotic" and x.kind == "stat_drop")
     comp = next(i for i, o in enumerate(drop.outcomes) if o.ability == "competitive")
     rp = battle.append({"kind": "answer", "question": drop.id, "option": comp})
     ev = next(e for e in rp.state.ability_log if e.ability == "competitive")

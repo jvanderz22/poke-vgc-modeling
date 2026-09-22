@@ -90,10 +90,15 @@ class Outcome:
     excludes: frozenset[str] = frozenset()       # ...or that it is none of these
     item: str | None = None                      # or proves it was holding this
     consumed: bool = False                       # ...and has now used it up
+    # True when this ability announces only *sometimes* in this exact situation — Static is a 30%
+    # chance, Supreme Overlord needs a fallen ally. Such an ability is still worth offering,
+    # because picking it pins the ability; what it must never do is let *silence* rule it out.
+    conditional: bool = False
 
     def to_json(self) -> dict[str, Any]:
         return {"label": self.label, "effects": self.effects, "ability": self.ability,
-                "excludes": sorted(self.excludes), "item": self.item, "consumed": self.consumed}
+                "excludes": sorted(self.excludes), "item": self.item, "consumed": self.consumed,
+                "conditional": self.conditional}
 
 
 def _name(reg: Regulation, ability: str) -> str:
@@ -102,29 +107,41 @@ def _name(reg: Regulation, ability: str) -> str:
 
 def _collect(reg: Regulation, species: str, known: str | Iterable[str] | None,
              describe) -> list[Outcome]:
-    """Build one outcome per ability that would announce, plus the silence that rules them out.
+    """Build one outcome per ability that could announce, plus the silence that rules them out.
 
-    `describe(ability)` returns `(what the cartridge prints, effects)` or None when that ability
-    says nothing here.
+    `describe(ability)` returns `(what the cartridge prints, effects)`, or a third element that is
+    True when the ability announces only *sometimes* here, or None when it never announces here.
+
+    The three-way split is the whole soundness argument. Silence rules out only what would
+    *definitely* have announced: a Pokémon that did not shock its attacker may still have Static,
+    because Static is a 30% chance, and reading that silence as proof of Lightning Rod excludes
+    the truth outright. So a conditional ability is offered — picking it still pins the ability,
+    which is pure gain — and survives the silence alongside the abilities that never announce.
     """
     loud: list[Outcome] = []
-    quiet: list[str] = []
+    certain: list[str] = []      # would definitely have announced, so silence rules it out
+    survives: list[str] = []     # consistent with silence: never announces here, or only might
     for ability in candidate_abilities(reg, species, known):
         got = describe(ability)
         if got is None:
-            quiet.append(ability)
-        else:
-            text, effects = got
-            loud.append(Outcome(f"{_name(reg, ability)} — {text}", effects, ability=ability))
-    if quiet:
-        names = " or ".join(_name(reg, a) for a in quiet)
-        if not loud:
-            loud.append(Outcome("nothing announced"))
-        elif len(quiet) == 1:
-            loud.append(Outcome(f"nothing announced — so {names}", ability=quiet[0]))
-        else:
-            loud.append(Outcome(f"nothing announced — so {names}",
-                                excludes=frozenset(o.ability for o in loud if o.ability)))
+            survives.append(ability)
+            continue
+        text, effects, *rest = got
+        conditional = bool(rest and rest[0])
+        loud.append(Outcome(f"{_name(reg, ability)} — {text}", effects, ability=ability,
+                            conditional=conditional))
+        (survives if conditional else certain).append(ability)
+    if not survives:
+        return loud
+    names = " or ".join(_name(reg, a) for a in survives)
+    if not loud:
+        out = Outcome("nothing announced")
+    elif len(survives) == 1:
+        # Everything else would have said so and did not, so silence names this one outright.
+        out = Outcome(f"nothing announced — so {names}", ability=survives[0])
+    else:
+        out = Outcome(f"nothing announced — so {names}", excludes=frozenset(certain))
+    loud.append(out)
     return loud
 
 
@@ -172,6 +189,16 @@ def on_switch_in(reg: Regulation, species: str,
             stat, stages = DROP_ON_START[ability]
             return (f"{stat} {stages:+d} on both opposing Pokémon",
                     [{"kind": "drop_opposing", "stat": stat, "stages": stages}])
+        if ability in SWITCH_IN_ABILITIES:
+            # It announces on arrival and does something this state model does not carry — Frisk
+            # reads an item, Pressure doubles PP, Trace copies an ability. Offered anyway, because
+            # picking it pins the ability and puts the arrival in the Speed order, which is two
+            # things the belief wants for one tap. Conditional, because several of them announce
+            # only in the right circumstances: Supreme Overlord needs a fallen ally, Screen
+            # Cleaner a screen to clear, Trace something worth tracing. Establishing which are
+            # unconditional is a per-ability reading of the pinned build, and until that is done
+            # the sound default is that silence proves nothing about them.
+            return ("announced, nothing this model carries changed", [], True)
         return None
 
     return _collect(reg, species, known, describe)
@@ -200,6 +227,8 @@ def stat_drop_outcomes(reg: Regulation, species: str, stat: str, stages: int,
                     [{"kind": "boost", "stat": stat, "stages": stages},
                      {"kind": "boost", "stat": rstat, "stages": rstages}])
         return None
+        # Every branch above is unconditional: a blocker always blocks, Mirror Armor always
+        # reflects, Defiant and Competitive always answer. Silence here really is proof.
 
     out = _collect(reg, species, known, describe)
     # The plain case is not "nothing announced" — the drop lands and the cartridge says so — so it
@@ -271,12 +300,18 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
     Stamina matters twice over: it is a reveal, and it moves the Defence the bulk channel is
     about to read the next hit against.
     """
-    mtype = (reg.dex.get_move(move) or {}).get("type")
+    entry = reg.dex.get_move(move) or {}
+    mtype, category = entry.get("type"), entry.get("category")
+    contact = "contact" in (entry.get("flags") or [])   # the export gives flags as a list
 
     def describe(ability: str):
         effects: list[dict[str, Any]] = []
         for table in (HIT_BOOST_SELF, HIT_DROP_SELF):
             if ability in table:
+                # Weak Armor reads the move's category, not just that a hit landed: a special
+                # move leaves it silent, which makes its silence informative rather than useless.
+                if ability == "weakarmor" and category != "Physical":
+                    return None
                 stat, stages = table[ability]
                 effects.append({"kind": "boost", "stat": stat, "stages": stages})
         if ability in HIT_BOOST_SELF_IF_TYPE:
@@ -285,6 +320,10 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
             if mtype in want:
                 effects.append({"kind": "boost", "stat": stat, "stages": stages})
         if ability in HIT_DROP_ATTACKER:
+            # Gooey and Tangling Hair need contact. Against a move that makes none they cannot
+            # fire at all, which is a stronger statement than "might not have".
+            if not contact:
+                return None
             stat, stages = HIT_DROP_ATTACKER[ability]
             effects.append({"kind": "boost_attacker", "stat": stat, "stages": stages})
         if ability in HIT_WEATHER:
@@ -294,9 +333,15 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
         if effects:
             return (", ".join(_describe(e) for e in effects), effects)
         if ability in ANNOUNCES_ON_HIT:
-            # It announces and does something this model does not carry (a status, recoil, an
-            # ability swap). Worth offering, because picking it still pins the ability.
-            return ("announced, no stat or field change modelled", [])
+            if ability in CONTACT_ON_HIT and not contact:
+                return None             # it could not have fired, so its silence says nothing
+            # It announces and does something this model does not carry — a status, recoil, an
+            # ability swap. Worth offering, because picking it still pins the ability. Always
+            # conditional: most of this set is a 30% chance (Static, Flame Body, Effect Spore,
+            # Poison Point, Cute Charm, Cursed Body) and the rest need contact or a KO. Silence
+            # therefore proves nothing about any of them, which is the bug this flag fixes —
+            # a Pikachu that did not paralyse you is not thereby a Lightning Rod Pikachu.
+            return ("announced, no stat or field change modelled", [], True)
         return None
 
     return _collect(reg, species, known, describe)
@@ -316,6 +361,14 @@ def _describe(effect: dict[str, Any]) -> str:
 ANNOUNCES_ON_HIT = {"aftermath", "cursedbody", "cutecharm", "effectspore", "electromorphosis",
                     "flamebody", "gulpmissile", "illusion", "innardsout", "mummy", "poisonpoint",
                     "roughskin", "spicyspray", "static", "toxicdebris", "wanderingspirit"}
+
+# ...and of those, the ones that need the move to make contact. Against Earthquake, Rough Skin
+# could not have fired at all — which is a stronger statement than "might not have", and the
+# difference decides whether silence is allowed to rule the other candidates in. Derived from
+# `checkMoveMakesContact` in the pinned build and re-derived by `tests/test_battle_rules.py`
+# rather than trusted, like every other table here.
+CONTACT_ON_HIT = {"aftermath", "cutecharm", "effectspore", "flamebody", "gooey", "mummy",
+                  "poisonpoint", "roughskin", "static", "tanglinghair", "wanderingspirit"}
 
 
 # --- applying one -------------------------------------------------------------------------

@@ -159,7 +159,7 @@ class AbilityEvent:
 class Mon:
     __slots__ = ("species", "forme", "nickname", "state", "position", "hp", "hp_max", "status", "boosts",
                  "volatiles", "item", "item_source", "lost_item", "ability", "ability_source", "moves",
-                 "moves_used", "nature", "stats", "mega", "gender", "ability_ruled_out")
+                 "moves_used", "nature", "stats", "mega", "gender", "ability_ruled_out", "sp")
 
     def __init__(self, species: str):
         self.species = species  # as shown at team preview
@@ -181,6 +181,12 @@ class Mon:
         # and did not. Deliberately absent from `to_json`, for the same reason the evidence logs
         # are: `observation()` is fingerprinted at VERSION 3 across 433,052 frozen rows.
         self.ability_ruled_out: set[str] = set()
+        # Stat Points, for your own side only, where you know them because you chose them. Absent
+        # from `to_json` for the same reason as the line above, and *not* recoverable from
+        # `stats`: at a plus or minus nature the Champions formula is not injective, so two
+        # different investments can produce the same number. The belief channels are keyed on
+        # points rather than stats precisely because a stat is only true of one forme.
+        self.sp: dict[str, int] | None = None
         self.moves: list[str] = []  # known moveset (sheet / own)
         self.moves_used: list[str] = []  # revealed by use, in order of first use
         self.nature: str | None = None

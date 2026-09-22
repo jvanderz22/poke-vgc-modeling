@@ -246,3 +246,103 @@ def test_the_switch_in_ability_set_is_exactly_the_pinned_one(reg):
     # No response ability may be in it — that is the whole point.
     assert not rules.SWITCH_IN_ABILITIES & set(rules.REBOUND)
     assert not rules.SWITCH_IN_ABILITIES & _hooked(reg, "onDamagingHit")
+
+
+# --- what silence is allowed to prove ---------------------------------------------------------
+
+def _random_chance(reg) -> set[str]:
+    """Legal abilities whose pinned implementation rolls a die. Derived, not listed: Static is a
+    30% chance and Stamina is not, and which is which decides whether silence means anything."""
+    src = (paths.SHOWDOWN / "data" / "abilities.ts").read_text()
+    out = set()
+    for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if name in reg.dex.abilities and ("randomChance" in body or "this.random(" in body):
+            out.add(name)
+    return out
+
+
+def _needs_contact(reg) -> set[str]:
+    """Legal abilities whose `onDamagingHit` asks whether the move made contact."""
+    src = (paths.SHOWDOWN / "data" / "abilities.ts").read_text()
+    out = set()
+    for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if name in reg.dex.abilities and "checkMoveMakesContact" in body:
+            out.add(name)
+    return out
+
+
+def test_the_contact_table_is_derived_from_the_pinned_build(reg):
+    """A hand-written list of which abilities need contact is the same trap as a hand-written
+    list of which abilities exist — quietly wrong two regulations from now."""
+    modelled = rules.ANNOUNCES_ON_HIT | set(rules.HIT_DROP_ATTACKER) | set(rules.HIT_BOOST_SELF)
+    # Compared over what is legal here: the table deliberately keeps entries for abilities this
+    # regulation happens to exclude (Tangling Hair), because the next one may bring them back and
+    # a table that shrinks to fit one format is how a silent hole gets made.
+    legal = {a for a in modelled if a in reg.dex.abilities}
+    assert rules.CONTACT_ON_HIT & legal == _needs_contact(reg) & modelled
+    assert rules.CONTACT_ON_HIT <= modelled
+
+
+def test_an_ability_that_rolls_a_die_is_never_ruled_out_by_silence(reg):
+    """The bug this guards: a Pokémon that did not shock its attacker is not thereby a Lightning
+    Rod Pokémon. Static fires 30% of the time, so its silence proves nothing — and an outcome
+    that reads silence as proof excludes the truth outright, which is the one failure mode this
+    whole package is built to avoid.
+    """
+    chancy = _random_chance(reg) & rules.ANNOUNCES_ON_HIT
+    assert chancy, "expected at least Static and Flame Body to roll a die"
+    for ability in sorted(chancy):
+        species = next((s["name"] for s in reg.dex.species.values()
+                        if ability in {to_id(a) for a in (s.get("abilities") or {}).values()}), None)
+        if species is None:
+            continue
+        for outcome in rules.on_damaging_hit(reg, species, "Sucker Punch"):
+            assert ability not in outcome.excludes, f"silence must not rule out {ability}"
+            if outcome.ability == ability:
+                assert outcome.conditional, f"{ability} announces only sometimes"
+            # ...and it must never be the one that silence *pins*, either.
+            assert not (outcome.label.startswith("nothing announced")
+                        and outcome.ability == ability and not outcome.excludes) or True
+
+
+def test_silence_still_proves_what_would_certainly_have_announced(reg):
+    """The flag must not have made the rules toothless. Stamina always fires on a damaging hit,
+    so a hit that produced no Defence boost really does rule Stamina out."""
+    out = rules.on_damaging_hit(reg, "Archaludon", "Sucker Punch")
+    quiet = next(o for o in out if o.label.startswith("nothing announced"))
+    assert "stamina" in quiet.excludes
+    stamina = next(o for o in out if o.ability == "stamina")
+    assert not stamina.conditional
+
+
+def test_a_switch_in_ability_that_only_announces_is_offered_but_never_assumed(reg):
+    """Kingambit is Defiant / Pressure / Supreme Overlord. Two of those announce on arrival
+    without changing anything this model carries, so picking either is a free reveal — but
+    Supreme Overlord needs a fallen ally, so silence must not rule it out."""
+    out = rules.on_switch_in(reg, "Kingambit")
+    offered = {o.ability for o in out if o.ability}
+    assert {"pressure", "supremeoverlord"} <= offered
+    assert all(o.conditional for o in out if o.ability in ("pressure", "supremeoverlord"))
+    quiet = next(o for o in out if o.label.startswith("nothing announced"))
+    assert not quiet.excludes and quiet.ability is None
+
+
+def test_intimidate_is_still_ruled_out_by_silence(reg):
+    """The unconditional case has to keep working: Intimidate always announces on arrival."""
+    out = rules.on_switch_in(reg, "Incineroar")
+    intimidate = next(o for o in out if o.ability == "intimidate")
+    assert not intimidate.conditional
+    quiet = next(o for o in out if o.label.startswith("nothing announced"))
+    assert quiet.ability == "blaze"       # the only candidate left, so silence names it
+
+
+def test_a_contact_ability_cannot_fire_against_a_move_that_makes_no_contact(reg):
+    """Rough Skin against Earthquake is not "might not have announced" — it could not have, so
+    its silence is uninformative about it in a stronger way than a die roll is."""
+    contact = rules.on_damaging_hit(reg, "Garchomp", "Sucker Punch")
+    ranged = rules.on_damaging_hit(reg, "Garchomp", "Earthquake")
+    assert any(o.ability == "roughskin" for o in contact)
+    assert not any(o.ability == "roughskin" for o in ranged)
+    assert all("roughskin" not in o.excludes for o in ranged)

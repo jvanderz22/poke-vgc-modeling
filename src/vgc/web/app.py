@@ -28,7 +28,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from vgc.regulation import load_regulation, to_id
-from vgc.web import library
+from vgc.web import library, live
 
 STATIC = Path(__file__).parent / "static"
 
@@ -125,6 +125,25 @@ class PreviewRequest(BaseModel):
 
 class ComposeRequest(BaseModel):
     species: list[str]
+    regulation: str = "reg_mc"
+
+
+class NewBattle(BaseModel):
+    name: str = ""
+    my_team: str = Field(default="", description="your team as Showdown text")
+    team_id: str = Field(default="", description="...or the id of a team in the library")
+    their_species: list[str] = Field(default_factory=list,
+                                     description="Team Preview Only: their six species")
+    their_team: str = Field(default="", description="Open Team Sheets: their six sets as text")
+    version: str = ""
+    regulation: str = "reg_mc"
+
+
+class Entries(BaseModel):
+    """One tap, or several that belong together — a spread move and both its damage numbers go in
+    one call so the screen never renders the half-applied state in between."""
+
+    entries: list[dict[str, Any]]
     regulation: str = "reg_mc"
 
 
@@ -362,6 +381,144 @@ def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
                         policy_a=body.policy_a, policy_b=body.policy_b, version=version or None)
     except (ValueError, RunnerError) as e:
         raise HTTPException(422, str(e)) from e
+
+
+# --- a battle in progress -------------------------------------------------------------------
+#
+# The journal is the battle and the state is derived from it (`vgc.battle.entry`), so these are
+# thinner than they look: every write appends to a list, and every read replays it. That is also
+# why there is no "edit turn 6" endpoint — you undo back to it, which cannot leave the state
+# describing a game that never happened.
+
+def _battle(reg, battle_id: str):
+    from vgc.battle import entry
+
+    blob = live.load(reg.id, battle_id)
+    if blob is None:
+        raise HTTPException(404, f"no battle {battle_id!r}")
+    return blob, entry.Battle(reg, blob["setup"], blob.get("journal"))
+
+
+def _version(regulation: str, asked: str) -> str:
+    return asked or (models(regulation)["default"] or "")
+
+
+@app.get("/api/battles")
+def battles(regulation: str = "reg_mc", limit: int = 50) -> dict[str, Any]:
+    return {"battles": live.listing(_reg(regulation).id, limit)}
+
+
+@app.post("/api/battles")
+def new_battle(body: NewBattle) -> dict[str, Any]:
+    """Start a battle from your team and what you can see of theirs at preview.
+
+    Team Preview Only is the default and the case built for: six species, nothing else. Open Team
+    Sheets is the same battle with item, ability, moves and nature filled in — and the Stat Points
+    still hidden, which is why it is one mode of one thing rather than two code paths.
+    """
+    reg = _reg(body.regulation)
+    text = body.my_team
+    if not text and body.team_id:
+        saved = library.get(reg.id, body.team_id)
+        if saved is None:
+            raise HTTPException(404, f"no team {body.team_id!r}")
+        text = saved.text
+    if not text:
+        raise HTTPException(422, "give a team, or the id of one in the library")
+
+    if body.their_team:
+        from vgc.teams.showdown_text import TeamParseError, parse_team
+
+        try:
+            theirs = [{"species": m.species, "item": m.item or "", "ability": m.ability,
+                       "moves": list(m.moves), "nature": m.nature}
+                      for m in parse_team(body.their_team).members]
+        except TeamParseError as e:
+            raise HTTPException(422, f"their sheet: {e}") from e
+    else:
+        if len(body.their_species) != reg.team_size:
+            raise HTTPException(422, f"give their sheet, or exactly {reg.team_size} species")
+        theirs = [{"species": s} for s in body.their_species]
+
+    unknown = [m["species"] for m in theirs if reg.dex.get_species(m["species"]) is None]
+    if unknown:
+        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+
+    blob = live.create(reg, body.name, text, theirs, _version(reg.id, body.version))
+    return battle_view(blob["id"], reg.id)
+
+
+@app.get("/api/battles/{battle_id}")
+def battle_view(battle_id: str, regulation: str = "reg_mc", wp: bool = True) -> dict[str, Any]:
+    reg = _reg(regulation)
+    blob, b = _battle(reg, battle_id)
+    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""), with_wp=wp)
+
+
+@app.post("/api/battles/{battle_id}/entries")
+def add_entries(battle_id: str, body: Entries) -> dict[str, Any]:
+    """Log what you saw. The entries are kept even when one of them turns out not to describe
+    anything that could have happened — the error comes back on the view, where it can be undone,
+    rather than vanishing as though it had never been sent."""
+    reg = _reg(body.regulation)
+    blob, b = _battle(reg, battle_id)
+    for e in body.entries:
+        b.append(e)
+    blob["journal"] = b.journal
+    blob["turn"] = b.rp.state.turn
+    blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+    live.save(reg.id, blob)
+    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""))
+
+
+@app.post("/api/battles/{battle_id}/undo")
+def undo(battle_id: str, regulation: str = "reg_mc", count: int = 1) -> dict[str, Any]:
+    reg = _reg(regulation)
+    blob, b = _battle(reg, battle_id)
+    for _ in range(max(1, count)):
+        b.undo()
+    blob["journal"] = b.journal
+    blob["turn"] = b.rp.state.turn
+    blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+    live.save(reg.id, blob)
+    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""))
+
+
+@app.get("/api/battles/{battle_id}/at/{index}")
+def battle_at(battle_id: str, index: int, regulation: str = "reg_mc") -> dict[str, Any]:
+    """The battle as it stood after `index` taps — replaying a prefix, which is the same
+    operation as undo without throwing anything away."""
+    from vgc.battle import entry
+
+    reg = _reg(regulation)
+    blob, b = _battle(reg, battle_id)
+    index = max(0, min(index, len(b.journal)))
+    prefix = entry.Battle(reg, blob["setup"], b.journal[:index])
+    view = live.view(reg, blob, prefix, version=_version(reg.id, blob.get("version") or ""))
+    return view | {"at": index, "entries_total": len(b.journal)}
+
+
+@app.get("/api/battles/{battle_id}/trajectory")
+def battle_trajectory(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """WP at every turn mark — the walk-back through a finished game.
+
+    One row per turn, not per tap: inside a turn the state passes through partial information (a
+    move logged before its damage), and a curve drawn over that measures data entry, not the game.
+    """
+    reg = _reg(regulation)
+    blob, b = _battle(reg, battle_id)
+    version = _version(reg.id, blob.get("version") or "")
+    if not version:
+        raise HTTPException(400, "no WP model is registered for this regulation")
+    return {"version": version, "gates": gate_summary(version),
+            "turns": live.trajectory(reg, b, version)}
+
+
+@app.delete("/api/battles/{battle_id}")
+def delete_battle(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    if not live.remove(_reg(regulation).id, battle_id):
+        raise HTTPException(404, f"no battle {battle_id!r}")
+    return {"deleted": battle_id}
 
 
 @app.get("/")
