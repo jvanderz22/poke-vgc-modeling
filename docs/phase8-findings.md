@@ -836,3 +836,231 @@ spread drawn from `vgc.belief.sp`, so that both halves of Phase 8 met in one obj
 that field flips a feature no model has seen set, and both the gate's filled arms and the app were
 doing it. Removing it is what turned the gate's first reading around. The SP belief earns its keep
 on screen, in the Speed read and the belief panel; it is kept out of the model that cannot use it.
+
+---
+
+# Phase 8, the prerequisite — the training mix, and what it actually cost
+
+_Measured 2026-09-21. The manifest is `wp-v1c-train` (43,359 battles, 1,323,270 snapshots); the
+dataset is `wp-v1c`. Scripts: [`training_mix.py`](../scripts/analysis/training_mix.py),
+[`partial_information.py`](../scripts/analysis/partial_information.py); results in
+[`data/analysis/`](../data/analysis/)._
+
+Finding 8 said the model had never seen an unknown opponent, and PLAN-v2 made that the thing
+blocking the phase rather than a caveat on it. The fix was supposed to be one line of manifest.
+It was, and the manifest was the smallest part of what the measurement found.
+
+## The known-flags reproduce, and the revealed-flags are worse
+
+`training_mix.py` exists because finding 8's central number was counted by hand once and then
+decided the shape of a phase. On the old manifest it reproduces exactly — the opponent's item,
+ability and moves are known on **1.000** of in-battle player rows, in both shards.
+
+It also reports a column the hand-count did not have. Counting only what the *battle* revealed —
+`item_source` is not `"sheet"` — the rates are **0.0003 for items and 0.000 for abilities**. The
+model has not merely never seen an unknown opponent; it has never seen an item or an ability
+*become* known. When a sheet is open the observer never has to attribute a reveal, so the entire
+mechanism by which a closed-sheet game delivers information is absent from the corpus.
+
+None of this was ever a representation problem. `Featurizer._lookup` has had an `UNK` token from
+the start and `_mon_num` carries `float(m["item"] is not None)` as an explicit known-flag. The
+slots were built and never filled.
+
+## The Makefile was the whole cause
+
+`$(HUMAN)` named `$(FORMAT)bo3/train.jsonl.gz` alone, while the recipe that produces it is
+`vgc data human --format both`. So the closed-sheet shard was generated on every run, written to
+disk, and never passed to `vgc data manifest`. 654 battles and 19,238 snapshots at snapshot
+VERSION 3, sitting beside the shard that was being trained on, for the want of a second line.
+
+## The other regime had no held-out set either, which is why nobody noticed
+
+Worth separating from the training half, because it is the more embarrassing one: there was no
+way to *score* a model at Team Preview Only. `EVAL_SETS` named only the Bo3 shards, so the
+closed-sheet held-out data had never been featurized and no gate had ever been computed on it.
+A model could fail completely in the regime the app runs in and every number on its card would
+still be green.
+
+`eval_human_closed` is now that set: **5,266 rows over 131 battles**, with `closed_in_battle_*`
+gates grouped as `closed_sheet_pass`. The n matters and is carried on every verdict — PLAN-v2's
+"779 battles" is the whole closed-sheet shard, and the held-out-by-replay-group slice of it is
+131 battles.
+
+## Adding the shard helped, and not for the stated reason
+
+Three models on identical closed-sheet rows. `wp-v1c-gbt` is the same recipe as `wp-v1-gbt` with
+the shard added and nothing else changed; the OTS eval arrays are byte-identical between the two
+datasets, verified by sha256, so the OTS column is a genuine like-for-like.
+
+| | OTS spectator | closed spectator | closed ECE | t7+ beats 50% |
+| --- | --- | --- | --- | --- |
+| `wp-v1-gbt` | 0.54428 | 0.60275 | 0.0463 | no, `[-0.262, +0.174]` |
+| `wp-v1c-gbt` | 0.5439 | **0.58517** | **0.0272** | no, `[-0.263, +0.038]` |
+| `wp-v1-sw-split-small` *(served)* | 0.5648 | 0.5873 | 0.0277 | **yes**, `[-0.276, -0.013]` |
+
+0.018 nats and half the calibration error in the closed regime, for nothing on OTS. **All three
+still fail `closed_sheet_pass`, and all three fail it on calibration rather than discrimination** —
+worst-bucket ECE 0.099 to 0.124 against a 0.03 threshold, with respectable log losses underneath.
+
+The gain is real and the attribution in PLAN-v2 was wrong. `wp-v1c-gbt` cannot have learned what
+an unknown means, because it does not read the fields that go unknown — see below. What the shard
+gave it is the ladder Bo1 *population*: different players, ratings and forfeit behaviour from the
+Bo3 shard. Worth having, and not what finding 8 predicted.
+
+## The partial-information penalty is real, non-monotone, and invisible on the wrong model
+
+The first explanation offered for the late-game closed-sheet failure was that the model goes
+off-distribution on partial information. That has a confound the gate cannot rule out:
+`human_closed` is the ladder shard and `human_ots_all` is the Bo3 shard, so the difference could
+be the population. `partial_information.py` asks the question on **one corpus** — held-out OTS
+games masked against themselves, same players, same labels, only what is known varies. Hiding is
+per Pokémon and takes item, ability, sheet moves and nature together, because that is how a real
+game reveals; `moves_used` is never touched.
+
+On `wp-v1c-gbt` the answer is nothing at all. Hiding the opponent's entire team moves log loss
+0.5752 → 0.5759 and ECE 0.0112 → 0.0134, and every turn bucket is flat. The mask was verified to
+bite: 50% of `item` and `ability` feature cells change, ~47% of move cells, species untouched.
+This is PLAN-v2's existing note about `wp-v1-gbt` reproduced on a retrained model and a different
+corpus — **the GBT is inert to the opponent's sets** — and it means the hypothesis could never
+have been tested there. A null on a model that does not read the inputs is not evidence.
+
+On `wp-v1-sw-split-small`, which does read them, the curve is the finding:
+
+| hidden | all log loss | all ECE | t5-6 ECE | t7+ ECE |
+| --- | --- | --- | --- | --- |
+| 0.00 *(open sheets)* | 0.5978 | 0.0316 | 0.029 | 0.039 |
+| **0.25** | **0.6189** | **0.0529** | 0.076 | **0.110** |
+| 0.50 | 0.6151 | 0.0481 | 0.077 | 0.115 |
+| 0.75 | 0.6097 | 0.0441 | 0.055 | 0.096 |
+| 0.90 | 0.6078 | 0.0427 | 0.040 | 0.082 |
+| 1.00 *(all hidden)* | 0.6079 | 0.0467 | 0.038 | 0.072 |
+| `closed_curve` | 0.6121 | 0.0462 | 0.056 | **0.104** |
+
+**Hiding a quarter of the opponent costs more than hiding all of it.** Full knowledge is best,
+full ignorance second, partial knowledge worst — and the ordering is not what "never seen an
+unknown" naively predicts, which is monotone degradation. It is why the failure concentrates late
+in a closed-sheet game: that is where partial knowledge lives.
+
+`closed_curve` masks at the rate a real game reveals at, per turn bucket, from
+`training_mix.py --by-turn`. It lands at t7+ ECE **0.104** against **0.124** observed on the
+genuine closed-sheet shard. Reproducing the magnitude of the real failure from synthetic masking
+on a different corpus is the evidence that this is the mechanism and not a coincidence.
+
+## Which gives WP_v2 the argument its own gate could not make
+
+Step 3 measured that `particles` beats `mode` by 0.005 of log loss and could not say why, and
+that `open` beat both on the served model, which looked like a contradiction. The curve resolves
+it. A real closed-sheet position sits in the 0.25–0.50 hole. Filling it with complete draws moves
+it to `hidden_0`; masking it outright moves it to `hidden_1`. **Both escape the hole, and filling
+escapes it further** — so both beating the naive arm is the expected result rather than a puzzle,
+and averaging is preferred for a reason stronger than the 0.005 it was resting on.
+
+## Two things the step-3 gate's masking gets wrong
+
+`wp_closed_sheet.py`'s `mask()` blanks an OTS replay for the whole battle, and a real Team Preview
+Only game is not like that. Measured per turn bucket, with `--mask` applying the gate's own
+masking to the OTS shard for comparison:
+
+| bucket | real closed: item / ability / moves | gate's mask: item / ability / moves |
+| --- | --- | --- |
+| t1-2 | 0.079 / 0.106 / 0.040 | 0.000 / 0.000 / 0.037 |
+| t3-4 | 0.223 / 0.208 / 0.159 | 0.000 / 0.000 / 0.156 |
+| t5-6 | 0.294 / 0.249 / 0.236 | 0.000 / 0.000 / 0.232 |
+| t7+ | 0.392 / 0.305 / 0.356 | 0.000 / 0.000 / 0.316 |
+
+Moves track closely — `mask()` clears `moves` but leaves `moves_used`, and `_known_moves` reads
+the union — so that channel is right. Item and ability are pinned at zero for the whole game
+against a real 0.392 and 0.305 by t7+. The gate's `open` arm is not a Team Preview Only position;
+it is the turn-0 information state held fixed to the end, which is `hidden_1` on the curve above
+and therefore *out* of the hole a real position is in.
+
+Two consequences. PLAN-v2's criterion that v2 "moves toward the oracle as information arrives"
+cannot be tested by that gate at all, because in the masked arm no item or ability information
+ever arrives. And the belief is only ever exercised at its widest, never at the point where
+`vgc.belief.sets` has 40% of the items to condition on and should be sharpest.
+
+The fix is not a cleverer synthetic mask — reveal timing is not recoverable from an OTS replay,
+since the observer files everything as `"sheet"` and never attributes a reveal (0.000 above). The
+two measurements answer different questions and both are needed: only an OTS replay carries the
+truth, so only it can compare `particles` against `mode`; only the genuine closed-sheet shard can
+ask whether the model is calibrated in the regime, and it needs no truth to do so.
+
+## The eval sets were a glob, and something walked into them
+
+Not a modelling finding, but it was found the same way and it invalidates numbers. `EVAL_SETS`
+globbed `selfplay/*`, so the two belief-gating runs generated on 2026-09-20 — after `wp-v1` was
+built — entered `eval_selfplay_*` and took it from 395,774 to 460,296 rows under an unchanged
+name. The training manifest could never have taken them: `--spreads sampled` prints "must not be
+manifested" and a manifest names its files one at a time. No such guard existed on the evaluation
+side.
+
+The contamination is the serious half rather than the comparability. A `-spreads` run has every
+spread redrawn from `vgc.belief.prior` and is deliberately *not* the meta, so win probability was
+being scored against a distribution built to stress the belief layer. Tag-excluded now
+(`SELFPLAY_EVAL_EXCLUDE`), which also stops a `-closed` self-play run from being pooled with
+open-sheet self-play under one name — gate rule 7, and step 4 would have hit it immediately. The
+durable fix is an eval manifest that names its shards the way the training manifest does.
+
+Nothing gated was affected: the gates read `human_ots_all` and `human_closed`, whose arrays are
+byte-identical or new. `eval_selfplay_*` on `wp-v1c` should not be read.
+
+## After the retrain: the hole closed, and the honest unknown now wins
+
+_2026-09-27. `wp-v1c-sw-split-small` is the served recipe trained on `wp-v1c`; torch 2.2.2 on this
+machine, where the served model was trained on 2.10.0 — a second difference, recorded rather than
+controlled. Results in `data/analysis/partial_information_wp-v1c-sw-split-small.json` and
+`data/analysis/wp_closed_sheet_*.json`._
+
+The same curve on the retrained model:
+
+| hidden | log loss, served | log loss, retrained | t7+ ECE, served | t7+ ECE, retrained |
+| --- | --- | --- | --- | --- |
+| 0.00 | 0.5978 | 0.5953 | 0.039 | 0.029 |
+| 0.25 | 0.6189 | 0.5984 | 0.110 | 0.052 |
+| 0.50 | 0.6151 | 0.5965 | 0.115 | 0.044 |
+| 1.00 | 0.6079 | 0.5940 | 0.072 | 0.026 |
+
+The partial-information bump fell from +0.021 to +0.003 nats — sevenfold, from 24,492 closed-sheet
+rows in a 662k-row mix. And the ordering of the ends flipped: full ignorance now edges full
+knowledge. Hidden rows take the `human_closed` temperature and unhidden ones do not, so the ECE
+columns are partly rescaling; log loss was shown insensitive to that temperature (below), so the
+log-loss columns are the clean comparison, and they say the same thing.
+
+Step 3's gate agrees with the curve rather than with the plan:
+
+| log loss | true | mode | particles | open |
+| --- | --- | --- | --- | --- |
+| `wp-v1-sw-split-small` | 0.5900 | 0.5910 | 0.5860 | 0.5830 |
+| `wp-v1c-sw-split-small` | 0.5852 | 0.5867 | 0.5810 | **0.5696** |
+| `wp-v1c-gbt` | 0.5618 | 0.5618 | 0.5618 | 0.5619 |
+
+The shard improved `open` by 0.013 and the filled arms by 0.005. It taught the model what a
+closed-sheet position is — so presenting one honestly now beats filling it with draws, by 0.011
+where it was 0.003.
+
+## A confound checked rather than argued
+
+The regime-split temperature treats the arms differently: `fill()` sets `sheet = True` and gets
+`human` (0.8924); `mask()` sets `sheet = False` and gets `human_closed` (0.9901). On an overconfident
+model a softer temperature flatters log loss, so `open`'s widened margin could have been the
+calibration change rather than the information. Stripping `human_closed` from a copy of the model
+so all four arms share one temperature:
+
+| | true | mode | particles | open | `open` confidence |
+| --- | --- | --- | --- | --- | --- |
+| regime-split temperatures | 0.5852 | 0.5867 | 0.5810 | 0.5696 | 0.1724 |
+| one temperature | 0.5852 | 0.5867 | 0.5810 | 0.5696 | 0.1841 |
+
+Confidence moved 6.8% and log loss did not move at the fourth decimal: both temperatures sit near
+the flat bottom of the loss in temperature. The margin is information.
+
+## Calibration was the thing the regime split was for
+
+What the retrain did not do is pass `closed_sheet_pass`. Worst-bucket ECE on the real closed shard
+is 0.093 for the retrained set model, against 0.124 served — every model fails on calibration and
+none on discrimination. The split temperature is most of that improvement, and it has a clean
+reading: fitted separately, open-sheet human play wants a temperature of 0.8924 and closed-sheet
+play 0.9901, so the single fit had been sharpening closed-sheet predictions ~11% more than they
+warrant. It could not be fitted before this step, because it needs closed-sheet training rows.
+`GBTModel.predict` ignores calibration entirely, so the model the app actually serves in-battle
+does not yet receive it.

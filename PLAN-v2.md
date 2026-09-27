@@ -30,7 +30,7 @@ the simulator's substitute for it does not exist either. That is what reorders t
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
 | 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 Built, blocked on its own prerequisite | **All three steps built.** Four channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178%, switch-in order **0 of 6,000 battles** — joined by the 66-point budget at **0.159% over 3,783**, all of it the channels'. The set prior is right **94.3%** of the time on held-out teams against 59.1% alphabetical, and WP_v2 beats the mode on every model tried ([findings](docs/phase8-findings.md)). **What is not done is the verification**: step 3's criterion does not hold, for the reason this phase already named — the training mix. See the prerequisite below |
+| 8 — Belief over hidden sets | 🟡 Built, blocked on its own prerequisite | **All three steps built.** Four channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178%, switch-in order **0 of 6,000 battles** — joined by the 66-point budget at **0.159% over 3,783**, all of it the channels'. The set prior is right **94.3%** of the time on held-out teams against 59.1% alphabetical, and WP_v2 beats the mode on every model tried ([findings](docs/phase8-findings.md)). **The prerequisite is resolved in substance, and step 3's criterion still does not hold.** The closed-sheet shard is in the mix (`wp-v1c`) and a held-out set exists in that regime (131 battles); the partial-information penalty it was meant to fix shrank **sevenfold** (+0.021 → +0.003 nats). No model passes `closed_sheet_pass` — t7+ ECE 0.093 at best, 3× over — and the honestly-unknown position now beats the particle average by 0.011, which reopens what the app should put first. See the prerequisite below |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -65,8 +65,8 @@ the transfer test in §2, and then Phase 6's direct check, which is the one the 
 | 2 | Given 4 Pokémon, which 2 complete the team? | **Blocked behind Phase 9.** Needs a team-strength signal; Phase 6 measured both candidate sources and neither exists — the corpus has none, and the simulator's is uncorrelated with real results. |
 | 3 | What moves should each Pokémon run? | **Partly Phase 7** (legal movepool, coverage gaps, breakpoints are analytic); ranking by win rate is blocked with Q2. |
 | 4 | What do I bring, lead, and click? | **Phases 9–10.** Bring/lead is on-demand simulation of *this* matchup, not a learned function — but Phase 6 means the simulation has to be run by a policy stronger than the heuristic to mean anything. |
-| 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. In-battle still improves on closed sheets (0.693 → 0.475 by t5–6) but calibrates worse, and finding 8 says why: it has never been trained through an unknown. |
-| 6 | All of the above in a web app during a real game | **Partly answered.** W3 ships the live battle: a journal of taps replayed into state, pop-ups that pin an ability as they log its effect, a Speed read that says *undecided* when it is, and WP per turn with the band their hidden sets are worth. What it reports is bounded by the training mix — see Phase 8's prerequisite — and by the damage and bulk channels not yet being gated in this regime. |
+| 5 | Win probability | **In-battle: works, shipped (Phase 5). At preview: does not exist**, and Phase 6 closed the remaining route to it. On closed sheets it is now *measured* rather than inferred — a held-out Team Preview Only set, 5,266 rows over 131 battles — and every model beats the constant turn by turn but **none is calibrated there**: worst-bucket ECE 0.093–0.124 against a 0.03 gate, `closed_sheet_pass: false` on all of them. |
+| 6 | All of the above in a web app during a real game | **Partly answered.** W3 ships the live battle: a journal of taps replayed into state, pop-ups that pin an ability as they log its effect, a Speed read that says *undecided* when it is, and WP per turn with the band their hidden sets are worth. What it reports is now scored in the regime it runs in, and fails there on calibration — see Phase 8's prerequisite — and is still bounded by the damage and bulk channels not yet being gated in this regime. The gate banner says which regime a verdict came from. |
 
 ---
 
@@ -145,6 +145,12 @@ finding predicts: masking the opponent entirely *improves* held-out log-loss on 
 between models. A model with no representation of "unknown" has no reason to treat one consistently,
 so nothing built on top of it can be read cleanly. The closed-sheet human shard exists on disk and
 is absent from the training manifest; that is now the first thing in the queue, not a note.
+
+**Since fixed, and the fix measured.** The shard is in the manifest; masking held-out games against
+themselves shows the penalty was specifically *partial* knowledge — hiding a quarter of the opponent
+cost more than hiding all of it (0.6189 against 0.6079) — and the retrained model's version of that
+hole is a seventh the size. What the fix did not do is make the model calibrated in the regime, or
+make the particle average beat the honestly-unknown position. Both are in Phase 8's prerequisite.
 
 ---
 
@@ -521,6 +527,31 @@ Build, in the order the evidence supports:
    explanation is the prerequisite this phase already carried, and it is now measured rather than
    predicted: see below.
 
+   **Re-run on the retrained model (2026-09-27), same 400 replays and 4,075 positions:**
+
+   | log loss | true | mode | particles | open |
+   | --- | --- | --- | --- | --- |
+   | `wp-v1-sw-split-small` *(served, open-sheet mix)* | 0.5900 | 0.5910 | 0.5860 | 0.5830 |
+   | `wp-v1c-sw-split-small` *(closed-sheet shard added)* | 0.5852 | 0.5867 | **0.5810** | **0.5696** |
+   | `wp-v1c-gbt` | 0.5618 | 0.5618 | 0.5618 | 0.5619 |
+
+   `particles` still beats `mode`, so the change stands. The criterion still fails, now for two
+   reasons: `particles` is below the oracle, and `open` is below everything by a margin that grew
+   from 0.003 to 0.011. **The shard improved the `open` arm by 0.013 and the filled arms by 0.005** —
+   it taught the model what a closed-sheet position is, which is finding 8's prediction working,
+   and the consequence is that handing the model the honest unknown now beats filling it in.
+
+   One confound was checked and cleared rather than assumed. The regime-split temperature gives the
+   `open` arm (`sheet = False`) 0.9901 and the filled arms 0.8924; stripping `human_closed` so all
+   four share one temperature moves `open`'s confidence 0.1724 → 0.1841 and its log loss **not at
+   all** (0.5696 both). The margin is information, not rescaling.
+
+   **What the app should put first is therefore open.** `vgc.web.live.wp` reports the particle mean
+   as the answer and `wp_open` as a diagnostic. On a closed-sheet-trained model the evidence says
+   that ranking is backwards — but by 0.011 on one gate whose masking is itself unrealistic (see
+   the verification note), which is a reason to measure on the real closed shard before swapping,
+   not a reason to swap.
+
    One thing the gate caught in the implementation, worth recording because the design was the
    attractive one. A particle was carrying a spread drawn from step 1's SP belief, so that both
    halves of the phase met in one object. An opponent's `stats` is `None` in **every** training row
@@ -535,7 +566,16 @@ value lands in the belief's 80% set ~80% of the time — for SP on open sheets, 
 size on every verdict**; the closed-sheet half has 779 battles and a gate that ignores that will
 mislead, while the SP half has 7,459 and does not have that problem.
 
-_The prerequisite this phase inherits, now the thing actually blocking it:_ **the training mix.**
+**The step-3 gate cannot test the second clause.** Its `mask()` blanks an OTS replay's items and
+abilities for the whole battle, so in the masked arm no information ever arrives; a real closed-sheet
+game has 39% of items and 31% of abilities known by t7+ (`training_mix.py --by-turn`). The gate's
+`open` arm is the turn-0 state held to the end. Moves are right — `moves_used` survives the mask —
+and reveal timing is not recoverable from an OTS replay, so the fix is not a cleverer mask: the
+gate is the only place with the truth to compare against, the held-out closed shard is the only
+place with realistic reveals, and a verdict needs both.
+
+_The prerequisite this phase inherited:_ **the training mix.** _Resolved in substance on
+2026-09-21 (steps 1–3 below); what remains is calibration in the regime and a decision about step 4._
 Finding 8 measured the opponent's item/ability/move known-flags at **1.000** across 433,052
 in-battle training rows, so the model has never seen an unknown and cannot have learned what one
 means. That was a prediction about what would go wrong. Step 3 is where it went wrong, and the
@@ -556,9 +596,94 @@ corpus at snapshot VERSION 3, 654 battles, and nothing has ever been trained on 
 is self-play generated with `ots=False`, which needs `ots` threaded through `vgc.sim.selfplay.run`
 — it is not exposed there at all today.
 
-Order of work: add the shard, retrain, re-run step 3's gate, and only then read the belief layer's
-numbers. **Everything Phase 8 produces is currently being read by a model that has never seen an
-unknown**, which bounds how much any of it can be worth.
+Order of work:
+
+1. **Add the shard to the manifest** and re-featurize. ✅ `wp-v1c-train`: 43,359 battles, 1,323,270
+   snapshots, human battles 4,560 → 5,214. The mechanical cause was in the Makefile, which named
+   `$(FORMAT)bo3` alone, so `vgc data human --format both` wrote the closed-sheet shard and the
+   manifest step never picked it up.
+2. **Add a held-out set in that regime**, because there was no way to *score* a model at Team
+   Preview Only either. ✅ `eval_human_closed`: **5,266 rows over 131 battles**, with its own gates
+   (`closed_in_battle_beats_constant`, `closed_in_battle_ece`, grouped as `closed_sheet_pass`).
+   Note the n: 779 is the whole closed-sheet shard, and the held-out-by-replay-group slice of it is
+   131 battles. Gate rule 3 applies to every number that comes off it.
+3. **Retrain, re-run step 3's gate.** ✅ `wp-v1c-{logistic,gbt,sw-split-small}`, the last on the
+   served recipe. Scored on identical rows (the OTS eval arrays are byte-identical across datasets):
+
+   | | OTS | closed | closed worst ECE | `closed_sheet_pass` |
+   | --- | --- | --- | --- | --- |
+   | `wp-v1-gbt` | 0.5443 | 0.6028 | 0.114 | ✗ |
+   | `wp-v1c-gbt` | 0.5439 | 0.5852 | 0.099 | ✗ |
+   | `wp-v1-sw-split-small` *(served)* | 0.5648 | 0.5873 | 0.124 | ✗ |
+   | `wp-v1c-sw-split-small` | 0.5630 | **0.5813** | **0.093** | ✗ |
+
+   Better in the closed regime for nothing on OTS, and still failing — on **calibration, not
+   discrimination**, in every model. Three things came out of reading it:
+
+   - **The mechanism is partial information, and it is non-monotone.** `partial_information.py`
+     masks held-out OTS games against themselves, so the population is fixed and only knowledge
+     varies. On the served model, hiding a quarter of the opponent costs more than hiding all of it
+     (0.6189 vs 0.6079; t7+ ECE 0.110 vs 0.072), and masking at the real reveal rate reproduces
+     the real shard's t7+ ECE (0.104 vs 0.124). **On the retrained model the bump is +0.003,
+     from +0.021**, and full ignorance now edges full knowledge (0.5940 vs 0.5953) — which agrees
+     with step 3's `open` arm winning.
+   - **The GBT cannot show any of it.** Masking the whole opposing team moves `wp-v1c-gbt` by
+     0.0007, with the mask verified to change half the item and ability feature cells. Its
+     closed-regime gain is the ladder *population*, not the regime — and a null on a model that
+     does not read the inputs is not evidence about the inputs (practice 16).
+   - **Calibration was carrying a number across regimes.** One `human` temperature was fitted on
+     open-sheet rows and applied to closed-sheet ones. Split, the closed-sheet fit is **0.9901
+     against 0.8924** on 24,492 rows — the open fit sharpens by ~11% where closed-sheet play does
+     not warrant it. That took served-recipe t7+ ECE from 0.124 to 0.093. It was unfittable before
+     this step: it needs closed-sheet *training* rows. `GBTModel` has no calibration path at all,
+     so the in-battle model the app serves cannot receive it yet.
+4. **Decide on the closed-sheet self-play half — on evidence, not on the earlier prior.** The `ots`
+   thread is built (`Matchup.ots` → `play_battle`, `vgc data generate --no-ots`, the regime recorded
+   in the run summary and run id, `-closed` runs kept out of the open-sheet eval sets). What step 3
+   changed is the case for running it: the prior was that 19,238 rows (1.5% of the mix) would be
+   necessary and not sufficient, and instead they closed most of the hole they were meant to. The
+   remaining gap is calibration late in the game, so the question to answer first is whether it is
+   a data-volume problem — a learning curve over the closed-sheet share — or a calibration problem a
+   per-bucket temperature would fix. The ~26 CPU-minutes are cheap; spending them on the wrong one
+   of those is not.
+5. **Pin the eval sets, then cache them.** One step, in that order, because a cache cannot be
+   keyed on inputs nobody has named.
+
+   *Pinning first.* `EVAL_SETS` was a bare glob over `selfplay/*`, and the rebuild proved what
+   that costs: the two belief-gating runs generated on 2026-09-20 walked into `eval_selfplay_*`,
+   taking it from 395,774 to 460,296 rows under an unchanged name. The training manifest could
+   never have taken them — `--spreads sampled` prints "must not be manifested" and a manifest
+   names its files one by one — but no such guard existed on the evaluation side. The contaminant
+   is the worse half: `-spreads` runs have every spread redrawn from `vgc.belief.prior` and are
+   deliberately *not* the meta, so win probability was being scored on a distribution built to
+   stress the belief layer. Tag-excluded for now (`SELFPLAY_EVAL_EXCLUDE`, which also keeps a
+   `-closed` run from being pooled with open-sheet self-play under one name — gate rule 7); the
+   durable fix is an eval manifest that names its shards the way the training manifest does.
+
+   *Then the cache.* Keyed on the shard's `sha256` **and** a featurizer fingerprint. The two human
+   OTS eval sets came out **byte-identical** to `wp-v1`'s on this rebuild, so ~20 of the 31 minutes
+   went on reproducing files that already existed. It pays from the next featurize onward, and
+   step 4 and the 2026-12-02 rotation are both already scheduled to pay it.
+
+   The hazard is the one this project keeps meeting, so the key is the design and not the storage:
+   **`Featurizer` has no version of its own.** Snapshots are fingerprinted at `snapshots.VERSION 3`
+   because `observation()` semantics change silently; the featurizer has only `n_num`/`n_glob`
+   shapes and a vocabulary built from the regulation, so a change that redefines what a column
+   *means* without changing its width is invisible. A cache keyed on the input hash alone would
+   serve those stale rows without a word. Give the featurizer a version first, then the cache.
+
+6. **Give `GBTModel` a calibration path**, since it is the model `in_battle_version` serves and the
+   regime-split temperature cannot reach it. Its closed-regime worst ECE is 0.099.
+7. **Measure `wp` against `wp_open` on the real closed shard before changing which one the app
+   leads with.** Step 3 favours `open` by 0.011, on a gate whose masking holds item and ability at
+   zero all game. The held-out closed shard has realistic reveals and no truth for the `particles`
+   arm, so what it can answer is narrower — which of the two served numbers is better calibrated
+   where the app is used — and that is exactly the decision.
+
+~~Everything Phase 8 produces is currently being read by a model that has never seen an unknown.~~
+It has now seen 24,492 rows of one, and the belief layer's numbers can be read against a model that
+knows what "unknown" means. What they cannot yet be read against is a model that is calibrated in
+the regime the app runs in — that is steps 4, 6 and 7.
 
 ### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC — now the prerequisite for 10 and 11)_
 
@@ -643,6 +768,10 @@ Phase 4 failed its gates for reasons the gates could not express. These rules ar
    channels are still in the position that one was: `damage` and `bulk` read the opponent's item and
    ability off a sheet a cartridge does not show, and neither has been re-gated. Under this rule
    they are not sound in that regime until measured, and the app runs neither.
+   **It applies inside calibration too.** A temperature fitted on open-sheet rows and applied to a
+   closed-sheet row is a number out of its regime; split, the two fits were 0.8924 and 0.9901.
+   Every `beats` and ECE verdict now has a regime-named twin (`closed_in_battle_*`,
+   `closed_sheet_pass`), scored on the held-out Team Preview Only shard.
 
 ---
 
@@ -661,13 +790,13 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 | **The precomputed 30×30 matchup matrix** | Cancelled outright, not deferred. Finding 7 removed the quantity it would have been made of. |
 | **Regulation-portable models** (global vocabulary, pretrain on M-B, fine-tune) | Was "do after the Phase 4 gates pass". Now: do after there is a model worth porting. The M-B transfer measurement is still worth having before the 2026-12-02 rotation. |
 | **The damage and bulk channels under Team Preview Only** | A re-gate in that regime. Both were measured only on self-play, which is Open Team Sheets, so both read the opponent's item and ability off a sheet that a cartridge does not show. The turn-order channel made exactly this mistake with the nature and was 4.3% wrong because of it, so these are not assumed sound until measured. It is why `vgc.web.live` runs only the turn-order channel live — a cost argument that now has a correctness one behind it. |
-| **Any more weight on opponent set features** | An explanation for `wp-v1-gbt`. Masking the opponent's entire sheet changes nothing it predicts — all four arms of step 3's gate agree to four decimals — and it still outscores both set models there. Either the set features carry less than assumed or the GBT is being scored on something else; worth knowing which before building on them. |
+| **Any more weight on opponent set features** | An explanation for the GBT. Now confirmed three ways: all four arms of step 3's gate agree to four decimals on `wp-v1-gbt` and again on the retrained `wp-v1c-gbt`, and masking the whole opposing team on identical games moves it by 0.0007 with the mask verified to bite. It still outscores both set models on OTS. So the set features carry little *for a GBT on hand features* — yet the set encoder demonstrably reads them, since it shows the partial-information penalty and the GBT cannot. Which model family should carry the in-battle number is now the open question, not whether the features exist. |
 
 ---
 
 ## Model-building practices
 
-v1's nine practices stand. Four are amended or added by the evidence:
+v1's nine practices stand. The rest are amended or added by the evidence:
 
 1. **Don't train what you can search.** _(unchanged, and now the ordering rule — see The thesis.)_
 2. **Behaviour cloning before reinforcement learning** — _amended:_ and only on a corpus whose skill
@@ -699,6 +828,12 @@ v1's nine practices stand. Four are amended or added by the evidence:
 15. **New — before concluding "no signal", show the predictor was measured.** Phase 6's split-half
     reliability of 0.96 is what makes its negative a statement about the simulator rather than about
     a 15-battle budget. A null result from an unmeasured predictor says nothing.
+16. **New — test a mechanism on a model that reads its inputs.** The partial-information hypothesis
+    was first tested on the GBT, returned a clean null, and was nearly retracted; the GBT does not
+    read the opponent's sets at all, so it could not have shown the effect whatever the truth. On
+    the set encoder the same script found it at once. Confirm the model is sensitive to the thing
+    you are varying — mask, verify the features moved, verify the predictions moved — before a
+    null means anything.
 
 ---
 
@@ -707,7 +842,7 @@ v1's nine practices stand. Four are amended or added by the evidence:
 | Risk | Handling |
 | --- | --- |
 | ~~Phase 6 returns negative~~ **— it did** | **Realized 2026-09-20.** The handling stands as written: the product falls back to the deterministic stack — calc, weakness report, usage report, in-battle WP, closed-sheet belief. Still a real tool, and Phases 7 and 8 are untouched. Phase 9 is the route back, not a rewrite. |
-| **The closed-sheet corpus (779 battles) is too small to gate Phase 8** | Partly relieved by finding 8: the Stat-Point half of the belief is needed at open sheets too and gates on 7,459 battles. For the closed-sheet half, report n on every verdict, widen by scraping Bo1, and treat belief calibration as directional until the sample grows. |
+| **The closed-sheet corpus (779 battles) is too small to gate Phase 8** | Partly relieved by finding 8: the Stat-Point half of the belief is needed at open sheets too and gates on 7,459 battles. For the closed-sheet half, report n on every verdict, widen by scraping Bo1, and treat belief calibration as directional until the sample grows. **Now sharper:** the held-out slice of those 779 battles is **131**, which is the n behind every `closed_*` gate; t7+ alone is 283 spectator rows, and one bucket's interval has already crossed zero on it. |
 | Policy too weak → meaningless team rankings | **Confirmed, not a risk any more.** Phase 6 is the hard stop and it runs *before* the matrix; it has already stopped it once. Nothing ranks teams until a policy clears it. |
 | Phase 9 produces a stronger policy that still fails Phase 6 | Possible — VGC-Bench's agents are "approximately 100% exploitable", so strength against a fixed opponent need not mean realism. The deterministic stack is the floor either way, and the failure would be cheap to detect because the check is already built. |
 | Not enough Reg M-C replays | Established: more replays do not fix preview (finding 1). They still help in-battle WP and the closed-sheet regime, which is where scraping effort should go. |

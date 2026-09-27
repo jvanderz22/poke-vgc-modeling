@@ -1,0 +1,30 @@
+{
+ "version": "wp-v1c-gbt",
+ "replays": 400,
+ "positions": 4075,
+ "k": 24,
+ "note": "held-out human OTS replays; the set prior is counted from training teams only",
+ "logloss": {
+  "true": 0.5618,
+  "mode": 0.5618,
+  "particles": 0.5618,
+  "open": 0.5619,
+  "true_shrunk": 0.5618
+ },
+ "brier": {
+  "true": 0.1934,
+  "mode": 0.1934,
+  "particles": 0.1934,
+  "open": 0.1935,
+  "true_shrunk": 0.1934
+ },
+ "confidence": {
+  "true": 0.1867,
+  "mode": 0.1867,
+  "particles": 0.1867,
+  "open": 0.1849,
+  "true_shrunk": 0.1867
+ },
+ "shrink_factor": 1.0,
+ "base_rate_p1": 0.4611
+}
