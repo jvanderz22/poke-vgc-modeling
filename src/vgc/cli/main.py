@@ -524,12 +524,17 @@ def cmd_data_generate(args: argparse.Namespace) -> int:
               f"top team {max(weights):.3%} of battles vs uniform {1 / len(pool):.3%}")
     if args.per_pair > 1:
         pairs = args.n // args.per_pair
-        ms = paired_matchups(teams, pairs, args.per_pair, args.policy_a, args.policy_b, seed=args.seed, weights=weights)
+        ms = paired_matchups(teams, pairs, args.per_pair, args.policy_a, args.policy_b, seed=args.seed,
+                             weights=weights, ots=args.ots)
         suffix = f"-p{pairs}x{args.per_pair}"
     else:
-        ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed, weights=weights)
+        ms = gauntlet_matchups(teams, args.n, args.policy_a, args.policy_b, seed=args.seed,
+                               weights=weights, ots=args.ots)
         suffix = f"-n{args.n}"
     tag = "-spreads" if args.spreads == "sampled" else ""
+    # The regime goes in the run id, because a shard's regime has to be visible at the point
+    # someone decides whether to put it in a manifest.
+    tag += "" if args.ots else "-closed"
     run_id = args.run_id or f"gen-{args.policy_a}-{args.policy_b}{tag}-s{args.seed}{suffix}"
     _print_run(run(ms, reg_id=reg.id, seed=args.seed, workers=args.workers, run_id=run_id))
     r = extract_selfplay(SELFPLAY / run_id, reg, workers=args.workers)
@@ -988,6 +993,10 @@ def cmd_wp_registry(args: argparse.Namespace) -> int:
             # The split verdict: usable during a battle even when the pooled set fails on preview.
             if not g.get("all_pass") and g.get("in_battle_pass"):
                 tail += "  [in-battle: PASS]"
+            # And the regime verdict, which is the one the app is covered by. A model scored
+            # before the closed-sheet eval set existed has no opinion here, and says so.
+            cs = g.get("closed_sheet_pass")
+            tail += "  [closed sheets: not scored]" if cs is None else f"  [closed sheets: {'PASS' if cs else 'FAIL'}]"
         if h and current:
             if not e.get("eval_sha256"):
                 tail += "  [scored before eval fingerprints — comparability unknown]"
@@ -1129,6 +1138,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="'sampled' redraws every spread from vgc.belief.prior — for gating the "
                         "belief layer, never for training (see the flag's note when it runs)")
     p.add_argument("--spread-seed", type=int, default=11)
+    p.add_argument("--no-ots", dest="ots", action="store_false", default=True,
+                   help="play with team sheets hidden (Team Preview Only), the regime a cartridge "
+                        "is in — every self-play shard before this flag existed is Open Team Sheets")
     p.add_argument("--per-pair", type=int, default=1,
                    help="battles per team pairing (>1 repeats pairings, which is what team-preview WP needs)")
     p.add_argument("--usage-alpha", type=float, default=0.0,

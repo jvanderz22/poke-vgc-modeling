@@ -25,10 +25,16 @@ from typing import Any
 import numpy as np
 
 from vgc import paths
-from vgc.wp.features import Featurizer, Vocab, featurize, hand_features, logistic_columns
+from vgc.wp.features import KINDS, Featurizer, Vocab, featurize, hand_features, logistic_columns
 
 MODELS = paths.ROOT / "models"
 REGISTRY = MODELS / "registry.json"
+
+# `Featurizer._glob` lays out: turn, one-hot over KINDS, perspective, ctx_human, approx,
+# both-sheets-open. Derived rather than written as 8, because the two callers that need it are
+# calibration and inference and a silent off-by-one there would mis-temperature every row.
+HUMAN_CTX_COL = len(KINDS) + 2
+SHEETS_COL = len(KINDS) + 4
 
 
 def model_dir(reg_id: str, version: str) -> Path:
@@ -117,7 +123,8 @@ class SetModel(WPModel):
     kind = "set"
     has_bring = True
 
-    def __init__(self, path: Path, calibration: dict | None = None, human_ctx_col: int = 6):
+    def __init__(self, path: Path, calibration: dict | None = None, human_ctx_col: int = 6,
+                 sheets_col: int = SHEETS_COL):
         import onnxruntime as ort
 
         opts = ort.SessionOptions()
@@ -125,13 +132,29 @@ class SetModel(WPModel):
         self.session = ort.InferenceSession(str(path), opts, providers=["CPUExecutionProvider"])
         self.calibration = calibration or {}
         self.human_ctx_col = human_ctx_col
+        self.sheets_col = sheets_col
 
     def _temperatures(self, glob: np.ndarray) -> np.ndarray:
-        """Per-row temperature: human play and bot play are calibrated separately."""
+        """Per-row temperature: play context *and* information regime are calibrated separately.
+
+        The regime split is a gate-rule-7 fix rather than a tuning idea. A temperature fitted on
+        open-sheet rows and applied to a closed-sheet row is a number travelling out of the regime
+        it was measured in, which is the mistake the rule exists to stop — and it was measurable:
+        every model fails `closed_in_battle_ece` on calibration while its log loss holds up.
+
+        It only became possible on 2026-09-21. Fitting a closed-sheet temperature needs
+        closed-sheet *training* rows, and until the ladder shard entered the manifest there were
+        none; a model with no such rows falls back to the open-sheet temperature, which is what
+        every model shipped before that date does.
+        """
         if not self.calibration:
             return np.ones(len(glob))
         human = glob[:, self.human_ctx_col] == 1
-        return np.where(human, self.calibration.get("human", 1.0), self.calibration.get("selfplay", 1.0))
+        closed = glob[:, self.sheets_col] == 0
+        human_t = np.where(closed, self.calibration.get("human_closed",
+                                                        self.calibration.get("human", 1.0)),
+                           self.calibration.get("human", 1.0))
+        return np.where(human, human_t, self.calibration.get("selfplay", 1.0))
 
     def predict(self, d, bs: int = 4096):
         wp, br = [], []
@@ -326,15 +349,26 @@ def fit_temperature(logit: np.ndarray, y: np.ndarray) -> float:
 
 
 def calibrate(reg_id: str, version: str, train: dict[str, np.ndarray], val: dict[str, np.ndarray],
-              human_ctx_col: int = 6) -> dict[str, Any]:
-    """Fit one temperature per play context. Bot self-play and human play differ in how decisive
-    positions are, and validation is mostly self-play, so a single temperature leaves human
-    predictions over-confident. Human rows come from the *training* manifest — never a held-out set."""
+              human_ctx_col: int = 6, sheets_col: int = SHEETS_COL) -> dict[str, Any]:
+    """Fit one temperature per play context *and* information regime.
+
+    Bot self-play and human play differ in how decisive positions are, and validation is mostly
+    self-play, so a single temperature leaves human predictions over-confident. Open and closed
+    sheets differ again: `partial_information.py` shows a set model's ECE rising from 0.032 to
+    0.053 when a quarter of the opponent is hidden, which is a confidence fault and not a
+    discrimination one, so a temperature is the right shape of fix for it.
+
+    Human rows come from the *training* manifest — never a held-out set. The closed-sheet bucket
+    is empty for any model trained before the ladder shard was manifested, and an empty bucket is
+    written as absent so `_temperatures` falls back to the open-sheet value rather than to 1.0.
+    """
     out = model_dir(reg_id, version)
     model = load_model(reg_id, version)
     temps = {}
+    human = train["glob"][:, human_ctx_col] == 1
     for name, d, rows in (("selfplay", val, val["glob"][:, human_ctx_col] == 0),
-                          ("human", train, train["glob"][:, human_ctx_col] == 1)):
+                          ("human", train, human & (train["glob"][:, sheets_col] == 1)),
+                          ("human_closed", train, human & (train["glob"][:, sheets_col] == 0))):
         sub = {k: v[rows] for k, v in d.items() if k != "battle_names"}
         if not len(sub["y"]):
             continue

@@ -277,6 +277,32 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> 
         verdict("preview_beats_constant", None, n=prev["n"], logloss=prev["logloss"],
                 note="no constant baseline in this evaluation")
 
+    # --- the other information regime -----------------------------------------------------
+    # Gate rule 7: a number does not travel out of the regime it was measured in. Everything
+    # above is Open Team Sheets, which is the Bo3 ladder and not the cartridge. `human_closed`
+    # is the Team Preview Only shard: the opponent's item, ability and moves are unknown until
+    # they are shown, which is the regime the app runs in and the one finding 8 says the model
+    # had never been trained through. Scored separately, with its own n, and never merged into
+    # the OTS numbers.
+    closed = results.get("human_closed", {}).get("perspectives", {}).get("spectator", {})
+    cby = closed.get("by_turn") or {}
+    cconst = (((baselines or {}).get("constant", {}).get("human_closed", {})
+               .get("perspectives", {}).get("spectator", {}).get("by_turn")) or {})
+    chave = [b for b in IN_BATTLE_BUCKETS if (cby.get(b) or {}).get("logloss") is not None]
+    if chave:
+        closed_losing = [b for b in chave if not (cby[b].get("vs_constant") or {}).get("beats")]
+        verdict("closed_in_battle_beats_constant", (not closed_losing) if cconst else None,
+                n=sum(cby[b]["n"] for b in chave),
+                battles=max((cby[b].get("vs_constant") or {}).get("battles") or 0 for b in chave),
+                logloss={b: cby[b]["logloss"] for b in chave},
+                constant={b: (cconst.get(b) or {}).get("logloss") for b in chave},
+                delta_95ci={b: (cby[b].get("vs_constant") or {}).get("delta_95ci") for b in chave},
+                losing_buckets=closed_losing)
+        cworst = max(chave, key=lambda b: cby[b]["ece"])
+        verdict("closed_in_battle_ece", cby[cworst]["ece"] < ECE_GATE, worst_bucket=cworst,
+                ece=cby[cworst]["ece"], threshold=ECE_GATE, n=cby[cworst]["n"],
+                by_bucket={b: cby[b]["ece"] for b in chave})
+
     def group(keys: tuple[str, ...]) -> bool | None:
         vals = [out[k]["pass"] for k in keys if k in out]
         return None if (not vals or None in vals) else all(vals)
@@ -286,17 +312,28 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> 
     # reasons about team preview. A model can honestly be one and not the other.
     out["in_battle_pass"] = group(("in_battle_beats_constant", "in_battle_ece",
                                    "ece_spectator_played_out"))
+    # A third, for the regime the app is actually in. `in_battle_pass` is an Open Team Sheets
+    # verdict and says nothing about a cartridge game; this one is what the live page needs.
+    out["closed_sheet_pass"] = group(("closed_in_battle_beats_constant", "closed_in_battle_ece"))
     out["all_pass"] = all(g["pass"] for g in out.values() if isinstance(g, dict) and "pass" in g)
     return out
 
 
 def headline(results: dict[str, Any]) -> dict[str, Any]:
-    """The numbers that matter: held-out human OTS games."""
-    h = results.get("human_ots_all", {}).get("perspectives", {})
+    """The numbers that matter: held-out human games, one entry per information regime.
+
+    The two regimes are kept apart and both are carried, because the OTS shard is 30k rows of a
+    format the app never sees and the closed-sheet shard is ~4k rows of the one it does. A single
+    headline would have to pick one to be silently wrong about."""
     out = {}
+    h = results.get("human_ots_all", {}).get("perspectives", {})
     for name in ("spectator", "player_approx"):
         if name in h:
             out[f"human_{name}"] = {k: h[name]["all"][k] for k in ("n", "logloss", "brier", "ece")}
+    c = results.get("human_closed", {}).get("perspectives", {})
+    for name in ("spectator", "player_approx"):
+        if name in c:
+            out[f"closed_{name}"] = {k: c[name]["all"][k] for k in ("n", "logloss", "brier", "ece")}
     return out
 
 

@@ -36,7 +36,12 @@ FORMAT    := $(shell $(VENV)/python -c "from vgc.regulation import load_regulati
 REPLAYS   := data/replays/.stamp-$(REG)
 SELFPLAY  := data/selfplay/$(RUN_ID)/battles.jsonl.gz
 SNAPSHOTS := data/snapshots/$(REG)/selfplay/$(RUN_ID)/train.jsonl.gz
-HUMAN     := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
+# Both human shards. The Bo3 one is Open Team Sheets and the ladder one is Team Preview Only;
+# naming only the Bo3 one here is how the closed-sheet corpus came to exist on disk and never be
+# trained on (PLAN-v2 finding 8). A model that must read a cartridge game needs both.
+HUMAN_OTS    := data/snapshots/$(REG)/human/$(FORMAT)bo3/train.jsonl.gz
+HUMAN_CLOSED := data/snapshots/$(REG)/human/$(FORMAT)/train.jsonl.gz
+HUMAN        := $(HUMAN_OTS) $(HUMAN_CLOSED)
 MANIFILE  := data/snapshots/$(REG)/manifests/$(MANIFEST).json
 FEATURES  := data/features/$(REG)/$(DATASET)/info.json
 
@@ -79,8 +84,13 @@ $(SELFPLAY): | $(REPLAYS)
 $(SNAPSHOTS): $(SELFPLAY)
 	$(VGC) data extract --regulation $(REG) --run data/selfplay/$(RUN_ID) --workers $(WORKERS)
 
-$(HUMAN): $(REPLAYS)
+# One command writes both shards, so the recipe hangs off the Bo3 one and the closed-sheet one
+# is simply ordered after it. Two targets sharing a recipe would run the 90-second extraction
+# twice.
+$(HUMAN_OTS): $(REPLAYS)
 	$(VGC) data human --regulation $(REG) --format both
+
+$(HUMAN_CLOSED): $(HUMAN_OTS)
 
 # The manifest re-reads every record and refuses to be written if it touches held-out data or
 # mixes snapshot versions. That check is the point of the step, so it always runs.

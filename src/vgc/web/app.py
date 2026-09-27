@@ -92,6 +92,11 @@ def gate_summary(version: str) -> dict[str, Any]:
             # Separate verdict for a battle in progress: a model can be trustworthy turn by turn
             # and useless at preview, which is exactly where Reg M-C stands today.
             "in_battle_pass": gates.get("in_battle_pass"),
+            # And a third, for the regime. `in_battle_pass` is scored on Open Team Sheets games,
+            # which the Bo3 ladder plays and a cartridge does not; this one is scored on the
+            # held-out Team Preview Only shard, which is the regime this app is used in.
+            "closed_sheet_pass": gates.get("closed_sheet_pass"),
+            "closed_headline": entry.get("headline", {}).get("closed_spectator", {}),
             "headline": entry.get("headline", {}).get("human_spectator", {})}
 
 

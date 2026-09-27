@@ -293,12 +293,20 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
 def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
     """P(you win) from here — an average over what they might be holding, not one guess.
 
-    Every WP model was trained with the opponent fully visible; the known-flags are 1.000 across
-    all 433,052 rows. A Team Preview Only position is therefore not a row any model has seen, and
-    there are two ways to handle that. The one this used to do was fill the unknowns with each
-    species' single most common set, which keeps the input in distribution and states one guess as
-    fact — and Incineroar's most common set is **17.7% of its sheets**, so that guess is wrong
-    five times in six.
+    Until 2026-09-21 every WP model was trained with the opponent fully visible — known-flags
+    1.000 across all 433,052 rows — because the closed-sheet shard existed on disk and was absent
+    from the manifest. It is in the mix now (`wp-v1c`), and that moved the numbers a little
+    without changing the shape of the problem: every model still fails `closed_in_battle_ece`,
+    overconfident late in a closed-sheet game.
+
+    What the mix did buy is the reason to prefer drawing over guessing, which is now measured
+    rather than assumed. `scripts/analysis/partial_information.py` masks held-out games against
+    themselves and finds the penalty is **non-monotone**: hiding a quarter of the opponent costs
+    more than hiding all of it (ECE 0.053 against 0.047, and 0.110 against 0.072 at t7+). A real
+    Team Preview Only position sits in that hole. Filling it with complete draws moves it out;
+    guessing one set keeps it in, because a wrong guess is a *partly* wrong opponent — and
+    Incineroar's most common set is **17.7% of its sheets**, so that guess is wrong five times in
+    six.
 
     The one it does now is draw `k` complete opponents from the belief and average. Every one of
     them is a fully-known row, so every one is in distribution; the mean is a Monte-Carlo estimate

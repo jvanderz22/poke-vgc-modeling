@@ -42,7 +42,12 @@ export type Gates = {
   preview_gate?: boolean | null; bring_gate?: boolean | null;
   /** Separate verdict for a battle in progress — a model can pass this and fail preview. */
   in_battle_pass?: boolean | null;
+  /** And for the information regime. Everything else is scored on Open Team Sheets games,
+   *  which the Bo3 ladder plays and a cartridge does not; this is the held-out Team Preview
+   *  Only shard, which is the regime this app is used in. Null means never scored there. */
+  closed_sheet_pass?: boolean | null;
   headline?: { n?: number; logloss?: number; brier?: number; ece?: number };
+  closed_headline?: { n?: number; logloss?: number; brier?: number; ece?: number };
 };
 
 export type ModelRow = Gates & { kind: string; created: string };

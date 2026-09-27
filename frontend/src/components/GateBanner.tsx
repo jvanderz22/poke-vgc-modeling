@@ -21,6 +21,7 @@ export function GateBanner({ gates }: { gates: Gates | null }) {
         {gates.headline?.logloss != null && (
           <span className="dim"> · held-out human log loss {gates.headline.logloss.toFixed(4)}</span>
         )}
+        <RegimeNote gates={gates} />
       </div>
     );
   }
@@ -44,6 +45,39 @@ export function GateBanner({ gates }: { gates: Gates | null }) {
           covered by the warning above.
         </div>
       )}
+      <RegimeNote gates={gates} />
+    </div>
+  );
+}
+
+/** Which information regime the verdict above was reached in.
+ *
+ *  Every other gate here is scored on the Bo3 ladder, where both team sheets are shown. A game
+ *  on a cartridge shows neither, and a model fit only on open sheets has never had an unknown
+ *  opponent in a training row — so "passes the in-battle gates" was a claim about a format this
+ *  app is never used in. This is the same question asked on the held-out Team Preview Only
+ *  shard, and the number of rows is part of the answer: it is a small set and says so. */
+function RegimeNote({ gates }: { gates: Gates }) {
+  const n = gates.closed_headline?.n;
+  if (gates.closed_sheet_pass == null) {
+    return (
+      <div className="tiny" style={{ marginTop: 6 }}>
+        Not scored with team sheets hidden. Everything above is an Open Team Sheets number, which
+        is the Bo3 ladder and not a cartridge game — re-run <code>vgc wp eval</code> on a dataset
+        built since the closed-sheet held-out set was added.
+      </div>
+    );
+  }
+  return (
+    <div className="tiny" style={{ marginTop: 6 }}>
+      With team sheets hidden — the regime you are actually in —{" "}
+      {gates.closed_sheet_pass ? "this model still beats 50% turn by turn and stays calibrated"
+                               : <b>this model does not hold up turn by turn</b>}
+      {gates.closed_headline?.logloss != null && (
+        <span className="dim"> (log loss {gates.closed_headline.logloss.toFixed(4)}
+          {n != null && `, ${n.toLocaleString()} held-out rows`})</span>
+      )}
+      .
     </div>
   );
 }

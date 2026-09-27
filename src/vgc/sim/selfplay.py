@@ -38,6 +38,12 @@ class Matchup:
     team_a_id: str = ""
     team_b_id: str = ""
     swap_sides: bool = False  # play A as p2 (alternate sides to cancel any p1/p2 bias)
+    # Open Team Sheets. Every self-play battle ever generated here was played with them on, so
+    # the opponent's item, ability and moves are known on every row of the training mix and a
+    # model trained on it has never seen an unknown (PLAN-v2 finding 8). `ots=False` plays the
+    # regime a cartridge is in. It belongs on the matchup rather than the run so a run can mix
+    # the two, which is what a model that must handle both needs.
+    ots: bool = True
 
 
 # --- worker ----------------------------------------------------------------------------
@@ -78,7 +84,7 @@ def _play(task: tuple[int, str, list[int], Matchup]) -> dict[str, Any]:
         rec: BattleRecord = play_battle(
             _W["runner"], f"{run_id}-{index}", seed, reg.showdown_format,
             teams=(sides[0][0], sides[1][0]), policies=(_policy(sides[0][1]), _policy(sides[1][1])),
-            team_ids=(sides[0][2], sides[1][2]),
+            team_ids=(sides[0][2], sides[1][2]), ots=m.ots,
         )
     except Exception as e:  # keep the run going; record the failure
         return {"index": index, "seed": seed, "error": f"{type(e).__name__}: {e}"}
@@ -147,6 +153,9 @@ def run(
         "wall_seconds": round(wall, 1),
         "battles_per_second": round(len(results) / wall, 2),
         "policies": sorted({(m.policy_a, m.policy_b) for m in matchups}),
+        # Which information regime the run was played in. Recorded because it is not recoverable
+        # from the run id, and a mix whose regime nobody checked is what finding 8 was about.
+        "ots": sorted({bool(m.ots) for m in matchups}),
         # Fingerprint of outcomes: identical across reruns with the same seed and matchups.
         "outcome_digest": _digest([(r["index"], r.get("winner"), r.get("turns")) for r in results]),
     }
@@ -168,7 +177,7 @@ def load_battles(out_dir: Path) -> list[dict[str, Any]]:
 
 def gauntlet_matchups(
     teams: list[tuple[str, str]], n: int, policy_a: str, policy_b: str, seed: int = 0,
-    weights: list[float] | None = None,
+    weights: list[float] | None = None, ots: bool = True,
 ) -> list[Matchup]:
     """`n` battles between random pairs of (id, text) teams, alternating sides."""
     import random
@@ -177,7 +186,7 @@ def gauntlet_matchups(
     out = []
     for i in range(n):
         (ia, ta), (ib, tb) = _sample_pair(rng, teams, weights)
-        out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2)))
+        out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2), ots=ots))
     return out
 
 
@@ -193,7 +202,7 @@ def _sample_pair(rng, teams: list, weights: list[float] | None) -> tuple:
 
 def paired_matchups(
     teams: list[tuple[str, str]], pairs: int, per_pair: int, policy_a: str, policy_b: str, seed: int = 0,
-    weights: list[float] | None = None,
+    weights: list[float] | None = None, ots: bool = True,
 ) -> list[Matchup]:
     """`pairs` distinct team pairings, each played `per_pair` times with sides alternating.
 
@@ -207,7 +216,7 @@ def paired_matchups(
     for _ in range(pairs):
         (ia, ta), (ib, tb) = _sample_pair(rng, teams, weights)
         for i in range(per_pair):
-            out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2)))
+            out.append(Matchup(ta, tb, policy_a, policy_b, ia, ib, swap_sides=bool(i % 2), ots=ots))
     return out
 
 

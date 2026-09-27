@@ -106,3 +106,26 @@ def test_pool_selfplay_is_clean_and_reproducible(reg, tmp_path):
     b = run(ms, seed=3, workers=1, out_dir=tmp_path / "b", keep_logs=False)
     assert a["errors"] == 0 and a["invalid_choices"] == 0, a["error_examples"]
     assert a["outcome_digest"] == b["outcome_digest"]
+
+
+def test_selfplay_can_hide_team_sheets(reg, tmp_path):
+    """`ots=False` plays the regime a cartridge is in, and says so on the record.
+
+    Every self-play shard generated before the flag existed is Open Team Sheets, which is why
+    the opponent's item/ability/move known-flags are 1.000 on every self-play training row
+    (PLAN-v2 finding 8). The test that matters is not that the flag is stored but that the
+    battle is genuinely played with the sheets hidden, so it asserts on the protocol: an open
+    sheet announces itself with `|showteam|` at team preview and a closed one does not.
+    """
+    from vgc.meta.pool import load_pool
+    from vgc.sim.selfplay import gauntlet_matchups, load_battles, run
+
+    teams = [(f"pool{i}", t.text) for i, t in enumerate(load_pool(reg))][:8]
+    for ots in (True, False):
+        ms = gauntlet_matchups(teams, 4, "random", "random", seed=3, ots=ots)
+        summary = run(ms, seed=3, workers=2, out_dir=tmp_path / str(ots), run_id=f"ots-{ots}")
+        assert summary["errors"] == 0, summary["error_examples"]
+        assert summary["ots"] == [ots]
+        rows = load_battles(tmp_path / str(ots))
+        assert all(r["ots"] is ots for r in rows)
+        assert all(any(l.startswith("|showteam|") for l in r["log"]) is ots for r in rows)

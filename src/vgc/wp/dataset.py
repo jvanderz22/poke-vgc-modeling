@@ -25,13 +25,42 @@ from vgc.regulation import Regulation
 FEATURES = paths.ROOT / "data" / "features"
 VAL_RATE = 0.05
 
-# Evaluation sets for the OTS model (v1): self-play and Bo3 open-team-sheet held-out shards.
+# Evaluation sets, named by the information regime they were played in, because gate rule 7 says
+# a number does not travel out of one. The Bo3 shard is Open Team Sheets; the non-Bo3 ladder shard
+# is Team Preview Only, which is the regime a cartridge actually runs in, and it is the only place
+# a model can be asked whether it knows what an unknown opponent is.
 EVAL_SETS = {
     "human_ots": ["human/{bo3}/heldout_human.jsonl.gz"],
     "human_ots_team": ["human/{bo3}/heldout_team.jsonl.gz"],
+    "human_closed": ["human/{closed}/heldout_human.jsonl.gz"],
+    "human_closed_team": ["human/{closed}/heldout_team.jsonl.gz"],
     "selfplay_battle": ["selfplay/*/heldout_battle.jsonl.gz"],
     "selfplay_team": ["selfplay/*/heldout_team.jsonl.gz"],
 }
+
+# Self-play runs that are not the meta under open sheets, marked by the tag `vgc data generate`
+# already puts in the run id. The training manifest never takes them — `--spreads sampled` prints
+# "must not be manifested" and a manifest names its files one by one — but the eval sets were a
+# bare glob with no such guard, so the two belief-gating runs generated on 2026-09-20 walked into
+# `eval_selfplay_*` and changed it under a name that had not changed. Two different reasons to
+# exclude them, and the second is the one that matters:
+#
+#   -spreads  every spread redrawn from `vgc.belief.prior`, deliberately *not* the meta. Scoring
+#             win probability on it measures a distribution built to stress the belief layer.
+#   -closed   Team Preview Only. Gate rule 7: pooling it with open-sheet self-play under one
+#             name is the exact mistake this phase exists to undo.
+#
+# A tag is a weak key, so the rule is stated where the tag is written (`cmd_data_generate`) and
+# enforced here; the durable fix is an eval manifest that names its shards the way the training
+# manifest does.
+SELFPLAY_EVAL_EXCLUDE = ("-spreads", "-closed")
+
+
+def _eval_files(snap: Path, patterns: list[str], bo3: str, closed: str) -> list[Path]:
+    files = sorted(f for pat in patterns for f in snap.glob(pat.format(bo3=bo3, closed=closed)))
+    return [f for f in files
+            if f.parent.parent.name != "selfplay"
+            or not any(tag in f.parent.name for tag in SELFPLAY_EVAL_EXCLUDE)]
 
 _W: dict[str, Any] = {}
 
@@ -114,7 +143,7 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
     snap = paths.ROOT / "data" / "snapshots" / reg.id
     bo3 = reg.showdown_format + "bo3"
     for set_name, patterns in EVAL_SETS.items():
-        files = sorted(f for pat in patterns for f in snap.glob(pat.format(bo3=bo3)))
+        files = _eval_files(snap, patterns, bo3, reg.showdown_format)
         if files:
             d = featurize_files(files, reg, workers)
             np.savez_compressed(out / f"eval_{set_name}.npz", **d)
