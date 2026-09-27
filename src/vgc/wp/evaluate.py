@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 
 from vgc.wp.features import KINDS
-from vgc.wp.models import WPModel, symmetrize
+from vgc.wp.models import CLOSED, OPEN, REGIME_GATES, WPModel, symmetrize
 
 PERSPECTIVES = {0: "spectator", 1: "player", 2: "player_approx"}
 PREVIEW, BRING = KINDS.index("preview"), KINDS.index("bring")
@@ -307,14 +307,13 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> 
         vals = [out[k]["pass"] for k in keys if k in out]
         return None if (not vals or None in vals) else all(vals)
 
-    # Two verdicts, because there are two jobs. `in_battle_pass` is what the app needs to know
-    # before it draws a WP number on a battle in progress; `all_pass` still governs anything that
-    # reasons about team preview. A model can honestly be one and not the other.
-    out["in_battle_pass"] = group(("in_battle_beats_constant", "in_battle_ece",
-                                   "ece_spectator_played_out"))
-    # A third, for the regime the app is actually in. `in_battle_pass` is an Open Team Sheets
-    # verdict and says nothing about a cartridge game; this one is what the live page needs.
-    out["closed_sheet_pass"] = group(("closed_in_battle_beats_constant", "closed_in_battle_ece"))
+    # One in-battle verdict per information regime, because there are separate jobs: each is what
+    # the app needs to know before it draws a WP number on a battle played in that regime, while
+    # `all_pass` still governs anything that reasons about team preview. A model can honestly be
+    # one and not the other. Open first, so the card's key order does not move.
+    for sheets in (OPEN, CLOSED):
+        name, parts = REGIME_GATES[sheets]
+        out[name] = group(parts)
     out["all_pass"] = all(g["pass"] for g in out.values() if isinstance(g, dict) and "pass" in g)
     return out
 

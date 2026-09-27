@@ -680,6 +680,26 @@ Order of work:
    arm, so what it can answer is narrower — which of the two served numbers is better calibrated
    where the app is used — and that is exactly the decision.
 
+**Which model the app serves is now pinned, per regime (2026-09-27).** It was "newest registered
+wins", so registering `wp-v1c` silently moved every page: the brings ranking and the Battle page to
+`wp-v1c-sw-split-small`, and Simulate and endgames to `wp-v1c-gbt`. The Battle page was also showing
+a WP from a model that fails `in_battle_pass`, with no banner, while the brings page's banner said
+the Battle page used a gate-passing model. `models/served.json` now names three roles, and a pin to
+an unregistered model is an error rather than a fallback:
+
+| role | model | why |
+| --- | --- | --- |
+| `bring` | `wp-v1c-sw-split-small` | only a set encoder has a bring head |
+| `in_battle_open` | `wp-v1c-gbt` | passes `in_battle_pass`, which is scored on open sheets; that it ignores the sets costs nothing when the sheet shows them |
+| `in_battle_closed` | `wp-v1c-sw-split-small` | nothing passes `closed_sheet_pass`; best there (0.5813 / 0.093 against 0.5852 / 0.099), and the only family whose belief band means anything |
+
+The regimes are named once, in `vgc.wp.models` (`SHEETS`, and `REGIME_GATES` for the verdict each
+answers to, which the evaluator's roll-ups are built from too); `/api/models` lists them with their
+pinned model, and the new-battle form's toggle is built from that list. A battle is started as open
+or closed (before, the form could only start closed), records the model it was started with, and shows that model's verdict *for its
+regime* on the Battle page. So step 7 applies to closed-sheet battles only: with open sheets the
+model is the GBT, and there `wp` and `wp_open` are the same number.
+
 ~~Everything Phase 8 produces is currently being read by a model that has never seen an unknown.~~
 It has now seen 24,492 rows of one, and the belief layer's numbers can be read against a model that
 knows what "unknown" means. What they cannot yet be read against is a model that is calibrated in

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, ApiError, type BattleRow, type Entry, type LiveView, type SavedTeam, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, SHEET_LABELS, type BattleRow, type Entry, type LiveView, type Mode, type SavedTeam, type Sheets, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
+import { BattleGateBanner } from "./GateBanner";
 import { Questions } from "./Questions";
 import { SpeciesPicker } from "./SpeciesPicker";
 import { linkProps, tabRoute, type Navigate, type Route } from "../router";
@@ -82,6 +83,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
           <div>
             <b>{view.name}</b>{" "}
             <span className="dim small">
+              {SHEET_LABELS[view.sheets]?.short ?? view.sheets} ·{" "}
               {view.started ? `turn ${view.turn}` : "team preview"} · {view.entries} taps
             </span>
           </div>
@@ -92,6 +94,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
         </div>
         <WPBar view={view} />
       </div>
+      <BattleGateBanner gates={view.gates} verdict={view.verdict} />
 
       <Questions questions={view.questions} onAnswer={(e) => log([e])} busy={busy} />
 
@@ -334,7 +337,10 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   const [rows, setRows] = useState<BattleRow[]>([]);
   const [pool, setPool] = useState<Species[]>([]);
   const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
+  const [modes, setModes] = useState<Mode[]>([]);
+  const [sheets, setSheets] = useState<Sheets | null>(null);
   const [theirs, setTheirs] = useState<(string | null)[]>(Array(6).fill(null));
+  const [theirSheet, setTheirSheet] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -344,6 +350,13 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   }, [reg]);
 
   useEffect(() => { refresh(); api.pool(reg).then((p) => setPool(p.species)).catch(() => {}); }, [reg, refresh]);
+  // The modes on offer are the backend's, so the form cannot offer one it has no model for.
+  useEffect(() => {
+    api.models(reg).then((m) => {
+      setModes(m.modes);
+      setSheets((cur) => cur ?? m.modes.find((x) => x.version)?.sheets ?? null);
+    }).catch(() => {});
+  }, [reg]);
   useEffect(() => { if (!teamId && teams[0]) setTeamId(teams[0].id); }, [teams, teamId]);
 
   const chosen = theirs.filter(Boolean) as string[];
@@ -353,7 +366,8 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     setBusy(true);
     setError(null);
     try {
-      const v = await api.newBattle({ name, team_id: teamId, their_species: chosen, regulation: reg });
+      const opponent = sheets === "open" ? { their_team: theirSheet } : { their_species: chosen };
+      const v = await api.newBattle({ name, team_id: teamId, regulation: reg, ...opponent });
       navigate({ tab: "battle", battle: v.id, step: null });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
@@ -377,23 +391,50 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
                 <input type="text" value={name} placeholder="what to call it (optional)"
                        style={{ flex: 1 }} onChange={(e) => setName(e.target.value)} />
               </div>
-              <label>Their six, from team preview</label>
-              <div className="slots">
-                {theirs.map((s, i) => (
-                  <SpeciesPicker key={i} value={s} placeholder={`Pokémon ${i + 1}`}
-                                 pool={s ? pool : pool.filter((x) => !taken.has(x.name))}
-                                 onPick={(n) => setTheirs(theirs.map((x, j) => (j === i ? n : x)))} />
+              <div className="row" style={{ marginBottom: 10 }}>
+                <span className="dim small">Team sheets</span>
+                {modes.map((m) => (
+                  <button key={m.sheets} className={sheets === m.sheets ? "" : "ghost"}
+                          aria-pressed={sheets === m.sheets} disabled={!m.version}
+                          title={m.version ? `win probability from ${m.version}` : "no model for this mode"}
+                          onClick={() => setSheets(m.sheets)}>
+                    {SHEET_LABELS[m.sheets]?.button ?? m.sheets}
+                  </button>
                 ))}
               </div>
+              {sheets === "closed" ? (
+                <>
+                  <label>Their six, from team preview</label>
+                  <div className="slots">
+                    {theirs.map((s, i) => (
+                      <SpeciesPicker key={i} value={s} placeholder={`Pokémon ${i + 1}`}
+                                     pool={s ? pool : pool.filter((x) => !taken.has(x.name))}
+                                     onPick={(n) => setTheirs(theirs.map((x, j) => (j === i ? n : x)))} />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <label>Their open team sheet, as Showdown text</label>
+                  <textarea value={theirSheet} rows={10} style={{ width: "100%" }}
+                            placeholder={"Incineroar @ Sitrus Berry\nAbility: Intimidate\nCareful Nature\n- Fake Out\n..."}
+                            onChange={(e) => setTheirSheet(e.target.value)} />
+                </>
+              )}
               <div className="row" style={{ marginTop: 10 }}>
-                <button disabled={busy || chosen.length !== 6 || !teamId} onClick={start}>Start</button>
-                <span className="tiny dim">{chosen.length}/6 chosen</span>
+                <button disabled={busy || !teamId || !sheets || (sheets === "closed" ? chosen.length !== 6 : !theirSheet.trim())}
+                        onClick={start}>Start</button>
+                {sheets === "closed" && <span className="tiny dim">{chosen.length}/6 chosen</span>}
               </div>
               {error && <p className="small err" style={{ marginBottom: 0 }}>{error}</p>}
               <p className="tiny dim" style={{ margin: "10px 2px 0" }}>
-                Six species is all team preview gives you, and it is all this needs. Everything
-                else — their items, their abilities, how they built each one — is what the battle
-                is going to tell you, one tap at a time.
+                {sheets === "closed"
+                  ? <>Six species is all team preview gives you, and it is all this needs. Everything
+                      else — their items, their abilities, how they built each one — is what the
+                      battle is going to tell you, one tap at a time.</>
+                  : <>An open sheet shows their items, abilities, moves and natures — but not their
+                      Stat Points, so their Speed and damage are still worked out from the battle.</>}
+                {" "}The win probability comes from the model chosen for this kind of battle.
               </p>
             </>
           )}
@@ -408,7 +449,9 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
                  {...linkProps({ tab: "battle", battle: b.id, step: null }, navigate)}>
                 <span><b>{b.name}</b> <span className="dim tiny">{b.updated.replace("T", " ")}</span></span>
                 <span className="dim tiny">{b.theirs.join(" · ")}</span>
-                <span className="dim tiny">{b.turn ? `turn ${b.turn}` : "preview"} · {b.entries} taps</span>
+                <span className="dim tiny">
+                  {SHEET_LABELS[b.sheets]?.short ?? b.sheets} · {b.turn ? `turn ${b.turn}` : "preview"} · {b.entries} taps
+                </span>
                 <button className="danger" onClick={async (e) => {
                   e.preventDefault();
                   await api.deleteBattle(b.id, reg);

@@ -174,21 +174,80 @@ def registered(reg_id: str) -> list[dict[str, Any]]:
             if e["regulation"] == reg_id]
 
 
+SERVED = MODELS / "served.json"
+
+# The information regimes a battle can be played in, and the one place they are named. Everything
+# that offers, pins, gates or labels a regime reads this: `served.json`'s roles, the evaluator's
+# roll-ups, `/api/models`' list of modes, and the new-battle form built from that list.
+OPEN, CLOSED = "open", "closed"
+SHEETS = (CLOSED, OPEN)          # the order the app offers them in; a cartridge game comes first
+# Each regime's in-battle verdict, and the gates it rolls up. `in_battle_pass` is scored on Open
+# Team Sheets games and `closed_sheet_pass` on the held-out Team Preview Only shard.
+REGIME_GATES: dict[str, tuple[str, tuple[str, ...]]] = {
+    OPEN: ("in_battle_pass", ("in_battle_beats_constant", "in_battle_ece", "ece_spectator_played_out")),
+    CLOSED: ("closed_sheet_pass", ("closed_in_battle_beats_constant", "closed_in_battle_ece")),
+}
+ROLES = ("bring",) + tuple(f"in_battle_{s}" for s in SHEETS)
+
+
+def check_sheets(sheets: str) -> str:
+    if sheets not in SHEETS:
+        raise ValueError(f"sheets must be one of {SHEETS}, not {sheets!r}")
+    return sheets
+
+
+def regime_verdict(gates: dict[str, Any], sheets: str) -> dict[str, Any]:
+    """One regime's in-battle verdict for a model, and which of its gates failed."""
+    name, parts = REGIME_GATES[check_sheets(sheets)]
+    failed = [g for g in parts if isinstance(gates.get(g), dict) and gates[g].get("pass") is False]
+    return {"sheets": sheets, "gate": name, "pass": gates.get(name), "failed": failed}
+
+
+def served(reg_id: str, role: str) -> str | None:
+    """The model a person chose for this role, from `models/served.json`, or None if nobody has.
+
+    Which model the app serves is a decision, and it used to be a side effect: "newest registered
+    wins" meant registering a retrained model swapped what every page showed, with nothing in the
+    diff saying so. A pin to a model the registry does not have is an error rather than a fallback,
+    because falling back is how a swap goes unnoticed.
+    """
+    if role not in ROLES:
+        raise ValueError(f"unknown role {role!r}; expected one of {ROLES}")
+    pins = json.loads(SERVED.read_text()).get(reg_id, {}) if SERVED.exists() else {}
+    version = pins.get(role)
+    if version is None:
+        return None
+    entry = next((e for e in registered(reg_id) if e["version"] == version), None)
+    if entry is None:
+        raise ValueError(f"{SERVED.name} pins {role} to {version!r}, which is not registered for {reg_id}")
+    if role == "bring" and entry["kind"] != "set":
+        raise ValueError(f"{SERVED.name} pins bring to {version!r}, a {entry['kind']} model with no bring head")
+    return version
+
+
 def default_version(reg_id: str) -> str | None:
-    """The newest set model: the only kind with a bring head, so the only one that can rank brings."""
+    """The model that ranks brings: the pinned one, or with no pin the newest set model — the only
+    kind with a bring head."""
+    pinned = served(reg_id, "bring")
+    if pinned:
+        return pinned
     sets = [e for e in registered(reg_id) if e["kind"] == "set"]
     return sets[-1]["version"] if sets else None
 
 
-def in_battle_version(reg_id: str) -> str | None:
-    """The model to draw a WP with *during* a battle.
+def in_battle_version(reg_id: str, sheets: str = OPEN) -> str | None:
+    """The model to draw a WP with *during* a battle, in the regime the battle is played in.
 
-    Prefers one whose in-battle gates pass over the newest set encoder, because that is the claim
-    being made when a percentage is put on screen mid-battle. Today that is the GBT baseline: it
-    beats the constant in every turn bucket and holds ECE < 0.03 throughout, while the set encoder
-    misses on the last bucket and on games played to the end.
+    `sheets` is one of `SHEETS`, because the regimes are different claims (`REGIME_GATES`) and the
+    model that does best in one is not the model that does best in the other (gate rule 7).
+
+    With no pin: the newest model whose in-battle gates pass, then the bring model. That fallback
+    is for a regulation nobody has made the decision for yet.
     """
-    passing = [e for e in registered(reg_id) if (e.get("gates") or {}).get("in_battle_pass")]
+    pinned = served(reg_id, f"in_battle_{check_sheets(sheets)}")
+    if pinned:
+        return pinned
+    passing = [e for e in registered(reg_id) if (e.get("gates") or {}).get(REGIME_GATES[OPEN][0])]
     if passing:
         return sorted(passing, key=lambda e: e.get("created") or "")[-1]["version"]
     return default_version(reg_id)

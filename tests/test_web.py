@@ -215,10 +215,10 @@ def test_an_unknown_api_path_is_still_a_404(client):
     assert "text/html" not in r.headers["content-type"]
 
 
-def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
-    """Drawing a WP number on a battle in progress is a claim about in-battle calibration, so the
-    choice follows that gate — not "newest set encoder". Today the GBT baseline is the model that
-    passes it and the set encoder is not, and the app has to be able to say so."""
+def test_with_no_pin_the_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch, tmp_path):
+    """The fallback for a regulation nobody has pinned models for yet. Drawing a WP number on a
+    battle in progress is a claim about in-battle calibration, so the choice follows that gate —
+    not "newest set encoder"."""
     from vgc.wp import models as wp_models
 
     rows = [
@@ -226,6 +226,7 @@ def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
         {"version": "new-gbt", "kind": "gbt", "created": "2026-02-01", "gates": {"in_battle_pass": True}},
         {"version": "shiny-set", "kind": "set", "created": "2026-03-01", "gates": {"in_battle_pass": False}},
     ]
+    monkeypatch.setattr(wp_models, "SERVED", tmp_path / "served.json")
     monkeypatch.setattr(wp_models, "registered", lambda reg: rows)
     assert wp_models.in_battle_version("reg_mc") == "new-gbt"  # newest that passes, not newest overall
     assert wp_models.default_version("reg_mc") == "shiny-set"  # bring ranking still wants a set model
@@ -234,6 +235,75 @@ def test_in_battle_model_is_chosen_by_its_in_battle_gate(monkeypatch):
     monkeypatch.setattr(wp_models, "registered",
                         lambda reg: [dict(r, gates={"in_battle_pass": False}) for r in rows])
     assert wp_models.in_battle_version("reg_mc") == "shiny-set"
+
+
+def test_a_pin_beats_newest_and_the_regime_picks_the_pin(monkeypatch, tmp_path):
+    """Registering a newer model must not change what the app serves — that used to happen, and
+    nothing in the diff said so."""
+    from vgc.wp import models as wp_models
+
+    rows = [
+        {"version": "old-set", "kind": "set", "created": "2026-01-01", "gates": {}},
+        {"version": "old-gbt", "kind": "gbt", "created": "2026-01-02", "gates": {"in_battle_pass": True}},
+        {"version": "new-set", "kind": "set", "created": "2026-03-01", "gates": {}},
+        {"version": "new-gbt", "kind": "gbt", "created": "2026-03-02", "gates": {"in_battle_pass": True}},
+    ]
+    served = tmp_path / "served.json"
+    served.write_text(json.dumps({"reg_mc": {"bring": "old-set", "in_battle_open": "old-gbt",
+                                             "in_battle_closed": "old-set"}}))
+    monkeypatch.setattr(wp_models, "SERVED", served)
+    monkeypatch.setattr(wp_models, "registered", lambda reg: rows)
+    assert wp_models.default_version("reg_mc") == "old-set"
+    assert wp_models.in_battle_version("reg_mc", "open") == "old-gbt"
+    assert wp_models.in_battle_version("reg_mc", "closed") == "old-set"
+    with pytest.raises(ValueError):
+        wp_models.in_battle_version("reg_mc", "ots")
+
+
+@pytest.mark.parametrize("pins, wrong", [
+    ({"in_battle_open": "retired-gbt"}, "not registered"),
+    ({"bring": "old-gbt"}, "no bring head"),
+])
+def test_a_pin_that_cannot_be_served_is_an_error_not_a_fallback(monkeypatch, tmp_path, pins, wrong):
+    """Falling back is how a swap goes unnoticed, so a bad pin says so instead."""
+    from vgc.wp import models as wp_models
+
+    served = tmp_path / "served.json"
+    served.write_text(json.dumps({"reg_mc": pins}))
+    monkeypatch.setattr(wp_models, "SERVED", served)
+    monkeypatch.setattr(wp_models, "registered", lambda reg: [
+        {"version": "old-gbt", "kind": "gbt", "created": "2026-01-01", "gates": {}}])
+    with pytest.raises(ValueError, match=wrong):
+        wp_models.served("reg_mc", next(iter(pins)))
+
+
+def test_the_committed_pins_resolve_and_the_open_one_passes_its_gate():
+    """`models/served.json` against the real registry. The open-sheet pin is held to the gate it
+    is scored on; the closed-sheet one is not, because no model passes there yet and the Battle
+    page says so rather than hiding the number."""
+    from vgc.wp import models as wp_models
+
+    if not wp_models.SERVED.exists():
+        pytest.skip("no models/served.json")
+    for reg_id in json.loads(wp_models.SERVED.read_text()):
+        for role in wp_models.ROLES:
+            wp_models.served(reg_id, role)          # raises if it cannot be served
+        pinned = wp_models.served(reg_id, f"in_battle_{wp_models.OPEN}")
+        if pinned:
+            entry = next(e for e in wp_models.registered(reg_id) if e["version"] == pinned)
+            assert wp_models.regime_verdict(entry["gates"], wp_models.OPEN)["pass"] is True, pinned
+
+
+def test_the_modes_on_offer_are_the_regimes_the_backend_defines(client):
+    """The new-battle form is built from this list, so a mode is offered exactly when the backend
+    has it — and each one says which model it would run and which gate that model answers to."""
+    from vgc.wp import models as wp_models
+
+    modes = client.get("/api/models").json()["modes"]
+    assert [m["sheets"] for m in modes] == list(wp_models.SHEETS)
+    for m in modes:
+        assert m["version"] == wp_models.in_battle_version("reg_mc", m["sheets"])
+        assert m["gate"] == wp_models.REGIME_GATES[m["sheets"]][0]
 
 
 # --- a battle in progress ---------------------------------------------------------------------
@@ -299,7 +369,7 @@ def test_wp_is_an_average_over_drawn_opponents_and_says_how_wide(started):
     assert wp["k"] >= 8
     assert {b["species"] for b in wp["belief"]} <= set(THEIR_SIX)
     assert all(0 <= b["concentration"] <= 1 for b in wp["belief"])
-    assert "open-sheet" in wp["regime"]
+    assert "spreads are not filled" in wp["regime"]
 
 
 def test_the_same_position_gives_the_same_number_twice(client, started):
@@ -375,6 +445,40 @@ def test_the_trajectory_is_one_row_a_turn(client, started):
     assert [row["turn"] for row in t["turns"]] == [1, 2, 2]
     assert all(0 <= row["lo"] <= row["wp"] <= row["hi"] <= 1 for row in t["turns"])
     assert t["gates"]["version"] == t["version"]
+
+
+def test_a_battle_takes_the_model_pinned_for_its_regime(client, teams, started):
+    """Hidden sheets and open sheets are gated separately, so each gets its own model, recorded on
+    the battle — and the screen carries that model's verdicts so it can say when one failed."""
+    from vgc.wp.models import in_battle_version
+
+    assert started["sheets"] == "closed"
+    assert started["wp"]["version"] == in_battle_version("reg_mc", "closed")
+    assert started["gates"]["version"] == started["wp"]["version"]
+    assert started["verdict"]["sheets"] == "closed"
+    assert started["verdict"]["gate"] == "closed_sheet_pass"
+    assert started["verdict"]["pass"] == started["gates"]["closed_sheet_pass"]
+
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_team": teams[1]})
+    assert r.status_code == 200, r.text
+    opened = r.json()
+    assert opened["sheets"] == "open"
+    assert opened["wp"]["version"] == in_battle_version("reg_mc", "open")
+    assert opened["verdict"]["gate"] == "in_battle_pass"
+    rows = {b["id"]: b["sheets"] for b in client.get("/api/battles").json()["battles"]}
+    assert rows == {started["id"]: "closed", opened["id"]: "open"}
+
+
+def test_a_battle_saved_without_a_model_gets_its_regimes_pin(client, started):
+    """Battles saved before the model was recorded, or with it cleared, answer by regime."""
+    from vgc.web import live
+    from vgc.wp.models import in_battle_version
+
+    blob = live.load("reg_mc", started["id"])
+    blob["version"] = None
+    live.save("reg_mc", blob)
+    v = client.get(f"/api/battles/{started['id']}").json()
+    assert v["wp"]["version"] == in_battle_version("reg_mc", "closed")
 
 
 def test_the_speed_read_is_a_bound_and_says_undecided_rather_than_guessing(

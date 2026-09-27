@@ -174,11 +174,15 @@ def health(regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.get("/api/models")
 def models(regulation: str = "reg_mc") -> dict[str, Any]:
-    from vgc.wp.models import default_version, registered
+    from vgc.wp.models import REGIME_GATES, SHEETS, default_version, in_battle_version, registered
 
     out = [gate_summary(e["version"]) | {"kind": e["kind"], "created": e["created"]}
            for e in registered(regulation)]
-    return {"models": out, "default": default_version(regulation)}
+    # The battle modes the app can offer, in order, each with the model it would run. This list is
+    # what the new-battle form is built from, so a mode exists in the UI exactly when it exists here.
+    modes = [{"sheets": s, "version": in_battle_version(regulation, s), "gate": REGIME_GATES[s][0]}
+             for s in SHEETS]
+    return {"models": out, "default": default_version(regulation), "modes": modes}
 
 
 @app.post("/api/validate")
@@ -338,10 +342,10 @@ def endgame_detail(replay_id: str, regulation: str = "reg_mc", version: str = ""
     a game always shows what the named model says *now*, not what it said when the index was cut.
     """
     from vgc.web import endgames
-    from vgc.wp.models import in_battle_version
+    from vgc.wp.models import OPEN, in_battle_version
 
     reg = _reg(regulation)
-    chosen = version or (in_battle_version(regulation) or "")
+    chosen = version or (in_battle_version(regulation, OPEN) or "")  # the endgames are OTS games
     if not chosen:
         raise HTTPException(400, "no WP model is registered for this regulation")
     try:
@@ -376,11 +380,11 @@ def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
     from vgc.web.simulate import simulate
 
     reg = _reg(body.regulation)
-    from vgc.wp.models import in_battle_version
+    from vgc.wp.models import OPEN, in_battle_version
 
-    # The WP track here is entirely in-battle, so it uses the model that passes the in-battle
-    # gates rather than the newest set encoder.
-    version = body.version or (in_battle_version(body.regulation) or "")
+    # The WP track here is entirely in-battle, and a simulation shows both sheets, so it uses the
+    # model pinned for open-sheet battles rather than the one that ranks brings.
+    version = body.version or (in_battle_version(body.regulation, OPEN) or "")
     try:
         return simulate(reg, body.team_a, body.team_b, seed=body.seed,
                         policy_a=body.policy_a, policy_b=body.policy_b, version=version or None)
@@ -404,8 +408,26 @@ def _battle(reg, battle_id: str):
     return blob, entry.Battle(reg, blob["setup"], blob.get("journal"))
 
 
-def _version(regulation: str, asked: str) -> str:
-    return asked or (models(regulation)["default"] or "")
+def _version(regulation: str, blob: dict[str, Any]) -> str:
+    """The model a battle's WP comes from: the one it was started with, else the one pinned for
+    its regime. A battle keeps its model when the pin moves later, so its numbers do not change
+    under it between one tap and the next."""
+    from vgc.wp.models import in_battle_version
+
+    return blob.get("version") or in_battle_version(regulation, live.sheets(blob)) or ""
+
+
+def _view(reg, blob: dict[str, Any], b, **kw: Any) -> dict[str, Any]:
+    """A battle's screen, with the gate verdicts for the model behind its number — the page has to
+    be able to say when that model failed a gate, and it can only say what it is told. `verdict`
+    is the one for this battle's regime, so the page does not have to know which gate that is."""
+    from vgc.wp.models import registered, regime_verdict
+
+    version = _version(reg.id, blob)
+    entry = next((e for e in registered(reg.id) if e["version"] == version), None)
+    verdict = regime_verdict((entry or {}).get("gates") or {}, live.sheets(blob))
+    return live.view(reg, blob, b, version=version, **kw) | {"gates": gate_summary(version),
+                                                              "verdict": verdict}
 
 
 @app.get("/api/battles")
@@ -449,7 +471,11 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
     if unknown:
         raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
 
-    blob = live.create(reg, body.name, text, theirs, _version(reg.id, body.version))
+    from vgc.wp.models import CLOSED, OPEN, in_battle_version
+
+    # The model is chosen by the regime the battle is played in, and recorded on the battle.
+    version = body.version or in_battle_version(reg.id, OPEN if body.their_team else CLOSED)
+    blob = live.create(reg, body.name, text, theirs, version)
     return battle_view(blob["id"], reg.id)
 
 
@@ -457,7 +483,7 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
 def battle_view(battle_id: str, regulation: str = "reg_mc", wp: bool = True) -> dict[str, Any]:
     reg = _reg(regulation)
     blob, b = _battle(reg, battle_id)
-    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""), with_wp=wp)
+    return _view(reg, blob, b, with_wp=wp)
 
 
 @app.post("/api/battles/{battle_id}/entries")
@@ -473,7 +499,7 @@ def add_entries(battle_id: str, body: Entries) -> dict[str, Any]:
     blob["turn"] = b.rp.state.turn
     blob["result"] = b.rp.state.winner if b.rp.state.ended else None
     live.save(reg.id, blob)
-    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""))
+    return _view(reg, blob, b)
 
 
 @app.post("/api/battles/{battle_id}/undo")
@@ -486,7 +512,7 @@ def undo(battle_id: str, regulation: str = "reg_mc", count: int = 1) -> dict[str
     blob["turn"] = b.rp.state.turn
     blob["result"] = b.rp.state.winner if b.rp.state.ended else None
     live.save(reg.id, blob)
-    return live.view(reg, blob, b, version=_version(reg.id, blob.get("version") or ""))
+    return _view(reg, blob, b)
 
 
 @app.get("/api/battles/{battle_id}/at/{index}")
@@ -499,7 +525,7 @@ def battle_at(battle_id: str, index: int, regulation: str = "reg_mc") -> dict[st
     blob, b = _battle(reg, battle_id)
     index = max(0, min(index, len(b.journal)))
     prefix = entry.Battle(reg, blob["setup"], b.journal[:index])
-    view = live.view(reg, blob, prefix, version=_version(reg.id, blob.get("version") or ""))
+    view = _view(reg, blob, prefix)
     return view | {"at": index, "entries_total": len(b.journal)}
 
 
@@ -512,7 +538,7 @@ def battle_trajectory(battle_id: str, regulation: str = "reg_mc") -> dict[str, A
     """
     reg = _reg(regulation)
     blob, b = _battle(reg, battle_id)
-    version = _version(reg.id, blob.get("version") or "")
+    version = _version(reg.id, blob)
     if not version:
         raise HTTPException(400, "no WP model is registered for this regulation")
     return {"version": version, "gates": gate_summary(version),

@@ -926,10 +926,10 @@ def cmd_wp_endgames(args: argparse.Namespace) -> int:
     """Build the browsable set of decided endgames, and report how often the call was right."""
     from vgc import paths
     from vgc.web import endgames
-    from vgc.wp.models import in_battle_version
+    from vgc.wp.models import OPEN, in_battle_version
 
     reg = _reg(args)
-    version = args.version or in_battle_version(reg.id)
+    version = args.version or in_battle_version(reg.id, OPEN)  # the endgames are OTS games
     if not version:
         print("no WP model is registered for this regulation", file=sys.stderr)
         return 1

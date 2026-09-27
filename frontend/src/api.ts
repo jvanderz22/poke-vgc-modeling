@@ -287,8 +287,24 @@ export type LiveWP = {
   error?: string;
 };
 
+/** Which information regime a battle is played in. It decides which model its WP comes from.
+ *  The modes on offer, and the model each runs, come from `/api/models` (`vgc.wp.models.SHEETS`);
+ *  this type and the labels below only say how to show one. */
+export type Sheets = "open" | "closed";
+
+export const SHEET_LABELS: Record<Sheets, { button: string; short: string; regime: string }> = {
+  closed: { button: "Hidden (team preview only)", short: "sheets hidden", regime: "team sheets hidden" },
+  open: { button: "Open", short: "open sheets", regime: "open team sheets" },
+};
+
+/** One battle mode the app can offer, and the model a battle in it would run. */
+export type Mode = { sheets: Sheets; version: string | null; gate: string };
+
+/** A model's verdict in one regime, and which of that regime's gates it failed. */
+export type Verdict = { sheets: Sheets; gate: string; pass: boolean | null; failed: string[] };
+
 export type LiveView = {
-  id: string; name: string;
+  id: string; name: string; sheets: Sheets;
   turn: number; started: boolean; ended: boolean; winner: string | null;
   entries: number;
   journal: Entry[];
@@ -304,6 +320,10 @@ export type LiveView = {
    *  spread — so it means something logged here is wrong, and the fix is a tap. */
   contradictions: { species: string; channel: string; note: string }[];
   wp?: LiveWP;
+  /** The verdicts for the model behind `wp`, so the page can say when it failed a gate. */
+  gates?: Gates;
+  /** The one of those verdicts that is about this battle's regime. */
+  verdict?: Verdict;
   /** Only on `/at/<index>`: which prefix this is, out of how many taps. */
   at?: number;
   entries_total?: number;
@@ -311,7 +331,7 @@ export type LiveView = {
 
 export type BattleRow = {
   id: string; name: string; created: string; updated: string;
-  turn: number; entries: number; theirs: string[]; result: string | null;
+  turn: number; entries: number; theirs: string[]; sheets: Sheets; result: string | null;
 };
 
 export type TrajectoryRow = {
@@ -336,7 +356,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: (reg: string) => call<Health>(`/api/health?regulation=${reg}`),
-  models: (reg: string) => call<{ models: ModelRow[]; default: string | null }>(`/api/models?regulation=${reg}`),
+  models: (reg: string) => call<{ models: ModelRow[]; default: string | null; modes: Mode[] }>(`/api/models?regulation=${reg}`),
   validate: (text: string, regulation: string) =>
     call<Validation>("/api/validate", { method: "POST", body: JSON.stringify({ text, regulation }) }),
   teams: (reg: string) => call<{ teams: SavedTeam[] }>(`/api/teams?regulation=${reg}`),

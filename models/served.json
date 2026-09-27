@@ -1,0 +1,13 @@
+{
+ "reg_mc": {
+  "decided": "2026-09-27",
+  "bring": "wp-v1c-sw-split-small",
+  "in_battle_open": "wp-v1c-gbt",
+  "in_battle_closed": "wp-v1c-sw-split-small",
+  "why": {
+   "bring": "Only a set encoder has a bring head. wp-v1c matches wp-v1 on open sheets and is better with them closed.",
+   "in_battle_open": "Passes in_battle_pass, which is scored on Open Team Sheets games. It ignores the opponent's sets, which costs nothing when the sheet shows them.",
+   "in_battle_closed": "No model passes closed_sheet_pass. This is the best one there (0.5813, worst ECE 0.093 against the GBT's 0.5852 / 0.099), and the only family whose belief band means anything, because the GBT does not read the sets the band is drawn over."
+  }
+ }
+}

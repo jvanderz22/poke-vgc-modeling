@@ -1,4 +1,4 @@
-import type { Gates } from "../api";
+import { SHEET_LABELS, type Gates, type Verdict } from "../api";
 
 /** PLAN.md's rule is that a model failing a gate is never presented as calibrated. This banner is
  *  how the app honours it: the verdict sits above the numbers it qualifies, not in a tooltip. */
@@ -38,13 +38,11 @@ export function GateBanner({ gates }: { gates: Gates | null }) {
       ) : (
         <>The failing gates are not the preview gate, but read the ranking as approximate.</>
       )}
-      {gates.in_battle_pass && (
-        <div className="tiny" style={{ marginTop: 6 }}>
-          Once a battle is under way this is a different question, and a model that passes the
-          in-battle gates is used for it — so the WP track on the Battle and Simulate pages is not
-          covered by the warning above.
-        </div>
-      )}
+      <div className="tiny" style={{ marginTop: 6 }}>
+        Once a battle is under way this is a different question, and the model for it is chosen
+        by whether team sheets are open — so the WP on the Battle and Simulate pages is not
+        covered by the warning above. Those pages show their own model&apos;s verdict.
+      </div>
       <RegimeNote gates={gates} />
     </div>
   );
@@ -78,6 +76,48 @@ function RegimeNote({ gates }: { gates: Gates }) {
           {n != null && `, ${n.toLocaleString()} held-out rows`})</span>
       )}
       .
+    </div>
+  );
+}
+
+/** The verdict for the model behind a battle's WP, in the regime that battle is played in.
+ *
+ *  Which gate that is comes from the backend (`vgc.wp.models.REGIME_GATES`), so this only decides
+ *  how to say it. The other regime's verdict is about a game you are not playing, so it is not
+ *  the one shown. */
+export function BattleGateBanner({ gates, verdict }: { gates: Gates | null | undefined; verdict: Verdict | undefined }) {
+  if (!gates || !verdict) return null;
+  if (!gates.known) {
+    return <div className="banner bad">No WP model is registered for this regulation.</div>;
+  }
+  const regime = SHEET_LABELS[verdict.sheets]?.regime ?? verdict.sheets;
+  if (verdict.pass == null) {
+    return (
+      <div className="banner warn">
+        <b>{gates.version}</b> has not been scored with {regime}. The number below is not verified
+        for this battle.
+      </div>
+    );
+  }
+  if (verdict.pass) {
+    return (
+      <div className="banner ok tiny">
+        <b>{gates.version}</b> beats 50% turn by turn and stays calibrated with {regime}.
+      </div>
+    );
+  }
+  const calibrationOnly = verdict.failed.length > 0 && verdict.failed.every((g) => g.includes("ece"));
+  const h = verdict.sheets === "closed" ? gates.closed_headline : null;
+  return (
+    <div className="banner warn">
+      <b>{gates.version}</b> fails with {regime}: {verdict.failed.join(", ") || verdict.gate}.{" "}
+      {calibrationOnly
+        ? "It still beats 50% turn by turn, but it is more confident than it should be — read the number as a direction, not a percentage."
+        : "Read the number as a rough guide at best."}
+      {h?.n != null && (
+        <span className="dim tiny"> Scored on {h.n.toLocaleString()} held-out rows
+          {h.logloss != null && `, log loss ${h.logloss.toFixed(4)}`}.</span>
+      )}
     </div>
   );
 }

@@ -7,14 +7,11 @@ that screen are allowed to claim.
 Three things are stated here because the UI has to repeat them, and a number that arrives without
 its caveat gets believed:
 
-* **The WP models are open-sheet models.** Every row they were trained on had the opponent's item,
-  ability, moves and spread visible — the known-flags are 1.000 across all 433,052 of them. A
-  Team Preview Only battle is not that, so `wp` is computed against the opponent's *most common
-  real set per species* (`vgc.web.prior`), which keeps the input in the distribution the model
-  knows. That makes it a point estimate over one guess rather than an expectation over what they
-  might be holding, and `wp_open` reports the same position with their unknowns left unknown so
-  the size of the guess is visible instead of hidden. Phase 8 step 2 is what turns the first into
-  the second.
+* **The WP number is an average, and its model follows the regime.** The opponent's unknowns are
+  filled by `k` complete sets drawn from `vgc.belief.sets` and the model is asked about each, so
+  the number is an expectation over what they might be holding and the band is what that is
+  worth. Which model answers is pinned per regime in `models/served.json`, because open- and
+  closed-sheet play are gated separately and the best model for one is not the best for the other.
 * **The Speed read is a bound, not a probability.** `vgc.belief.speed` narrows what an opponent's
   Speed investment could be; what the screen wants is whether you move first, so the bound is
   turned into one of *faster / slower / not yet decided*, and the third is reported as often as it
@@ -80,7 +77,7 @@ def listing(reg_id: str, limit: int = 50) -> list[dict[str, Any]]:
                     "created": blob.get("created", ""), "updated": blob.get("updated", ""),
                     "turn": blob.get("turn", 0), "entries": len(blob.get("journal", [])),
                     "theirs": [m["species"] for m in blob["setup"]["theirs"]],
-                    "result": blob.get("result")})
+                    "sheets": sheets(blob), "result": blob.get("result")})
     out.sort(key=lambda b: b["updated"], reverse=True)
     return out[:limit]
 
@@ -91,6 +88,18 @@ def remove(reg_id: str, battle_id: str) -> bool:
         return False
     p.unlink()
     return True
+
+
+def sheets(blob: dict[str, Any]) -> str:
+    """Which information regime this battle is played in: one of `vgc.wp.models.SHEETS`.
+
+    Read off the setup rather than stored beside it, so a battle saved before the regime was
+    recorded answers the same way as one saved after: an open sheet is the one that came with
+    their abilities filled in, which is also what `entry` reads it as.
+    """
+    from vgc.wp.models import CLOSED, OPEN
+
+    return OPEN if any(m.get("ability") is not None for m in blob["setup"]["theirs"]) else CLOSED
 
 
 def create(reg: Regulation, name: str, my_team: str, theirs: list[dict[str, Any]],
@@ -341,10 +350,9 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
             "wp_open": float(p[-1]), "kind": kind,
             "belief": [{"species": sp} | v for sp, v in sorted(note.items())],
             "regime": ("An average over " + str(k) + " complete opponents drawn from the belief: "
-                       "their sets from 15,000 open team sheets, their spreads from this battle's "
-                       "own turn orders. The models are open-sheet models, so each draw is a "
-                       "position they were trained on and the average is over the ones they "
-                       "were not.")}
+                       "their items, abilities, natures and moves from other players' team "
+                       "sheets, narrowed by what this battle has shown. Their spreads are not "
+                       "filled in, because no model has been trained on an opponent's.")}
 
 
 def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
@@ -402,7 +410,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
     belief, contradictions = beliefs(reg, state)
     out: dict[str, Any] = {
-        "id": blob["id"], "name": blob.get("name", ""), "turn": state.turn,
+        "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob), "turn": state.turn,
         "started": state.started, "ended": state.ended, "winner": state.winner,
         "entries": len(battle.journal), "journal": battle.journal,
         "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
