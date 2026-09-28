@@ -387,7 +387,11 @@ def train_baseline(reg, kind: str, dataset: str, version: str) -> Path:
     out = model_dir(reg.id, version)
     out.mkdir(parents=True, exist_ok=True)
     if kind == "logistic":
-        model: WPModel = LogisticModel.fit(train, logistic_columns(Featurizer(reg, Vocab.load(FEATURES / reg.id / dataset / "vocab.json"))))
+        from vgc.wp.features import featurizer_version
+
+        fv = featurizer_version(json.loads((FEATURES / reg.id / dataset / "info.json").read_text()))
+        model: WPModel = LogisticModel.fit(train, logistic_columns(
+            Featurizer(reg, Vocab.load(FEATURES / reg.id / dataset / "vocab.json"), version=fv)))
     elif kind == "gbt":
         model = GBTModel.fit(train, val)
     else:

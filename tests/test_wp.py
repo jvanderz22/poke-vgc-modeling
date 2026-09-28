@@ -264,9 +264,48 @@ def test_a_model_is_never_fed_columns_from_another_featurizer_version():
     from vgc.wp.features import Featurizer, check_featurizer, featurizer_version
 
     assert featurizer_version({}) == 1
-    check_featurizer({"featurizer_version": Featurizer.VERSION}, "current")
-    with pytest.raises(ValueError, match="featurizer version"):
-        check_featurizer({"featurizer_version": Featurizer.VERSION + 1}, "future")
+    assert check_featurizer({"featurizer_version": Featurizer.VERSION}, "current") == Featurizer.VERSION
+    with pytest.raises(ValueError, match="no longer builds"):
+        check_featurizer({"featurizer_version": 99}, "future")
+    with pytest.raises(ValueError, match="do not mean the same thing"):
+        check_featurizer({"featurizer_version": 1}, "old model", against={"featurizer_version": 2})
+
+
+def test_weather_and_terrain_are_timed_like_trick_room(reg, records):
+    """Sun with one turn left and sun with four were the same row until version 2. Version 1 must
+    still build exactly its old layout, because every model before it was trained on that."""
+    import copy
+
+    from vgc.wp.features import Featurizer
+
+    v1, v2 = Featurizer(reg, version=1), Featurizer(reg)
+    assert v2.version == 2 and v2.n_glob == v1.n_glob + 2
+    assert v1.n_glob == 42  # the layout wp-v1 … wp-v1d were trained on
+
+    rec = copy.deepcopy(records[0])
+    rec["obs"]["turn"] = 6
+    rec["obs"]["field"].update(weather="sunnyday", terrain="grassyterrain")
+    rows = {}
+    for age in (1, 4):
+        r = copy.deepcopy(rec)
+        r["obs"]["field"].update(weather_since=6 - age, terrain_since=6 - age)
+        rows[age] = (v1.row(r, "p1")[2], v2.row(r, "p1")[2])
+    assert np.array_equal(rows[1][0], rows[4][0]), "version 1 cannot tell them apart, by design"
+    assert not np.array_equal(rows[1][1], rows[4][1])
+    # The logistic baseline reads the last eight columns; the new ones must not move them.
+    assert np.array_equal(rows[1][0][-8:], rows[1][1][-8:])
+
+
+def test_an_old_model_is_served_with_the_columns_it_was_trained_on():
+    from vgc.regulation import load_regulation
+    from vgc.wp.models import registered
+    from vgc.wp.tools import _load
+
+    old = next((e["version"] for e in registered("reg_mc") if e["kind"] == "gbt"), None)
+    if old is None:
+        pytest.skip("no registered GBT")
+    _, fz = _load(load_regulation("reg_mc"), old)
+    assert fz.version == 1 and fz.n_glob == 42
 
 
 def test_metrics():

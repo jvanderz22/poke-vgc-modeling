@@ -27,11 +27,13 @@ def _record(obs: dict, kind: str, context: str, battle: str = "live") -> dict[st
 
 
 def _load(reg: Regulation, version: str) -> tuple[WPModel, Featurizer]:
+    fv = Featurizer.VERSION
     if version != "constant":
         card = json.loads((model_dir(reg.id, version) / "card.json").read_text())
-        check_featurizer(card.get("dataset") or {}, version)
+        fv = check_featurizer(card.get("dataset") or {}, version)
     model = load_model(reg.id, version)
-    fz = Featurizer(reg, Vocab.load(model_dir(reg.id, version) / "vocab.json"))
+    # The columns the model was trained on, not the newest ones.
+    fz = Featurizer(reg, Vocab.load(model_dir(reg.id, version) / "vocab.json"), version=fv)
     return model, fz
 
 

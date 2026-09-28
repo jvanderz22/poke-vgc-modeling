@@ -47,8 +47,9 @@ from vgc import paths                                          # noqa: E402
 from vgc.data.splits import read_shard                         # noqa: E402
 from vgc.regulation import load_regulation                     # noqa: E402
 from vgc.wp.evaluate import BUCKETS, _bucket, metrics          # noqa: E402
-from vgc.wp.features import Featurizer, featurize              # noqa: E402
-from vgc.wp.models import load_model, symmetrize               # noqa: E402
+from vgc.wp.features import featurize                         # noqa: E402
+from vgc.wp.models import symmetrize                           # noqa: E402
+from vgc.wp.tools import _load                                 # noqa: E402
 
 # Measured on the held-out closed-sheet shard by `training_mix.py --by-turn`: the fraction of the
 # opponent's six whose item / ability is known, per turn bucket. Averaged into one hide-rate,
@@ -109,8 +110,8 @@ def main() -> None:
     args = ap.parse_args()
 
     reg = load_regulation(args.regulation)
-    fz = Featurizer(reg)
-    model = load_model(reg.id, args.version)
+    # The model's own vocabulary and featurizer version, not the newest defaults.
+    model, fz = _load(reg, args.version)
     shard = (paths.ROOT / "data" / "snapshots" / reg.id / "human"
              / (reg.showdown_format + "bo3") / "heldout_human.jsonl.gz")
     # Player rows only: "the opponent" is undefined for a spectator, and the app's user is a player.

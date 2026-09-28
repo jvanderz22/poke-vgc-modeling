@@ -98,9 +98,21 @@ class Featurizer:
     # meaning moved, so a model could be handed rows it was never trained on without a word.
     # Snapshots have the same guard for `observation()` (`snapshots.VERSION`). Recorded in every
     # dataset's info.json, and so in every card, and checked wherever a model meets features.
-    VERSION = 1
+    #
+    #   1  the layout every model before 2026-09-27 was trained on
+    #   2  weather and terrain turns remaining, beside Trick Room's. Weather and terrain were a
+    #      type one-hot only, so sun with one turn left and sun with four were the same row —
+    #      the decided-endgame benchmark's F3 and F7 turn on exactly that difference.
+    #
+    # A featurizer builds any supported version, so a model keeps the columns it was trained on
+    # after the default moves on.
+    VERSION = 2
+    SUPPORTED = (1, 2)
 
-    def __init__(self, reg: Regulation, vocab: Vocab | None = None):
+    def __init__(self, reg: Regulation, vocab: Vocab | None = None, version: int = VERSION):
+        if version not in self.SUPPORTED:
+            raise ValueError(f"featurizer version {version} is not one this code can build: {self.SUPPORTED}")
+        self.version = version
         self.reg = reg
         self.dex = reg.dex
         self.vocab = vocab or Vocab.from_regulation(reg)
@@ -248,6 +260,13 @@ class Featurizer:
         g += [float(f["terrain"] == x) for x in TERRAINS]
         tr = f["pseudo"].get("trickroom")
         g += [max(0.0, (5 - (turn - tr)) / 5) if tr is not None else 0.0, float("gravity" in f["pseudo"])]
+        if self.version >= 2:
+            # Timed the way Trick Room is: five turns from the turn it was set, clipped at zero.
+            # Extenders (Heat Rock, Terrain Extender) run past five; the type one-hot above still
+            # says the field is up, and this says it is on its last turn or beyond.
+            for kind in ("weather", "terrain"):
+                since = f.get(f"{kind}_since")
+                g.append(max(0.0, (5 - (turn - since)) / 5) if f[kind] and since is not None else 0.0)
         for sid in (a, b):
             conds = obs["sides"][sid]["conditions"]
             for name, dur in SIDE_CONDS:
@@ -411,9 +430,15 @@ def featurizer_version(info: dict) -> int:
     return int(info.get("featurizer_version", 1))
 
 
-def check_featurizer(info: dict, what: str) -> None:
+def check_featurizer(info: dict, what: str, *, against: dict | None = None) -> int:
+    """The version `info` was built with, if this code can still build it. With `against`, the
+    two must also agree — a model is only ever scored on rows built the way it was trained."""
     got = featurizer_version(info)
-    if got != Featurizer.VERSION:
-        raise ValueError(f"{what} was built with featurizer version {got}, and this code featurizes "
-                         f"with version {Featurizer.VERSION}: its columns do not mean the same thing. "
-                         "Re-featurize and retrain rather than serve it on these rows.")
+    if got not in Featurizer.SUPPORTED:
+        raise ValueError(f"{what} was built with featurizer version {got}, which this code no longer "
+                         f"builds ({Featurizer.SUPPORTED}). Re-featurize and retrain.")
+    if against is not None and featurizer_version(against) != got:
+        raise ValueError(f"{what} was built with featurizer version {got}, and the rows it is being "
+                         f"given with version {featurizer_version(against)}: their columns do not mean "
+                         "the same thing.")
+    return got
