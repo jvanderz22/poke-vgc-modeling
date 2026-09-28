@@ -700,6 +700,61 @@ Order of work:
    zero all game. The held-out closed shard has realistic reveals and no truth for the `particles`
    arm, so what it can answer is narrower — which of the two served numbers is better calibrated
    where the app is used — and that is exactly the decision.
+8. **Speed evidence as a model input.** _In progress from 2026-09-27; the `wp-v1e` run (timers
+   only) was stopped for it._ The belief channels are sound and mostly dead-end at display: of
+   everything `vgc.belief` knows, only the set draws reach the WP number. Speed evidence — "their
+   Pokémon moved before yours, so it is faster" — reaches the Speed read and nothing else, and it
+   is what decides the benchmark's F1-D and F8, and on a cartridge it is the *only* way a Choice
+   Scarf is ever learned.
+
+   *The design the data forces.* The first idea was to feed the model the belief's answer — the
+   probability each of their Pokémon outspeeds each of yours. That cannot be trained: the channel
+   turns an ordering into a bound only when one side's spread is known, and in a human replay
+   neither is, so on every human training row it learns nothing. A feature empty in training and
+   full in the app is the mismatch that reversed step 3's first reading. What *is* available on
+   every row, human or self-play, from any perspective, is the ordering itself. So the input is the
+   **observed orderings**, and the model learns what they imply:
+
+   - per pair of opposing Pokémon, "A was seen ahead of B" and "B was seen ahead of A" (both set
+     is a tie, or a change such as a Scarf knocked off), from moves at equal priority and from
+     switch-in abilities, reusing `belief.speed.pairs` / `ability_pairs` and their filters;
+   - about **persistent** speed — nature, Stat Points and held item — so temporary modifiers are
+     divided out: an ordering counts only if the first mover went first *without* the bigger
+     boost / Tailwind / paralysis / weather-ability multiplier (reversed under Trick Room);
+   - dropped whenever the species *could* hold an ability that explains the order and the ability
+     is not known (Unburden is on 94% of Sneasler; the channel's filters only see it once it is
+     revealed — gate rule 7 again), and keyed on forme, so a Mega's arrival starts afresh.
+
+   *Choice lock rides along.* The benchmark's F2 turns on which move a choice item has locked in,
+   and moves are featurized as an order-free set. The last move each Pokémon used since it
+   switched in comes from the same move log into the same field, so version 3 carries it too; with
+   a known or inferred Choice item it *is* the lock.
+
+   *Where it lives.* Not in `observation()`, whose bytes are a published, golden-tested interface;
+   in a sibling `order` field on each snapshot record, which takes `snapshots.VERSION` to 4, and
+   read by featurizer version 3 into each Pokémon's token. The Battle page builds the same field
+   from the same state, so training and serving see one definition. Every shard is re-extracted.
+
+   *Verification.* Soundness first, as for every channel: on self-play with true spreads, an
+   ordering that contradicts the true persistent speeds is a bug, with the rate as a gate number
+   in both regimes. Then the model: the benchmark's F1-D/E and F8a/b, the held-out gates, and the
+   log-loss change against a version-2 model. Timers (version 2) and orderings (version 3) now
+   land in one run, so that last comparison needs a version-2 model trained too — the ablation
+   `wp-v1e` would have been.
+
+   *Deliberately left for later.* The richer input — the belief's own P(faster), using your known
+   spread — needs training rows where a spread is known, which only self-play has.
+9. **The brings preview still guesses one set.** With sheets hidden, `/api/preview` fills each
+   species with its single most common set (`web/prior.compose`) — the stopgap step 3 replaced on
+   the Battle page and not here. Replace it with the same particle average.
+10. **Damage and bulk, with sheets hidden.** Both channels were gated only on Open Team Sheets and
+    read the opponent's item and ability off the sheet. Re-gate them in the Team Preview Only
+    regime (gate rule 7) before the app runs them live; if they are fast enough, run them, and they
+    sharpen the Stat-Point belief the Speed read and the belief panel show.
+11. **Spreads reach decisions through search, not the WP model.** Phase 9 determinizes over the
+    belief, spreads included: inside a simulation a hidden Scarf or Speed investment acts through
+    the engine, so the evaluator at the leaves never has to learn it. That is where the Stat-Point
+    half of Phase 8 pays off.
 
 **Which model the app serves is now pinned, per regime (2026-09-27).** It was "newest registered
 wins", so registering `wp-v1c` silently moved every page: the brings ranking and the Battle page to
@@ -750,7 +805,8 @@ piece of Phase 9's search. 2v2 families follow once the 1v1 set is agreed.
 
 Drafting it found three facts no WP model could see: weather and terrain turns (**closed in
 featurizer version 2**, not yet trained on), the move a choice item has locked in, and Speed known
-from turn order — which on a cartridge is the *only* way a Choice Scarf is ever learned.
+from turn order — which on a cartridge is the *only* way a Choice Scarf is ever learned. The other two are Phase 8 step 8 (featurizer version 3): the observed orderings and the move
+last used since switching in.
 
 ### Phase 9 — Policy strength: EWP and search _(was Phase 6, minus BC — now the prerequisite for 10 and 11)_
 
