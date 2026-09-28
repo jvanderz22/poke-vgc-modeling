@@ -15,7 +15,7 @@ from typing import Any
 from vgc.data.observe import Observer
 from vgc.data.snapshots import bring_view
 from vgc.regulation import Regulation
-from vgc.wp.features import Featurizer, Vocab, featurize
+from vgc.wp.features import Featurizer, Vocab, check_featurizer, featurize
 from vgc.wp.models import WPModel, load_model, model_dir, symmetrize
 
 
@@ -27,6 +27,9 @@ def _record(obs: dict, kind: str, context: str, battle: str = "live") -> dict[st
 
 
 def _load(reg: Regulation, version: str) -> tuple[WPModel, Featurizer]:
+    if version != "constant":
+        card = json.loads((model_dir(reg.id, version) / "card.json").read_text())
+        check_featurizer(card.get("dataset") or {}, version)
     model = load_model(reg.id, version)
     fz = Featurizer(reg, Vocab.load(model_dir(reg.id, version) / "vocab.json"))
     return model, fz

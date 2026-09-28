@@ -258,6 +258,17 @@ def test_the_calibration_test_asks_about_the_model_not_the_sample_size():
     assert math.isclose(_ece(p, y), metrics(p, y)["ece"], abs_tol=1e-5)
 
 
+def test_a_model_is_never_fed_columns_from_another_featurizer_version():
+    """`n_num`/`n_glob` catch a column added or removed; they cannot catch one whose meaning moved.
+    The version is what does, and a card from before it existed reads as version 1."""
+    from vgc.wp.features import Featurizer, check_featurizer, featurizer_version
+
+    assert featurizer_version({}) == 1
+    check_featurizer({"featurizer_version": Featurizer.VERSION}, "current")
+    with pytest.raises(ValueError, match="featurizer version"):
+        check_featurizer({"featurizer_version": Featurizer.VERSION + 1}, "future")
+
+
 def test_metrics():
     y = np.array([1, 0, 1, 0], float)
     m = metrics(np.full(4, 0.5), y)

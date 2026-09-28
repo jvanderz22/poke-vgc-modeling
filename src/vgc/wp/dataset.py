@@ -150,7 +150,8 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
             counts[f"eval_{set_name}"] = int(len(d["y"]))
     info = {
         "name": name, "regulation": reg.id, "manifest": str(manifest_path.resolve().relative_to(paths.ROOT)),
-        "manifest_battles": len(manifest["battles"]), "n_num": fz.n_num, "n_glob": fz.n_glob,
+        "manifest_battles": len(manifest["battles"]), "featurizer_version": Featurizer.VERSION,
+        "n_num": fz.n_num, "n_glob": fz.n_glob,
         "rows": counts, "val_rate": VAL_RATE, "seconds": round(time.perf_counter() - t0, 1),
     }
     (out / "info.json").write_text(json.dumps(info, indent=1) + "\n")

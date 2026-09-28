@@ -93,6 +93,13 @@ def _lookup(table: dict[str, int], value: str | None) -> int:
 
 
 class Featurizer:
+    # What the columns *mean*. Bump it whenever a change redefines a column without changing its
+    # width: `n_num`/`n_glob` catch a column added or removed, and nothing caught a column whose
+    # meaning moved, so a model could be handed rows it was never trained on without a word.
+    # Snapshots have the same guard for `observation()` (`snapshots.VERSION`). Recorded in every
+    # dataset's info.json, and so in every card, and checked wherever a model meets features.
+    VERSION = 1
+
     def __init__(self, reg: Regulation, vocab: Vocab | None = None):
         self.reg = reg
         self.dex = reg.dex
@@ -396,3 +403,17 @@ def featurize(records: Iterable[dict], fz: Featurizer, thin: bool = False) -> di
         out[k] = np.array(getattr(b, k), np.int32)
     out["battle_names"] = np.array(list(battle_ids), dtype=object)
     return out
+
+
+def featurizer_version(info: dict) -> int:
+    """The featurizer version a dataset (or a card's `dataset`) was built with. Everything built
+    before the version existed was built with version 1, which is what the columns meant then."""
+    return int(info.get("featurizer_version", 1))
+
+
+def check_featurizer(info: dict, what: str) -> None:
+    got = featurizer_version(info)
+    if got != Featurizer.VERSION:
+        raise ValueError(f"{what} was built with featurizer version {got}, and this code featurizes "
+                         f"with version {Featurizer.VERSION}: its columns do not mean the same thing. "
+                         "Re-featurize and retrain rather than serve it on these rows.")

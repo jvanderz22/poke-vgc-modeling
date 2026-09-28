@@ -684,7 +684,13 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
         data = {"human_ots_all": merge(human)} | data
     usage = evaluate.usage_rates(load(reg, args.dataset, "train"))
     all_results: dict[str, dict] = {}
+    from vgc.wp.features import check_featurizer
+
+    check_featurizer(json.loads((base / "info.json").read_text()), f"dataset {args.dataset}")
     for version in [args.version] + (args.baseline or []):
+        if version != "constant":
+            card = json.loads((models.model_dir(reg.id, version) / "card.json").read_text())
+            check_featurizer(card.get("dataset") or {}, version)
         model = models.load_model(reg.id, version)
         all_results[version] = {name: evaluate.evaluate_set(model, d, usage) for name, d in data.items()}
     main_r = all_results.pop(args.version)
