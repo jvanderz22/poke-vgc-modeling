@@ -1,0 +1,78 @@
+{
+ "version": "wp-v1e-logistic",
+ "kind": "logistic",
+ "regulation": "reg_mc",
+ "created": "2026-09-28T12:50:05",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1e",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
+  "manifest_battles": 50827,
+  "featurizer_version": 3,
+  "n_num": 166,
+  "n_glob": 44,
+  "rows": {
+   "train": 942145,
+   "val": 49438,
+   "eval_human_ots": 47617,
+   "eval_human_ots_team": 122584,
+   "eval_human_closed": 43271,
+   "eval_human_closed_team": 3214,
+   "eval_selfplay_battle": 168790,
+   "eval_selfplay_team": 713376
+  },
+  "val_rate": 0.05,
+  "seconds": 868.9
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
+  "sha256": "ce78951464b9adda171366cc43db56b4d06d384af2821b2722ee4817b488c1e1"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmc/train.jsonl.gz",
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 38145,
+   "human": 12682
+  }
+ },
+ "git": {
+  "sha": "61963c5fa25bba06d7214d9fa9a0c4b037c8149b",
+  "dirty": false
+ },
+ "val_wp_logloss": 0.59448,
+ "headline": {
+  "human_spectator": {
+   "n": 43447,
+   "logloss": 0.57367,
+   "brier": 0.19721,
+   "ece": 0.0171
+  },
+  "human_player_approx": {
+   "n": 83307,
+   "logloss": 0.59616,
+   "brier": 0.20653,
+   "ece": 0.01865
+  },
+  "closed_spectator": {
+   "n": 11185,
+   "logloss": 0.60191,
+   "brier": 0.20858,
+   "ece": 0.02422
+  },
+  "closed_player_approx": {
+   "n": 20901,
+   "logloss": 0.62448,
+   "brier": 0.21781,
+   "ece": 0.03791
+  }
+ }
+}

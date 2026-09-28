@@ -126,6 +126,17 @@ def _is_val(name: str) -> bool:
     return int(hashlib.sha256(f"val:{name}".encode()).hexdigest()[:8], 16) / 16**8 < VAL_RATE
 
 
+def val_battles(battle_names: np.ndarray, manifest: dict[str, Any]) -> np.ndarray:
+    """Which battles are validation, decided per *group* — a Bo3 series or a player pair — the
+    way `heldout_human` is. Drawn per battle, a validation game had its sibling games, with the
+    same teams and players, in training: the model half-remembers who won the matchup and is
+    confidently wrong when the series split, so validation asked `wp-v1e` for a temperature of
+    1.18 where held-out groups asked for 1.04, and early stopping read the same leak. Self-play
+    has no groups, and a battle is its own group, as in `heldout_battle`."""
+    group = {b["battle"]: b.get("group") or b["battle"] for b in manifest["battles"]}
+    return np.array([_is_val(group.get(n, n)) for n in battle_names])
+
+
 def _subset(d: dict[str, np.ndarray], rows: np.ndarray) -> dict[str, np.ndarray]:
     out = {k: v[rows] for k, v in d.items() if k != "battle_names"}
     out["battle_names"] = d["battle_names"]
@@ -145,7 +156,7 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
     (out / "vocab.json").write_text(json.dumps(fz.vocab.to_json()))
     t0 = time.perf_counter()
     train = featurize_files([paths.ROOT / f["path"] for f in manifest["files"]], reg, workers, thin=True)
-    val_battle = np.array([_is_val(n) for n in train["battle_names"]])
+    val_battle = val_battles(train["battle_names"], manifest)
     is_val = val_battle[train["battle"]]
     counts = {}
     for split, rows in (("train", ~is_val), ("val", is_val)):

@@ -33,8 +33,18 @@ REGISTRY = MODELS / "registry.json"
 # `Featurizer._glob` lays out: turn, one-hot over KINDS, perspective, ctx_human, approx,
 # both-sheets-open. Derived rather than written as 8, because the two callers that need it are
 # calibration and inference and a silent off-by-one there would mis-temperature every row.
+TURN_COL = 0  # turn / 10
 HUMAN_CTX_COL = len(KINDS) + 2
 SHEETS_COL = len(KINDS) + 4
+# The temperature varies with the turn, log-linearly, up to this turn and flat after it. Measured
+# on validation rows, open sheets: preview wants 1.90, t1-2 1.52, t3-4 1.26, t5-6 1.10, t7+ 1.05 —
+# one temperature (1.18) is over-confident early and fails t3 on under the calibration test.
+TEMPERATURE_TURN_CAP = 7
+
+
+def _stage(glob: np.ndarray) -> np.ndarray:
+    """The turn a temperature is read at: 0 at preview and bring, capped at TEMPERATURE_TURN_CAP."""
+    return np.minimum(np.rint(glob[:, TURN_COL] * 10), TEMPERATURE_TURN_CAP)
 
 
 def model_dir(reg_id: str, version: str) -> Path:
@@ -149,12 +159,16 @@ class SetModel(WPModel):
         """
         if not self.calibration:
             return np.ones(len(glob))
+        c = self.calibration
         human = glob[:, self.human_ctx_col] == 1
         closed = glob[:, self.sheets_col] == 0
-        human_t = np.where(closed, self.calibration.get("human_closed",
-                                                        self.calibration.get("human", 1.0)),
-                           self.calibration.get("human", 1.0))
-        return np.where(human, human_t, self.calibration.get("selfplay", 1.0))
+        # Each context has a temperature at turn 0 and a slope in log temperature per turn. A
+        # calibration without slopes (anything before 2026-09-28) has one temperature per context.
+        closed_key = "human_closed" if "human_closed" in c else "human"
+        t0 = np.where(human, np.where(closed, c.get(closed_key, 1.0), c.get("human", 1.0)), c.get("selfplay", 1.0))
+        slope = np.where(human, np.where(closed, c.get(f"{closed_key}_slope", 0.0), c.get("human_slope", 0.0)),
+                         c.get("selfplay_slope", 0.0))
+        return t0 * np.exp(slope * _stage(glob))
 
     def predict(self, d, bs: int = 4096):
         wp, br = [], []
@@ -184,7 +198,7 @@ SHEETS = (CLOSED, OPEN)          # the order the app offers them in; a cartridge
 # Each regime's in-battle verdict, and the gates it rolls up. `in_battle_pass` is scored on Open
 # Team Sheets games and `closed_sheet_pass` on the held-out Team Preview Only shard.
 REGIME_GATES: dict[str, tuple[str, tuple[str, ...]]] = {
-    OPEN: ("in_battle_pass", ("in_battle_beats_constant", "in_battle_ece", "ece_spectator_played_out")),
+    OPEN: ("in_battle_pass", ("in_battle_beats_constant", "in_battle_ece")),
     CLOSED: ("closed_sheet_pass", ("closed_in_battle_beats_constant", "closed_in_battle_ece")),
 }
 ROLES = ("bring",) + tuple(f"in_battle_{s}" for s in SHEETS)
@@ -416,9 +430,22 @@ def fit_temperature(logit: np.ndarray, y: np.ndarray) -> float:
     return best[1]
 
 
-def calibrate(reg_id: str, version: str, train: dict[str, np.ndarray], val: dict[str, np.ndarray],
+def fit_temperature_by_turn(logit: np.ndarray, y: np.ndarray, stage: np.ndarray) -> tuple[float, float]:
+    """(temperature at turn 0, slope of log temperature per turn) that minimise log loss."""
+    from scipy.optimize import minimize
+
+    def loss(x):
+        z = logit / np.exp(x[0] + x[1] * stage)
+        return float(np.mean(np.logaddexp(0, z) - y * z))
+
+    start = [np.log(fit_temperature(logit, y)), 0.0]
+    x = minimize(loss, start, method="Nelder-Mead", options={"xatol": 1e-5, "fatol": 1e-8}).x
+    return float(np.exp(x[0])), float(x[1])
+
+
+def calibrate(reg_id: str, version: str, val: dict[str, np.ndarray],
               human_ctx_col: int = 6, sheets_col: int = SHEETS_COL) -> dict[str, Any]:
-    """Fit one temperature per play context *and* information regime.
+    """Fit a temperature per play context *and* information regime, varying with the turn.
 
     Bot self-play and human play differ in how decisive positions are, and validation is mostly
     self-play, so a single temperature leaves human predictions over-confident. Open and closed
@@ -426,22 +453,35 @@ def calibrate(reg_id: str, version: str, train: dict[str, np.ndarray], val: dict
     0.053 when a quarter of the opponent is hidden, which is a confidence fault and not a
     discrimination one, so a temperature is the right shape of fix for it.
 
-    Human rows come from the *training* manifest — never a held-out set. The closed-sheet bucket
-    is empty for any model trained before the ladder shard was manifested, and an empty bucket is
-    written as absent so `_temperatures` falls back to the open-sheet value rather than to 1.0.
+    Every temperature is fitted on the validation split — battles from the training manifest the
+    model never took a gradient step on, and never an eval set. Human temperatures used to be
+    fitted on training rows, and a model scores its own training rows more confidently than new
+    ones: wp-v1e's training rows asked for 0.82 (sharpen) where its validation rows asked for
+    1.18 (soften), and its ECE nearly doubled. The closed-sheet bucket is empty for any model
+    trained before the ladder shard was manifested, and an empty bucket is written as absent so
+    `_temperatures` falls back to the open-sheet value rather than to 1.0.
+
+    One temperature per regime was not enough once the open-sheet ECE gates became a test with
+    power: the model is over-confident early and about right late, so a single temperature
+    over-softens late turns to fix early ones and fails both. Each regime gets a slope in log
+    temperature per turn — two numbers, not one per bucket, because the closed-sheet buckets are
+    a few hundred battles each and a per-bucket fit would chase their noise.
     """
     out = model_dir(reg_id, version)
     model = load_model(reg_id, version)
+    model.calibration = {}  # fit on raw logits, not on top of an earlier calibration.json
     temps = {}
-    human = train["glob"][:, human_ctx_col] == 1
-    for name, d, rows in (("selfplay", val, val["glob"][:, human_ctx_col] == 0),
-                          ("human", train, human & (train["glob"][:, sheets_col] == 1)),
-                          ("human_closed", train, human & (train["glob"][:, sheets_col] == 0))):
-        sub = {k: v[rows] for k, v in d.items() if k != "battle_names"}
+    human = val["glob"][:, human_ctx_col] == 1
+    for name, rows in (("selfplay", ~human),
+                       ("human", human & (val["glob"][:, sheets_col] == 1)),
+                       ("human_closed", human & (val["glob"][:, sheets_col] == 0))):
+        sub = {k: v[rows] for k, v in val.items() if k != "battle_names"}
         if not len(sub["y"]):
             continue
         p = np.clip(model.predict(sub)[0], 1e-6, 1 - 1e-6)
-        temps[name] = round(fit_temperature(np.log(p / (1 - p)), sub["y"]), 4)
+        t0, slope = fit_temperature_by_turn(np.log(p / (1 - p)), sub["y"], _stage(sub["glob"]))
+        temps[name] = round(t0, 4)
+        temps[f"{name}_slope"] = round(slope, 5)
         temps[f"{name}_rows"] = int(len(sub["y"]))
     (out / "calibration.json").write_text(json.dumps(temps, indent=1) + "\n")
     return temps

@@ -666,7 +666,7 @@ def cmd_wp_calibrate(args: argparse.Namespace) -> int:
     from vgc.wp.models import calibrate
 
     reg = _reg(args)
-    temps = calibrate(reg.id, args.version, load(reg, args.dataset, "train"), load(reg, args.dataset, "val"))
+    temps = calibrate(reg.id, args.version, load(reg, args.dataset, "val"))
     print(f"{args.version} temperatures: {json.dumps(temps)}")
     return 0
 
@@ -1194,7 +1194,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", required=True)
     p.add_argument("--dataset", default="wp-v1")
     p.set_defaults(func=cmd_wp_card)
-    p = with_reg(wp.add_parser("calibrate", help="fit per-context temperatures (train/val rows only)"))
+    p = with_reg(wp.add_parser("calibrate", help="fit per-context temperatures on the validation split"))
     p.add_argument("--version", required=True)
     p.add_argument("--dataset", default="wp-v1")
     p.set_defaults(func=cmd_wp_calibrate)

@@ -107,15 +107,28 @@ def _vs_const(delta, half=0.004):
             "delta_95ci": [delta - half, delta + half], "beats": bool(delta + half < 0)}
 
 
+def _ct(ece_by_bucket, floor=0.03):
+    """A `calibration_test` block that rejects any bucket whose ECE is past `floor`."""
+    rejected = [b for b, e in ece_by_bucket.items() if e >= floor]
+    return {"pass": not rejected, "alpha": 0.05, "power": {"logits_1.5x_too_sharp": 0.99},
+            "rejected_buckets": rejected,
+            "by_bucket": {b: {"ece": e, "floor_median": floor / 2, "threshold": floor, "battles": 500,
+                              "p_calibrated_worse": 0.001 if b in rejected else 0.5}
+                          for b, e in ece_by_bucket.items()}}
+
+
 def _spectator(by_turn, all_logloss=0.55, all_ece=0.01, normal_ece=0.02, preview_logloss=0.69315,
                preview_half=0.004):
     """`by_turn` covers the in-battle buckets; the preview bucket is added here because every real
-    evaluation has one and the preview gate is scored on it."""
+    evaluation has one and the preview gate is scored on it. The calibration tests are stubs that
+    reject a bucket past 0.03, standing in for the simulated floor."""
     by = {b: dict(v, vs_constant=_vs_const(round(v["logloss"] - 0.69315, 5), 0.01))
           for b, v in by_turn.items()}
     return {"human_ots_all": {"perspectives": {"spectator": {
         "all": {"logloss": all_logloss, "ece": all_ece},
         "ended_normal": {"logloss": all_logloss + 0.01, "ece": normal_ece, "n": 100},
+        "calibration_test": _ct({b: v["ece"] for b, v in by_turn.items()}),
+        "calibration_test_played_out": _ct({b: normal_ece for b in by_turn}),
         "by_turn": dict(by, preview={"n": 2899, "logloss": preview_logloss, "ece": 0.008,
                                      "vs_constant": _vs_const(round(preview_logloss - 0.69315, 5),
                                                               preview_half)})}}}}
@@ -147,9 +160,11 @@ def test_gates_separate_in_battle_from_preview():
     assert g3["in_battle_beats_constant"]["pass"] is False
     assert g3["in_battle_beats_constant"]["losing_buckets"] == ["t1-2"]
 
-    # A third of held-out rows are forfeits and they are easier, so a model that is calibrated
-    # only once they are mixed in must not pass.
-    assert gates(_spectator(good, normal_ece=0.04), {"constant": const})["in_battle_pass"] is False
+    # Played-out games are reported beside the verdict and do not decide it: whether a game will be
+    # forfeited is not known when the prediction is made, so no model can be calibrated on that slice.
+    g4 = gates(_spectator(good, normal_ece=0.04), {"constant": const})
+    assert g4["in_battle_pass"] is True
+    assert g4["played_out_calibration"]["ece"] == 0.04 and "pass" not in g4["played_out_calibration"]
 
     # The preview gate is scored on the preview bucket against the constant, with its n recorded —
     # not on a correlation over 30 simulated pairings, which is what `preview_tracks_sim` did and
@@ -250,6 +265,18 @@ def test_the_calibration_test_asks_about_the_model_not_the_sample_size():
     assert undecided["pass"] is None and undecided["reason"] == small["reason"]
     assert undecided["power"] == small["power"]
     assert gates(closed(None))["closed_in_battle_ece"]["pass"] is None
+
+    # And so are both open-sheet ECE gates — the in-battle one and the played-out one — whatever
+    # the raw ECE says: 0.09 in every bucket here, which the old 0.03 threshold would have failed.
+    opened = lambda ct: {"human_ots_all": {"perspectives": {"spectator": {  # noqa: E731
+        "by_turn": {b: {"logloss": 0.6, "ece": 0.09, "n": 100} for b in IN_BATTLE_BUCKETS},
+        "ended_normal": {"logloss": 0.6, "ece": 0.09, "n": 400},
+        "calibration_test": ct, "calibration_test_played_out": ct}}}}
+    for gate in ("in_battle_ece",):
+        assert gates(opened(calibrated))[gate]["pass"] is True
+        assert gates(opened(big))[gate]["pass"] is False
+        assert gates(opened(small))[gate]["pass"] is None
+        assert gates(opened(None))[gate]["pass"] is None
 
     # Seeded: the same rows give the same verdict twice.
     again = calibration_test(p, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400)
@@ -426,3 +453,44 @@ def test_eval_fingerprint_identifies_the_scored_rows(tmp_path):
 
     # A file appearing or vanishing changes the set that was scored.
     assert eval_fingerprint([b])["sha256"] != first["sha256"]
+
+
+def test_temperature_varies_with_the_turn():
+    """Over-confident early and about right late is what the models are, so the temperature is
+    fitted as a slope in log temperature per turn, and a calibration without one still reads."""
+    from vgc.wp.models import SHEETS_COL, TEMPERATURE_TURN_CAP, TURN_COL, SetModel, fit_temperature_by_turn
+
+    rng = np.random.default_rng(0)
+    n = 60000
+    stage = rng.integers(0, TEMPERATURE_TURN_CAP + 1, n).astype(float)
+    true_z = rng.normal(0, 1.5, n)
+    y = (rng.random(n) < 1 / (1 + np.exp(-true_z))).astype(float)
+    logit = true_z * 1.9 * np.exp(-0.09 * stage)  # sharper than the truth, most at turn 0
+    t0, slope = fit_temperature_by_turn(logit, y, stage)
+    assert abs(t0 - 1.9) < 0.1 and abs(slope + 0.09) < 0.02
+
+    glob = np.zeros((3, SHEETS_COL + 1), np.float32)
+    glob[:, TURN_COL] = [0.0, 0.3, 1.2]  # turns 0, 3, 12 (capped)
+    glob[:, 6] = 1
+    glob[:, SHEETS_COL] = 1
+    model = SetModel.__new__(SetModel)
+    model.human_ctx_col, model.sheets_col = 6, SHEETS_COL
+    model.calibration = {"human": 2.0, "human_slope": -0.1}
+    assert np.allclose(model._temperatures(glob), 2.0 * np.exp(-0.1 * np.array([0, 3, TEMPERATURE_TURN_CAP])))
+    model.calibration = {"human": 1.2}
+    assert np.allclose(model._temperatures(glob), 1.2)
+
+
+def test_validation_keeps_a_bo3_series_together():
+    """A validation game whose sibling games are in training scores a matchup the model has half
+    seen, so validation is drawn per group — the way `heldout_human` is — and per battle only
+    where there is no group."""
+    from vgc.wp.dataset import val_battles
+
+    manifest = {"battles": [{"battle": f"s{s}-g{g}", "group": f"series-{s}"} for s in range(400) for g in range(3)]
+                + [{"battle": f"sp-{i}", "group": None} for i in range(2000)]}
+    names = np.array([b["battle"] for b in manifest["battles"]])
+    val = val_battles(names, manifest)
+    series = val[:1200].reshape(400, 3)
+    assert (series.all(axis=1) | ~series.any(axis=1)).all()  # all three games, or none
+    assert series[:, 0].any() and val[1200:].any() and not val[1200:].all()

@@ -1187,3 +1187,71 @@ lesson as the damage channel's eleven faults:
 The Speed channel's own gate re-runs identically (0 silently wrong over 2,500 battles, same power),
 so none of this cost the channel anything. What is left — five and six orderings, each a single
 pairing — is below that channel's own gate rate and is recorded rather than chased.
+
+## wp-v1e, and what calibration was and was not doing
+
+`wp-v1e` is the first model with the orderings, the last move and the weather/terrain timers
+(featurizer 3, snapshots 4; 942k training rows, same manifest shape as `wp-v1d`). Scoring it turned
+into a series of calibration faults, found in this order (2026-09-28).
+
+**1. Temperatures were fitted on training rows.** A model scores its own training battles more
+confidently than new ones, so the fit sharpened it: `wp-v1e`'s training rows asked for 0.82 (open)
+and 0.78 (closed), its validation rows for 1.18 and 0.96. Fitted on training rows it failed six
+gates with an unchanged log loss; fitted on validation it was open 0.5502 / closed 0.5633 against
+`wp-v1d`'s 0.5523 / 0.5633, played-out ECE 0.021 against 0.030, and the preview interval clear of
+zero. `wp-v1d` had the same fault (0.89 / 0.95 on training rows, 1.12 / 1.07 on validation). A
+re-run of `calibrate` also fitted on top of the previous `calibration.json`; it now fits raw logits.
+
+**2. The 0.03 threshold was a coin toss, and the test that replaced it fails everything.** The
+open-sheet t7+ bucket was 0.03005 for `wp-v1e` and 0.02987 for `wp-v1d`. `in_battle_ece` became
+the closed-sheet gate's test — ECE against a calibrated model on the same rows, battle-clustered,
+Bonferroni, with power — and on 4,127 held-out battles it has 100% power and rejects both models at
+t3 onward (ECE 0.024–0.030 against a floor of 0.012–0.016). The fixed threshold had been too
+lenient here, as it had been too strict on 131 closed-sheet battles.
+
+**3. The validation split leaked Bo3 siblings.** Best-fit temperature by turn, open sheets:
+
+| Rows | preview | t1-2 | t3-4 | t5-6 | t7+ |
+|---|---|---|---|---|---|
+| validation, drawn per battle | 1.90 | 1.52 | 1.26 | 1.10 | 1.05 |
+| held-out players (by group) | 1.37 | 1.07 | 0.99 | 0.99 | 1.08 |
+| held-out teams | 1.57 | 1.18 | 1.08 | 1.02 | 0.96 |
+
+A turn-dependent temperature fitted on the first row failed t1-4 on the others. Validation was
+drawn per battle and `heldout_human` per group, so a validation game's sibling games — same teams,
+same players — were in training, and the model was confidently wrong whenever a series split.
+Validation is now drawn per group.
+
+**4. Then it is too small.** Drawn per group, 5% of human groups is 287 open-sheet battles in 137
+series and ~300 closed-sheet battles. Retrained on it, `wp-v1e` stopped at epoch 4 instead of 3 and
+scored 0.5596 on open sheets (worse), with temperatures 1.28 / 1.55; recalibrated on it, `wp-v1d`
+asked 0.87 — but its weights were trained under the per-battle split, so the group split includes
+battles it trained on, and that recalibration was discarded (`wp-v1d` is as committed). A
+temperature fitted on ~140 independent series cannot pass a test judged on 4,127 battles.
+
+**5. The shape is not a temperature's.** With no calibration at all, `wp-v1e` fails t1-2 at 0.044.
+Its reliability on held-out open-sheet spectator rows, t1-2:
+
+| predicted | 0.06 | 0.16 | 0.26 | 0.35 | 0.45 | 0.55 | 0.65 | 0.75 | 0.84 | 0.94 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| won | 0.07 | 0.21 | 0.30 | 0.40 | 0.46 | 0.51 | 0.57 | 0.66 | 0.79 | 0.94 |
+
+Over-confident in the middle, right at the tails, weaker but the same at t3-6. A temperature scales
+all of it, so every variant — single, per regime, per turn — traded the middle against the tails.
+A small side offset adds to the measured ECE: p1 won 48.5% of held-out open-sheet battles against
+50.3% in training (≈1.9 SE, likely noise; the model is side-neutral by construction).
+
+**6. A tolerance does not rescue it.** The null is now "miscalibrated by up to 1.1× in logit
+scale". On 6,000 synthetic battles a perfect null already passes a model 1.1× too sharp and rejects
+1.15×, so the tolerance moves the line little; the real miss is larger than that.
+
+**7. Played-out calibration conditioned on the future.** Whether a game will end in a KO is not
+known when the prediction is made, and played-out games are the closer ones, so a model calibrated
+on all games is over-confident on that slice by construction. It is a report line now, not part of
+`in_battle_pass`.
+
+What this leaves: the temperature's original job — self-play-trained models over-confident on
+humans — is mostly done by the data now (held-out groups ask ~1.04 in battle). What remains is a
+mid-range, early-game over-confidence that looks like memorised teams or players, to be treated in
+training first; a two-parameter calibrator with ~20% of human groups for validation if that is not
+enough. `wp-v1e` as committed is the epoch-4 retrain, uncalibrated; `wp-v1d` stays served.
