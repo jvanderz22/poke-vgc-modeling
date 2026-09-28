@@ -701,7 +701,11 @@ Order of work:
    arm, so what it can answer is narrower — which of the two served numbers is better calibrated
    where the app is used — and that is exactly the decision.
 8. **Speed evidence as a model input.** _In progress from 2026-09-27; the `wp-v1e` run (timers
-   only) was stopped for it._ The belief channels are sound and mostly dead-end at display: of
+   only) was stopped for it. Built and gated: the orderings are false 0.006% (open) and 0.008%
+   (hidden) over 20,000 battles, after four log-reading faults were fixed — one of which, Trace
+   credited to the Pokémon it copied from, was in the observation of 1 replay stream in 6
+   ([findings](docs/phase8-findings.md)). Next: re-extract every shard at snapshots v4,
+   featurize at version 3, retrain._ The belief channels are sound and mostly dead-end at display: of
    everything `vgc.belief` knows, only the set draws reach the WP number. Speed evidence — "their
    Pokémon moved before yours, so it is faster" — reaches the Speed read and nothing else, and it
    is what decides the benchmark's F1-D and F8, and on a cartridge it is the *only* way a Choice

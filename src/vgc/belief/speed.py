@@ -57,6 +57,9 @@ PRIORITY_ABILITY = {"prankster", "galewings"}
 ABSTAIN_ABILITIES = {"quickdraw", "stall", "myceliummight", "protosynthesis", "quarkdrive",
                      "slowstart", "quickfeet", "unburden"}
 
+# Items that bear on turn order, one way or the other.
+ORDER_ITEMS = set(ITEM_MULT) | ABSTAIN_ITEMS
+
 # Moves that reorder the turn. If one resolved this turn, the turn is dropped entirely: they act
 # on somebody else's slot, so it is not enough to skip the mover that used them.
 REORDERING_MOVES = {"afteryou", "quash", "instruct"}
@@ -225,6 +228,15 @@ def _stable(ev: MoveEvent) -> bool:
     """
     if not ev.order_known:
         return False
+    # The item too: a Scarf or Iron Ball knocked off during the turn decided the order while held.
+    # Only an item that bears on order matters — a berry eaten mid-turn changes nothing — and an
+    # item unknown at the turn mark is read as whatever the move line shows it lost or held.
+    # Ability events carry no turn-start copy, because arrival *is* when their order was decided.
+    start, now = getattr(ev, "order_item", ev.item), ev.item
+    if start != now:
+        before = start if start is not None else (getattr(ev, "lost_item", None) if now == "" else now)
+        if {to_id(before or ""), to_id(now or "")} & ORDER_ITEMS:
+            return False
     return ((ev.order_boosts or {}).get("spe", 0) == (ev.boosts or {}).get("spe", 0)
             and ev.order_status == ev.status
             and ev.order_weather == ev.weather and ev.order_terrain == ev.terrain
@@ -411,3 +423,79 @@ def summary(beliefs: dict[tuple[str, str], SpeedBelief]) -> dict[str, Any]:
         "any_narrowed": sum(1 for b in vals if b.narrowed > 0),
         "contradicted": sum(1 for b in vals if b.contradicted),
     }
+
+
+# --- orderings as a model input -----------------------------------------------------------------
+#
+# The belief above turns an ordering into a bound only when one side's spread is known, and in a
+# human replay neither is — so on human training rows it learns nothing, and a feature built from
+# it would be empty in training and full in the app. The ordering itself is there on every row,
+# from every perspective, so that is what the model is given (PLAN-v2, Phase 8 step 8).
+
+def _temporary(ev: Any) -> float:
+    """The multiplier from things that come and go — boosts, Tailwind, paralysis, a weather or
+    terrain Speed ability — with the held item divided back out, because the item is part of the
+    persistent speed the ordering is about."""
+    return effective_speed(1, ev) / ITEM_MULT.get(to_id(ev.item or ""), 1.0)
+
+
+def _could_hide(reg: Regulation, ev: Any) -> bool:
+    """Could an ability nobody has seen yet explain this order?
+
+    The filters above test the *known* ability, which on open sheets is every ability. With sheets
+    hidden, an Unburden Sneasler (94% of them) that has eaten its seed moves at double Speed with
+    nothing in the log to say so, and reading that as persistent speed is wrong. Gate rule 7: a
+    filter that was sound in one regime has to be re-earned in the other, so an unknown ability
+    counts as every ability the forme can have.
+    """
+    if ev.ability:
+        return False
+    entry = reg.dex.get_species(ev.forme or ev.species) or {}
+    possible = {to_id(a) for a in (entry.get("abilities") or {}).values()}
+    if possible & (ABSTAIN_ABILITIES | PRIORITY_ABILITY):
+        return True
+    weather, terrain = to_id(ev.order_weather or ""), to_id(ev.order_terrain or "")
+    return (any(weather in WEATHER_ABILITY.get(a, ()) for a in possible)
+            or any(terrain in TERRAIN_ABILITY.get(a, ()) for a in possible))
+
+
+def orderings(reg: Regulation, obs: Any) -> list[list[list[str]]]:
+    """Pairs of opposing Pokémon where one was seen to be at least as fast as the other.
+
+    Each entry is `[[side, species, forme], [side, species, forme]]`, the first at least as fast
+    as the second in **persistent** speed — nature, Stat Points and held item — which is what
+    carries from one turn to the next. Temporary multipliers are divided out conservatively: an
+    ordering counts only when the first mover went first *without* the bigger one (reversed under
+    Trick Room). Otherwise the order could be the boost's doing, and it is dropped.
+
+    Keyed on forme, so a Mega's arrival starts afresh rather than inheriting its base forme's
+    comparisons. Ties are never excluded: "at least as fast" is all a single order can say.
+    """
+    out: set[tuple[tuple[str, str, str], tuple[str, str, str]]] = set()
+    # Illusion logs a Zoroark's moves under whoever it is disguised as — a Zoroark-Hisui passing
+    # as Torkoal outran a Kingambit in the gate — so a side that brought one has no ordering its
+    # log can be trusted to attribute. Team preview shows the Zoroark, so this needs no guess.
+    disguised = {sid for sid, side in obs.sides.items()
+                 if any(to_id(m.species).startswith("zoroark") for m in side.mons)}
+    # An item lost since (a Scarf knocked off) changed the persistent speed, so an order seen while
+    # it was held says nothing about now. Events log the item as it stood; after the loss it is "".
+    lost = {(sid, m.species) for sid, side in obs.sides.items() for m in side.mons if m.lost_item}
+
+    def stale(ev: Any) -> bool:
+        return (ev.side, ev.species) in lost and ev.item != ""
+
+    evidence = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
+    for first, second, sign in evidence:
+        if first.side == second.side or first.side in disguised or second.side in disguised:
+            continue
+        if stale(first) or stale(second):
+            continue
+        if _could_hide(reg, first) or _could_hide(reg, second):
+            continue
+        tf, ts = _temporary(first), _temporary(second)
+        key = lambda ev: (ev.side, ev.species, ev.forme or ev.species)  # noqa: E731
+        if sign > 0 and tf <= ts:
+            out.add((key(first), key(second)))
+        elif sign < 0 and tf >= ts:
+            out.add((key(second), key(first)))
+    return [[list(a), list(b)] for a, b in sorted(out)]

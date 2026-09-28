@@ -103,11 +103,16 @@ class Featurizer:
     #   2  weather and terrain turns remaining, beside Trick Room's. Weather and terrain were a
     #      type one-hot only, so sun with one turn left and sun with four were the same row —
     #      the decided-endgame benchmark's F3 and F7 turn on exactly that difference.
+    #   3  what the battle has shown beyond the observation (a record's `evidence`, snapshots
+    #      v4), on each Pokémon's token: which opposing Pokémon it was seen to be at least as fast
+    #      as, and they it, in persistent speed; and which of its known moves it last used since
+    #      coming in — with a Choice item, the lock. The benchmark's F1-D, F2 and F8.
     #
     # A featurizer builds any supported version, so a model keeps the columns it was trained on
     # after the default moves on.
-    VERSION = 2
-    SUPPORTED = (1, 2)
+    VERSION = 3
+    SUPPORTED = (1, 2, 3)
+    EVIDENCE_WIDTH = 16  # 6 ahead-of + 6 behind + 4 last-move slots
 
     def __init__(self, reg: Regulation, vocab: Vocab | None = None, version: int = VERSION):
         if version not in self.SUPPORTED:
@@ -120,7 +125,8 @@ class Featurizer:
         self._forme_cache: dict[str, np.ndarray] = {}
         self._move_cache: dict[str, np.ndarray] = {}
         self._item_cache: dict[str, np.ndarray] = {}
-        self.n_num = len(self._mon_num(_blank_mon(), True, False))
+        self.n_mon = len(self._mon_num(_blank_mon(), True, False))
+        self.n_num = self.n_mon + (self.EVIDENCE_WIDTH if version >= 3 else 0)
         self.n_glob = len(self._glob(_blank_obs(), "p1", "turn", False, False))
 
     # --- pieces -------------------------------------------------------------------------
@@ -290,9 +296,40 @@ class Featurizer:
             mega_used = any(m["mega"] for m in side["mons"])
             for i, m in enumerate(side["mons"][:6]):
                 cat[6 * k + i] = self._mon_cat(m)
-                num[6 * k + i] = self._mon_num(m, k == 0, mega_used)
+                num[6 * k + i, : self.n_mon] = self._mon_num(m, k == 0, mega_used)
+        if self.version >= 3:
+            self._evidence(rec, a, b, num)
         glob = self._glob(obs, a, rec["kind"], rec["meta"]["policies"]["p1"] == "human", rec["meta"].get("approx", False))
         return cat, num, glob
+
+    def _evidence(self, rec: dict, a: str, b: str, num: np.ndarray) -> None:
+        """Version 3's columns, written into the tail of each Pokémon's token.
+
+        A record from before snapshots v4 has no `evidence`, and reading its absence as "nothing
+        was seen" would be the silent zero this versioning exists to prevent, so it is refused.
+        """
+        ev = rec.get("evidence")
+        if ev is None:
+            raise ValueError("featurizer version 3 needs snapshot records with `evidence` (snapshots "
+                             "v4); re-extract the shards")
+        ahead = {(tuple(x), tuple(y)) for x, y in ev["ahead"]}
+        obs = rec["obs"]
+        base = self.n_mon
+        for k, (sid, opp) in enumerate(((a, b), (b, a))):
+            mine, theirs = obs["sides"][sid]["mons"][:6], obs["sides"][opp]["mons"][:6]
+            last = (ev.get("last_move") or {}).get(sid) or {}
+            for i, m in enumerate(mine):
+                me = (sid, m["species"], m["forme"] or m["species"])
+                row = num[6 * k + i]
+                for j, o in enumerate(theirs):
+                    them = (opp, o["species"], o["forme"] or o["species"])
+                    row[base + j] = float((me, them) in ahead)
+                    row[base + 6 + j] = float((them, me) in ahead)
+                used = last.get(m["species"])
+                if used and m["state"] == "active":
+                    known = [to_id(x) for x in self._known_moves(m)]
+                    if to_id(used) in known:
+                        row[base + 12 + known.index(to_id(used))] = 1.0
 
     def orientations(self, rec: dict) -> list[str]:
         p = rec["obs"]["perspective"]

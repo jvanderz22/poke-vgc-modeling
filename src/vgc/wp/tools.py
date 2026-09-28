@@ -19,11 +19,17 @@ from vgc.wp.features import Featurizer, Vocab, check_featurizer, featurize
 from vgc.wp.models import WPModel, load_model, model_dir, symmetrize
 
 
-def _record(obs: dict, kind: str, context: str, battle: str = "live") -> dict[str, Any]:
+def _record(obs: dict, kind: str, context: str, battle: str = "live",
+            evidence: dict | None = None) -> dict[str, Any]:
+    """A record shaped like a snapshot, for inference. `evidence` is what the battle has shown
+    beyond `obs` (`vgc.data.snapshots.evidence`); at team preview there is none yet."""
+    from vgc.data.snapshots import NO_EVIDENCE, VERSION
+
     pol = "human" if context == "human" else "heuristic"
-    return {"battle": battle, "source": "human" if pol == "human" else "selfplay", "point": 0, "kind": kind,
+    return {"v": VERSION, "battle": battle, "source": "human" if pol == "human" else "selfplay", "point": 0, "kind": kind,
             "obs": obs, "label": {"winner": "p1", "ended_by": "normal", "brought": {}, "brought_complete": {"p1": False, "p2": False}},
-            "meta": {"teams": {"p1": None, "p2": None}, "policies": {"p1": pol, "p2": pol}, "approx": False}}
+            "meta": {"teams": {"p1": None, "p2": None}, "policies": {"p1": pol, "p2": pol}, "approx": False},
+            "evidence": evidence or NO_EVIDENCE}
 
 
 def _load(reg: Regulation, version: str) -> tuple[WPModel, Featurizer]:

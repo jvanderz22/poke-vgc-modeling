@@ -1150,3 +1150,40 @@ opponent is holding cannot be trusted with a position that turns on what they ar
 the set encoder uses that information *correctly* is the next question — on the same live position
 its averaged and sets-unknown numbers were 11–14 points apart — and the decided-endgame benchmark
 is being built to answer it.
+
+## Speed orderings as a model input: sound, once the log is read right
+
+Phase 8 step 8 feeds the model the orderings themselves — "this Pokémon was seen to be at least as
+fast as that one, in persistent speed" — because the belief's P(faster) is empty on human rows,
+where neither spread is known. `scripts/analysis/speed_orderings.py` checks every ordering against
+the true nature, Stat Points and item on 20,000 sampled-spread self-play battles, in both regimes
+(hidden sheets by stripping the sheet lines, as a spectator sees a cartridge game):
+
+| | orderings / battle | false | rate |
+| --- | --- | --- | --- |
+| first cut, open | 4.44 | 33 of 88,758 | 0.037% |
+| first cut, hidden | 4.35 | 55 of 87,087 | 0.063% |
+| **final, open** | 3.97 | **5 of 79,459** | **0.006%** |
+| **final, hidden** | 3.91 | **6 of 78,176** | **0.008%** |
+
+Every fix between the two was the log being misread, not the persistent-speed logic — the same
+lesson as the damage channel's eleven faults:
+
+- **Illusion.** A Zoroark-Hisui disguised as Torkoal "outran" a Kingambit: the log files its moves
+  under the disguise. A side that brought a Zoroark gives no orderings.
+- **Trace was credited to the wrong Pokémon.** `[from] ability: Trace|[of] X` names who was copied
+  *from*, and the generic tag rule gave Trace to X. So a Sneasler whose Unburden had been traced
+  was recorded holding Trace, and every filter that checks for Unburden passed it. This was in the
+  observation itself: **50 of 300 sampled replay streams** carried a wrong ability, in every
+  snapshot built so far. The re-extraction for snapshots v4 removes it.
+- **Quick Claw's activation was ignored** (`-activate` was on the parser's ignore list), so a
+  hidden Quick Claw left the move logged with no item and the order read as Speed.
+- **Items change.** A Scarf knocked off makes an earlier ordering stale; an Iron Ball knocked off
+  *during* the turn decided that turn's order while still held. Move events now keep the item as
+  it stood at the turn mark, beside the boosts and weather they already kept, and only an item
+  that bears on order (Scarf, Iron Ball, Quick Claw…) makes a pair unstable — a berry eaten
+  mid-turn does not, which is what brought the power back from 3.0 to 3.9 a battle.
+
+The Speed channel's own gate re-runs identically (0 silently wrong over 2,500 battles, same power),
+so none of this cost the channel anything. What is left — five and six orderings, each a single
+pairing — is below that channel's own gate rate and is recorded rather than chased.

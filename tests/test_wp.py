@@ -278,7 +278,7 @@ def test_weather_and_terrain_are_timed_like_trick_room(reg, records):
 
     from vgc.wp.features import Featurizer
 
-    v1, v2 = Featurizer(reg, version=1), Featurizer(reg)
+    v1, v2 = Featurizer(reg, version=1), Featurizer(reg, version=2)
     assert v2.version == 2 and v2.n_glob == v1.n_glob + 2
     assert v1.n_glob == 42  # the layout wp-v1 … wp-v1d were trained on
 
@@ -294,6 +294,73 @@ def test_weather_and_terrain_are_timed_like_trick_room(reg, records):
     assert not np.array_equal(rows[1][1], rows[4][1])
     # The logistic baseline reads the last eight columns; the new ones must not move them.
     assert np.array_equal(rows[1][0][-8:], rows[1][1][-8:])
+
+
+def test_snapshots_carry_what_the_battle_showed_beyond_the_observation(records):
+    """Snapshots v4: every record has `evidence`, the orderings only ever pair opposing Pokémon,
+    and a last move belongs to a Pokémon on the field. The observation itself is untouched."""
+    from vgc.data.snapshots import VERSION
+
+    assert VERSION == 4 and all(r["v"] == 4 and "evidence" in r for r in records)
+    pairs = [p for r in records for p in r["evidence"]["ahead"]]
+    assert pairs, "the fixture replay has turns that raced"
+    assert all(a[0] != b[0] for a, b in pairs)
+    for r in records:
+        for sid, moves in r["evidence"]["last_move"].items():
+            active = {m["species"] for m in r["obs"]["sides"][sid]["mons"] if m["state"] == "active"}
+            assert set(moves) <= active
+    assert all("evidence" not in r["obs"] and "last_move" not in str(r["obs"]) for r in records)
+
+
+def test_version_3_puts_the_evidence_on_each_token(reg, records):
+    import copy
+
+    from vgc.wp.features import Featurizer
+
+    fz = Featurizer(reg, version=3)
+    assert fz.n_num == fz.n_mon + fz.EVIDENCE_WIDTH
+    rec = copy.deepcopy(next(r for r in records if r["kind"] == "turn"))
+    p1 = next(m for m in rec["obs"]["sides"]["p1"]["mons"] if m["state"] == "active")
+    p2 = next(m for m in rec["obs"]["sides"]["p2"]["mons"] if m["state"] == "active")
+    key = lambda sid, m: [sid, m["species"], m["forme"] or m["species"]]  # noqa: E731
+    known = fz._known_moves(p1)
+    rec["evidence"] = {"ahead": [[key("p1", p1), key("p2", p2)]],
+                       "last_move": {"p1": {p1["species"]: known[-1]}, "p2": {}}}
+    _, num, _ = fz.row(rec, "p1")
+    i = rec["obs"]["sides"]["p1"]["mons"].index(p1)
+    j = rec["obs"]["sides"]["p2"]["mons"].index(p2)
+    base = fz.n_mon
+    assert num[i, base + j] == 1 and num[i, base:base + 12].sum() == 1   # p1's mon ahead of p2's
+    assert num[6 + j, base + 6 + i] == 1                                  # ...seen from p2's token
+    assert num[i, base + 12 + len(known) - 1] == 1                        # its last move
+    # From the other orientation the same fact lands on the other tokens.
+    _, flipped, _ = fz.row(rec, "p2")
+    assert flipped[j, base + 6 + i] == 1 and flipped[6 + i, base + j] == 1
+
+    rec.pop("evidence")
+    with pytest.raises(ValueError, match="evidence"):
+        fz.row(rec, "p1")
+
+
+def test_an_ability_nobody_has_seen_can_block_an_ordering(reg):
+    """Unburden on 94% of Sneasler, found only once revealed: with sheets hidden, an unseen one
+    that has eaten its seed moves at double Speed with nothing in the log to say so."""
+    from types import SimpleNamespace
+
+    from vgc.belief.speed import _could_hide, _temporary
+
+    ev = lambda **kw: SimpleNamespace(**({"species": "Sneasler", "forme": "Sneasler", "ability": None,  # noqa: E731
+                                          "item": None, "order_boosts": {}, "order_status": None,
+                                          "order_side_conditions": [], "order_weather": None,
+                                          "order_terrain": None} | kw))
+    assert _could_hide(reg, ev()) is True
+    assert _could_hide(reg, ev(ability="poisontouch")) is False
+    swim = dict(species="Basculegion", forme="Basculegion")
+    assert _could_hide(reg, ev(**swim, order_weather="raindance")) is True    # Swift Swim, unseen
+    assert _could_hide(reg, ev(**swim)) is False
+    # A held Choice Scarf is persistent speed, so it is not divided out; a boost is.
+    assert _temporary(ev(ability="poisontouch", item="choicescarf")) == 1.0
+    assert _temporary(ev(ability="poisontouch", order_boosts={"spe": 1})) == 1.5
 
 
 def test_an_old_model_is_served_with_the_columns_it_was_trained_on():

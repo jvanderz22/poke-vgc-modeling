@@ -1,0 +1,215 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "battles": 20000,
+ "by_regime": {
+  "open": {
+   "orderings": 79459,
+   "false": 5,
+   "strict": 78690,
+   "unscored": 0,
+   "battles_with_any": 19233,
+   "false_rate": 6e-05,
+   "per_battle": 3.97,
+   "offenders": [
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8486",
+     "ahead": [
+      "p1",
+      "Incineroar",
+      "Incineroar"
+     ],
+     "behind": [
+      "p2",
+      "Runerigus",
+      "Runerigus"
+     ],
+     "true": [
+      74,
+      80
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8487",
+     "ahead": [
+      "p2",
+      "Incineroar",
+      "Incineroar"
+     ],
+     "behind": [
+      "p1",
+      "Runerigus",
+      "Runerigus"
+     ],
+     "true": [
+      74,
+      80
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-15550",
+     "ahead": [
+      "p2",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "true": [
+      123,
+      136
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-15553",
+     "ahead": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p2",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "true": [
+      123,
+      136
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-16518",
+     "ahead": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p2",
+      "Charizard",
+      "Charizard-Mega-Y"
+     ],
+     "true": [
+      140,
+      143
+     ]
+    }
+   ]
+  },
+  "closed": {
+   "orderings": 78176,
+   "false": 6,
+   "strict": 77418,
+   "unscored": 0,
+   "battles_with_any": 19194,
+   "false_rate": 8e-05,
+   "per_battle": 3.91,
+   "offenders": [
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8486",
+     "ahead": [
+      "p1",
+      "Incineroar",
+      "Incineroar"
+     ],
+     "behind": [
+      "p2",
+      "Runerigus",
+      "Runerigus"
+     ],
+     "true": [
+      74,
+      80
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-8487",
+     "ahead": [
+      "p2",
+      "Incineroar",
+      "Incineroar"
+     ],
+     "behind": [
+      "p1",
+      "Runerigus",
+      "Runerigus"
+     ],
+     "true": [
+      74,
+      80
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-10734",
+     "ahead": [
+      "p1",
+      "Sneasler",
+      "Sneasler"
+     ],
+     "behind": [
+      "p2",
+      "Weavile",
+      "Weavile"
+     ],
+     "true": [
+      149,
+      187
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-15550",
+     "ahead": [
+      "p2",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "true": [
+      123,
+      136
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-15553",
+     "ahead": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p2",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "true": [
+      123,
+      136
+     ]
+    },
+    {
+     "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-16518",
+     "ahead": [
+      "p1",
+      "Gardevoir",
+      "Gardevoir"
+     ],
+     "behind": [
+      "p2",
+      "Charizard",
+      "Charizard-Mega-Y"
+     ],
+     "true": [
+      140,
+      143
+     ]
+    }
+   ]
+  }
+ }
+}

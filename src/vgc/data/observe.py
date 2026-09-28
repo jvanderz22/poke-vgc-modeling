@@ -39,9 +39,13 @@ _IGNORE = {"", "t:", "j", "J", "l", "L", "c", "raw", "html", "uhtml", "uhtmlchan
            "message", "-message", "-hint", "-center", "-combine", "-notarget", "-nothing", "-anim", "-fail",
            "-block", "-miss", "-immune", "-supereffective", "-resisted", "-hitcount", "-waiting",
            "-ohko", "-primal", "-burst", "-zpower", "-zbroken", "-prepare", "-mustrecharge", "-singleturn",
-           "-singlemove", "-activate", "-fieldactivate", "cant", "upkeep", "done", "start", "clearpoke",
+           "-singlemove", "-fieldactivate", "cant", "upkeep", "done", "start", "clearpoke",
            "teampreview", "split", "timer", "request", "error", "sentchoice", "uhtml", "-candynamax", "askreg",
            "bestof", "-terastallize", "title", "rename"}
+
+
+# Abilities whose `[from]` tag names the copier and whose `[of]` names who was copied.
+COPYING_ABILITIES = {"trace", "receiver", "powerofalchemy"}
 
 
 class Observer(BattleState):
@@ -110,6 +114,16 @@ class Observer(BattleState):
         tags = _tags(args)
         src = tags.get("from", "")
         if src.startswith(("item:", "ability:")) and args:
+            if to_id(src.split(":", 1)[1]) in COPYING_ABILITIES:
+                # `|-ability|p2b: Alakazam|Unburden|Trace|[from] ability: Trace|[of] p1b: Sneasler`:
+                # the `[of]` Pokémon is the one copied *from*, so what this reveals is its ability —
+                # Unburden — and not the copier's. Read the other way round, Sneasler was recorded
+                # holding Trace, and its real Unburden went unseen by every filter that checks it.
+                whom = tags.get("of")
+                m = self._mon(whom) if whom and ": " in whom else None
+                if m is not None and len(args) > 1:
+                    self._reveal(m, "ability", to_id(args[1]))
+                return
             whom = tags.get("of") or args[0]
             m = self._mon(whom) if ": " in whom else None
             if m is not None:
@@ -318,6 +332,15 @@ class Observer(BattleState):
             m.item, m.item_source = to_id(a[1]), "own" if m.item_source == "own" else "revealed"
         else:
             self._reveal(m, "item", to_id(a[1]))
+
+    def _on_activate(self, a: list[str]) -> None:
+        """`|-activate|p2b: Archaludon|item: Quick Claw` reveals the item. It printed before the
+        move it hurried, so the move is logged holding it — which is what lets the Speed filters
+        abstain on it. Ignoring the line left the item unknown and the order read as Speed."""
+        if len(a) > 1 and a[1].startswith("item: "):
+            m = self._mon(a[0])
+            if m is not None:
+                self._reveal(m, "item", to_id(a[1][len("item: "):]))
 
     def _on_enditem(self, a: list[str]) -> None:
         m = self._mon(a[0])

@@ -85,7 +85,8 @@ class MoveEvent:
     __slots__ = ("turn", "seq", "side", "slot", "species", "forme", "move", "priority", "target",
                  "spread", "called_by", "trick_room", "weather", "terrain", "boosts", "status",
                  "side_conditions", "item", "ability", "order_boosts", "order_status",
-                 "order_side_conditions", "order_weather", "order_terrain", "order_known")
+                 "order_side_conditions", "order_weather", "order_terrain", "order_known", "order_item",
+                 "lost_item")
 
     def __init__(self, **kw: Any):
         for k in self.__slots__:
@@ -159,7 +160,7 @@ class AbilityEvent:
 class Mon:
     __slots__ = ("species", "forme", "nickname", "state", "position", "hp", "hp_max", "status", "boosts",
                  "volatiles", "item", "item_source", "lost_item", "ability", "ability_source", "moves",
-                 "moves_used", "nature", "stats", "mega", "gender", "ability_ruled_out", "sp")
+                 "moves_used", "nature", "stats", "mega", "gender", "ability_ruled_out", "sp", "last_move")
 
     def __init__(self, species: str):
         self.species = species  # as shown at team preview
@@ -193,6 +194,10 @@ class Mon:
         self.stats: dict[str, int] | None = None
         self.mega = False
         self.gender: str | None = None
+        # The move it last used since it came in — with a Choice item, the move it is locked into.
+        # Kept out of `to_json` (and so out of `observation()`): it is evidence, and reaches
+        # snapshots through `vgc.data.snapshots.evidence` instead.
+        self.last_move: str | None = None
 
     def to_json(self, exact: bool) -> dict[str, Any]:
         hp_exact = None
@@ -312,6 +317,7 @@ class BattleState:
                 other.boosts, other.volatiles = {}, set()
         if m.state != "active" or m.position != slot:
             m.boosts, m.volatiles = {}, set()
+            m.last_move = None       # a switch breaks a choice lock
         m.state, m.position = "active", slot
         m.forme = forme
 
@@ -347,13 +353,14 @@ class BattleState:
             boosts={k: v for k, v in sorted(m.boosts.items()) if v},
             status=m.status, side_conditions=sorted(self.sides[side].conditions),
             # The ability is resolved for the forme, not copied from the sheet.
-            item=m.item, ability=self._active_ability(m),
+            item=m.item, lost_item=m.lost_item, ability=self._active_ability(m),
             **self._order_state(side, m),
         )
         self.moves_log.append(self._resolving)
         self._seq += 1
         if called_by:
             return self._resolving   # called by another effect: not its own move
+        m.last_move = move
         if move not in m.moves_used:
             m.moves_used.append(move)
         return self._resolving
@@ -522,11 +529,11 @@ class BattleState:
                     "order_status": m.status,
                     "order_side_conditions": sorted(self.sides[side].conditions),
                     "order_weather": self.weather, "order_terrain": self.terrain,
-                    "order_known": False}
+                    "order_item": m.item, "order_known": False}
         return {"order_boosts": start["boosts"], "order_status": start["status"],
                 "order_side_conditions": start["side_conditions"],
                 "order_weather": start["weather"], "order_terrain": start["terrain"],
-                "order_known": True}
+                "order_item": start["item"], "order_known": True}
 
     def _snapshot_turn_start(self) -> None:
         """Weather and terrain are part of it: a Swift Swim Pokémon whose rain arrived partway
@@ -542,6 +549,9 @@ class BattleState:
                         "boosts": {k: v for k, v in sorted(mon.boosts.items()) if v},
                         "status": mon.status, "side_conditions": conditions,
                         "weather": self.weather, "terrain": self.terrain,
+                        # An Iron Ball knocked off partway through the turn was still held when
+                        # the order was decided; the move line alone says it was not.
+                        "item": mon.item,
                     }
 
     def _active_ability(self, m: Mon) -> str | None:

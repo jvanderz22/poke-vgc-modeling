@@ -339,7 +339,12 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
     rng = random.Random(seed)
     note: dict[str, Any] = {}
     particles = [_particle(reg, obs, state, rng, note) for _ in range(k)]
-    recs = [_record(p, kind, "human") for p in particles] + [_record(obs, kind, "human")]
+    # The orderings and the last move are the same for every draw: they are what this battle
+    # showed, and a particle only fills in what it did not.
+    from vgc.data.snapshots import evidence
+
+    shown = evidence(reg, state)
+    recs = [_record(p, kind, "human", evidence=shown) for p in particles] + [_record(obs, kind, "human", evidence=shown)]
     d = featurize(recs, fz)
     p, _ = model.predict(d)
     draws = sorted(float(x) for x in p[:k])
@@ -370,6 +375,7 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     """
     import random
 
+    from vgc.data.snapshots import evidence
     from vgc.wp.features import featurize
     from vgc.wp.tools import _load, _record
 
@@ -386,7 +392,8 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
                               for sid in ("p1", "p2")},
                      "active": {sid: [m.species for m in rp.state.sides[sid].mons if m.state == "active"]
                                 for sid in ("p1", "p2")}})
-        recs.append([_record(_particle(reg, obs, rp.state, rng, {}), kind, "human")
+        shown = evidence(reg, rp.state)
+        recs.append([_record(_particle(reg, obs, rp.state, rng, {}), kind, "human", evidence=shown)
                      for _ in range(k)])
     if not recs:
         return []

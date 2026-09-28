@@ -32,17 +32,40 @@ from typing import Any, Iterator
 from vgc.data.observe import PERSPECTIVES, Observer, dumps
 from vgc.regulation import Regulation
 
-VERSION = 3
+# 4: records carry `evidence` beside `obs` — the Speed orderings and each active Pokémon's last
+#    move since it came in (PLAN-v2 Phase 8 step 8). `observation()` itself is unchanged.
+VERSION = 4
 
 
 def _short(text: str) -> str:
     return hashlib.sha1(text.encode()).hexdigest()[:12]
 
 
+def evidence(reg: Regulation, state: Any) -> dict[str, Any]:
+    """What the battle has shown that `observation()` does not carry, as of now.
+
+    `ahead`: opposing pairs where the first was seen to be at least as fast as the second, in
+    persistent speed (`belief.speed.orderings`). `last_move`: for each active Pokémon, the move it
+    last used since it came in — with a Choice item, the move it is locked into. Both are public,
+    so every perspective of one position gets the same `ahead`, up to what each can rule out about
+    its own abilities.
+    """
+    from vgc.belief.speed import orderings
+
+    last = {sid: {m.species: m.last_move for m in side.mons if m.state == "active" and m.last_move}
+            for sid, side in state.sides.items()}
+    return {"ahead": orderings(reg, state), "last_move": last}
+
+
+NO_EVIDENCE: dict[str, Any] = {"ahead": [], "last_move": {"p1": {}, "p2": {}}}
+
+
 def _record(battle: str, source: str, point: int, kind: str, phase: str | None, deciding: list[str],
-            obs: dict, label: dict, meta: dict, choice_index: dict | None = None) -> dict[str, Any]:
+            obs: dict, label: dict, meta: dict, choice_index: dict | None = None,
+            evidence: dict | None = None) -> dict[str, Any]:
     return {"v": VERSION, "battle": battle, "source": source, "point": point, "kind": kind, "phase": phase,
-            "deciding": deciding, "choice_index": choice_index or {}, "obs": obs, "label": label, "meta": meta}
+            "deciding": deciding, "choice_index": choice_index or {}, "obs": obs, "label": label, "meta": meta,
+            "evidence": evidence or NO_EVIDENCE}
 
 
 def bring_view(obs: dict[str, Any], sid: str, order: list[str]) -> dict[str, Any]:
@@ -128,7 +151,8 @@ def trace_snapshots(trace: dict, battle: dict, reg: Regulation) -> list[dict[str
         label = label_base | {"choice": choice}
         views = {p: obs[p].observation() for p in PERSPECTIVES}
         for p in PERSPECTIVES:
-            out.append(_record(battle["battle_id"], "selfplay", point, kind, phase, deciding, views[p], label, meta, made))
+            out.append(_record(battle["battle_id"], "selfplay", point, kind, phase, deciding, views[p], label, meta, made,
+                               evidence=evidence(reg, obs[p])))
         if kind == "preview":
             for sid in deciding:
                 out.append(_record(battle["battle_id"], "selfplay", point, "bring", None, [sid],
@@ -182,7 +206,7 @@ def human_decision_points(replay: dict, reg: Regulation) -> tuple[Observer, list
     def point(kind: str, phase: str | None, deciding: list[str]) -> None:
         nonlocal buffer
         points.append({"kind": kind, "phase": phase, "deciding": deciding,
-                       "obs": o.observation(), "lines": buffer})
+                       "obs": o.observation(), "evidence": evidence(reg, o), "lines": buffer})
         buffer = []
 
     for line in replay["log"].split("\n"):
@@ -211,6 +235,7 @@ def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | No
     side's full 4 appeared)."""
     o, walked, forfeit = human_decision_points(replay, reg)
     pending = [(p["kind"], p["phase"], p["deciding"], p["obs"]) for p in walked if p["kind"] != "end"]
+    shown = [p["evidence"] for p in walked if p["kind"] != "end"]
     appeared = {sid: [m.species for m in o.sides[sid].mons if m.state != "unrevealed"] for sid in ("p1", "p2")}
     first_turn = next((obs for kind, _, _, obs in pending if kind == "turn"), None)
     leads = {sid: [m["species"] for m in sorted((m for m in first_turn["sides"][sid]["mons"] if m["state"] == "active"),
@@ -229,11 +254,15 @@ def human_snapshots(replay: dict, reg: Regulation, team_ids: dict[str, str] | No
     }
     out = []
     for point, (kind, phase, deciding, spec) in enumerate(pending):
-        out.append(_record(replay["id"], "human", point, kind, phase, deciding, spec, label, base_meta | {"approx": False}))
+        # A replay is public, so the player views reconstructed from it see the same evidence.
+        ev = shown[point]
+        out.append(_record(replay["id"], "human", point, kind, phase, deciding, spec, label, base_meta | {"approx": False},
+                           evidence=ev))
         for sid in ("p1", "p2"):
             if complete[sid]:
                 view = player_view(spec, sid, appeared[sid])
-                out.append(_record(replay["id"], "human", point, kind, phase, deciding, view, label, base_meta | {"approx": True}))
+                out.append(_record(replay["id"], "human", point, kind, phase, deciding, view, label, base_meta | {"approx": True},
+                                   evidence=ev))
                 if kind == "preview" and len(leads[sid]) == 2:
                     order = leads[sid] + [x for x in appeared[sid] if x not in leads[sid]]
                     out.append(_record(replay["id"], "human", point, "bring", None, [sid], bring_view(view, sid, order),
