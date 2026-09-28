@@ -1,5 +1,8 @@
 # VGC Reg M-C Model & Advisor — Plan v2
 
+> **Superseded 2026-09-28 by [PLAN-v3.md](PLAN-v3.md).** Kept as the archive: every Phase 4–8
+> measurement, correction and decision, with its reasoning. Read v3 for what to do next.
+
 **Supersedes [PLAN.md](PLAN.md)**, which is kept as the archive: it holds the original research, the
 phase 0–4 completion notes, and the post-mortems that produced this rewrite. Nothing here contradicts
 its *architecture*; what changes is the order of work, the gates, and what is expected to come from
@@ -8,9 +11,9 @@ learning rather than computation.
 v2 exists because Phase 4 produced a measurement that invalidates the plan's spine: **the quantity
 Phases 7 and 8 were going to be built on cannot be estimated from this corpus, and the simulator's
 version of it had never been checked against reality.** The evidence is in
-[docs/phase4-findings.md](docs/phase4-findings.md); the consequences are here.
+[docs/phase4-findings.md](phase4-findings.md); the consequences are here.
 
-**It has since been checked, and it failed** ([docs/phase6-findings.md](docs/phase6-findings.md)).
+**It has since been checked, and it failed** ([docs/phase6-findings.md](phase6-findings.md)).
 Heuristic-vs-heuristic win rate is a precise measurement — split-half reliability 0.96 — of something
 that does not predict who wins the real game: AUC 0.5119 over 2,684 independent series, and 0.0003
 nats after the best out-of-fold rescaling. So the quantity is not merely unestimated from the corpus;
@@ -22,15 +25,15 @@ the simulator's substitute for it does not exist either. That is what reorders t
 
 | Phase | Status | Notes |
 | --- | --- | --- |
-| 0 — Environment spike | ✅ 2026-09-19 | [findings](docs/phase0-findings.md): 36.5 battles/s, pins set, ONNX ok |
+| 0 — Environment spike | ✅ 2026-09-19 | [findings](phase0-findings.md): 36.5 battles/s, pins set, ONNX ok |
 | 1 — Foundation | ✅ 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; calc = simulator on 4 scenarios |
 | 2 — Battle layer, tier 1 | ✅ 2026-09-19 | heuristic 98.4% vs random; seeded runner, identical across worker counts |
 | 3 — Battle data | ✅ 2026-09-19 | snapshots for every perspective; parity exact on 3,089 live decisions; split frozen |
-| 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](docs/phase4-findings.md) |
+| 4 — Win probability v1 (OTS) | ⚠️ Partial 2026-09-20 | **in-battle WP works and is shippable; preview WP does not exist and cannot be made to.** [findings](phase4-findings.md) |
 | 5 — Ship in-battle WP | ✅ Done 2026-09-20 | f180164 + 16a2a03: bucket gates, `ece_spectator_played_out`, `eval_dataset` fingerprints, `wp-v1-gbt` carded (`in_battle_pass: true`), app wired; composition docstrings corrected |
-| 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](docs/phase6-findings.md) |
+| 6 — Simulator validity | ✅ 2026-09-20 | **negative, decisively.** The heuristic does not predict human results; the fork takes its second branch. [findings](phase6-findings.md) |
 | 7 — Deterministic team tools | ✅ 2026-09-20 | `vgc meta usage` + `vgc team weakness`; no model, no gate. KO and speed thresholds in Stat Points, because their spread is hidden |
-| 8 — Belief over hidden sets | 🟡 Built, blocked on its own prerequisite | **All three steps built.** Four channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178%, switch-in order **0 of 6,000 battles** — joined by the 66-point budget at **0.159% over 3,783**, all of it the channels'. The set prior is right **94.3%** of the time on held-out teams against 59.1% alphabetical, and WP_v2 beats the mode on every model tried ([findings](docs/phase8-findings.md)). **The prerequisite is resolved in substance, and step 3's criterion still does not hold.** The closed-sheet shard is in the mix (`wp-v1c`) and a held-out set exists in that regime (131 battles); the partial-information penalty it was meant to fix shrank **sevenfold** (+0.021 → +0.003 nats). **The closed-sheet calibration gap was the gate's own noise**: a calibrated model cannot get under 0.03 on 131 battles, and the observed ECE is inside what one scores. The gate now tests against that model and records its power. **Then the battles turned out to be on disk already**: 6,845 closed-sheet replays cached after the last extraction had never been extracted. `wp-v1d` has 10× the closed-sheet data (held-out 131 → 1,088 battles), and **`wp-v1d-sw-split-small` is the first model to pass both regimes**, decided at 99.8% power. Served for every role. The set-blind GBT scores better and is not served: a WP model must use revealed set information, and a benchmark of decided endgames is being drafted to test that it does. **2026-09-28: the open-sheet ECE gate, given power on 4,127 battles, fails every model including `wp-v1d`** — over-confident in the middle of the range early in a game, a shape no temperature fixes (step 8). See the prerequisite below |
+| 8 — Belief over hidden sets | 🟡 Built, blocked on its own prerequisite | **All three steps built.** Four channels gated — speed 0.029% silently wrong, damage **0 of 2,866**, bulk 0.178%, switch-in order **0 of 6,000 battles** — joined by the 66-point budget at **0.159% over 3,783**, all of it the channels'. The set prior is right **94.3%** of the time on held-out teams against 59.1% alphabetical, and WP_v2 beats the mode on every model tried ([findings](phase8-findings.md)). **The prerequisite is resolved in substance, and step 3's criterion still does not hold.** The closed-sheet shard is in the mix (`wp-v1c`) and a held-out set exists in that regime (131 battles); the partial-information penalty it was meant to fix shrank **sevenfold** (+0.021 → +0.003 nats). **The closed-sheet calibration gap was the gate's own noise**: a calibrated model cannot get under 0.03 on 131 battles, and the observed ECE is inside what one scores. The gate now tests against that model and records its power. **Then the battles turned out to be on disk already**: 6,845 closed-sheet replays cached after the last extraction had never been extracted. `wp-v1d` has 10× the closed-sheet data (held-out 131 → 1,088 battles), and **`wp-v1d-sw-split-small` is the first model to pass both regimes**, decided at 99.8% power. Served for every role. The set-blind GBT scores better and is not served: a WP model must use revealed set information, and a benchmark of decided endgames is being drafted to test that it does. **2026-09-28: the open-sheet ECE gate, given power on 4,127 battles, fails every model including `wp-v1d`** — over-confident in the middle of the range early in a game, a shape no temperature fixes (step 8). See the prerequisite below |
 | 9 — Policy strength (EWP + search) | — | was Phase 6, minus behaviour cloning; **promoted to the prerequisite for 10–11** by Phase 6 |
 | 10 — Matchup evaluation | ⛔ Blocked | was Phase 7; the precomputed matrix is dead, and on-demand evaluation waits on Phase 9 |
 | 11 — Team building | ⛔ Blocked | was Phase 8; behind Phase 10 |
@@ -73,8 +76,8 @@ the transfer test in §2, and then Phase 6's direct check, which is the one the 
 ## What the evidence changed
 
 Eight findings, each measured on the frozen split. Full detail and the scripts:
-[docs/phase4-findings.md](docs/phase4-findings.md), [docs/phase6-findings.md](docs/phase6-findings.md),
-[`scripts/analysis/`](scripts/analysis/).
+[docs/phase4-findings.md](phase4-findings.md), [docs/phase6-findings.md](phase6-findings.md),
+[`scripts/analysis/`](../scripts/analysis/).
 
 **1. Pre-battle win probability is not learnable from this corpus, at any scale it can reach.**
 Bradley-Terry over team composition: 0.6900 against a 0.6931 constant. The learning curve says why
@@ -121,7 +124,7 @@ at **AUC 0.5119, 95% CI [0.4948, 0.5296]**, and after the best out-of-fold resca
 **0.0003 nats, 95% CI [−0.0010, +0.0004]**. This is not a sampling problem: the simulated win rate's
 own split-half reliability is **0.96**, so the quantity is measured precisely and is simply the wrong
 quantity. *Consequence: the fork below takes its second branch — Phase 10's matrix is dead, Phase 9
-becomes the prerequisite, self-play generation stays paused. [Findings](docs/phase6-findings.md).*
+becomes the prerequisite, self-play generation stays paused. [Findings](phase6-findings.md).*
 
 **8. An open team sheet is not full information, and the pipeline treats it as if it were.** The
 sheet carries species, item, ability, moves and nature — and **not the 66 Stat Points**
@@ -233,8 +236,8 @@ train and val, not "~3%"/"a few percent", and validation is 72% self-play, not ~
 
 ### Phase 6 — Simulator validity: the fork in the road ✅ _negative_
 
-**Done 2026-09-20 — and it forked the roadmap.** [docs/phase6-findings.md](docs/phase6-findings.md);
-result in [`data/analysis/reg_mc/sim_validity.json`](data/analysis/reg_mc/sim_validity.json); re-run
+**Done 2026-09-20 — and it forked the roadmap.** [docs/phase6-findings.md](phase6-findings.md);
+result in [`data/analysis/reg_mc/sim_validity.json`](../data/analysis/reg_mc/sim_validity.json); re-run
 with `make sim-validity`.
 
 Every human battle whose two open sheets resolve to the pool gives a real-meta pairing. All 3,372 of
@@ -376,7 +379,7 @@ against the pinned calc rather than anything learned:
   Trick Room inverts it, which is the one claim here confirmed from play rather than measured:
   the corpus contains no Trick Room pair at all.
 - **Turn order → a bound on speed. ✅ Built and gated** (`vgc belief speed`, `vgc.belief.speed`,
-  [findings](docs/phase8-findings.md)). Their nature, item and ability are on the sheet, so their
+  [findings](phase8-findings.md)). Their nature, item and ability are on the sheet, so their
   Speed stat is a known function of one unknown integer in 0..32, and every equal-priority pair is
   an inequality on it. A tie is never ruled out, because Showdown breaks ties at random.
 
@@ -650,7 +653,7 @@ Order of work:
    *undecided* and the card says why. Re-scored: the set encoders are undecided, the GBTs fail on
    `closed_in_battle_beats_constant`, and no other gate moved. What would decide it is ~450–750
    closed-sheet held-out battles (~2,000 at 1.25×) — scraping, not self-play
-   ([findings](docs/phase8-findings.md)).
+   ([findings](phase8-findings.md)).
 
    _The original step, kept for the record:_ The `ots`
    thread is built (`Matchup.ots` → `play_battle`, `vgc data generate --no-ots`, the regime recorded
@@ -704,7 +707,7 @@ Order of work:
    only) was stopped for it. Built and gated: the orderings are false 0.006% (open) and 0.008%
    (hidden) over 20,000 battles, after four log-reading faults were fixed — one of which, Trace
    credited to the Pokémon it copied from, was in the observation of 1 replay stream in 6
-   ([findings](docs/phase8-findings.md)). **Trained 2026-09-28 (`wp-v1e`), not pinned**: better
+   ([findings](phase8-findings.md)). **Trained 2026-09-28 (`wp-v1e`), not pinned**: better
    log loss on open sheets (0.5502 vs 0.5523 at its best calibration), equal on closed, and it
    passes the closed-sheet regime — but the open-sheet calibration test, now given power, fails it
    and `wp-v1d` alike. See the calibration note at the end of this step. Not yet checked: whether
@@ -752,7 +755,7 @@ Order of work:
    *Deliberately left for later.* The richer input — the belief's own P(faster), using your known
    spread — needs training rows where a spread is known, which only self-play has.
 
-   *Calibration, found on the way (2026-09-28; [findings](docs/phase8-findings.md)).* Every model's
+   *Calibration, found on the way (2026-09-28; [findings](phase8-findings.md)).* Every model's
    open-sheet miss has the same shape, and it is not one a temperature can fix: **over-confident in
    the middle, right at the tails**, strongest early (t1-2: a "75%" wins 66%, a "16%" wins 21%,
    while 6% and 94% are right). A temperature softens everything, so it trades the middle against
@@ -821,7 +824,7 @@ A model that ignores the opponent's sets can win them — `wp-v1d-gbt` does — 
 number to two positions that differ only in what has been revealed. The benchmark asks the
 question the gates do not: when one revealed fact settles the game, does WP follow it?
 
-[`benchmarks/wp/reg_mc/decided_endgames.yaml`](benchmarks/wp/reg_mc/decided_endgames.yaml): 1v1
+[`benchmarks/wp/reg_mc/decided_endgames.yaml`](../benchmarks/wp/reg_mc/decided_endgames.yaml): 1v1
 families of positions that differ in one fact (a Choice Scarf, a choice lock, the turns left on sun,
 terrain or Trick Room, a priority move, a Focus Sash, Speed known only from turn order), with the
 calcs behind each. Scored on direction, distance from the true answer, mixing (with the fact hidden,
@@ -954,7 +957,7 @@ Not cancelled — waiting on a specific measurement, named here so it is not red
 | Deferred | Unblocked by |
 | --- | --- |
 | **Learned preview / team-strength WP** | A corpus three-plus orders of magnitude larger. The second route — Phase 6 passing, so the simulator could be the target instead of human games — is closed: it failed. (Findings 1, 2, 7.) |
-| **Behaviour cloning** | A higher-rated corpus — and on current evidence that may be *waiting on a ladder*, not on scraping. Over 4,261 players the 90th percentile of median rating is 1291 and the highest battle rating ever seen is 1578, so there is no high-rating tail to filter down to. What exists is now built: `--skill-percentile 50` gives the top half, 1,857 players and 10,892 sheets. ([findings](docs/phase8-findings.md)) |
+| **Behaviour cloning** | A higher-rated corpus — and on current evidence that may be *waiting on a ladder*, not on scraping. Over 4,261 players the 90th percentile of median rating is 1291 and the highest battle rating ever seen is 1578, so there is no high-rating tail to filter down to. What exists is now built: `--skill-percentile 50` gives the top half, 1,857 players and 10,892 sheets. ([findings](phase8-findings.md)) |
 | **Self-play spreads from `impute_sp`** | Cancelled as a design, not deferred, and **replaced**: `vgc data generate --spreads sampled`. All 20,082 pool Pokémon have exactly 32 points in their offensive stat, so nothing that infers offensive investment could be gated there — and as a prior it is 2.9 nats/pair worse than flat. Re-gating the speed channel on the sampled corpus doubled its silently-wrong rate, 0.014% → 0.029%, which is what a degenerate truth was hiding. |
 | **Self-play generation for WP training** | A policy that passes Phase 6. The rows do not pay for themselves in training (finding 3), and finding 7 removed the other justification. Generating more under *this* policy buys nothing. |
 | **Hyperparameter sweeps on the set encoder** | Nothing — closed off. Every config selected epoch 1 or 2 of 12; the constraint is coverage, not regularization. GPU time is better spent elsewhere. |
@@ -1018,7 +1021,7 @@ v1's nine practices stand. The rest are amended or added by the evidence:
 | Policy too weak → meaningless team rankings | **Confirmed, not a risk any more.** Phase 6 is the hard stop and it runs *before* the matrix; it has already stopped it once. Nothing ranks teams until a policy clears it. |
 | Phase 9 produces a stronger policy that still fails Phase 6 | Possible — VGC-Bench's agents are "approximately 100% exploitable", so strength against a fixed opponent need not mean realism. The deterministic stack is the floor either way, and the failure would be cheap to detect because the check is already built. |
 | Not enough Reg M-C replays | Established: more replays do not fix preview (finding 1). They still help in-battle WP and the closed-sheet regime, which is where scraping effort should go. |
-| Reg M-C rotates 2026-12-02 | L0 spine is the mitigation; [docs/regulation-change.md](docs/regulation-change.md). Note that the deterministic tools (Phase 7) port with the dex and need no retrain — another reason to build them first. |
+| Reg M-C rotates 2026-12-02 | L0 spine is the mitigation; [docs/regulation-change.md](regulation-change.md). Note that the deterministic tools (Phase 7) port with the dex and need no retrain — another reason to build them first. |
 | 19 GB free disk | Finding 3 helps: 412 MB of self-play snapshots are not earning their keep for training. |
 | torch 2.2.2 ceiling | Unchanged: ONNX for inference, plain torch for training. |
 
@@ -1063,9 +1066,9 @@ PLAN.md is the archive and stays in the repo. It holds what v2 does not repeat:
 - the L0–L5b architecture detail, which v2 amends but does not restate;
 - the phase 0–4 completion notes and the deviations recorded against each;
 - the Phase 4 sweep post-mortem, which reached the coverage-not-regularization diagnosis that
-  [docs/phase4-findings.md](docs/phase4-findings.md) then measured;
+  [docs/phase4-findings.md](phase4-findings.md) then measured;
 - PLAN.md's observation that "67% of pairings land ≥85/15 under heuristic-vs-heuristic", which is the
-  caveat [docs/phase6-findings.md](docs/phase6-findings.md) finally turned into a measurement.
+  caveat [docs/phase6-findings.md](phase6-findings.md) finally turned into a measurement.
 
 Read v2 for what to do next. Read PLAN.md for why the stack is built the way it is.
 
@@ -1078,4 +1081,4 @@ Read v2 for what to do next. Read PLAN.md for why the stack is built the way it 
 - [vbbjandrade/pokemon-champions-data](https://github.com/vbbjandrade/pokemon-champions-data) (CC BY 4.0)
 - [poke-env](https://github.com/hsahovic/poke-env) · [smogon/damage-calc](https://github.com/smogon/damage-calc) · [ychen022/VGCHelper](https://github.com/ychen022/VGCHelper) (unlicensed — reference only)
 - [MetaVGC Reg M-C](https://metavgc.com/regulations/regulationm-c) · [Victory Road](https://victoryroad.pro/champions-regulations/) · [Pikalytics Reg M-C](https://www.pikalytics.com/pokedex/gen9championsvgc2026regmc) · [ChampDex Stat Points](https://champdex.com/guides/stat-points)
-- In-repo: [docs/phase6-findings.md](docs/phase6-findings.md) · [docs/phase4-findings.md](docs/phase4-findings.md) · [docs/phase0-findings.md](docs/phase0-findings.md) · [docs/cloud-compute.md](docs/cloud-compute.md) · [docs/regulation-change.md](docs/regulation-change.md) · [docs/web-app.md](docs/web-app.md)
+- In-repo: [docs/phase6-findings.md](phase6-findings.md) · [docs/phase4-findings.md](phase4-findings.md) · [docs/phase0-findings.md](phase0-findings.md) · [docs/cloud-compute.md](cloud-compute.md) · [docs/regulation-change.md](regulation-change.md) · [docs/web-app.md](web-app.md)

@@ -1,7 +1,7 @@
 # Phase 4 review — what the corpus supports, and what it doesn't
 
 Date: 2026-09-20 · Reviewer pass over the WP work, independent of the sweep post-mortem already in
-[PLAN.md](../PLAN.md). Every number below was measured in this repo on the frozen split. The four
+[PLAN.md](PLAN.md). Every number below was measured in this repo on the frozen split. The four
 scripts that produced them are in [`scripts/analysis/`](../scripts/analysis/) and re-run under
 `.venv` with `PYTHONPATH=src`:
 

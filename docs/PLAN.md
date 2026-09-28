@@ -5,13 +5,13 @@
 > architecture detail, the phase 0–4 completion notes and deviations, the Phase 4 sweep post-mortem
 > and the 2026-09-20 CPU correction. It is **not** the current roadmap: the phase order, the gate
 > definitions and the expectations of the WP model all changed after
-> [docs/phase4-findings.md](docs/phase4-findings.md). Read PLAN-v2.md for what to do next.
+> [docs/phase4-findings.md](phase4-findings.md). Read PLAN-v2.md for what to do next.
 
 ## Progress
 
 | Phase                       | Status         | Notes                                                                                  |
 | --------------------------- | -------------- | -------------------------------------------------------------------------------------- |
-| 0 — Environment spike       | ✅ Done 2026-09-19 | [findings](docs/phase0-findings.md): 36.5 battles/s (8 workers), pins set, ONNX ok |
+| 0 — Environment spike       | ✅ Done 2026-09-19 | [findings](phase0-findings.md): 36.5 battles/s (8 workers), pins set, ONNX ok |
 | 1 — Foundation              | ✅ Done 2026-09-19 | `vgc` CLI, L0 loader, validator, calc sidecar; 42 tests; calc = simulator on 4 scenarios |
 | 2 — Battle layer, tier 1    | ✅ Done 2026-09-19 | heuristic 98.4% vs random (500, CI 96.9–99.2%); seeded runner, identical across worker counts; 52 tests |
 | 3 — Battle data             | ✅ Done 2026-09-19 | 134k training snapshots (6k self-play + 1.6k human games); parity exact on 3,089 live decisions; split frozen; 63 tests |
@@ -45,7 +45,7 @@ re-featurize), and move it into a phase's "Completed" note when done.
      held-out games against a fresh M-C logistic baseline. If the transfer is weak, the runbook's answer stays
      "retrain", with the number to back it.
   _Done when:_ an M-B-trained model's result on M-C held-out games is recorded, and
-  [docs/regulation-change.md](docs/regulation-change.md) says whether to warm-start or retrain at rotation.
+  [docs/regulation-change.md](regulation-change.md) says whether to warm-start or retrain at rotation.
 
 **Changes from the original plan (from Phase 0):**
 
@@ -529,7 +529,7 @@ passes.
 
 ### Phase 0 — Environment spike (~half a day). _Do this before committing to anything above._ ✅ Done
 
-> **Completed 2026-09-19** → [docs/phase0-findings.md](docs/phase0-findings.md).
+> **Completed 2026-09-19** → [docs/phase0-findings.md](phase0-findings.md).
 > 1 ✅ split into `.venv` / `.venv-train` (numpy conflict), sb3 dropped · 2 ✅ ONNX round trip, 6e-8 max diff ·
 > 3 ✅ Showdown `2ddfa04`, format id confirmed, SP validated (Tera is **not** rejected by Showdown) ·
 > 4 ✅ 11.4/s at 1 worker, 36.5/s at 8 workers with `simulator: 4` · 5 ✅ ~1.4 GB project; 14 GB free.
@@ -867,7 +867,7 @@ You asked for the modelling insight, so — the ones that actually decide whethe
 | WP model learns the bot, not the game (self-play labels reflect heuristic play)                             | Human-replay calibration is the reported number; player-vs-spectator consistency check; re-fit after Phase 6                    |
 | 19 GB free disk                                                                                            | Compress replay corpus; keep one checkpoint per regulation; don't vendor all of VGC-Bench                                       |
 | torch 2.2.2 ceiling breaks a dependency                                                                    | Plain-torch BC instead of sb3; ONNX for inference                                                                               |
-| Reg M-C rotates 2026-12-02 (~10 weeks out)                                                                 | L0 config spine is exactly the mitigation — validate it by adding a stub `reg_mb.yaml` early and confirming the stack runs both. Rebuild steps and gates: [docs/regulation-change.md](docs/regulation-change.md) |
+| Reg M-C rotates 2026-12-02 (~10 weeks out)                                                                 | L0 config spine is exactly the mitigation — validate it by adding a stub `reg_mb.yaml` early and confirming the stack runs both. Rebuild steps and gates: [docs/regulation-change.md](regulation-change.md) |
 
 ---
 
