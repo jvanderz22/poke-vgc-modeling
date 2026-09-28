@@ -293,7 +293,10 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> 
     if spec:
         beaten = {b: r.get("human_ots_all", {}).get("perspectives", {}).get("spectator", {}).get("all", {}).get("logloss")
                   for b, r in (baselines or {}).items()}
-        required = {b: ll for b, ll in beaten.items() if b in ("constant", "wp-v1-logistic") and ll is not None}
+        # The constant and the model's own logistic baseline, whatever its dataset is called. This
+        # named `wp-v1-logistic` literally, so from wp-v1c on only the constant was ever required.
+        required = {b: ll for b, ll in beaten.items()
+                    if (b == "constant" or b.endswith("-logistic")) and ll is not None}
         verdict("beats_baselines", all(spec["logloss"] < ll for ll in required.values()) if required else None,
                 logloss=spec["logloss"], baselines=beaten)
         verdict("ece_spectator", spec["ece"] < ECE_GATE, ece=spec["ece"], threshold=ECE_GATE)

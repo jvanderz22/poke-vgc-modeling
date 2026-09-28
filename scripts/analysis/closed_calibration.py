@@ -22,7 +22,7 @@ gate can be read at all on this many rows.
   **xfit_one**  a single temperature, cross-fitted the same way. Separates "the shape across
                 buckets is wrong" from "the level is wrong".
 
-    .venv/bin/python scripts/analysis/closed_calibration.py --version wp-v1c-sw-split-small
+    .venv/bin/python scripts/analysis/closed_calibration.py --version wp-v1d-sw-split-small --dataset wp-v1d
 """
 
 from __future__ import annotations
@@ -127,7 +127,7 @@ def crossfit(z: np.ndarray, y: np.ndarray, bucket: np.ndarray, battle: np.ndarra
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--version", required=True)
-    ap.add_argument("--dataset", default="wp-v1c")
+    ap.add_argument("--dataset", default="wp-v1d")
     ap.add_argument("--sims", type=int, default=1000)
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--seed", type=int, default=0)

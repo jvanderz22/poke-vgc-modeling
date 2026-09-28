@@ -151,14 +151,18 @@ def test_the_last_turn_resolves_to_the_result(index, reg):
     """The model is never asked about a finished game, so the track has to end on the outcome —
     otherwise a turn that swung from 8% to a win reads as if it never resolved. It is flagged as
     an outcome so the page can say it is one rather than pass it off as a prediction."""
-    game = next(g for g in index["games"] if not g["correct"])  # the miss: 92% and then lost
+    # A miss (favoured, then lost) is the sharpest case, but a good model may have none: the
+    # index built on wp-v1d-sw-split-small called 395 of 395. Any game shows the resolution.
+    miss = next((g for g in index["games"] if not g["correct"]), None)
+    game = miss or index["games"][0]
     d = endgames.detail(reg, game["replay"], index["version"])
     last = d["steps"][-1]
     assert last["outcome"] is True
     assert last["wp_after"] == (1.0 if d["winner"] == "p1" else 0.0)
-    # The favoured side led going in and lost: that whole reversal is the point of this game.
     assert max(last["wp_p1"], 1 - last["wp_p1"]) >= index["criteria"]["min_wp"]
-    assert (last["wp_p1"] > 0.5) != (last["wp_after"] > 0.5)
+    if miss:
+        # The favoured side led going in and lost: that whole reversal is the point of this game.
+        assert (last["wp_p1"] > 0.5) != (last["wp_after"] > 0.5)
     assert all(s["outcome"] is False for s in d["steps"][:-1])
 
 
@@ -187,7 +191,8 @@ def test_the_board_says_only_what_a_spectator_knows(index, reg):
     nobody has seen is *unknown* — it may still come in — and only becomes *unselected* once the
     fourth of its side's four has appeared. Collapsing the two would either invent information
     early or throw it away late."""
-    d = endgames.detail(reg, index["games"][0]["replay"], index["version"])
+    game = next(g for g in index["games"] if g["ended_by"] == "normal")
+    d = endgames.detail(reg, game["replay"], index["version"])
     seen = {"active", "bench", "fainted"}
 
     for sid in ("p1", "p2"):
@@ -209,9 +214,10 @@ def test_the_board_says_only_what_a_spectator_knows(index, reg):
             assert len(revealed) + len(unselected) + \
                 sum(m["state"] == "unknown" for m in board["mons"]) == 6
 
-    # By the end both sides have committed, so every sheet resolves.
-    for sid in ("p1", "p2"):
-        assert d["steps"][-1]["after"][sid]["brought_known"] is True
+    # A game played to a KO ends with the loser's four all fainted, so its sheet resolves. The
+    # winner's need not: a sweep can end before its fourth is ever sent out.
+    loser = "p2" if game["winner"] == "p1" else "p1"
+    assert d["steps"][-1]["after"][loser]["brought_known"] is True
 
 
 def test_detail_shows_both_open_sheets_and_a_shrinking_board(index, reg):
@@ -228,4 +234,4 @@ def test_detail_shows_both_open_sheets_and_a_shrinking_board(index, reg):
 
 def test_an_uncached_replay_is_a_clear_miss_not_a_crash(reg):
     with pytest.raises(FileNotFoundError, match="replay cache"):
-        endgames.detail(reg, "gen9championsvgc2026regmcbo3-1", "wp-v1-gbt")
+        endgames.detail(reg, "gen9championsvgc2026regmcbo3-1", "wp-v1d-sw-split-small")

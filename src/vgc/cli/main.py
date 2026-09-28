@@ -720,10 +720,13 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
 
 
 def cmd_wp_preview(args: argparse.Namespace) -> int:
+    from vgc.wp.models import default_version
     from vgc.wp.tools import preview
 
     reg = _reg(args)
-    r = preview(reg, Path(args.team).read_text(), Path(args.opponent).read_text(), args.version, context=args.context)
+    # The pinned bring model, like the app: a hard-coded default outlived the model it named.
+    version = args.version or default_version(reg.id)
+    r = preview(reg, Path(args.team).read_text(), Path(args.opponent).read_text(), version, context=args.context)
     if args.json:
         print(json.dumps(r, indent=1))
         return 0
@@ -752,9 +755,13 @@ def cmd_wp_replay(args: argparse.Namespace) -> int:
     else:
         fmt = args.replay.rsplit("-", 1)[0]
         rep = replays.fetch(args.replay, fmt)
-    traj = replay_trajectory(reg, rep, args.version)
+    # The model pinned for the replay's own regime: Bo3 games show both sheets, ladder games do not.
+    from vgc.wp.models import CLOSED, OPEN, in_battle_version
+
+    version = args.version or in_battle_version(reg.id, OPEN if rep["id"].split("-")[0].endswith("bo3") else CLOSED)
+    traj = replay_trajectory(reg, rep, version)
     players = rep.get("players", ["p1", "p2"])
-    print(f"{rep['id']}: {players[0]} (p1) vs {players[1]} (p2) — WP for p1 ({args.version})")
+    print(f"{rep['id']}: {players[0]} (p1) vs {players[1]} (p2) — WP for p1 ({version})")
     for t in traj:
         bar = "█" * round(20 * t["wp_p1"])
         print(f"  {t['kind']:7} t{t['turn']:<2} {t['wp_p1']:6.1%} {bar:20}  {t['left']['p1']}v{t['left']['p2']}  "
@@ -1199,14 +1206,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")
-    p.add_argument("--version", default="wp-v1-set")
+    p.add_argument("--version", default=None, help="default: the pinned bring model")
     p.add_argument("--context", choices=["human", "heuristic"], default="human")
     p.add_argument("--top", type=int, default=10)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_wp_preview)
     p = with_reg(wp.add_parser("replay", help="WP trajectory of a public replay (id or JSON file)"))
     p.add_argument("replay")
-    p.add_argument("--version", default="wp-v1-set")
+    p.add_argument("--version", default=None, help="default: the model pinned for the replay's regime")
     p.set_defaults(func=cmd_wp_replay)
     p = with_reg(wp.add_parser("endgames", help="held-out human games the model called at 90%%+ before the end"))
     p.add_argument("--version", default="", help="default: the model whose in-battle gates pass")

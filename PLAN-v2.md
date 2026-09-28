@@ -209,7 +209,7 @@ human OTS games, spectator, by bucket:
 | t5–6 | 6,133 | 0.46091 | 0.0196 |
 | t7+ | 5,569 | 0.43374 | 0.0225 |
 
-(`models/wp/reg_mc/wp-v1-gbt/eval.json`, spectator, n=30,698 overall: 0.54428 / ECE 0.01245.)
+(`models/wp/reg_mc/wp-v1-gbt/eval.json` at af4eb35 — the `wp-v1` and `wp-v1c` models were retired after that commit; spectator, n=30,698 overall: 0.54428 / ECE 0.01245.)
 
 **Done 2026-09-20.** `vgc wp eval` gained `in_battle_beats_constant`, `in_battle_ece`,
 `ece_spectator_played_out` and an `in_battle_pass` roll-up; `wp-v1-gbt` is carded and passes all of

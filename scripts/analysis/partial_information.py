@@ -102,7 +102,7 @@ def score(model, fz, recs: list[dict]) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--regulation", default="reg_mc")
-    ap.add_argument("--version", default="wp-v1c-gbt")
+    ap.add_argument("--version", default="wp-v1d-sw-split-small")
     ap.add_argument("--mode", choices=["uniform", "curve", "both"], default="both")
     ap.add_argument("--fractions", type=float, nargs="+", default=[0.0, 0.25, 0.5, 0.75, 0.9, 1.0])
     ap.add_argument("--seed", type=int, default=7)

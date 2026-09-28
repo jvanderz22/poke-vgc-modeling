@@ -304,7 +304,7 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
 
     Until 2026-09-21 every WP model was trained with the opponent fully visible — known-flags
     1.000 across all 433,052 rows — because the closed-sheet shard existed on disk and was absent
-    from the manifest. It is in the mix now (`wp-v1c`), and that moved the numbers a little
+    from the manifest. It is in the mix now (since `wp-v1c`), and that moved the numbers a little
     without changing the shape of the problem: every model still fails `closed_in_battle_ece`,
     overconfident late in a closed-sheet game.
 
