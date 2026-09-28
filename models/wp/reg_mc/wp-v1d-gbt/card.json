@@ -1,0 +1,263 @@
+{
+ "version": "wp-v1d-gbt",
+ "kind": "gbt",
+ "regulation": "reg_mc",
+ "created": "2026-09-27T20:01:22",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1d",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1d-train.json",
+  "manifest_battles": 50827,
+  "featurizer_version": 1,
+  "n_num": 150,
+  "n_glob": 42,
+  "rows": {
+   "train": 942145,
+   "val": 49438,
+   "eval_human_ots": 47617,
+   "eval_human_ots_team": 122584,
+   "eval_human_closed": 43271,
+   "eval_human_closed_team": 3214,
+   "eval_selfplay_battle": 395774,
+   "eval_selfplay_team": 1856406
+  },
+  "val_rate": 0.05,
+  "seconds": 1159.2
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1d-train.json",
+  "sha256": "ab35b4707bc96b237511484e6386da12f21a59ba723e0f7bc0af9e36c5c14d65"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmc/train.jsonl.gz",
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 38145,
+   "human": 12682
+  }
+ },
+ "git": {
+  "sha": "37f677ca3fbba80bdf3aa876914a4bfc791aa501",
+  "dirty": true
+ },
+ "val_wp_logloss": 0.5588,
+ "headline": {
+  "human_spectator": {
+   "n": 43447,
+   "logloss": 0.54153,
+   "brier": 0.18547,
+   "ece": 0.01507
+  },
+  "human_player_approx": {
+   "n": 83307,
+   "logloss": 0.56584,
+   "brier": 0.19542,
+   "ece": 0.00533
+  },
+  "closed_spectator": {
+   "n": 11185,
+   "logloss": 0.55934,
+   "brier": 0.19252,
+   "ece": 0.01328
+  },
+  "closed_player_approx": {
+   "n": 20901,
+   "logloss": 0.58122,
+   "brier": 0.20133,
+   "ece": 0.01907
+  }
+ },
+ "gates": {
+  "beats_baselines": {
+   "pass": true,
+   "logloss": 0.54153,
+   "baselines": {
+    "wp-v1d-logistic": 0.57367,
+    "constant": 0.69315
+   }
+  },
+  "ece_spectator": {
+   "pass": true,
+   "ece": 0.01507,
+   "threshold": 0.03
+  },
+  "in_battle_beats_constant": {
+   "pass": true,
+   "logloss": {
+    "t1-2": 0.63674,
+    "t3-4": 0.53396,
+    "t5-6": 0.45925,
+    "t7+": 0.42539
+   },
+   "constant": {
+    "t1-2": 0.69315,
+    "t3-4": 0.69315,
+    "t5-6": 0.69315,
+    "t7+": 0.69315
+   },
+   "delta_95ci": {
+    "t1-2": [
+     -0.06323,
+     -0.04959
+    ],
+    "t3-4": [
+     -0.17143,
+     -0.14694
+    ],
+    "t5-6": [
+     -0.24896,
+     -0.21882
+    ],
+    "t7+": [
+     -0.28947,
+     -0.24604
+    ]
+   },
+   "losing_buckets": []
+  },
+  "in_battle_ece": {
+   "pass": true,
+   "worst_bucket": "t1-2",
+   "ece": 0.02082,
+   "threshold": 0.03,
+   "by_bucket": {
+    "t1-2": 0.02082,
+    "t3-4": 0.01696,
+    "t5-6": 0.01741,
+    "t7+": 0.02074
+   }
+  },
+  "ece_spectator_played_out": {
+   "pass": true,
+   "ece": 0.01925,
+   "logloss": 0.55286,
+   "n": 28046,
+   "threshold": 0.03
+  },
+  "ece_player": {
+   "pass": true,
+   "ece": 0.00533,
+   "threshold": 0.03
+  },
+  "player_beats_spectator": {
+   "pass": false,
+   "player": 0.55511,
+   "spectator": 0.55633,
+   "spectator_symmetrized": 0.55492
+  },
+  "preview_beats_constant": {
+   "pass": false,
+   "n": 4127,
+   "battles": 4127,
+   "logloss": 0.69315,
+   "constant": 0.69315,
+   "ece": 0.01417,
+   "delta": 0.0,
+   "delta_95ci": [
+    0.0,
+    0.0
+   ]
+  },
+  "closed_in_battle_beats_constant": {
+   "pass": true,
+   "n": 10100,
+   "battles": 1085,
+   "logloss": {
+    "t1-2": 0.63661,
+    "t3-4": 0.54558,
+    "t5-6": 0.48777,
+    "t7+": 0.46658
+   },
+   "constant": {
+    "t1-2": 0.69315,
+    "t3-4": 0.69315,
+    "t5-6": 0.69315,
+    "t7+": 0.69315
+   },
+   "delta_95ci": {
+    "t1-2": [
+     -0.07076,
+     -0.04232
+    ],
+    "t3-4": [
+     -0.1726,
+     -0.12254
+    ],
+    "t5-6": [
+     -0.23786,
+     -0.17289
+    ],
+    "t7+": [
+     -0.2882,
+     -0.16495
+    ]
+   },
+   "losing_buckets": []
+  },
+  "closed_in_battle_ece": {
+   "pass": true,
+   "test": "ece vs a calibrated model on the same rows",
+   "alpha": 0.05,
+   "power": {
+    "logits_1.25x_too_sharp": 0.656,
+    "logits_1.5x_too_sharp": 0.998
+   },
+   "power_needed": 0.8,
+   "rejected_buckets": [],
+   "by_bucket": {
+    "t1-2": {
+     "ece": 0.00681,
+     "floor_median": 0.0208,
+     "threshold": 0.0388,
+     "p_calibrated_worse": 0.999,
+     "battles": 1085
+    },
+    "t3-4": {
+     "ece": 0.0136,
+     "floor_median": 0.0226,
+     "threshold": 0.0393,
+     "p_calibrated_worse": 0.963,
+     "battles": 1010
+    },
+    "t5-6": {
+     "ece": 0.02384,
+     "floor_median": 0.0257,
+     "threshold": 0.0427,
+     "p_calibrated_worse": 0.606,
+     "battles": 824
+    },
+    "t7+": {
+     "ece": 0.03904,
+     "floor_median": 0.0307,
+     "threshold": 0.0521,
+     "p_calibrated_worse": 0.181,
+     "battles": 537
+    }
+   }
+  },
+  "in_battle_pass": true,
+  "closed_sheet_pass": true,
+  "all_pass": false
+ },
+ "eval_dataset": {
+  "sha256": "59de6626c82560cad5fe2a699592c9b3b4a749b302248a5386adffe54540f03b",
+  "files": {
+   "eval_human_closed.npz": "3c71f3dc07dcffb7",
+   "eval_human_closed_team.npz": "bfee499c2edeffed",
+   "eval_human_ots.npz": "ca8e897743b19f98",
+   "eval_human_ots_team.npz": "255057b3b68f834f",
+   "eval_selfplay_battle.npz": "714726f82583504a",
+   "eval_selfplay_team.npz": "e6aa1ca65532384a"
+  },
+  "dataset": "wp-v1d",
+  "at": "2026-09-27T20:43:29"
+ }
+}

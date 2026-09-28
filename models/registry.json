@@ -1106,6 +1106,466 @@
    "manifest_sha256": "76c62491ac646040d2ceb7f0cdd480246daf131972bfbbb82ae9d6374807200c",
    "eval_sha256": "f57df2124ddd0662f116cd52abffc54c673556f675c0219b409e37b19dd469a4",
    "eval_at": "2026-09-27T19:12:33"
+  },
+  {
+   "version": "wp-v1d-logistic",
+   "regulation": "reg_mc",
+   "kind": "logistic",
+   "created": "2026-09-27T19:58:39",
+   "path": "models/wp/reg_mc/wp-v1d-logistic",
+   "headline": {
+    "human_spectator": {
+     "n": 43447,
+     "logloss": 0.57367,
+     "brier": 0.19721,
+     "ece": 0.0171
+    },
+    "human_player_approx": {
+     "n": 83307,
+     "logloss": 0.59616,
+     "brier": 0.20653,
+     "ece": 0.01865
+    },
+    "closed_spectator": {
+     "n": 11185,
+     "logloss": 0.60191,
+     "brier": 0.20858,
+     "ece": 0.02422
+    },
+    "closed_player_approx": {
+     "n": 20901,
+     "logloss": 0.62448,
+     "brier": 0.21781,
+     "ece": 0.03791
+    }
+   },
+   "gates": {},
+   "manifest_sha256": "ab35b4707bc96b237511484e6386da12f21a59ba723e0f7bc0af9e36c5c14d65",
+   "eval_sha256": null,
+   "eval_at": null
+  },
+  {
+   "version": "wp-v1d-gbt",
+   "regulation": "reg_mc",
+   "kind": "gbt",
+   "created": "2026-09-27T20:01:22",
+   "path": "models/wp/reg_mc/wp-v1d-gbt",
+   "headline": {
+    "human_spectator": {
+     "n": 43447,
+     "logloss": 0.54153,
+     "brier": 0.18547,
+     "ece": 0.01507
+    },
+    "human_player_approx": {
+     "n": 83307,
+     "logloss": 0.56584,
+     "brier": 0.19542,
+     "ece": 0.00533
+    },
+    "closed_spectator": {
+     "n": 11185,
+     "logloss": 0.55934,
+     "brier": 0.19252,
+     "ece": 0.01328
+    },
+    "closed_player_approx": {
+     "n": 20901,
+     "logloss": 0.58122,
+     "brier": 0.20133,
+     "ece": 0.01907
+    }
+   },
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.54153,
+     "baselines": {
+      "wp-v1d-logistic": 0.57367,
+      "constant": 0.69315
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.01507,
+     "threshold": 0.03
+    },
+    "in_battle_beats_constant": {
+     "pass": true,
+     "logloss": {
+      "t1-2": 0.63674,
+      "t3-4": 0.53396,
+      "t5-6": 0.45925,
+      "t7+": 0.42539
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.06323,
+       -0.04959
+      ],
+      "t3-4": [
+       -0.17143,
+       -0.14694
+      ],
+      "t5-6": [
+       -0.24896,
+       -0.21882
+      ],
+      "t7+": [
+       -0.28947,
+       -0.24604
+      ]
+     },
+     "losing_buckets": []
+    },
+    "in_battle_ece": {
+     "pass": true,
+     "worst_bucket": "t1-2",
+     "ece": 0.02082,
+     "threshold": 0.03,
+     "by_bucket": {
+      "t1-2": 0.02082,
+      "t3-4": 0.01696,
+      "t5-6": 0.01741,
+      "t7+": 0.02074
+     }
+    },
+    "ece_spectator_played_out": {
+     "pass": true,
+     "ece": 0.01925,
+     "logloss": 0.55286,
+     "n": 28046,
+     "threshold": 0.03
+    },
+    "ece_player": {
+     "pass": true,
+     "ece": 0.00533,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": false,
+     "player": 0.55511,
+     "spectator": 0.55633,
+     "spectator_symmetrized": 0.55492
+    },
+    "preview_beats_constant": {
+     "pass": false,
+     "n": 4127,
+     "battles": 4127,
+     "logloss": 0.69315,
+     "constant": 0.69315,
+     "ece": 0.01417,
+     "delta": 0.0,
+     "delta_95ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "closed_in_battle_beats_constant": {
+     "pass": true,
+     "n": 10100,
+     "battles": 1085,
+     "logloss": {
+      "t1-2": 0.63661,
+      "t3-4": 0.54558,
+      "t5-6": 0.48777,
+      "t7+": 0.46658
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.07076,
+       -0.04232
+      ],
+      "t3-4": [
+       -0.1726,
+       -0.12254
+      ],
+      "t5-6": [
+       -0.23786,
+       -0.17289
+      ],
+      "t7+": [
+       -0.2882,
+       -0.16495
+      ]
+     },
+     "losing_buckets": []
+    },
+    "closed_in_battle_ece": {
+     "pass": true,
+     "test": "ece vs a calibrated model on the same rows",
+     "alpha": 0.05,
+     "power": {
+      "logits_1.25x_too_sharp": 0.656,
+      "logits_1.5x_too_sharp": 0.998
+     },
+     "power_needed": 0.8,
+     "rejected_buckets": [],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.00681,
+       "floor_median": 0.0208,
+       "threshold": 0.0388,
+       "p_calibrated_worse": 0.999,
+       "battles": 1085
+      },
+      "t3-4": {
+       "ece": 0.0136,
+       "floor_median": 0.0226,
+       "threshold": 0.0393,
+       "p_calibrated_worse": 0.963,
+       "battles": 1010
+      },
+      "t5-6": {
+       "ece": 0.02384,
+       "floor_median": 0.0257,
+       "threshold": 0.0427,
+       "p_calibrated_worse": 0.606,
+       "battles": 824
+      },
+      "t7+": {
+       "ece": 0.03904,
+       "floor_median": 0.0307,
+       "threshold": 0.0521,
+       "p_calibrated_worse": 0.181,
+       "battles": 537
+      }
+     }
+    },
+    "in_battle_pass": true,
+    "closed_sheet_pass": true,
+    "all_pass": false
+   },
+   "manifest_sha256": "ab35b4707bc96b237511484e6386da12f21a59ba723e0f7bc0af9e36c5c14d65",
+   "eval_sha256": "59de6626c82560cad5fe2a699592c9b3b4a749b302248a5386adffe54540f03b",
+   "eval_at": "2026-09-27T20:43:29"
+  },
+  {
+   "version": "wp-v1d-sw-split-small",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-27T20:50:20",
+   "path": "models/wp/reg_mc/wp-v1d-sw-split-small",
+   "headline": {
+    "human_spectator": {
+     "n": 43447,
+     "logloss": 0.55234,
+     "brier": 0.18943,
+     "ece": 0.01787
+    },
+    "human_player_approx": {
+     "n": 83307,
+     "logloss": 0.57989,
+     "brier": 0.20069,
+     "ece": 0.02683
+    },
+    "closed_spectator": {
+     "n": 11185,
+     "logloss": 0.5633,
+     "brier": 0.19319,
+     "ece": 0.01705
+    },
+    "closed_player_approx": {
+     "n": 20901,
+     "logloss": 0.59096,
+     "brier": 0.20432,
+     "ece": 0.03509
+    }
+   },
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.55234,
+     "baselines": {
+      "wp-v1d-gbt": 0.54153,
+      "wp-v1d-logistic": 0.57367,
+      "constant": 0.69315
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.01787,
+     "threshold": 0.03
+    },
+    "in_battle_beats_constant": {
+     "pass": true,
+     "logloss": {
+      "t1-2": 0.64197,
+      "t3-4": 0.54574,
+      "t5-6": 0.47413,
+      "t7+": 0.44664
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.0601,
+       -0.04225
+      ],
+      "t3-4": [
+       -0.16146,
+       -0.13335
+      ],
+      "t5-6": [
+       -0.23645,
+       -0.20159
+      ],
+      "t7+": [
+       -0.27061,
+       -0.2224
+      ]
+     },
+     "losing_buckets": []
+    },
+    "in_battle_ece": {
+     "pass": true,
+     "worst_bucket": "t1-2",
+     "ece": 0.02365,
+     "threshold": 0.03,
+     "by_bucket": {
+      "t1-2": 0.02365,
+      "t3-4": 0.02133,
+      "t5-6": 0.01819,
+      "t7+": 0.02223
+     }
+    },
+    "ece_spectator_played_out": {
+     "pass": true,
+     "ece": 0.02987,
+     "logloss": 0.56365,
+     "n": 28046,
+     "threshold": 0.03
+    },
+    "ece_player": {
+     "pass": true,
+     "ece": 0.02683,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": false,
+     "player": 0.56979,
+     "spectator": 0.57046,
+     "spectator_symmetrized": 0.56836
+    },
+    "bring_beats_usage": {
+     "pass": true,
+     "model": 0.6878,
+     "usage": 0.6725,
+     "chance": 0.6667
+    },
+    "preview_beats_constant": {
+     "pass": true,
+     "n": 4127,
+     "battles": 4127,
+     "logloss": 0.68841,
+     "constant": 0.69315,
+     "ece": 0.0202,
+     "delta": -0.00474,
+     "delta_95ci": [
+      -0.00919,
+      -0.00028
+     ]
+    },
+    "closed_in_battle_beats_constant": {
+     "pass": true,
+     "n": 10100,
+     "battles": 1085,
+     "logloss": {
+      "t1-2": 0.62262,
+      "t3-4": 0.54387,
+      "t5-6": 0.50615,
+      "t7+": 0.5
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.08801,
+       -0.05304
+      ],
+      "t3-4": [
+       -0.17678,
+       -0.12177
+      ],
+      "t5-6": [
+       -0.22329,
+       -0.15071
+      ],
+      "t7+": [
+       -0.24829,
+       -0.13799
+      ]
+     },
+     "losing_buckets": []
+    },
+    "closed_in_battle_ece": {
+     "pass": true,
+     "test": "ece vs a calibrated model on the same rows",
+     "alpha": 0.05,
+     "power": {
+      "logits_1.25x_too_sharp": 0.718,
+      "logits_1.5x_too_sharp": 0.998
+     },
+     "power_needed": 0.8,
+     "rejected_buckets": [],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.01817,
+       "floor_median": 0.0223,
+       "threshold": 0.0391,
+       "p_calibrated_worse": 0.744,
+       "battles": 1085
+      },
+      "t3-4": {
+       "ece": 0.02424,
+       "floor_median": 0.0231,
+       "threshold": 0.0376,
+       "p_calibrated_worse": 0.439,
+       "battles": 1010
+      },
+      "t5-6": {
+       "ece": 0.03617,
+       "floor_median": 0.0252,
+       "threshold": 0.0421,
+       "p_calibrated_worse": 0.061,
+       "battles": 824
+      },
+      "t7+": {
+       "ece": 0.03897,
+       "floor_median": 0.0348,
+       "threshold": 0.0609,
+       "p_calibrated_worse": 0.324,
+       "battles": 537
+      }
+     }
+    },
+    "in_battle_pass": true,
+    "closed_sheet_pass": true,
+    "all_pass": false
+   },
+   "manifest_sha256": "ab35b4707bc96b237511484e6386da12f21a59ba723e0f7bc0af9e36c5c14d65",
+   "eval_sha256": "59de6626c82560cad5fe2a699592c9b3b4a749b302248a5386adffe54540f03b",
+   "eval_at": "2026-09-27T20:58:07"
   }
  ]
 }

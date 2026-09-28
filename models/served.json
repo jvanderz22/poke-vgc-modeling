@@ -1,13 +1,13 @@
 {
  "reg_mc": {
   "decided": "2026-09-27",
-  "bring": "wp-v1c-sw-split-small",
-  "in_battle_open": "wp-v1c-gbt",
-  "in_battle_closed": "wp-v1c-sw-split-small",
+  "bring": "wp-v1d-sw-split-small",
+  "in_battle_open": "wp-v1d-sw-split-small",
+  "in_battle_closed": "wp-v1d-sw-split-small",
   "why": {
-   "bring": "Only a set encoder has a bring head. wp-v1c matches wp-v1 on open sheets and is better with them closed.",
-   "in_battle_open": "Passes in_battle_pass, which is scored on Open Team Sheets games. It ignores the opponent's sets, which costs nothing when the sheet shows them.",
-   "in_battle_closed": "The best log loss with sheets hidden (0.5813 against the GBT's 0.5852), the only model that beats the constant there in every bucket, and the only family whose belief band means anything, because the GBT does not read the sets the band is drawn over. Its calibration there is undecided: 131 held-out battles are too few to tell."
+   "bring": "Only a set encoder has a bring head. wp-v1d is trained on 10x the closed-sheet battles, and passes both regimes.",
+   "in_battle_open": "Passes in_battle_pass (played-out ECE 0.02987, a hair under 0.03). wp-v1d-gbt scores better (0.5415 vs 0.5523) but is set-blind: it gives the same number whatever the opponent is holding, and a set-blind model is not served.",
+   "in_battle_closed": "Passes closed_sheet_pass, decided on 1,088 held-out battles with 99.8% power against logits 1.5x too sharp. wp-v1d-gbt scores better (0.5593 vs 0.5633) and is not served for the same reason: it does not use revealed set information."
   }
  }
 }

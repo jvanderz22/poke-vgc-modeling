@@ -1115,3 +1115,38 @@ for power and for nothing else — duplicated battles make the verdict itself re
 So ~450–750 closed-sheet held-out battles decide the gate at 1.5×, and ~2,000 at 1.25×, against
 131 today and 779 in the whole shard. That is scraping, not self-play — calibration measured on
 the bot does not carry to human games.
+
+## The battles were already on disk
+
+The gate above said ~450–750 closed-sheet held-out battles would decide it. The replay cache held
+7,645 closed-sheet games; the shard held 793. Everything scraped after the last extraction
+(2026-09-19) — 6,845 closed-sheet and 2,917 open-sheet replays, mostly from the per-player scrape —
+had never been turned into snapshots. Re-extracting kept every earlier battle in its split (0 moved,
+0 missing) and took the closed-sheet held-out set from **131 to 1,088 battles**, training from 654
+to 6,480. The new games lean stronger (median rating 1248 against 1120; 4,253 players against
+941, where the old 800 were one day of uploads with one bot in 101 of them), so every closed-sheet
+number from here carries that population.
+
+`wp-v1d`, same recipes, scored on the grown held-out sets:
+
+| | open log loss | closed log loss | `in_battle_pass` | `closed_sheet_pass` | power vs 1.5× |
+| --- | --- | --- | --- | --- | --- |
+| `wp-v1c-gbt` | 0.5439 | 0.5852 | ✓ | ✗ | 41% |
+| `wp-v1c-sw-split-small` | 0.5630 | 0.5813 | ✗ | undecided | 28% |
+| `wp-v1d-gbt` | **0.5415** | **0.5593** | ✓ | ✓ | 99.8% |
+| `wp-v1d-sw-split-small` | 0.5523 | 0.5633 | ✓ | ✓ | 99.8% |
+
+(`wp-v1c` rows are on their own 131-battle set; the two datasets' held-out sets differ, so compare
+within a row's dataset.) The set encoder is the first to pass both regimes; its open-sheet pass is
+a hair (played-out ECE 0.02987) and its preview pass (0.005 nats, interval upper −0.0003) is the
+width of the field and should be read that way. With sheets hidden it also beats the constant at
+preview, by 0.014 [−0.025, −0.002].
+
+The GBT is better in both regimes, and all of that is from turn 5 on: the set encoder wins preview
+and turns 1–2, ties 3–4, and loses 0.02–0.03 nats a bucket after. It is also set-blind — on a live
+position every drawn opponent gets the identical number, so there is no band, and `wp_open` equals
+`wp`. **It is not served for that reason**: a WP model that gives the same answer whatever the
+opponent is holding cannot be trusted with a position that turns on what they are holding. Whether
+the set encoder uses that information *correctly* is the next question — on the same live position
+its averaged and sets-unknown numbers were 11–14 points apart — and the decided-endgame benchmark
+is being built to answer it.

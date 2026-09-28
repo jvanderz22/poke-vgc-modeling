@@ -1,0 +1,8727 @@
+{
+ "dataset": "wp-v1d",
+ "results": {
+  "human_ots_all": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 43447,
+      "logloss": 0.54153,
+      "brier": 0.18547,
+      "ece": 0.01507,
+      "accuracy": 0.6964,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0446,
+        "win_rate": 0.0378,
+        "n": 3257
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1501,
+        "win_rate": 0.1385,
+        "n": 2990
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2505,
+        "win_rate": 0.2376,
+        "n": 3354
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3511,
+        "win_rate": 0.3157,
+        "n": 3785
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4746,
+        "win_rate": 0.4559,
+        "n": 10767
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5413,
+        "win_rate": 0.5179,
+        "n": 6691
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6486,
+        "win_rate": 0.6471,
+        "n": 3525
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7491,
+        "win_rate": 0.7544,
+        "n": 3221
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8492,
+        "win_rate": 0.8509,
+        "n": 2736
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9567,
+        "win_rate": 0.968,
+        "n": 3121
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 4127,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.01417,
+       "accuracy": 0.5142,
+       "vs_constant": {
+        "n": 4127,
+        "battles": 4127,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 11290,
+       "logloss": 0.63674,
+       "brier": 0.22407,
+       "ece": 0.02082,
+       "accuracy": 0.608,
+       "vs_constant": {
+        "n": 11290,
+        "battles": 4127,
+        "delta": -0.05641,
+        "se": 0.00348,
+        "delta_95ci": [
+         -0.06323,
+         -0.04959
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 11611,
+       "logloss": 0.53396,
+       "brier": 0.18049,
+       "ece": 0.01696,
+       "accuracy": 0.7231,
+       "vs_constant": {
+        "n": 11611,
+        "battles": 3951,
+        "delta": -0.15918,
+        "se": 0.00625,
+        "delta_95ci": [
+         -0.17143,
+         -0.14694
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 8685,
+       "logloss": 0.45925,
+       "brier": 0.15204,
+       "ece": 0.01741,
+       "accuracy": 0.7755,
+       "vs_constant": {
+        "n": 8685,
+        "battles": 3409,
+        "delta": -0.23389,
+        "se": 0.00769,
+        "delta_95ci": [
+         -0.24896,
+         -0.21882
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 7734,
+       "logloss": 0.42539,
+       "brier": 0.13971,
+       "ece": 0.02074,
+       "accuracy": 0.7936,
+       "vs_constant": {
+        "n": 7734,
+        "battles": 2215,
+        "delta": -0.26776,
+        "se": 0.01108,
+        "delta_95ci": [
+         -0.28947,
+         -0.24604
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 28046,
+      "logloss": 0.55286,
+      "brier": 0.19007,
+      "ece": 0.01925,
+      "accuracy": 0.6868
+     },
+     "ended_forfeit": {
+      "n": 15401,
+      "logloss": 0.5209,
+      "brier": 0.17709,
+      "ece": 0.02893,
+      "accuracy": 0.7137
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 11290,
+        "battles": 4127,
+        "ece": 0.02082,
+        "floor_median": 0.0106,
+        "threshold": 0.02,
+        "p_calibrated_worse": 0.008
+       },
+       "t3-4": {
+        "n": 11611,
+        "battles": 3951,
+        "ece": 0.01696,
+        "floor_median": 0.0114,
+        "threshold": 0.0199,
+        "p_calibrated_worse": 0.063
+       },
+       "t5-6": {
+        "n": 8685,
+        "battles": 3409,
+        "ece": 0.01741,
+        "floor_median": 0.0126,
+        "threshold": 0.0212,
+        "p_calibrated_worse": 0.087
+       },
+       "t7+": {
+        "n": 7734,
+        "battles": 2215,
+        "ece": 0.02074,
+        "floor_median": 0.0147,
+        "threshold": 0.0247,
+        "p_calibrated_worse": 0.087
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 1.0,
+       "logits_1.5x_too_sharp": 1.0
+      },
+      "rejected_buckets": [
+       "t1-2"
+      ],
+      "pass": false
+     }
+    },
+    "player_approx": {
+     "all": {
+      "n": 83307,
+      "logloss": 0.56584,
+      "brier": 0.19542,
+      "ece": 0.00533,
+      "accuracy": 0.6809,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0442,
+        "win_rate": 0.0374,
+        "n": 6469
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1518,
+        "win_rate": 0.1617,
+        "n": 5658
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2511,
+        "win_rate": 0.2476,
+        "n": 6688
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3536,
+        "win_rate": 0.3566,
+        "n": 8416
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4448,
+        "win_rate": 0.4491,
+        "n": 28667
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5461,
+        "win_rate": 0.5473,
+        "n": 8098
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6481,
+        "win_rate": 0.6562,
+        "n": 6044
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7482,
+        "win_rate": 0.7338,
+        "n": 5026
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8489,
+        "win_rate": 0.8432,
+        "n": 4108
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9544,
+        "win_rate": 0.9591,
+        "n": 4133
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 6753,
+       "logloss": 0.68753,
+       "brier": 0.24719,
+       "ece": 0.00243,
+       "accuracy": 0.5535,
+       "vs_constant": {
+        "n": 6753,
+        "battles": 3823,
+        "delta": -0.00562,
+        "se": 0.00053,
+        "delta_95ci": [
+         -0.00666,
+         -0.00458
+        ],
+        "beats": true
+       }
+      },
+      "bring": {
+       "n": 6753,
+       "logloss": 0.68741,
+       "brier": 0.24714,
+       "ece": 0.00784,
+       "accuracy": 0.5526,
+       "vs_constant": {
+        "n": 6753,
+        "battles": 3823,
+        "delta": -0.00573,
+        "se": 0.00069,
+        "delta_95ci": [
+         -0.00709,
+         -0.00438
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 18483,
+       "logloss": 0.6538,
+       "brier": 0.23138,
+       "ece": 0.00647,
+       "accuracy": 0.6044,
+       "vs_constant": {
+        "n": 18483,
+        "battles": 3823,
+        "delta": -0.03935,
+        "se": 0.00347,
+        "delta_95ci": [
+         -0.04615,
+         -0.03255
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 20126,
+       "logloss": 0.56791,
+       "brier": 0.19439,
+       "ece": 0.00667,
+       "accuracy": 0.6934,
+       "vs_constant": {
+        "n": 20126,
+        "battles": 3802,
+        "delta": -0.12524,
+        "se": 0.0064,
+        "delta_95ci": [
+         -0.13778,
+         -0.11269
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 16117,
+       "logloss": 0.48181,
+       "brier": 0.1606,
+       "ece": 0.0105,
+       "accuracy": 0.7611,
+       "vs_constant": {
+        "n": 16117,
+        "battles": 3391,
+        "delta": -0.21133,
+        "se": 0.00788,
+        "delta_95ci": [
+         -0.22677,
+         -0.1959
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 15075,
+       "logloss": 0.43607,
+       "brier": 0.14358,
+       "ece": 0.00861,
+       "accuracy": 0.7868,
+       "vs_constant": {
+        "n": 15075,
+        "battles": 2213,
+        "delta": -0.25708,
+        "se": 0.01121,
+        "delta_95ci": [
+         -0.27906,
+         -0.2351
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 57036,
+      "logloss": 0.5745,
+      "brier": 0.1989,
+      "ece": 0.0109,
+      "accuracy": 0.6723
+     },
+     "ended_forfeit": {
+      "n": 26271,
+      "logloss": 0.54703,
+      "brier": 0.18786,
+      "ece": 0.01738,
+      "accuracy": 0.6996
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player_approx": {
+     "n": 76554,
+     "player_logloss": 0.55511,
+     "spectator_logloss": 0.55633,
+     "spectator_symmetrized_logloss": 0.55492
+    }
+   }
+  },
+  "human_closed": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 11185,
+      "logloss": 0.55934,
+      "brier": 0.19252,
+      "ece": 0.01328,
+      "accuracy": 0.6825,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0456,
+        "win_rate": 0.0321,
+        "n": 779
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1523,
+        "win_rate": 0.141,
+        "n": 688
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2508,
+        "win_rate": 0.2603,
+        "n": 853
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3499,
+        "win_rate": 0.3385,
+        "n": 898
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4758,
+        "win_rate": 0.4692,
+        "n": 2777
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5395,
+        "win_rate": 0.5376,
+        "n": 1704
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6479,
+        "win_rate": 0.6111,
+        "n": 972
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7494,
+        "win_rate": 0.7358,
+        "n": 882
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8493,
+        "win_rate": 0.8257,
+        "n": 803
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9549,
+        "win_rate": 0.9264,
+        "n": 829
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 1085,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00323,
+       "accuracy": 0.4968,
+       "vs_constant": {
+        "n": 1085,
+        "battles": 1085,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 3039,
+       "logloss": 0.63661,
+       "brier": 0.22413,
+       "ece": 0.00681,
+       "accuracy": 0.6101,
+       "vs_constant": {
+        "n": 3039,
+        "battles": 1085,
+        "delta": -0.05654,
+        "se": 0.00726,
+        "delta_95ci": [
+         -0.07076,
+         -0.04232
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 2919,
+       "logloss": 0.54558,
+       "brier": 0.18562,
+       "ece": 0.0136,
+       "accuracy": 0.7095,
+       "vs_constant": {
+        "n": 2919,
+        "battles": 1010,
+        "delta": -0.14757,
+        "se": 0.01277,
+        "delta_95ci": [
+         -0.1726,
+         -0.12254
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 2093,
+       "logloss": 0.48777,
+       "brier": 0.16328,
+       "ece": 0.02384,
+       "accuracy": 0.7606,
+       "vs_constant": {
+        "n": 2093,
+        "battles": 824,
+        "delta": -0.20538,
+        "se": 0.01657,
+        "delta_95ci": [
+         -0.23786,
+         -0.17289
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 2049,
+       "logloss": 0.46658,
+       "brier": 0.1549,
+       "ece": 0.03904,
+       "accuracy": 0.7701,
+       "vs_constant": {
+        "n": 2049,
+        "battles": 537,
+        "delta": -0.22657,
+        "se": 0.03144,
+        "delta_95ci": [
+         -0.2882,
+         -0.16495
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 6644,
+      "logloss": 0.57051,
+      "brier": 0.19696,
+      "ece": 0.02751,
+      "accuracy": 0.6762
+     },
+     "ended_forfeit": {
+      "n": 4541,
+      "logloss": 0.54299,
+      "brier": 0.18603,
+      "ece": 0.01485,
+      "accuracy": 0.6917
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 3039,
+        "battles": 1085,
+        "ece": 0.00681,
+        "floor_median": 0.0208,
+        "threshold": 0.0388,
+        "p_calibrated_worse": 0.999
+       },
+       "t3-4": {
+        "n": 2919,
+        "battles": 1010,
+        "ece": 0.0136,
+        "floor_median": 0.0226,
+        "threshold": 0.0393,
+        "p_calibrated_worse": 0.963
+       },
+       "t5-6": {
+        "n": 2093,
+        "battles": 824,
+        "ece": 0.02384,
+        "floor_median": 0.0257,
+        "threshold": 0.0427,
+        "p_calibrated_worse": 0.606
+       },
+       "t7+": {
+        "n": 2049,
+        "battles": 537,
+        "ece": 0.03904,
+        "floor_median": 0.0307,
+        "threshold": 0.0521,
+        "p_calibrated_worse": 0.181
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.656,
+       "logits_1.5x_too_sharp": 0.998
+      },
+      "rejected_buckets": [],
+      "pass": true
+     }
+    },
+    "player_approx": {
+     "all": {
+      "n": 20901,
+      "logloss": 0.58122,
+      "brier": 0.20133,
+      "ece": 0.01907,
+      "accuracy": 0.6746,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0458,
+        "win_rate": 0.0557,
+        "n": 1615
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1536,
+        "win_rate": 0.176,
+        "n": 1466
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2511,
+        "win_rate": 0.2793,
+        "n": 1733
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3532,
+        "win_rate": 0.3888,
+        "n": 2181
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.444,
+        "win_rate": 0.431,
+        "n": 7095
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5464,
+        "win_rate": 0.5358,
+        "n": 1928
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6478,
+        "win_rate": 0.6501,
+        "n": 1509
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7484,
+        "win_rate": 0.7049,
+        "n": 1318
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8477,
+        "win_rate": 0.8246,
+        "n": 998
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9524,
+        "win_rate": 0.9272,
+        "n": 1058
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 1688,
+       "logloss": 0.68554,
+       "brier": 0.24621,
+       "ece": 0.00401,
+       "accuracy": 0.561,
+       "vs_constant": {
+        "n": 1688,
+        "battles": 972,
+        "delta": -0.00761,
+        "se": 0.00113,
+        "delta_95ci": [
+         -0.00983,
+         -0.00539
+        ],
+        "beats": true
+       }
+      },
+      "bring": {
+       "n": 1688,
+       "logloss": 0.68488,
+       "brier": 0.24588,
+       "ece": 0.00215,
+       "accuracy": 0.5622,
+       "vs_constant": {
+        "n": 1688,
+        "battles": 972,
+        "delta": -0.00827,
+        "se": 0.00151,
+        "delta_95ci": [
+         -0.01124,
+         -0.0053
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 4705,
+       "logloss": 0.65559,
+       "brier": 0.23217,
+       "ece": 0.02077,
+       "accuracy": 0.607,
+       "vs_constant": {
+        "n": 4705,
+        "battles": 972,
+        "delta": -0.03756,
+        "se": 0.00737,
+        "delta_95ci": [
+         -0.05201,
+         -0.02311
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 4957,
+       "logloss": 0.58005,
+       "brier": 0.19968,
+       "ece": 0.02524,
+       "accuracy": 0.6831,
+       "vs_constant": {
+        "n": 4957,
+        "battles": 962,
+        "delta": -0.1131,
+        "se": 0.01318,
+        "delta_95ci": [
+         -0.13894,
+         -0.08726
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 3881,
+       "logloss": 0.51023,
+       "brier": 0.17175,
+       "ece": 0.02193,
+       "accuracy": 0.7465,
+       "vs_constant": {
+        "n": 3881,
+        "battles": 817,
+        "delta": -0.18291,
+        "se": 0.01692,
+        "delta_95ci": [
+         -0.21607,
+         -0.14976
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 3982,
+       "logloss": 0.47581,
+       "brier": 0.15788,
+       "ece": 0.03268,
+       "accuracy": 0.7695,
+       "vs_constant": {
+        "n": 3982,
+        "battles": 537,
+        "delta": -0.21734,
+        "se": 0.03219,
+        "delta_95ci": [
+         -0.28043,
+         -0.15424
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 13372,
+      "logloss": 0.59021,
+      "brier": 0.20483,
+      "ece": 0.02344,
+      "accuracy": 0.6659
+     },
+     "ended_forfeit": {
+      "n": 7529,
+      "logloss": 0.56524,
+      "brier": 0.19512,
+      "ece": 0.01699,
+      "accuracy": 0.69
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player_approx": {
+     "n": 19213,
+     "player_logloss": 0.57211,
+     "spectator_logloss": 0.57552,
+     "spectator_symmetrized_logloss": 0.57387
+    }
+   }
+  },
+  "human_closed_team": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 814,
+      "logloss": 0.59744,
+      "brier": 0.20849,
+      "ece": 0.06208,
+      "accuracy": 0.6351,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0427,
+        "win_rate": 0.1087,
+        "n": 46
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1467,
+        "win_rate": 0.2419,
+        "n": 62
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2496,
+        "win_rate": 0.2857,
+        "n": 42
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3567,
+        "win_rate": 0.4231,
+        "n": 78
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4762,
+        "win_rate": 0.5357,
+        "n": 196
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5461,
+        "win_rate": 0.4954,
+        "n": 109
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6479,
+        "win_rate": 0.5797,
+        "n": 69
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.749,
+        "win_rate": 0.6338,
+        "n": 71
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8512,
+        "win_rate": 0.7917,
+        "n": 72
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9634,
+        "win_rate": 0.971,
+        "n": 69
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 77,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03247,
+       "accuracy": 0.4675,
+       "vs_constant": {
+        "n": 77,
+        "battles": 77,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 215,
+       "logloss": 0.68704,
+       "brier": 0.2461,
+       "ece": 0.06227,
+       "accuracy": 0.5628,
+       "vs_constant": {
+        "n": 215,
+        "battles": 77,
+        "delta": -0.0061,
+        "se": 0.03029,
+        "delta_95ci": [
+         -0.06546,
+         0.05326
+        ],
+        "beats": false
+       }
+      },
+      "t3-4": {
+       "n": 223,
+       "logloss": 0.59475,
+       "brier": 0.20688,
+       "ece": 0.11406,
+       "accuracy": 0.6368,
+       "vs_constant": {
+        "n": 223,
+        "battles": 75,
+        "delta": -0.0984,
+        "se": 0.05262,
+        "delta_95ci": [
+         -0.20154,
+         0.00474
+        ],
+        "beats": false
+       }
+      },
+      "t5-6": {
+       "n": 164,
+       "logloss": 0.55372,
+       "brier": 0.18916,
+       "ece": 0.1079,
+       "accuracy": 0.689,
+       "vs_constant": {
+        "n": 164,
+        "battles": 63,
+        "delta": -0.13943,
+        "se": 0.073,
+        "delta_95ci": [
+         -0.28251,
+         0.00365
+        ],
+        "beats": false
+       }
+      },
+      "t7+": {
+       "n": 135,
+       "logloss": 0.4577,
+       "brier": 0.15108,
+       "ece": 0.07482,
+       "accuracy": 0.7778,
+       "vs_constant": {
+        "n": 135,
+        "battles": 40,
+        "delta": -0.23545,
+        "se": 0.08085,
+        "delta_95ci": [
+         -0.39392,
+         -0.07698
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 640,
+      "logloss": 0.63295,
+      "brier": 0.22327,
+      "ece": 0.08783,
+      "accuracy": 0.6094
+     },
+     "ended_forfeit": {
+      "n": 174,
+      "logloss": 0.46683,
+      "brier": 0.15413,
+      "ece": 0.14726,
+      "accuracy": 0.7299
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 215,
+        "battles": 77,
+        "ece": 0.06227,
+        "floor_median": 0.0782,
+        "threshold": 0.1477,
+        "p_calibrated_worse": 0.753
+       },
+       "t3-4": {
+        "n": 223,
+        "battles": 75,
+        "ece": 0.11406,
+        "floor_median": 0.0846,
+        "threshold": 0.1408,
+        "p_calibrated_worse": 0.098
+       },
+       "t5-6": {
+        "n": 164,
+        "battles": 63,
+        "ece": 0.1079,
+        "floor_median": 0.0871,
+        "threshold": 0.1443,
+        "p_calibrated_worse": 0.19
+       },
+       "t7+": {
+        "n": 135,
+        "battles": 40,
+        "ece": 0.07482,
+        "floor_median": 0.1027,
+        "threshold": 0.1714,
+        "p_calibrated_worse": 0.871
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.128,
+       "logits_1.5x_too_sharp": 0.296
+      },
+      "rejected_buckets": [],
+      "pass": null,
+      "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 30% of the time, against 80% needed"
+     }
+    },
+    "player_approx": {
+     "all": {
+      "n": 1586,
+      "logloss": 0.62319,
+      "brier": 0.21892,
+      "ece": 0.06374,
+      "accuracy": 0.6267,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0372,
+        "win_rate": 0.0619,
+        "n": 113
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1468,
+        "win_rate": 0.2248,
+        "n": 129
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2499,
+        "win_rate": 0.3692,
+        "n": 130
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3538,
+        "win_rate": 0.4606,
+        "n": 165
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4423,
+        "win_rate": 0.4553,
+        "n": 514
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5451,
+        "win_rate": 0.4702,
+        "n": 151
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6512,
+        "win_rate": 0.5,
+        "n": 110
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7492,
+        "win_rate": 0.6762,
+        "n": 105
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8534,
+        "win_rate": 0.7528,
+        "n": 89
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9611,
+        "win_rate": 0.9125,
+        "n": 80
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 128,
+       "logloss": 0.68674,
+       "brier": 0.24681,
+       "ece": 0.00177,
+       "accuracy": 0.5547,
+       "vs_constant": {
+        "n": 128,
+        "battles": 72,
+        "delta": -0.00641,
+        "se": 0.00392,
+        "delta_95ci": [
+         -0.01409,
+         0.00128
+        ],
+        "beats": false
+       }
+      },
+      "bring": {
+       "n": 128,
+       "logloss": 0.69121,
+       "brier": 0.24902,
+       "ece": 0.029,
+       "accuracy": 0.5312,
+       "vs_constant": {
+        "n": 128,
+        "battles": 72,
+        "delta": -0.00194,
+        "se": 0.00527,
+        "delta_95ci": [
+         -0.01228,
+         0.00839
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 361,
+       "logloss": 0.71408,
+       "brier": 0.25792,
+       "ece": 0.08356,
+       "accuracy": 0.5319,
+       "vs_constant": {
+        "n": 361,
+        "battles": 72,
+        "delta": 0.02093,
+        "se": 0.03082,
+        "delta_95ci": [
+         -0.03948,
+         0.08134
+        ],
+        "beats": false
+       }
+      },
+      "t3-4": {
+       "n": 393,
+       "logloss": 0.638,
+       "brier": 0.22395,
+       "ece": 0.09926,
+       "accuracy": 0.6209,
+       "vs_constant": {
+        "n": 393,
+        "battles": 72,
+        "delta": -0.05515,
+        "se": 0.05397,
+        "delta_95ci": [
+         -0.16093,
+         0.05063
+        ],
+        "beats": false
+       }
+      },
+      "t5-6": {
+       "n": 309,
+       "logloss": 0.58171,
+       "brier": 0.19985,
+       "ece": 0.09204,
+       "accuracy": 0.6828,
+       "vs_constant": {
+        "n": 309,
+        "battles": 63,
+        "delta": -0.11143,
+        "se": 0.07471,
+        "delta_95ci": [
+         -0.25786,
+         0.03499
+        ],
+        "beats": false
+       }
+      },
+      "t7+": {
+       "n": 267,
+       "logloss": 0.46344,
+       "brier": 0.15305,
+       "ece": 0.04717,
+       "accuracy": 0.779,
+       "vs_constant": {
+        "n": 267,
+        "battles": 40,
+        "delta": -0.22971,
+        "se": 0.08093,
+        "delta_95ci": [
+         -0.38834,
+         -0.07108
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 1309,
+      "logloss": 0.64927,
+      "brier": 0.22987,
+      "ece": 0.08922,
+      "accuracy": 0.6012
+     },
+     "ended_forfeit": {
+      "n": 277,
+      "logloss": 0.49996,
+      "brier": 0.16717,
+      "ece": 0.06166,
+      "accuracy": 0.7473
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player_approx": {
+     "n": 1458,
+     "player_logloss": 0.61722,
+     "spectator_logloss": 0.6209,
+     "spectator_symmetrized_logloss": 0.61884
+    }
+   }
+  },
+  "human_ots": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 12153,
+      "logloss": 0.54602,
+      "brier": 0.18715,
+      "ece": 0.01697,
+      "accuracy": 0.6916,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0446,
+        "win_rate": 0.0388,
+        "n": 903
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1502,
+        "win_rate": 0.1153,
+        "n": 763
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2517,
+        "win_rate": 0.255,
+        "n": 945
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3508,
+        "win_rate": 0.3137,
+        "n": 1103
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4744,
+        "win_rate": 0.4586,
+        "n": 3055
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5414,
+        "win_rate": 0.5111,
+        "n": 1929
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6495,
+        "win_rate": 0.6525,
+        "n": 987
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7514,
+        "win_rate": 0.7642,
+        "n": 916
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8504,
+        "win_rate": 0.8447,
+        "n": 702
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9554,
+        "win_rate": 0.9612,
+        "n": 850
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 1176,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.01531,
+       "accuracy": 0.5153,
+       "vs_constant": {
+        "n": 1176,
+        "battles": 1176,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 3227,
+       "logloss": 0.63513,
+       "brier": 0.22339,
+       "ece": 0.02503,
+       "accuracy": 0.6077,
+       "vs_constant": {
+        "n": 3227,
+        "battles": 1176,
+        "delta": -0.05802,
+        "se": 0.00641,
+        "delta_95ci": [
+         -0.07058,
+         -0.04546
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 3313,
+       "logloss": 0.52915,
+       "brier": 0.1782,
+       "ece": 0.0264,
+       "accuracy": 0.7262,
+       "vs_constant": {
+        "n": 3313,
+        "battles": 1118,
+        "delta": -0.164,
+        "se": 0.01158,
+        "delta_95ci": [
+         -0.18669,
+         -0.14131
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 2430,
+       "logloss": 0.44834,
+       "brier": 0.14807,
+       "ece": 0.02596,
+       "accuracy": 0.7807,
+       "vs_constant": {
+        "n": 2430,
+        "battles": 963,
+        "delta": -0.24481,
+        "se": 0.01417,
+        "delta_95ci": [
+         -0.27259,
+         -0.21703
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 2007,
+       "logloss": 0.46265,
+       "brier": 0.15415,
+       "ece": 0.03039,
+       "accuracy": 0.7648,
+       "vs_constant": {
+        "n": 2007,
+        "battles": 586,
+        "delta": -0.2305,
+        "se": 0.0243,
+        "delta_95ci": [
+         -0.27813,
+         -0.18286
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 7797,
+      "logloss": 0.56278,
+      "brier": 0.19388,
+      "ece": 0.03088,
+      "accuracy": 0.6813
+     },
+     "ended_forfeit": {
+      "n": 4356,
+      "logloss": 0.51601,
+      "brier": 0.17511,
+      "ece": 0.03547,
+      "accuracy": 0.7101
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 3227,
+        "battles": 1176,
+        "ece": 0.02503,
+        "floor_median": 0.0204,
+        "threshold": 0.0377,
+        "p_calibrated_worse": 0.243
+       },
+       "t3-4": {
+        "n": 3313,
+        "battles": 1118,
+        "ece": 0.0264,
+        "floor_median": 0.0215,
+        "threshold": 0.0372,
+        "p_calibrated_worse": 0.227
+       },
+       "t5-6": {
+        "n": 2430,
+        "battles": 963,
+        "ece": 0.02596,
+        "floor_median": 0.0231,
+        "threshold": 0.0393,
+        "p_calibrated_worse": 0.333
+       },
+       "t7+": {
+        "n": 2007,
+        "battles": 586,
+        "ece": 0.03039,
+        "floor_median": 0.0287,
+        "threshold": 0.0497,
+        "p_calibrated_worse": 0.42
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.694,
+       "logits_1.5x_too_sharp": 0.998
+      },
+      "rejected_buckets": [],
+      "pass": true
+     }
+    },
+    "player_approx": {
+     "all": {
+      "n": 23311,
+      "logloss": 0.57021,
+      "brier": 0.19704,
+      "ece": 0.0059,
+      "accuracy": 0.6771,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0444,
+        "win_rate": 0.0396,
+        "n": 1769
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1521,
+        "win_rate": 0.1539,
+        "n": 1494
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2513,
+        "win_rate": 0.252,
+        "n": 1881
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3537,
+        "win_rate": 0.3504,
+        "n": 2403
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4451,
+        "win_rate": 0.4509,
+        "n": 8120
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.545,
+        "win_rate": 0.5398,
+        "n": 2336
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.647,
+        "win_rate": 0.6616,
+        "n": 1726
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7468,
+        "win_rate": 0.7342,
+        "n": 1396
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8506,
+        "win_rate": 0.8407,
+        "n": 1080
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9534,
+        "win_rate": 0.9575,
+        "n": 1106
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 1920,
+       "logloss": 0.68734,
+       "brier": 0.2471,
+       "ece": 0.00161,
+       "accuracy": 0.5542,
+       "vs_constant": {
+        "n": 1920,
+        "battles": 1093,
+        "delta": -0.0058,
+        "se": 0.00101,
+        "delta_95ci": [
+         -0.00779,
+         -0.00382
+        ],
+        "beats": true
+       }
+      },
+      "bring": {
+       "n": 1920,
+       "logloss": 0.68796,
+       "brier": 0.2474,
+       "ece": 0.00654,
+       "accuracy": 0.5536,
+       "vs_constant": {
+        "n": 1920,
+        "battles": 1093,
+        "delta": -0.00519,
+        "se": 0.00131,
+        "delta_95ci": [
+         -0.00776,
+         -0.00262
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 5265,
+       "logloss": 0.65255,
+       "brier": 0.23083,
+       "ece": 0.0082,
+       "accuracy": 0.6061,
+       "vs_constant": {
+        "n": 5265,
+        "battles": 1093,
+        "delta": -0.0406,
+        "se": 0.00631,
+        "delta_95ci": [
+         -0.05297,
+         -0.02822
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 5763,
+       "logloss": 0.5617,
+       "brier": 0.19164,
+       "ece": 0.01783,
+       "accuracy": 0.6969,
+       "vs_constant": {
+        "n": 5763,
+        "battles": 1087,
+        "delta": -0.13144,
+        "se": 0.01181,
+        "delta_95ci": [
+         -0.15458,
+         -0.10831
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 4518,
+       "logloss": 0.46931,
+       "brier": 0.15588,
+       "ece": 0.0247,
+       "accuracy": 0.77,
+       "vs_constant": {
+        "n": 4518,
+        "battles": 960,
+        "delta": -0.22384,
+        "se": 0.01453,
+        "delta_95ci": [
+         -0.25233,
+         -0.19535
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 3925,
+       "logloss": 0.47352,
+       "brier": 0.15794,
+       "ece": 0.02688,
+       "accuracy": 0.7572,
+       "vs_constant": {
+        "n": 3925,
+        "battles": 586,
+        "delta": -0.21963,
+        "se": 0.02479,
+        "delta_95ci": [
+         -0.26821,
+         -0.17104
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 15881,
+      "logloss": 0.58405,
+      "brier": 0.20263,
+      "ece": 0.01422,
+      "accuracy": 0.6669
+     },
+     "ended_forfeit": {
+      "n": 7430,
+      "logloss": 0.54064,
+      "brier": 0.18511,
+      "ece": 0.02518,
+      "accuracy": 0.6991
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player_approx": {
+     "n": 21391,
+     "player_logloss": 0.55964,
+     "spectator_logloss": 0.56076,
+     "spectator_symmetrized_logloss": 0.5595
+    }
+   }
+  },
+  "human_ots_team": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 31294,
+      "logloss": 0.53979,
+      "brier": 0.18482,
+      "ece": 0.01498,
+      "accuracy": 0.6982,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0446,
+        "win_rate": 0.0374,
+        "n": 2354
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1501,
+        "win_rate": 0.1464,
+        "n": 2227
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.25,
+        "win_rate": 0.2308,
+        "n": 2409
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3513,
+        "win_rate": 0.3166,
+        "n": 2682
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4747,
+        "win_rate": 0.4549,
+        "n": 7712
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5412,
+        "win_rate": 0.5206,
+        "n": 4762
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6482,
+        "win_rate": 0.645,
+        "n": 2538
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7481,
+        "win_rate": 0.7505,
+        "n": 2305
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8487,
+        "win_rate": 0.853,
+        "n": 2034
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9571,
+        "win_rate": 0.9705,
+        "n": 2271
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 2951,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.01372,
+       "accuracy": 0.5137,
+       "vs_constant": {
+        "n": 2951,
+        "battles": 2951,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 8063,
+       "logloss": 0.63738,
+       "brier": 0.22434,
+       "ece": 0.01981,
+       "accuracy": 0.6081,
+       "vs_constant": {
+        "n": 8063,
+        "battles": 2951,
+        "delta": -0.05577,
+        "se": 0.00414,
+        "delta_95ci": [
+         -0.06389,
+         -0.04764
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 8298,
+       "logloss": 0.53589,
+       "brier": 0.1814,
+       "ece": 0.0145,
+       "accuracy": 0.7219,
+       "vs_constant": {
+        "n": 8298,
+        "battles": 2833,
+        "delta": -0.15726,
+        "se": 0.00742,
+        "delta_95ci": [
+         -0.1718,
+         -0.14272
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 6255,
+       "logloss": 0.46349,
+       "brier": 0.15359,
+       "ece": 0.01692,
+       "accuracy": 0.7735,
+       "vs_constant": {
+        "n": 6255,
+        "battles": 2446,
+        "delta": -0.22965,
+        "se": 0.00914,
+        "delta_95ci": [
+         -0.24758,
+         -0.21173
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 5727,
+       "logloss": 0.41233,
+       "brier": 0.13465,
+       "ece": 0.0215,
+       "accuracy": 0.8037,
+       "vs_constant": {
+        "n": 5727,
+        "battles": 1629,
+        "delta": -0.28082,
+        "se": 0.01223,
+        "delta_95ci": [
+         -0.30479,
+         -0.25685
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 20249,
+      "logloss": 0.54903,
+      "brier": 0.1886,
+      "ece": 0.01726,
+      "accuracy": 0.689
+     },
+     "ended_forfeit": {
+      "n": 11045,
+      "logloss": 0.52283,
+      "brier": 0.17787,
+      "ece": 0.02899,
+      "accuracy": 0.7152
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 8063,
+        "battles": 2951,
+        "ece": 0.01981,
+        "floor_median": 0.0126,
+        "threshold": 0.024,
+        "p_calibrated_worse": 0.052
+       },
+       "t3-4": {
+        "n": 8298,
+        "battles": 2833,
+        "ece": 0.0145,
+        "floor_median": 0.0137,
+        "threshold": 0.0226,
+        "p_calibrated_worse": 0.401
+       },
+       "t5-6": {
+        "n": 6255,
+        "battles": 2446,
+        "ece": 0.01692,
+        "floor_median": 0.0147,
+        "threshold": 0.0239,
+        "p_calibrated_worse": 0.282
+       },
+       "t7+": {
+        "n": 5727,
+        "battles": 1629,
+        "ece": 0.0215,
+        "floor_median": 0.0169,
+        "threshold": 0.0279,
+        "p_calibrated_worse": 0.153
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.992,
+       "logits_1.5x_too_sharp": 1.0
+      },
+      "rejected_buckets": [],
+      "pass": true
+     }
+    },
+    "player_approx": {
+     "all": {
+      "n": 59996,
+      "logloss": 0.56413,
+      "brier": 0.19479,
+      "ece": 0.00582,
+      "accuracy": 0.6824,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0442,
+        "win_rate": 0.0366,
+        "n": 4700
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1517,
+        "win_rate": 0.1645,
+        "n": 4164
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.251,
+        "win_rate": 0.2459,
+        "n": 4807
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3536,
+        "win_rate": 0.3591,
+        "n": 6013
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4447,
+        "win_rate": 0.4484,
+        "n": 20547
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5465,
+        "win_rate": 0.5503,
+        "n": 5762
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6486,
+        "win_rate": 0.654,
+        "n": 4318
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7487,
+        "win_rate": 0.7336,
+        "n": 3630
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8483,
+        "win_rate": 0.8441,
+        "n": 3028
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9548,
+        "win_rate": 0.9597,
+        "n": 3027
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 4833,
+       "logloss": 0.6876,
+       "brier": 0.24723,
+       "ece": 0.00276,
+       "accuracy": 0.5533,
+       "vs_constant": {
+        "n": 4833,
+        "battles": 2730,
+        "delta": -0.00555,
+        "se": 0.00062,
+        "delta_95ci": [
+         -0.00676,
+         -0.00433
+        ],
+        "beats": true
+       }
+      },
+      "bring": {
+       "n": 4833,
+       "logloss": 0.6872,
+       "brier": 0.24703,
+       "ece": 0.00835,
+       "accuracy": 0.5522,
+       "vs_constant": {
+        "n": 4833,
+        "battles": 2730,
+        "delta": -0.00595,
+        "se": 0.00082,
+        "delta_95ci": [
+         -0.00755,
+         -0.00435
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 13218,
+       "logloss": 0.6543,
+       "brier": 0.23159,
+       "ece": 0.00914,
+       "accuracy": 0.6037,
+       "vs_constant": {
+        "n": 13218,
+        "battles": 2730,
+        "delta": -0.03885,
+        "se": 0.00415,
+        "delta_95ci": [
+         -0.04698,
+         -0.03072
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 14363,
+       "logloss": 0.5704,
+       "brier": 0.19549,
+       "ece": 0.00869,
+       "accuracy": 0.692,
+       "vs_constant": {
+        "n": 14363,
+        "battles": 2715,
+        "delta": -0.12274,
+        "se": 0.00761,
+        "delta_95ci": [
+         -0.13767,
+         -0.10782
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 11599,
+       "logloss": 0.48669,
+       "brier": 0.16244,
+       "ece": 0.01043,
+       "accuracy": 0.7577,
+       "vs_constant": {
+        "n": 11599,
+        "battles": 2431,
+        "delta": -0.20646,
+        "se": 0.00936,
+        "delta_95ci": [
+         -0.22481,
+         -0.18811
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 11150,
+       "logloss": 0.42288,
+       "brier": 0.13852,
+       "ece": 0.01095,
+       "accuracy": 0.7972,
+       "vs_constant": {
+        "n": 11150,
+        "battles": 1627,
+        "delta": -0.27026,
+        "se": 0.01233,
+        "delta_95ci": [
+         -0.29442,
+         -0.2461
+        ],
+        "beats": true
+       }
+      }
+     },
+     "ended_normal": {
+      "n": 41155,
+      "logloss": 0.57081,
+      "brier": 0.19746,
+      "ece": 0.01026,
+      "accuracy": 0.6744
+     },
+     "ended_forfeit": {
+      "n": 18841,
+      "logloss": 0.54955,
+      "brier": 0.18895,
+      "ece": 0.01644,
+      "accuracy": 0.6998
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player_approx": {
+     "n": 55163,
+     "player_logloss": 0.55335,
+     "spectator_logloss": 0.55462,
+     "spectator_symmetrized_logloss": 0.55314
+    }
+   }
+  },
+  "selfplay_battle": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 93995,
+      "logloss": 0.48756,
+      "brier": 0.16481,
+      "ece": 0.00976,
+      "accuracy": 0.7343,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0388,
+        "win_rate": 0.0327,
+        "n": 10953
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1502,
+        "win_rate": 0.1412,
+        "n": 6833
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2497,
+        "win_rate": 0.2465,
+        "n": 6296
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3535,
+        "win_rate": 0.3392,
+        "n": 7296
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4765,
+        "win_rate": 0.4779,
+        "n": 20536
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5439,
+        "win_rate": 0.558,
+        "n": 10791
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6463,
+        "win_rate": 0.6707,
+        "n": 7248
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7503,
+        "win_rate": 0.7716,
+        "n": 6081
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8496,
+        "win_rate": 0.8651,
+        "n": 6829
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9621,
+        "win_rate": 0.9686,
+        "n": 11132
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 9897,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00338,
+       "accuracy": 0.4966,
+       "vs_constant": {
+        "n": 9897,
+        "battles": 9897,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 35991,
+       "logloss": 0.57578,
+       "brier": 0.19834,
+       "ece": 0.00988,
+       "accuracy": 0.6808,
+       "vs_constant": {
+        "n": 35991,
+        "battles": 9897,
+        "delta": -0.11737,
+        "se": 0.00309,
+        "delta_95ci": [
+         -0.12343,
+         -0.11131
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 27527,
+       "logloss": 0.41832,
+       "brier": 0.13691,
+       "ece": 0.01063,
+       "accuracy": 0.7973,
+       "vs_constant": {
+        "n": 27527,
+        "battles": 9829,
+        "delta": -0.27483,
+        "se": 0.00472,
+        "delta_95ci": [
+         -0.28407,
+         -0.26558
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 12665,
+       "logloss": 0.32582,
+       "brier": 0.10264,
+       "ece": 0.01232,
+       "accuracy": 0.858,
+       "vs_constant": {
+        "n": 12665,
+        "battles": 6840,
+        "delta": -0.36733,
+        "se": 0.00655,
+        "delta_95ci": [
+         -0.38017,
+         -0.35449
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 7915,
+       "logloss": 0.32891,
+       "brier": 0.10235,
+       "ece": 0.02327,
+       "accuracy": 0.857,
+       "vs_constant": {
+        "n": 7915,
+        "battles": 2605,
+        "delta": -0.36424,
+        "se": 0.01491,
+        "delta_95ci": [
+         -0.39346,
+         -0.33502
+        ],
+        "beats": true
+       }
+      }
+     }
+    },
+    "player": {
+     "all": {
+      "n": 207784,
+      "logloss": 0.50569,
+      "brier": 0.17212,
+      "ece": 0.00889,
+      "accuracy": 0.7201,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0378,
+        "win_rate": 0.0325,
+        "n": 22186
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1502,
+        "win_rate": 0.1383,
+        "n": 13488
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2498,
+        "win_rate": 0.2351,
+        "n": 12566
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3534,
+        "win_rate": 0.3329,
+        "n": 15634
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4695,
+        "win_rate": 0.4673,
+        "n": 51337
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5454,
+        "win_rate": 0.5537,
+        "n": 26915
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6443,
+        "win_rate": 0.6597,
+        "n": 17067
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.75,
+        "win_rate": 0.7682,
+        "n": 12645
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8511,
+        "win_rate": 0.8613,
+        "n": 13817
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.962,
+        "win_rate": 0.9662,
+        "n": 22129
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 19794,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0018,
+       "accuracy": 0.5,
+       "vs_constant": {
+        "n": 19794,
+        "battles": 9897,
+        "delta": 1e-05,
+        "se": 0.0,
+        "delta_95ci": [
+         1e-05,
+         1e-05
+        ],
+        "beats": false
+       }
+      },
+      "bring": {
+       "n": 19794,
+       "logloss": 0.68063,
+       "brier": 0.24381,
+       "ece": 0.00643,
+       "accuracy": 0.5639,
+       "vs_constant": {
+        "n": 19794,
+        "battles": 9897,
+        "delta": -0.01252,
+        "se": 0.00098,
+        "delta_95ci": [
+         -0.01444,
+         -0.0106
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 71982,
+       "logloss": 0.57323,
+       "brier": 0.19716,
+       "ece": 0.01083,
+       "accuracy": 0.6862,
+       "vs_constant": {
+        "n": 71982,
+        "battles": 9897,
+        "delta": -0.11992,
+        "se": 0.0031,
+        "delta_95ci": [
+         -0.12599,
+         -0.11384
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 55054,
+       "logloss": 0.41933,
+       "brier": 0.13716,
+       "ece": 0.00895,
+       "accuracy": 0.7981,
+       "vs_constant": {
+        "n": 55054,
+        "battles": 9829,
+        "delta": -0.27382,
+        "se": 0.00474,
+        "delta_95ci": [
+         -0.28311,
+         -0.26454
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 25330,
+       "logloss": 0.32708,
+       "brier": 0.10306,
+       "ece": 0.0099,
+       "accuracy": 0.8571,
+       "vs_constant": {
+        "n": 25330,
+        "battles": 6840,
+        "delta": -0.36606,
+        "se": 0.00657,
+        "delta_95ci": [
+         -0.37893,
+         -0.35319
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 15830,
+       "logloss": 0.33158,
+       "brier": 0.10334,
+       "ece": 0.0238,
+       "accuracy": 0.8549,
+       "vs_constant": {
+        "n": 15830,
+        "battles": 2605,
+        "delta": -0.36157,
+        "se": 0.01508,
+        "delta_95ci": [
+         -0.39112,
+         -0.33201
+        ],
+        "beats": true
+       }
+      }
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player": {
+     "n": 187990,
+     "player_logloss": 0.48727,
+     "spectator_logloss": 0.48875,
+     "spectator_symmetrized_logloss": 0.48756
+    }
+   }
+  },
+  "selfplay_team": {
+   "perspectives": {
+    "spectator": {
+     "all": {
+      "n": 440986,
+      "logloss": 0.49847,
+      "brier": 0.16914,
+      "ece": 0.00539,
+      "accuracy": 0.7268,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0382,
+        "win_rate": 0.0384,
+        "n": 53227
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1504,
+        "win_rate": 0.1534,
+        "n": 30808
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2501,
+        "win_rate": 0.2489,
+        "n": 29748
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3531,
+        "win_rate": 0.364,
+        "n": 34120
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4775,
+        "win_rate": 0.4691,
+        "n": 95606
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5434,
+        "win_rate": 0.5501,
+        "n": 49941
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6469,
+        "win_rate": 0.6337,
+        "n": 34668
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7497,
+        "win_rate": 0.7531,
+        "n": 29857
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8494,
+        "win_rate": 0.8482,
+        "n": 30932
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9619,
+        "win_rate": 0.9645,
+        "n": 52079
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 46231,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00124,
+       "accuracy": 0.5012,
+       "vs_constant": {
+        "n": 46231,
+        "battles": 46231,
+        "delta": 0.0,
+        "se": 0.0,
+        "delta_95ci": [
+         0.0,
+         0.0
+        ],
+        "beats": false
+       }
+      },
+      "t1-2": {
+       "n": 168057,
+       "logloss": 0.57932,
+       "brier": 0.19953,
+       "ece": 0.01176,
+       "accuracy": 0.6801,
+       "vs_constant": {
+        "n": 168057,
+        "battles": 46231,
+        "delta": -0.11383,
+        "se": 0.00149,
+        "delta_95ci": [
+         -0.11675,
+         -0.1109
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 127962,
+       "logloss": 0.42975,
+       "brier": 0.1416,
+       "ece": 0.01111,
+       "accuracy": 0.7873,
+       "vs_constant": {
+        "n": 127962,
+        "battles": 46004,
+        "delta": -0.2634,
+        "se": 0.00226,
+        "delta_95ci": [
+         -0.26783,
+         -0.25897
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 59803,
+       "logloss": 0.34386,
+       "brier": 0.11008,
+       "ece": 0.0062,
+       "accuracy": 0.8397,
+       "vs_constant": {
+        "n": 59803,
+        "battles": 31804,
+        "delta": -0.34928,
+        "se": 0.00314,
+        "delta_95ci": [
+         -0.35544,
+         -0.34312
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 38933,
+       "logloss": 0.38169,
+       "brier": 0.12318,
+       "ece": 0.01021,
+       "accuracy": 0.824,
+       "vs_constant": {
+        "n": 38933,
+        "battles": 12669,
+        "delta": -0.31146,
+        "se": 0.00711,
+        "delta_95ci": [
+         -0.32539,
+         -0.29752
+        ],
+        "beats": true
+       }
+      }
+     }
+    },
+    "player": {
+     "all": {
+      "n": 974434,
+      "logloss": 0.51742,
+      "brier": 0.17692,
+      "ece": 0.00395,
+      "accuracy": 0.7077,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "mean_p": 0.0376,
+        "win_rate": 0.0392,
+        "n": 106040
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "mean_p": 0.1507,
+        "win_rate": 0.1514,
+        "n": 60504
+       },
+       {
+        "bin": [
+         0.2,
+         0.3
+        ],
+        "mean_p": 0.2505,
+        "win_rate": 0.2485,
+        "n": 60933
+       },
+       {
+        "bin": [
+         0.3,
+         0.4
+        ],
+        "mean_p": 0.3536,
+        "win_rate": 0.3668,
+        "n": 72750
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "mean_p": 0.4701,
+        "win_rate": 0.4742,
+        "n": 241139
+       },
+       {
+        "bin": [
+         0.5,
+         0.6
+        ],
+        "mean_p": 0.5457,
+        "win_rate": 0.5459,
+        "n": 126748
+       },
+       {
+        "bin": [
+         0.6,
+         0.7
+        ],
+        "mean_p": 0.6445,
+        "win_rate": 0.6362,
+        "n": 78926
+       },
+       {
+        "bin": [
+         0.7,
+         0.8
+        ],
+        "mean_p": 0.7499,
+        "win_rate": 0.7402,
+        "n": 59513
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "mean_p": 0.8503,
+        "win_rate": 0.8459,
+        "n": 62967
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "mean_p": 0.9623,
+        "win_rate": 0.9629,
+        "n": 104914
+       }
+      ]
+     },
+     "by_turn": {
+      "preview": {
+       "n": 92462,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0018,
+       "accuracy": 0.5,
+       "vs_constant": {
+        "n": 92462,
+        "battles": 46231,
+        "delta": 1e-05,
+        "se": 0.0,
+        "delta_95ci": [
+         1e-05,
+         1e-05
+        ],
+        "beats": false
+       }
+      },
+      "bring": {
+       "n": 92462,
+       "logloss": 0.68641,
+       "brier": 0.24664,
+       "ece": 0.00958,
+       "accuracy": 0.5463,
+       "vs_constant": {
+        "n": 92462,
+        "battles": 46231,
+        "delta": -0.00674,
+        "se": 0.00044,
+        "delta_95ci": [
+         -0.0076,
+         -0.00588
+        ],
+        "beats": true
+       }
+      },
+      "t1-2": {
+       "n": 336114,
+       "logloss": 0.58068,
+       "brier": 0.20018,
+       "ece": 0.00534,
+       "accuracy": 0.6765,
+       "vs_constant": {
+        "n": 336114,
+        "battles": 46231,
+        "delta": -0.11246,
+        "se": 0.00149,
+        "delta_95ci": [
+         -0.11539,
+         -0.10954
+        ],
+        "beats": true
+       }
+      },
+      "t3-4": {
+       "n": 255924,
+       "logloss": 0.43077,
+       "brier": 0.14199,
+       "ece": 0.00791,
+       "accuracy": 0.7861,
+       "vs_constant": {
+        "n": 255924,
+        "battles": 46004,
+        "delta": -0.26238,
+        "se": 0.00226,
+        "delta_95ci": [
+         -0.26681,
+         -0.25796
+        ],
+        "beats": true
+       }
+      },
+      "t5-6": {
+       "n": 119606,
+       "logloss": 0.34515,
+       "brier": 0.11047,
+       "ece": 0.00618,
+       "accuracy": 0.8387,
+       "vs_constant": {
+        "n": 119606,
+        "battles": 31804,
+        "delta": -0.34799,
+        "se": 0.00315,
+        "delta_95ci": [
+         -0.35417,
+         -0.34182
+        ],
+        "beats": true
+       }
+      },
+      "t7+": {
+       "n": 77866,
+       "logloss": 0.38436,
+       "brier": 0.12385,
+       "ece": 0.01134,
+       "accuracy": 0.8224,
+       "vs_constant": {
+        "n": 77866,
+        "battles": 12669,
+        "delta": -0.30879,
+        "se": 0.00721,
+        "delta_95ci": [
+         -0.32292,
+         -0.29467
+        ],
+        "beats": true
+       }
+      }
+     }
+    }
+   },
+   "player_vs_spectator": {
+    "player": {
+     "n": 881972,
+     "player_logloss": 0.4997,
+     "spectator_logloss": 0.49963,
+     "spectator_symmetrized_logloss": 0.49847
+    }
+   }
+  }
+ },
+ "baselines": {
+  "wp-v1d-logistic": {
+   "human_ots_all": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 43447,
+       "logloss": 0.57367,
+       "brier": 0.19721,
+       "ece": 0.0171,
+       "accuracy": 0.6771,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0649,
+         "win_rate": 0.0433,
+         "n": 1732
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1561,
+         "win_rate": 0.151,
+         "n": 3610
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2497,
+         "win_rate": 0.2368,
+         "n": 3758
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3499,
+         "win_rate": 0.3199,
+         "n": 4086
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4517,
+         "win_rate": 0.4336,
+         "n": 4421
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5155,
+         "win_rate": 0.4982,
+         "n": 13410
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6498,
+         "win_rate": 0.6296,
+         "n": 3750
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7501,
+         "win_rate": 0.7352,
+         "n": 3463
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8433,
+         "win_rate": 0.8553,
+         "n": 3462
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.937,
+         "win_rate": 0.9573,
+         "n": 1755
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 4127,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01417,
+        "accuracy": 0.5142,
+        "vs_constant": {
+         "n": 4127,
+         "battles": 4127,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 11290,
+        "logloss": 0.65522,
+        "brier": 0.23198,
+        "ece": 0.03241,
+        "accuracy": 0.5911,
+        "vs_constant": {
+         "n": 11290,
+         "battles": 4127,
+         "delta": -0.03793,
+         "se": 0.00448,
+         "delta_95ci": [
+          -0.0467,
+          -0.02916
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 11611,
+        "logloss": 0.56461,
+        "brier": 0.19275,
+        "ece": 0.01677,
+        "accuracy": 0.7006,
+        "vs_constant": {
+         "n": 11611,
+         "battles": 3951,
+         "delta": -0.12854,
+         "se": 0.00639,
+         "delta_95ci": [
+          -0.14106,
+          -0.11603
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 8685,
+        "logloss": 0.49936,
+        "brier": 0.1654,
+        "ece": 0.03083,
+        "accuracy": 0.7569,
+        "vs_constant": {
+         "n": 8685,
+         "battles": 3409,
+         "delta": -0.19379,
+         "se": 0.00695,
+         "delta_95ci": [
+          -0.2074,
+          -0.18018
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 7734,
+        "logloss": 0.48795,
+        "brier": 0.1607,
+        "ece": 0.04425,
+        "accuracy": 0.7648,
+        "vs_constant": {
+         "n": 7734,
+         "battles": 2215,
+         "delta": -0.2052,
+         "se": 0.01018,
+         "delta_95ci": [
+          -0.22514,
+          -0.18526
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 28046,
+       "logloss": 0.58419,
+       "brier": 0.20144,
+       "ece": 0.02211,
+       "accuracy": 0.6711
+      },
+      "ended_forfeit": {
+       "n": 15401,
+       "logloss": 0.55451,
+       "brier": 0.18951,
+       "ece": 0.01716,
+       "accuracy": 0.6881
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 11290,
+         "battles": 4127,
+         "ece": 0.03241,
+         "floor_median": 0.0105,
+         "threshold": 0.0206,
+         "p_calibrated_worse": 0.0
+        },
+        "t3-4": {
+         "n": 11611,
+         "battles": 3951,
+         "ece": 0.01677,
+         "floor_median": 0.0123,
+         "threshold": 0.0202,
+         "p_calibrated_worse": 0.094
+        },
+        "t5-6": {
+         "n": 8685,
+         "battles": 3409,
+         "ece": 0.03083,
+         "floor_median": 0.0138,
+         "threshold": 0.0229,
+         "p_calibrated_worse": 0.0
+        },
+        "t7+": {
+         "n": 7734,
+         "battles": 2215,
+         "ece": 0.04425,
+         "floor_median": 0.0177,
+         "threshold": 0.0296,
+         "p_calibrated_worse": 0.0
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 1.0,
+        "logits_1.5x_too_sharp": 1.0
+       },
+       "rejected_buckets": [
+        "t1-2",
+        "t5-6",
+        "t7+"
+       ],
+       "pass": false
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 83307,
+       "logloss": 0.59616,
+       "brier": 0.20653,
+       "ece": 0.01865,
+       "accuracy": 0.6643,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0639,
+         "win_rate": 0.0459,
+         "n": 3483
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1556,
+         "win_rate": 0.1527,
+         "n": 6961
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2498,
+         "win_rate": 0.248,
+         "n": 7092
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3497,
+         "win_rate": 0.3434,
+         "n": 7571
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4781,
+         "win_rate": 0.4468,
+         "n": 30007
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5481,
+         "win_rate": 0.5346,
+         "n": 7834
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6493,
+         "win_rate": 0.6388,
+         "n": 7060
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7501,
+         "win_rate": 0.7211,
+         "n": 6138
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.843,
+         "win_rate": 0.8226,
+         "n": 5303
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9319,
+         "win_rate": 0.9295,
+         "n": 1858
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 6753,
+        "logloss": 0.6909,
+        "brier": 0.24888,
+        "ece": 0.04173,
+        "accuracy": 0.5535,
+        "vs_constant": {
+         "n": 6753,
+         "battles": 3823,
+         "delta": -0.00225,
+         "se": 0.0001,
+         "delta_95ci": [
+          -0.00245,
+          -0.00204
+         ],
+         "beats": true
+        }
+       },
+       "bring": {
+        "n": 6753,
+        "logloss": 0.6909,
+        "brier": 0.24888,
+        "ece": 0.04173,
+        "accuracy": 0.5535,
+        "vs_constant": {
+         "n": 6753,
+         "battles": 3823,
+         "delta": -0.00225,
+         "se": 0.0001,
+         "delta_95ci": [
+          -0.00245,
+          -0.00204
+         ],
+         "beats": true
+        }
+       },
+       "t1-2": {
+        "n": 18483,
+        "logloss": 0.67585,
+        "brier": 0.24056,
+        "ece": 0.05722,
+        "accuracy": 0.5895,
+        "vs_constant": {
+         "n": 18483,
+         "battles": 3823,
+         "delta": -0.01729,
+         "se": 0.00489,
+         "delta_95ci": [
+          -0.02688,
+          -0.00771
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 20126,
+        "logloss": 0.59668,
+        "brier": 0.20582,
+        "ece": 0.02857,
+        "accuracy": 0.6727,
+        "vs_constant": {
+         "n": 20126,
+         "battles": 3802,
+         "delta": -0.09647,
+         "se": 0.00682,
+         "delta_95ci": [
+          -0.10983,
+          -0.0831
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 16117,
+        "logloss": 0.51862,
+        "brier": 0.17296,
+        "ece": 0.02266,
+        "accuracy": 0.7427,
+        "vs_constant": {
+         "n": 16117,
+         "battles": 3391,
+         "delta": -0.17453,
+         "se": 0.00717,
+         "delta_95ci": [
+          -0.18858,
+          -0.16047
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 15075,
+        "logloss": 0.49578,
+        "brier": 0.1637,
+        "ece": 0.04247,
+        "accuracy": 0.7601,
+        "vs_constant": {
+         "n": 15075,
+         "battles": 2213,
+         "delta": -0.19737,
+         "se": 0.0103,
+         "delta_95ci": [
+          -0.21755,
+          -0.17718
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 57036,
+       "logloss": 0.60272,
+       "brier": 0.20915,
+       "ece": 0.01667,
+       "accuracy": 0.6566
+      },
+      "ended_forfeit": {
+       "n": 26271,
+       "logloss": 0.58192,
+       "brier": 0.20083,
+       "ece": 0.02975,
+       "accuracy": 0.6809
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 76554,
+      "player_logloss": 0.5878,
+      "spectator_logloss": 0.5878,
+      "spectator_symmetrized_logloss": 0.58863
+     }
+    }
+   },
+   "human_closed": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 11185,
+       "logloss": 0.60191,
+       "brier": 0.20858,
+       "ece": 0.02422,
+       "accuracy": 0.6519,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0622,
+         "win_rate": 0.0915,
+         "n": 448
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1577,
+         "win_rate": 0.1861,
+         "n": 865
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2489,
+         "win_rate": 0.2697,
+         "n": 912
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3498,
+         "win_rate": 0.3678,
+         "n": 919
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4526,
+         "win_rate": 0.4028,
+         "n": 1132
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5154,
+         "win_rate": 0.512,
+         "n": 3512
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6502,
+         "win_rate": 0.6255,
+         "n": 1068
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7496,
+         "win_rate": 0.7069,
+         "n": 846
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8452,
+         "win_rate": 0.7834,
+         "n": 1025
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9364,
+         "win_rate": 0.9432,
+         "n": 458
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1085,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00323,
+        "accuracy": 0.4968,
+        "vs_constant": {
+         "n": 1085,
+         "battles": 1085,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 3039,
+        "logloss": 0.66221,
+        "brier": 0.23474,
+        "ece": 0.03441,
+        "accuracy": 0.5795,
+        "vs_constant": {
+         "n": 3039,
+         "battles": 1085,
+         "delta": -0.03093,
+         "se": 0.00939,
+         "delta_95ci": [
+          -0.04934,
+          -0.01252
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 2919,
+        "logloss": 0.59924,
+        "brier": 0.20639,
+        "ece": 0.0463,
+        "accuracy": 0.6732,
+        "vs_constant": {
+         "n": 2919,
+         "battles": 1010,
+         "delta": -0.09391,
+         "se": 0.01419,
+         "delta_95ci": [
+          -0.12172,
+          -0.06609
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 2093,
+        "logloss": 0.54485,
+        "brier": 0.18353,
+        "ece": 0.02859,
+        "accuracy": 0.7191,
+        "vs_constant": {
+         "n": 2093,
+         "battles": 824,
+         "delta": -0.14829,
+         "se": 0.01625,
+         "delta_95ci": [
+          -0.18014,
+          -0.11645
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 2049,
+        "logloss": 0.52626,
+        "brier": 0.17654,
+        "ece": 0.04408,
+        "accuracy": 0.7428,
+        "vs_constant": {
+         "n": 2049,
+         "battles": 537,
+         "delta": -0.16689,
+         "se": 0.02051,
+         "delta_95ci": [
+          -0.2071,
+          -0.12668
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 6644,
+       "logloss": 0.61335,
+       "brier": 0.21329,
+       "ece": 0.0347,
+       "accuracy": 0.6487
+      },
+      "ended_forfeit": {
+       "n": 4541,
+       "logloss": 0.58518,
+       "brier": 0.20168,
+       "ece": 0.02294,
+       "accuracy": 0.6567
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 3039,
+         "battles": 1085,
+         "ece": 0.03441,
+         "floor_median": 0.0206,
+         "threshold": 0.0374,
+         "p_calibrated_worse": 0.03
+        },
+        "t3-4": {
+         "n": 2919,
+         "battles": 1010,
+         "ece": 0.0463,
+         "floor_median": 0.0241,
+         "threshold": 0.0404,
+         "p_calibrated_worse": 0.0
+        },
+        "t5-6": {
+         "n": 2093,
+         "battles": 824,
+         "ece": 0.02859,
+         "floor_median": 0.0282,
+         "threshold": 0.046,
+         "p_calibrated_worse": 0.482
+        },
+        "t7+": {
+         "n": 2049,
+         "battles": 537,
+         "ece": 0.04408,
+         "floor_median": 0.0366,
+         "threshold": 0.0647,
+         "p_calibrated_worse": 0.254
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.608,
+        "logits_1.5x_too_sharp": 0.994
+       },
+       "rejected_buckets": [
+        "t3-4"
+       ],
+       "pass": false
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 20901,
+       "logloss": 0.62448,
+       "brier": 0.21781,
+       "ece": 0.03791,
+       "accuracy": 0.648,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0631,
+         "win_rate": 0.0838,
+         "n": 895
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1549,
+         "win_rate": 0.195,
+         "n": 1800
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2495,
+         "win_rate": 0.2898,
+         "n": 1677
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3497,
+         "win_rate": 0.3508,
+         "n": 1904
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.478,
+         "win_rate": 0.4373,
+         "n": 7510
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5466,
+         "win_rate": 0.5422,
+         "n": 2110
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6497,
+         "win_rate": 0.6105,
+         "n": 1720
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7492,
+         "win_rate": 0.6823,
+         "n": 1432
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8429,
+         "win_rate": 0.7532,
+         "n": 1394
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9332,
+         "win_rate": 0.8715,
+         "n": 459
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1688,
+        "logloss": 0.69055,
+        "brier": 0.2487,
+        "ece": 0.04922,
+        "accuracy": 0.561,
+        "vs_constant": {
+         "n": 1688,
+         "battles": 972,
+         "delta": -0.0026,
+         "se": 0.00022,
+         "delta_95ci": [
+          -0.00304,
+          -0.00217
+         ],
+         "beats": true
+        }
+       },
+       "bring": {
+        "n": 1688,
+        "logloss": 0.69055,
+        "brier": 0.2487,
+        "ece": 0.04922,
+        "accuracy": 0.561,
+        "vs_constant": {
+         "n": 1688,
+         "battles": 972,
+         "delta": -0.0026,
+         "se": 0.00022,
+         "delta_95ci": [
+          -0.00304,
+          -0.00217
+         ],
+         "beats": true
+        }
+       },
+       "t1-2": {
+        "n": 4705,
+        "logloss": 0.68767,
+        "brier": 0.24524,
+        "ece": 0.07206,
+        "accuracy": 0.586,
+        "vs_constant": {
+         "n": 4705,
+         "battles": 972,
+         "delta": -0.00548,
+         "se": 0.01031,
+         "delta_95ci": [
+          -0.02568,
+          0.01472
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 4957,
+        "logloss": 0.63657,
+        "brier": 0.22137,
+        "ece": 0.0582,
+        "accuracy": 0.6514,
+        "vs_constant": {
+         "n": 4957,
+         "battles": 962,
+         "delta": -0.05658,
+         "se": 0.01538,
+         "delta_95ci": [
+          -0.08672,
+          -0.02644
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 3881,
+        "logloss": 0.56621,
+        "brier": 0.1918,
+        "ece": 0.02094,
+        "accuracy": 0.7063,
+        "vs_constant": {
+         "n": 3881,
+         "battles": 817,
+         "delta": -0.12693,
+         "se": 0.01679,
+         "delta_95ci": [
+          -0.15984,
+          -0.09402
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 3982,
+        "logloss": 0.53554,
+        "brier": 0.18013,
+        "ece": 0.0238,
+        "accuracy": 0.7338,
+        "vs_constant": {
+         "n": 3982,
+         "battles": 537,
+         "delta": -0.1576,
+         "se": 0.02074,
+         "delta_95ci": [
+          -0.19826,
+          -0.11695
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 13372,
+       "logloss": 0.63281,
+       "brier": 0.22137,
+       "ece": 0.03979,
+       "accuracy": 0.6385
+      },
+      "ended_forfeit": {
+       "n": 7529,
+       "logloss": 0.60967,
+       "brier": 0.21148,
+       "ece": 0.03657,
+       "accuracy": 0.6648
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 19213,
+      "player_logloss": 0.61867,
+      "spectator_logloss": 0.61867,
+      "spectator_symmetrized_logloss": 0.61964
+     }
+    }
+   },
+   "human_closed_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 814,
+       "logloss": 0.64445,
+       "brier": 0.22379,
+       "ece": 0.06836,
+       "accuracy": 0.613,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0613,
+         "win_rate": 0.1905,
+         "n": 42
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1562,
+         "win_rate": 0.3803,
+         "n": 71
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2506,
+         "win_rate": 0.3125,
+         "n": 64
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3503,
+         "win_rate": 0.3492,
+         "n": 63
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4506,
+         "win_rate": 0.5172,
+         "n": 87
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5126,
+         "win_rate": 0.5498,
+         "n": 231
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.649,
+         "win_rate": 0.5114,
+         "n": 88
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7506,
+         "win_rate": 0.7838,
+         "n": 74
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8508,
+         "win_rate": 0.8358,
+         "n": 67
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9376,
+         "win_rate": 0.9259,
+         "n": 27
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 77,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03247,
+        "accuracy": 0.4675,
+        "vs_constant": {
+         "n": 77,
+         "battles": 77,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 215,
+        "logloss": 0.73714,
+        "brier": 0.26556,
+        "ece": 0.11603,
+        "accuracy": 0.493,
+        "vs_constant": {
+         "n": 215,
+         "battles": 77,
+         "delta": 0.04399,
+         "se": 0.0411,
+         "delta_95ci": [
+          -0.03657,
+          0.12455
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 223,
+        "logloss": 0.63014,
+        "brier": 0.21809,
+        "ece": 0.10616,
+        "accuracy": 0.6368,
+        "vs_constant": {
+         "n": 223,
+         "battles": 75,
+         "delta": -0.06301,
+         "se": 0.05789,
+         "delta_95ci": [
+          -0.17647,
+          0.05045
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 164,
+        "logloss": 0.63668,
+        "brier": 0.21544,
+        "ece": 0.07637,
+        "accuracy": 0.6707,
+        "vs_constant": {
+         "n": 164,
+         "battles": 63,
+         "delta": -0.05647,
+         "se": 0.08124,
+         "delta_95ci": [
+          -0.21569,
+          0.10276
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 135,
+        "logloss": 0.50214,
+        "brier": 0.16188,
+        "ece": 0.14231,
+        "accuracy": 0.7778,
+        "vs_constant": {
+         "n": 135,
+         "battles": 40,
+         "delta": -0.191,
+         "se": 0.05738,
+         "delta_95ci": [
+          -0.30347,
+          -0.07854
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 640,
+       "logloss": 0.6886,
+       "brier": 0.24124,
+       "ece": 0.07627,
+       "accuracy": 0.5922
+      },
+      "ended_forfeit": {
+       "n": 174,
+       "logloss": 0.48206,
+       "brier": 0.15963,
+       "ece": 0.14998,
+       "accuracy": 0.6897
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 215,
+         "battles": 77,
+         "ece": 0.11603,
+         "floor_median": 0.077,
+         "threshold": 0.1451,
+         "p_calibrated_worse": 0.103
+        },
+        "t3-4": {
+         "n": 223,
+         "battles": 75,
+         "ece": 0.10616,
+         "floor_median": 0.0868,
+         "threshold": 0.1413,
+         "p_calibrated_worse": 0.209
+        },
+        "t5-6": {
+         "n": 164,
+         "battles": 63,
+         "ece": 0.07637,
+         "floor_median": 0.1021,
+         "threshold": 0.163,
+         "p_calibrated_worse": 0.853
+        },
+        "t7+": {
+         "n": 135,
+         "battles": 40,
+         "ece": 0.14231,
+         "floor_median": 0.1354,
+         "threshold": 0.2259,
+         "p_calibrated_worse": 0.415
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.154,
+        "logits_1.5x_too_sharp": 0.28
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 28% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 1586,
+       "logloss": 0.67002,
+       "brier": 0.23421,
+       "ece": 0.06615,
+       "accuracy": 0.6129,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0632,
+         "win_rate": 0.1389,
+         "n": 72
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1553,
+         "win_rate": 0.3043,
+         "n": 138
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2506,
+         "win_rate": 0.2385,
+         "n": 130
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3483,
+         "win_rate": 0.4416,
+         "n": 154
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4784,
+         "win_rate": 0.4554,
+         "n": 549
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.546,
+         "win_rate": 0.4931,
+         "n": 144
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6483,
+         "win_rate": 0.5563,
+         "n": 142
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7498,
+         "win_rate": 0.708,
+         "n": 113
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8491,
+         "win_rate": 0.6842,
+         "n": 114
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.936,
+         "win_rate": 0.7333,
+         "n": 30
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 128,
+        "logloss": 0.69084,
+        "brier": 0.24885,
+        "ece": 0.04289,
+        "accuracy": 0.5547,
+        "vs_constant": {
+         "n": 128,
+         "battles": 72,
+         "delta": -0.0023,
+         "se": 0.00073,
+         "delta_95ci": [
+          -0.00374,
+          -0.00087
+         ],
+         "beats": true
+        }
+       },
+       "bring": {
+        "n": 128,
+        "logloss": 0.69084,
+        "brier": 0.24885,
+        "ece": 0.04289,
+        "accuracy": 0.5547,
+        "vs_constant": {
+         "n": 128,
+         "battles": 72,
+         "delta": -0.0023,
+         "se": 0.00073,
+         "delta_95ci": [
+          -0.00374,
+          -0.00087
+         ],
+         "beats": true
+        }
+       },
+       "t1-2": {
+        "n": 361,
+        "logloss": 0.77397,
+        "brier": 0.281,
+        "ece": 0.13906,
+        "accuracy": 0.5014,
+        "vs_constant": {
+         "n": 361,
+         "battles": 72,
+         "delta": 0.08082,
+         "se": 0.04485,
+         "delta_95ci": [
+          -0.00709,
+          0.16873
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 393,
+        "logloss": 0.67816,
+        "brier": 0.23712,
+        "ece": 0.11975,
+        "accuracy": 0.6056,
+        "vs_constant": {
+         "n": 393,
+         "battles": 72,
+         "delta": -0.01499,
+         "se": 0.06045,
+         "delta_95ci": [
+          -0.13347,
+          0.10348
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 309,
+        "logloss": 0.66182,
+        "brier": 0.2247,
+        "ece": 0.0762,
+        "accuracy": 0.657,
+        "vs_constant": {
+         "n": 309,
+         "battles": 63,
+         "delta": -0.03133,
+         "se": 0.08347,
+         "delta_95ci": [
+          -0.19494,
+          0.13228
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 267,
+        "logloss": 0.50701,
+        "brier": 0.16365,
+        "ece": 0.1132,
+        "accuracy": 0.779,
+        "vs_constant": {
+         "n": 267,
+         "battles": 40,
+         "delta": -0.18613,
+         "se": 0.05757,
+         "delta_95ci": [
+          -0.29897,
+          -0.07329
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 1309,
+       "logloss": 0.70209,
+       "brier": 0.24695,
+       "ece": 0.07853,
+       "accuracy": 0.5867
+      },
+      "ended_forfeit": {
+       "n": 277,
+       "logloss": 0.51848,
+       "brier": 0.17402,
+       "ece": 0.09127,
+       "accuracy": 0.7365
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 1458,
+      "player_logloss": 0.66819,
+      "spectator_logloss": 0.66819,
+      "spectator_symmetrized_logloss": 0.66886
+     }
+    }
+   },
+   "human_ots": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 12153,
+       "logloss": 0.57859,
+       "brier": 0.19892,
+       "ece": 0.01662,
+       "accuracy": 0.6739,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0641,
+         "win_rate": 0.0334,
+         "n": 419
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1565,
+         "win_rate": 0.1401,
+         "n": 1021
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2497,
+         "win_rate": 0.2342,
+         "n": 1029
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3495,
+         "win_rate": 0.3214,
+         "n": 1170
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4529,
+         "win_rate": 0.4447,
+         "n": 1257
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5156,
+         "win_rate": 0.4947,
+         "n": 3849
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6488,
+         "win_rate": 0.6533,
+         "n": 1024
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7516,
+         "win_rate": 0.7319,
+         "n": 996
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8421,
+         "win_rate": 0.8483,
+         "n": 923
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9371,
+         "win_rate": 0.9312,
+         "n": 465
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1176,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01531,
+        "accuracy": 0.5153,
+        "vs_constant": {
+         "n": 1176,
+         "battles": 1176,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 3227,
+        "logloss": 0.64846,
+        "brier": 0.22911,
+        "ece": 0.02829,
+        "accuracy": 0.6021,
+        "vs_constant": {
+         "n": 3227,
+         "battles": 1176,
+         "delta": -0.04469,
+         "se": 0.00806,
+         "delta_95ci": [
+          -0.0605,
+          -0.02889
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 3313,
+        "logloss": 0.56164,
+        "brier": 0.19075,
+        "ece": 0.0194,
+        "accuracy": 0.7048,
+        "vs_constant": {
+         "n": 3313,
+         "battles": 1118,
+         "delta": -0.13151,
+         "se": 0.01193,
+         "delta_95ci": [
+          -0.1549,
+          -0.10812
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 2430,
+        "logloss": 0.50355,
+        "brier": 0.16684,
+        "ece": 0.03676,
+        "accuracy": 0.7502,
+        "vs_constant": {
+         "n": 2430,
+         "battles": 963,
+         "delta": -0.1896,
+         "se": 0.01322,
+         "delta_95ci": [
+          -0.21551,
+          -0.16368
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 2007,
+        "logloss": 0.51794,
+        "brier": 0.17278,
+        "ece": 0.03303,
+        "accuracy": 0.7389,
+        "vs_constant": {
+         "n": 2007,
+         "battles": 586,
+         "delta": -0.17521,
+         "se": 0.02363,
+         "delta_95ci": [
+          -0.22153,
+          -0.12889
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 7797,
+       "logloss": 0.59461,
+       "brier": 0.20533,
+       "ece": 0.02712,
+       "accuracy": 0.6658
+      },
+      "ended_forfeit": {
+       "n": 4356,
+       "logloss": 0.54989,
+       "brier": 0.18745,
+       "ece": 0.02786,
+       "accuracy": 0.6885
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 3227,
+         "battles": 1176,
+         "ece": 0.02829,
+         "floor_median": 0.0197,
+         "threshold": 0.0381,
+         "p_calibrated_worse": 0.11
+        },
+        "t3-4": {
+         "n": 3313,
+         "battles": 1118,
+         "ece": 0.0194,
+         "floor_median": 0.0233,
+         "threshold": 0.0389,
+         "p_calibrated_worse": 0.74
+        },
+        "t5-6": {
+         "n": 2430,
+         "battles": 963,
+         "ece": 0.03676,
+         "floor_median": 0.0259,
+         "threshold": 0.0438,
+         "p_calibrated_worse": 0.075
+        },
+        "t7+": {
+         "n": 2007,
+         "battles": 586,
+         "ece": 0.03303,
+         "floor_median": 0.0346,
+         "threshold": 0.0591,
+         "p_calibrated_worse": 0.565
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.642,
+        "logits_1.5x_too_sharp": 0.992
+       },
+       "rejected_buckets": [],
+       "pass": true
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 23311,
+       "logloss": 0.60187,
+       "brier": 0.2086,
+       "ece": 0.01891,
+       "accuracy": 0.6596,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0635,
+         "win_rate": 0.0566,
+         "n": 884
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1566,
+         "win_rate": 0.1545,
+         "n": 1929
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2489,
+         "win_rate": 0.2429,
+         "n": 1968
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3501,
+         "win_rate": 0.3372,
+         "n": 2144
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4783,
+         "win_rate": 0.4492,
+         "n": 8618
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5475,
+         "win_rate": 0.5332,
+         "n": 2211
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6483,
+         "win_rate": 0.6408,
+         "n": 1971
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7509,
+         "win_rate": 0.7203,
+         "n": 1723
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8427,
+         "win_rate": 0.8235,
+         "n": 1422
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9327,
+         "win_rate": 0.9025,
+         "n": 441
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1920,
+        "logloss": 0.69087,
+        "brier": 0.24886,
+        "ece": 0.04237,
+        "accuracy": 0.5542,
+        "vs_constant": {
+         "n": 1920,
+         "battles": 1093,
+         "delta": -0.00228,
+         "se": 0.0002,
+         "delta_95ci": [
+          -0.00267,
+          -0.00189
+         ],
+         "beats": true
+        }
+       },
+       "bring": {
+        "n": 1920,
+        "logloss": 0.69087,
+        "brier": 0.24886,
+        "ece": 0.04237,
+        "accuracy": 0.5542,
+        "vs_constant": {
+         "n": 1920,
+         "battles": 1093,
+         "delta": -0.00228,
+         "se": 0.0002,
+         "delta_95ci": [
+          -0.00267,
+          -0.00189
+         ],
+         "beats": true
+        }
+       },
+       "t1-2": {
+        "n": 5265,
+        "logloss": 0.66881,
+        "brier": 0.2376,
+        "ece": 0.05162,
+        "accuracy": 0.5991,
+        "vs_constant": {
+         "n": 5265,
+         "battles": 1093,
+         "delta": -0.02433,
+         "se": 0.00871,
+         "delta_95ci": [
+          -0.04141,
+          -0.00726
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 5763,
+        "logloss": 0.59411,
+        "brier": 0.20403,
+        "ece": 0.02575,
+        "accuracy": 0.6762,
+        "vs_constant": {
+         "n": 5763,
+         "battles": 1087,
+         "delta": -0.09904,
+         "se": 0.01273,
+         "delta_95ci": [
+          -0.124,
+          -0.07408
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 4518,
+        "logloss": 0.52413,
+        "brier": 0.17484,
+        "ece": 0.0252,
+        "accuracy": 0.7344,
+        "vs_constant": {
+         "n": 4518,
+         "battles": 960,
+         "delta": -0.16901,
+         "se": 0.01367,
+         "delta_95ci": [
+          -0.19581,
+          -0.14222
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 3925,
+        "logloss": 0.52586,
+        "brier": 0.17588,
+        "ece": 0.02536,
+        "accuracy": 0.7332,
+        "vs_constant": {
+         "n": 3925,
+         "battles": 586,
+         "delta": -0.16729,
+         "se": 0.0239,
+         "delta_95ci": [
+          -0.21414,
+          -0.12045
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 15881,
+       "logloss": 0.61237,
+       "brier": 0.21277,
+       "ece": 0.01787,
+       "accuracy": 0.6491
+      },
+      "ended_forfeit": {
+       "n": 7430,
+       "logloss": 0.57941,
+       "brier": 0.19969,
+       "ece": 0.03018,
+       "accuracy": 0.682
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 21391,
+      "player_logloss": 0.59388,
+      "spectator_logloss": 0.59388,
+      "spectator_symmetrized_logloss": 0.59471
+     }
+    }
+   },
+   "human_ots_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 31294,
+       "logloss": 0.57176,
+       "brier": 0.19655,
+       "ece": 0.01776,
+       "accuracy": 0.6784,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0652,
+         "win_rate": 0.0465,
+         "n": 1313
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1559,
+         "win_rate": 0.1553,
+         "n": 2589
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2497,
+         "win_rate": 0.2378,
+         "n": 2729
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.35,
+         "win_rate": 0.3193,
+         "n": 2916
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4512,
+         "win_rate": 0.4292,
+         "n": 3164
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5155,
+         "win_rate": 0.4996,
+         "n": 9561
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6502,
+         "win_rate": 0.6207,
+         "n": 2726
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7496,
+         "win_rate": 0.7365,
+         "n": 2467
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8437,
+         "win_rate": 0.8578,
+         "n": 2539
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.937,
+         "win_rate": 0.9667,
+         "n": 1290
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 2951,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01372,
+        "accuracy": 0.5137,
+        "vs_constant": {
+         "n": 2951,
+         "battles": 2951,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 8063,
+        "logloss": 0.65792,
+        "brier": 0.23314,
+        "ece": 0.03477,
+        "accuracy": 0.5868,
+        "vs_constant": {
+         "n": 8063,
+         "battles": 2951,
+         "delta": -0.03522,
+         "se": 0.00537,
+         "delta_95ci": [
+          -0.04575,
+          -0.02469
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 8298,
+        "logloss": 0.56579,
+        "brier": 0.19355,
+        "ece": 0.02173,
+        "accuracy": 0.699,
+        "vs_constant": {
+         "n": 8298,
+         "battles": 2833,
+         "delta": -0.12736,
+         "se": 0.00756,
+         "delta_95ci": [
+          -0.14217,
+          -0.11254
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 6255,
+        "logloss": 0.49773,
+        "brier": 0.16485,
+        "ece": 0.03145,
+        "accuracy": 0.7596,
+        "vs_constant": {
+         "n": 6255,
+         "battles": 2446,
+         "delta": -0.19542,
+         "se": 0.00816,
+         "delta_95ci": [
+          -0.21142,
+          -0.17943
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 5727,
+        "logloss": 0.47744,
+        "brier": 0.15646,
+        "ece": 0.05067,
+        "accuracy": 0.7739,
+        "vs_constant": {
+         "n": 5727,
+         "battles": 1629,
+         "delta": -0.21571,
+         "se": 0.01087,
+         "delta_95ci": [
+          -0.23701,
+          -0.19441
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 20249,
+       "logloss": 0.58018,
+       "brier": 0.19995,
+       "ece": 0.02304,
+       "accuracy": 0.6732
+      },
+      "ended_forfeit": {
+       "n": 11045,
+       "logloss": 0.55634,
+       "brier": 0.19032,
+       "ece": 0.01706,
+       "accuracy": 0.688
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 8063,
+         "battles": 2951,
+         "ece": 0.03477,
+         "floor_median": 0.0126,
+         "threshold": 0.0243,
+         "p_calibrated_worse": 0.0
+        },
+        "t3-4": {
+         "n": 8298,
+         "battles": 2833,
+         "ece": 0.02173,
+         "floor_median": 0.0145,
+         "threshold": 0.0243,
+         "p_calibrated_worse": 0.044
+        },
+        "t5-6": {
+         "n": 6255,
+         "battles": 2446,
+         "ece": 0.03145,
+         "floor_median": 0.0163,
+         "threshold": 0.027,
+         "p_calibrated_worse": 0.001
+        },
+        "t7+": {
+         "n": 5727,
+         "battles": 1629,
+         "ece": 0.05067,
+         "floor_median": 0.0201,
+         "threshold": 0.0328,
+         "p_calibrated_worse": 0.0
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.996,
+        "logits_1.5x_too_sharp": 1.0
+       },
+       "rejected_buckets": [
+        "t1-2",
+        "t5-6",
+        "t7+"
+       ],
+       "pass": false
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 59996,
+       "logloss": 0.59394,
+       "brier": 0.20572,
+       "ece": 0.01884,
+       "accuracy": 0.6661,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0641,
+         "win_rate": 0.0423,
+         "n": 2599
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1552,
+         "win_rate": 0.152,
+         "n": 5032
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2501,
+         "win_rate": 0.25,
+         "n": 5124
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3495,
+         "win_rate": 0.3459,
+         "n": 5427
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4781,
+         "win_rate": 0.4458,
+         "n": 21389
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5483,
+         "win_rate": 0.5351,
+         "n": 5623
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6497,
+         "win_rate": 0.638,
+         "n": 5089
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7498,
+         "win_rate": 0.7214,
+         "n": 4415
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8431,
+         "win_rate": 0.8222,
+         "n": 3881
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9317,
+         "win_rate": 0.9379,
+         "n": 1417
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 4833,
+        "logloss": 0.69091,
+        "brier": 0.24888,
+        "ece": 0.04148,
+        "accuracy": 0.5533,
+        "vs_constant": {
+         "n": 4833,
+         "battles": 2730,
+         "delta": -0.00224,
+         "se": 0.00012,
+         "delta_95ci": [
+          -0.00247,
+          -0.002
+         ],
+         "beats": true
+        }
+       },
+       "bring": {
+        "n": 4833,
+        "logloss": 0.69091,
+        "brier": 0.24888,
+        "ece": 0.04148,
+        "accuracy": 0.5533,
+        "vs_constant": {
+         "n": 4833,
+         "battles": 2730,
+         "delta": -0.00224,
+         "se": 0.00012,
+         "delta_95ci": [
+          -0.00247,
+          -0.002
+         ],
+         "beats": true
+        }
+       },
+       "t1-2": {
+        "n": 13218,
+        "logloss": 0.67866,
+        "brier": 0.24174,
+        "ece": 0.05977,
+        "accuracy": 0.5856,
+        "vs_constant": {
+         "n": 13218,
+         "battles": 2730,
+         "delta": -0.01449,
+         "se": 0.00589,
+         "delta_95ci": [
+          -0.02603,
+          -0.00295
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 14363,
+        "logloss": 0.59771,
+        "brier": 0.20654,
+        "ece": 0.03247,
+        "accuracy": 0.6713,
+        "vs_constant": {
+         "n": 14363,
+         "battles": 2715,
+         "delta": -0.09544,
+         "se": 0.00807,
+         "delta_95ci": [
+          -0.11126,
+          -0.07961
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 11599,
+        "logloss": 0.51648,
+        "brier": 0.17223,
+        "ece": 0.02458,
+        "accuracy": 0.7459,
+        "vs_constant": {
+         "n": 11599,
+         "battles": 2431,
+         "delta": -0.17667,
+         "se": 0.00842,
+         "delta_95ci": [
+          -0.19318,
+          -0.16017
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 11150,
+        "logloss": 0.48519,
+        "brier": 0.15941,
+        "ece": 0.0488,
+        "accuracy": 0.7695,
+        "vs_constant": {
+         "n": 11150,
+         "battles": 1627,
+         "delta": -0.20795,
+         "se": 0.01099,
+         "delta_95ci": [
+          -0.2295,
+          -0.18641
+         ],
+         "beats": true
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 41155,
+       "logloss": 0.599,
+       "brier": 0.20776,
+       "ece": 0.01648,
+       "accuracy": 0.6595
+      },
+      "ended_forfeit": {
+       "n": 18841,
+       "logloss": 0.58291,
+       "brier": 0.20128,
+       "ece": 0.02998,
+       "accuracy": 0.6805
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 55163,
+      "player_logloss": 0.58545,
+      "spectator_logloss": 0.58545,
+      "spectator_symmetrized_logloss": 0.58627
+     }
+    }
+   },
+   "selfplay_battle": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 93995,
+       "logloss": 0.53402,
+       "brier": 0.18109,
+       "ece": 0.02225,
+       "accuracy": 0.7052,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0588,
+         "win_rate": 0.0303,
+         "n": 5277
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1624,
+         "win_rate": 0.1436,
+         "n": 9721
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2498,
+         "win_rate": 0.2318,
+         "n": 6600
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.3462,
+         "win_rate": 0.3102,
+         "n": 6992
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4601,
+         "win_rate": 0.4404,
+         "n": 7784
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5107,
+         "win_rate": 0.5233,
+         "n": 29119
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6538,
+         "win_rate": 0.6965,
+         "n": 6834
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7502,
+         "win_rate": 0.7761,
+         "n": 6405
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8373,
+         "win_rate": 0.8601,
+         "n": 9571
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9404,
+         "win_rate": 0.9742,
+         "n": 5692
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 9897,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00338,
+        "accuracy": 0.4966,
+        "vs_constant": {
+         "n": 9897,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 35991,
+        "logloss": 0.60636,
+        "brier": 0.21103,
+        "ece": 0.02482,
+        "accuracy": 0.6378,
+        "vs_constant": {
+         "n": 35991,
+         "battles": 9897,
+         "delta": -0.08678,
+         "se": 0.00333,
+         "delta_95ci": [
+          -0.0933,
+          -0.08026
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 27527,
+        "logloss": 0.46551,
+        "brier": 0.15263,
+        "ece": 0.0286,
+        "accuracy": 0.7719,
+        "vs_constant": {
+         "n": 27527,
+         "battles": 9829,
+         "delta": -0.22764,
+         "se": 0.00417,
+         "delta_95ci": [
+          -0.23581,
+          -0.21947
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 12665,
+        "logloss": 0.40125,
+        "brier": 0.12557,
+        "ece": 0.07951,
+        "accuracy": 0.8325,
+        "vs_constant": {
+         "n": 12665,
+         "battles": 6840,
+         "delta": -0.29189,
+         "se": 0.00473,
+         "delta_95ci": [
+          -0.30116,
+          -0.28263
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 7915,
+        "logloss": 0.45683,
+        "brier": 0.14657,
+        "ece": 0.15063,
+        "accuracy": 0.837,
+        "vs_constant": {
+         "n": 7915,
+         "battles": 2605,
+         "delta": -0.23632,
+         "se": 0.00812,
+         "delta_95ci": [
+          -0.25223,
+          -0.22041
+         ],
+         "beats": true
+        }
+       }
+      }
+     },
+     "player": {
+      "all": {
+       "n": 207784,
+       "logloss": 0.54924,
+       "brier": 0.18768,
+       "ece": 0.01879,
+       "accuracy": 0.6867,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.059,
+         "win_rate": 0.0294,
+         "n": 11135
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1614,
+         "win_rate": 0.1434,
+         "n": 19459
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2491,
+         "win_rate": 0.2316,
+         "n": 13015
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.345,
+         "win_rate": 0.3082,
+         "n": 13731
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4827,
+         "win_rate": 0.4863,
+         "n": 79536
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5434,
+         "win_rate": 0.5779,
+         "n": 13946
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6529,
+         "win_rate": 0.6954,
+         "n": 14211
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7522,
+         "win_rate": 0.7724,
+         "n": 13267
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8371,
+         "win_rate": 0.8644,
+         "n": 18622
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9404,
+         "win_rate": 0.9727,
+         "n": 10862
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 19794,
+        "logloss": 0.69343,
+        "brier": 0.25014,
+        "ece": 0.0118,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 19794,
+         "battles": 9897,
+         "delta": 0.00028,
+         "se": 0.0,
+         "delta_95ci": [
+          0.00028,
+          0.00028
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 19794,
+        "logloss": 0.69343,
+        "brier": 0.25014,
+        "ece": 0.0118,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 19794,
+         "battles": 9897,
+         "delta": 0.00028,
+         "se": 0.0,
+         "delta_95ci": [
+          0.00028,
+          0.00028
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 71982,
+        "logloss": 0.60647,
+        "brier": 0.21108,
+        "ece": 0.02846,
+        "accuracy": 0.639,
+        "vs_constant": {
+         "n": 71982,
+         "battles": 9897,
+         "delta": -0.08668,
+         "se": 0.00333,
+         "delta_95ci": [
+          -0.0932,
+          -0.08015
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 55054,
+        "logloss": 0.46545,
+        "brier": 0.1526,
+        "ece": 0.02764,
+        "accuracy": 0.7725,
+        "vs_constant": {
+         "n": 55054,
+         "battles": 9829,
+         "delta": -0.2277,
+         "se": 0.00417,
+         "delta_95ci": [
+          -0.23587,
+          -0.21953
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 25330,
+        "logloss": 0.40112,
+        "brier": 0.12551,
+        "ece": 0.07938,
+        "accuracy": 0.8329,
+        "vs_constant": {
+         "n": 25330,
+         "battles": 6840,
+         "delta": -0.29203,
+         "se": 0.00473,
+         "delta_95ci": [
+          -0.30129,
+          -0.28276
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 15830,
+        "logloss": 0.45681,
+        "brier": 0.14657,
+        "ece": 0.15006,
+        "accuracy": 0.8378,
+        "vs_constant": {
+         "n": 15830,
+         "battles": 2605,
+         "delta": -0.23634,
+         "se": 0.00812,
+         "delta_95ci": [
+          -0.25225,
+          -0.22043
+         ],
+         "beats": true
+        }
+       }
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player": {
+      "n": 187990,
+      "player_logloss": 0.53406,
+      "spectator_logloss": 0.53413,
+      "spectator_symmetrized_logloss": 0.53402
+     }
+    }
+   },
+   "selfplay_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 440986,
+       "logloss": 0.53554,
+       "brier": 0.18147,
+       "ece": 0.01673,
+       "accuracy": 0.7043,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0581,
+         "win_rate": 0.0441,
+         "n": 27200
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1618,
+         "win_rate": 0.1371,
+         "n": 46061
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2496,
+         "win_rate": 0.2354,
+         "n": 29588
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.348,
+         "win_rate": 0.3077,
+         "n": 32389
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4596,
+         "win_rate": 0.4427,
+         "n": 35565
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5108,
+         "win_rate": 0.5136,
+         "n": 136064
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6525,
+         "win_rate": 0.6881,
+         "n": 31890
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.75,
+         "win_rate": 0.7679,
+         "n": 29912
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8376,
+         "win_rate": 0.8589,
+         "n": 45530
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9419,
+         "win_rate": 0.9608,
+         "n": 26787
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 46231,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00124,
+        "accuracy": 0.5012,
+        "vs_constant": {
+         "n": 46231,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 168057,
+        "logloss": 0.6021,
+        "brier": 0.20876,
+        "ece": 0.01898,
+        "accuracy": 0.6475,
+        "vs_constant": {
+         "n": 168057,
+         "battles": 46231,
+         "delta": -0.09104,
+         "se": 0.00158,
+         "delta_95ci": [
+          -0.09413,
+          -0.08795
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 127962,
+        "logloss": 0.46587,
+        "brier": 0.15259,
+        "ece": 0.02807,
+        "accuracy": 0.7694,
+        "vs_constant": {
+         "n": 127962,
+         "battles": 46004,
+         "delta": -0.22728,
+         "se": 0.00199,
+         "delta_95ci": [
+          -0.23117,
+          -0.22338
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 59803,
+        "logloss": 0.40831,
+        "brier": 0.12826,
+        "ece": 0.0693,
+        "accuracy": 0.8247,
+        "vs_constant": {
+         "n": 59803,
+         "battles": 31804,
+         "delta": -0.28483,
+         "se": 0.00237,
+         "delta_95ci": [
+          -0.28947,
+          -0.28019
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 38933,
+        "logloss": 0.4855,
+        "brier": 0.15896,
+        "ece": 0.09744,
+        "accuracy": 0.7917,
+        "vs_constant": {
+         "n": 38933,
+         "battles": 12669,
+         "delta": -0.20765,
+         "se": 0.00468,
+         "delta_95ci": [
+          -0.21683,
+          -0.19847
+         ],
+         "beats": true
+        }
+       }
+      }
+     },
+     "player": {
+      "all": {
+       "n": 974434,
+       "logloss": 0.55057,
+       "brier": 0.18801,
+       "ece": 0.0166,
+       "accuracy": 0.6845,
+       "reliability": [
+        {
+         "bin": [
+          0.0,
+          0.1
+         ],
+         "mean_p": 0.0579,
+         "win_rate": 0.0423,
+         "n": 54765
+        },
+        {
+         "bin": [
+          0.1,
+          0.2
+         ],
+         "mean_p": 0.1609,
+         "win_rate": 0.1414,
+         "n": 92337
+        },
+        {
+         "bin": [
+          0.2,
+          0.3
+         ],
+         "mean_p": 0.2491,
+         "win_rate": 0.2373,
+         "n": 59663
+        },
+        {
+         "bin": [
+          0.3,
+          0.4
+         ],
+         "mean_p": 0.347,
+         "win_rate": 0.3123,
+         "n": 63903
+        },
+        {
+         "bin": [
+          0.4,
+          0.5
+         ],
+         "mean_p": 0.4827,
+         "win_rate": 0.4891,
+         "n": 369821
+        },
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5436,
+         "win_rate": 0.5598,
+         "n": 65516
+        },
+        {
+         "bin": [
+          0.6,
+          0.7
+         ],
+         "mean_p": 0.6514,
+         "win_rate": 0.6923,
+         "n": 65308
+        },
+        {
+         "bin": [
+          0.7,
+          0.8
+         ],
+         "mean_p": 0.7521,
+         "win_rate": 0.768,
+         "n": 61466
+        },
+        {
+         "bin": [
+          0.8,
+          0.9
+         ],
+         "mean_p": 0.8378,
+         "win_rate": 0.8673,
+         "n": 88274
+        },
+        {
+         "bin": [
+          0.9,
+          1.0
+         ],
+         "mean_p": 0.9417,
+         "win_rate": 0.9591,
+         "n": 53381
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 92462,
+        "logloss": 0.69343,
+        "brier": 0.25014,
+        "ece": 0.0118,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 92462,
+         "battles": 46231,
+         "delta": 0.00028,
+         "se": 0.0,
+         "delta_95ci": [
+          0.00028,
+          0.00028
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 92462,
+        "logloss": 0.69343,
+        "brier": 0.25014,
+        "ece": 0.0118,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 92462,
+         "battles": 46231,
+         "delta": 0.00028,
+         "se": 0.0,
+         "delta_95ci": [
+          0.00028,
+          0.00028
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 336114,
+        "logloss": 0.60224,
+        "brier": 0.20882,
+        "ece": 0.02261,
+        "accuracy": 0.6471,
+        "vs_constant": {
+         "n": 336114,
+         "battles": 46231,
+         "delta": -0.0909,
+         "se": 0.00158,
+         "delta_95ci": [
+          -0.094,
+          -0.08781
+         ],
+         "beats": true
+        }
+       },
+       "t3-4": {
+        "n": 255924,
+        "logloss": 0.46582,
+        "brier": 0.15256,
+        "ece": 0.02787,
+        "accuracy": 0.7694,
+        "vs_constant": {
+         "n": 255924,
+         "battles": 46004,
+         "delta": -0.22732,
+         "se": 0.00199,
+         "delta_95ci": [
+          -0.23122,
+          -0.22343
+         ],
+         "beats": true
+        }
+       },
+       "t5-6": {
+        "n": 119606,
+        "logloss": 0.40828,
+        "brier": 0.12825,
+        "ece": 0.06887,
+        "accuracy": 0.8238,
+        "vs_constant": {
+         "n": 119606,
+         "battles": 31804,
+         "delta": -0.28487,
+         "se": 0.00237,
+         "delta_95ci": [
+          -0.2895,
+          -0.28023
+         ],
+         "beats": true
+        }
+       },
+       "t7+": {
+        "n": 77866,
+        "logloss": 0.4853,
+        "brier": 0.15888,
+        "ece": 0.09851,
+        "accuracy": 0.7907,
+        "vs_constant": {
+         "n": 77866,
+         "battles": 12669,
+         "delta": -0.20785,
+         "se": 0.00467,
+         "delta_95ci": [
+          -0.217,
+          -0.1987
+         ],
+         "beats": true
+        }
+       }
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player": {
+      "n": 881972,
+      "player_logloss": 0.53559,
+      "spectator_logloss": 0.53565,
+      "spectator_symmetrized_logloss": 0.53554
+     }
+    }
+   }
+  },
+  "constant": {
+   "human_ots_all": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 43447,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0175,
+       "accuracy": 0.5175,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4825,
+         "n": 43447
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 4127,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01417,
+        "accuracy": 0.5142,
+        "vs_constant": {
+         "n": 4127,
+         "battles": 4127,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 11290,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0163,
+        "accuracy": 0.5163,
+        "vs_constant": {
+         "n": 11290,
+         "battles": 4127,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 11611,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01158,
+        "accuracy": 0.5116,
+        "vs_constant": {
+         "n": 11611,
+         "battles": 3951,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 8685,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01698,
+        "accuracy": 0.517,
+        "vs_constant": {
+         "n": 8685,
+         "battles": 3409,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 7734,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03051,
+        "accuracy": 0.5305,
+        "vs_constant": {
+         "n": 7734,
+         "battles": 2215,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 28046,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0246,
+       "accuracy": 0.5246
+      },
+      "ended_forfeit": {
+       "n": 15401,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00458,
+       "accuracy": 0.5046
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 11290,
+         "battles": 4127,
+         "ece": 0.0163,
+         "floor_median": 0.0054,
+         "threshold": 0.0197,
+         "p_calibrated_worse": 0.049
+        },
+        "t3-4": {
+         "n": 11611,
+         "battles": 3951,
+         "ece": 0.01158,
+         "floor_median": 0.0058,
+         "threshold": 0.0217,
+         "p_calibrated_worse": 0.163
+        },
+        "t5-6": {
+         "n": 8685,
+         "battles": 3409,
+         "ece": 0.01698,
+         "floor_median": 0.0062,
+         "threshold": 0.0223,
+         "p_calibrated_worse": 0.062
+        },
+        "t7+": {
+         "n": 7734,
+         "battles": 2215,
+         "ece": 0.03051,
+         "floor_median": 0.0098,
+         "threshold": 0.033,
+         "p_calibrated_worse": 0.027
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.034,
+        "logits_1.5x_too_sharp": 0.028
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 4127 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 83307,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.04143,
+       "accuracy": 0.5414,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4586,
+         "n": 83307
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 6753,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05353,
+        "accuracy": 0.5535,
+        "vs_constant": {
+         "n": 6753,
+         "battles": 3823,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 6753,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05353,
+        "accuracy": 0.5535,
+        "vs_constant": {
+         "n": 6753,
+         "battles": 3823,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 18483,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05749,
+        "accuracy": 0.5575,
+        "vs_constant": {
+         "n": 18483,
+         "battles": 3823,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 20126,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05108,
+        "accuracy": 0.5511,
+        "vs_constant": {
+         "n": 20126,
+         "battles": 3802,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 16117,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02913,
+        "accuracy": 0.5291,
+        "vs_constant": {
+         "n": 16117,
+         "battles": 3391,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 15075,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01118,
+        "accuracy": 0.5112,
+        "vs_constant": {
+         "n": 15075,
+         "battles": 2213,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 57036,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03305,
+       "accuracy": 0.533
+      },
+      "ended_forfeit": {
+       "n": 26271,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.05963,
+       "accuracy": 0.5596
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 76554,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "human_closed": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 11185,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0046,
+       "accuracy": 0.5046,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4954,
+         "n": 11185
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1085,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00323,
+        "accuracy": 0.4968,
+        "vs_constant": {
+         "n": 1085,
+         "battles": 1085,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 3039,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00346,
+        "accuracy": 0.4965,
+        "vs_constant": {
+         "n": 3039,
+         "battles": 1085,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 2919,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00531,
+        "accuracy": 0.4947,
+        "vs_constant": {
+         "n": 2919,
+         "battles": 1010,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 2093,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01744,
+        "accuracy": 0.5174,
+        "vs_constant": {
+         "n": 2093,
+         "battles": 824,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 2049,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02172,
+        "accuracy": 0.5217,
+        "vs_constant": {
+         "n": 2049,
+         "battles": 537,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 6644,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.01008,
+       "accuracy": 0.5101
+      },
+      "ended_forfeit": {
+       "n": 4541,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00341,
+       "accuracy": 0.4966
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 3039,
+         "battles": 1085,
+         "ece": 0.00346,
+         "floor_median": 0.0107,
+         "threshold": 0.0377,
+         "p_calibrated_worse": 0.833
+        },
+        "t3-4": {
+         "n": 2919,
+         "battles": 1010,
+         "ece": 0.00531,
+         "floor_median": 0.011,
+         "threshold": 0.0396,
+         "p_calibrated_worse": 0.76
+        },
+        "t5-6": {
+         "n": 2093,
+         "battles": 824,
+         "ece": 0.01744,
+         "floor_median": 0.0127,
+         "threshold": 0.0478,
+         "p_calibrated_worse": 0.359
+        },
+        "t7+": {
+         "n": 2049,
+         "battles": 537,
+         "ece": 0.02172,
+         "floor_median": 0.0212,
+         "threshold": 0.0708,
+         "p_calibrated_worse": 0.49
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.03,
+        "logits_1.5x_too_sharp": 0.046
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 1085 battles this test catches a model 1.5x too sharp 5% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 20901,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.04619,
+       "accuracy": 0.5462,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4538,
+         "n": 20901
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1688,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.06102,
+        "accuracy": 0.561,
+        "vs_constant": {
+         "n": 1688,
+         "battles": 972,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 1688,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.06102,
+        "accuracy": 0.561,
+        "vs_constant": {
+         "n": 1688,
+         "battles": 972,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 4705,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.06663,
+        "accuracy": 0.5666,
+        "vs_constant": {
+         "n": 4705,
+         "battles": 972,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 4957,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05517,
+        "accuracy": 0.5552,
+        "vs_constant": {
+         "n": 4957,
+         "battles": 962,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 3881,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03053,
+        "accuracy": 0.5305,
+        "vs_constant": {
+         "n": 3881,
+         "battles": 817,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 3982,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01356,
+        "accuracy": 0.5136,
+        "vs_constant": {
+         "n": 3982,
+         "battles": 537,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 13372,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03934,
+       "accuracy": 0.5393
+      },
+      "ended_forfeit": {
+       "n": 7529,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.05837,
+       "accuracy": 0.5584
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 19213,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "human_closed_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 814,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03194,
+       "accuracy": 0.4681,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.5319,
+         "n": 814
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 77,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03247,
+        "accuracy": 0.4675,
+        "vs_constant": {
+         "n": 77,
+         "battles": 77,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 215,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.04419,
+        "accuracy": 0.4558,
+        "vs_constant": {
+         "n": 215,
+         "battles": 77,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 223,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00224,
+        "accuracy": 0.5022,
+        "vs_constant": {
+         "n": 223,
+         "battles": 75,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 164,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03049,
+        "accuracy": 0.4695,
+        "vs_constant": {
+         "n": 164,
+         "battles": 63,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 135,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.07037,
+        "accuracy": 0.4296,
+        "vs_constant": {
+         "n": 135,
+         "battles": 40,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 640,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0,
+       "accuracy": 0.5
+      },
+      "ended_forfeit": {
+       "n": 174,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.14943,
+       "accuracy": 0.3506
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 215,
+         "battles": 77,
+         "ece": 0.04419,
+         "floor_median": 0.0395,
+         "threshold": 0.1442,
+         "p_calibrated_worse": 0.486
+        },
+        "t3-4": {
+         "n": 223,
+         "battles": 75,
+         "ece": 0.00224,
+         "floor_median": 0.0381,
+         "threshold": 0.1525,
+         "p_calibrated_worse": 1.0
+        },
+        "t5-6": {
+         "n": 164,
+         "battles": 63,
+         "ece": 0.03049,
+         "floor_median": 0.0488,
+         "threshold": 0.1646,
+         "p_calibrated_worse": 0.693
+        },
+        "t7+": {
+         "n": 135,
+         "battles": 40,
+         "ece": 0.07037,
+         "floor_median": 0.063,
+         "threshold": 0.2297,
+         "p_calibrated_worse": 0.498
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.03,
+        "logits_1.5x_too_sharp": 0.03
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 1586,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03909,
+       "accuracy": 0.5391,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4609,
+         "n": 1586
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 128,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05469,
+        "accuracy": 0.5547,
+        "vs_constant": {
+         "n": 128,
+         "battles": 72,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 128,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05469,
+        "accuracy": 0.5547,
+        "vs_constant": {
+         "n": 128,
+         "battles": 72,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 361,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05402,
+        "accuracy": 0.554,
+        "vs_constant": {
+         "n": 361,
+         "battles": 72,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 393,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.04962,
+        "accuracy": 0.5496,
+        "vs_constant": {
+         "n": 393,
+         "battles": 72,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 309,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02427,
+        "accuracy": 0.5243,
+        "vs_constant": {
+         "n": 309,
+         "battles": 63,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 267,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00562,
+        "accuracy": 0.5056,
+        "vs_constant": {
+         "n": 267,
+         "battles": 40,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 1309,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.02483,
+       "accuracy": 0.5248
+      },
+      "ended_forfeit": {
+       "n": 277,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.1065,
+       "accuracy": 0.6065
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 1458,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "human_ots": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 12153,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.01856,
+       "accuracy": 0.5186,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4814,
+         "n": 12153
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1176,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01531,
+        "accuracy": 0.5153,
+        "vs_constant": {
+         "n": 1176,
+         "battles": 1176,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 3227,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01782,
+        "accuracy": 0.5178,
+        "vs_constant": {
+         "n": 3227,
+         "battles": 1176,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 3313,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01222,
+        "accuracy": 0.5122,
+        "vs_constant": {
+         "n": 3313,
+         "battles": 1118,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 2430,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02716,
+        "accuracy": 0.5272,
+        "vs_constant": {
+         "n": 2430,
+         "battles": 963,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 2007,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02167,
+        "accuracy": 0.5217,
+        "vs_constant": {
+         "n": 2007,
+         "battles": 586,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 7797,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03341,
+       "accuracy": 0.5334
+      },
+      "ended_forfeit": {
+       "n": 4356,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00803,
+       "accuracy": 0.492
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 3227,
+         "battles": 1176,
+         "ece": 0.01782,
+         "floor_median": 0.0107,
+         "threshold": 0.0383,
+         "p_calibrated_worse": 0.25
+        },
+        "t3-4": {
+         "n": 3313,
+         "battles": 1118,
+         "ece": 0.01222,
+         "floor_median": 0.0107,
+         "threshold": 0.04,
+         "p_calibrated_worse": 0.454
+        },
+        "t5-6": {
+         "n": 2430,
+         "battles": 963,
+         "ece": 0.02716,
+         "floor_median": 0.0121,
+         "threshold": 0.0461,
+         "p_calibrated_worse": 0.124
+        },
+        "t7+": {
+         "n": 2007,
+         "battles": 586,
+         "ece": 0.02167,
+         "floor_median": 0.0192,
+         "threshold": 0.0708,
+         "p_calibrated_worse": 0.425
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.032,
+        "logits_1.5x_too_sharp": 0.028
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 1176 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 23311,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.04219,
+       "accuracy": 0.5422,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4578,
+         "n": 23311
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 1920,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05417,
+        "accuracy": 0.5542,
+        "vs_constant": {
+         "n": 1920,
+         "battles": 1093,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 1920,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05417,
+        "accuracy": 0.5542,
+        "vs_constant": {
+         "n": 1920,
+         "battles": 1093,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 5265,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05859,
+        "accuracy": 0.5586,
+        "vs_constant": {
+         "n": 5265,
+         "battles": 1093,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 5763,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05197,
+        "accuracy": 0.552,
+        "vs_constant": {
+         "n": 5763,
+         "battles": 1087,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 4518,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02877,
+        "accuracy": 0.5288,
+        "vs_constant": {
+         "n": 4518,
+         "battles": 960,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 3925,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00955,
+        "accuracy": 0.5096,
+        "vs_constant": {
+         "n": 3925,
+         "battles": 586,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 15881,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0334,
+       "accuracy": 0.5334
+      },
+      "ended_forfeit": {
+       "n": 7430,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.06097,
+       "accuracy": 0.561
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 21391,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "human_ots_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 31294,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0171,
+       "accuracy": 0.5171,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4829,
+         "n": 31294
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 2951,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01372,
+        "accuracy": 0.5137,
+        "vs_constant": {
+         "n": 2951,
+         "battles": 2951,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 8063,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01569,
+        "accuracy": 0.5157,
+        "vs_constant": {
+         "n": 8063,
+         "battles": 2951,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 8298,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01133,
+        "accuracy": 0.5113,
+        "vs_constant": {
+         "n": 8298,
+         "battles": 2833,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 6255,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01303,
+        "accuracy": 0.513,
+        "vs_constant": {
+         "n": 6255,
+         "battles": 2446,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 5727,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.03361,
+        "accuracy": 0.5336,
+        "vs_constant": {
+         "n": 5727,
+         "battles": 1629,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 20249,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.02121,
+       "accuracy": 0.5212
+      },
+      "ended_forfeit": {
+       "n": 11045,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00955,
+       "accuracy": 0.5096
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 8063,
+         "battles": 2951,
+         "ece": 0.01569,
+         "floor_median": 0.0069,
+         "threshold": 0.0229,
+         "p_calibrated_worse": 0.105
+        },
+        "t3-4": {
+         "n": 8298,
+         "battles": 2833,
+         "ece": 0.01133,
+         "floor_median": 0.0067,
+         "threshold": 0.0245,
+         "p_calibrated_worse": 0.262
+        },
+        "t5-6": {
+         "n": 6255,
+         "battles": 2446,
+         "ece": 0.01303,
+         "floor_median": 0.0073,
+         "threshold": 0.027,
+         "p_calibrated_worse": 0.223
+        },
+        "t7+": {
+         "n": 5727,
+         "battles": 1629,
+         "ece": 0.03361,
+         "floor_median": 0.0113,
+         "threshold": 0.0389,
+         "p_calibrated_worse": 0.031
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.048,
+        "logits_1.5x_too_sharp": 0.03
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 2951 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+      }
+     },
+     "player_approx": {
+      "all": {
+       "n": 59996,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.04114,
+       "accuracy": 0.5411,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4589,
+         "n": 59996
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 4833,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05328,
+        "accuracy": 0.5533,
+        "vs_constant": {
+         "n": 4833,
+         "battles": 2730,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 4833,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05328,
+        "accuracy": 0.5533,
+        "vs_constant": {
+         "n": 4833,
+         "battles": 2730,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 13218,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05704,
+        "accuracy": 0.557,
+        "vs_constant": {
+         "n": 13218,
+         "battles": 2730,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 14363,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.05072,
+        "accuracy": 0.5507,
+        "vs_constant": {
+         "n": 14363,
+         "battles": 2715,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 11599,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.02927,
+        "accuracy": 0.5293,
+        "vs_constant": {
+         "n": 11599,
+         "battles": 2431,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 11150,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01175,
+        "accuracy": 0.5117,
+        "vs_constant": {
+         "n": 11150,
+         "battles": 1627,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      },
+      "ended_normal": {
+       "n": 41155,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.03291,
+       "accuracy": 0.5329
+      },
+      "ended_forfeit": {
+       "n": 18841,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0591,
+       "accuracy": 0.5591
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player_approx": {
+      "n": 55163,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "selfplay_battle": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 93995,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00459,
+       "accuracy": 0.4954,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.5046,
+         "n": 93995
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 9897,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00338,
+        "accuracy": 0.4966,
+        "vs_constant": {
+         "n": 9897,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 35991,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00349,
+        "accuracy": 0.4965,
+        "vs_constant": {
+         "n": 35991,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 27527,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00209,
+        "accuracy": 0.4979,
+        "vs_constant": {
+         "n": 27527,
+         "battles": 9829,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 12665,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00951,
+        "accuracy": 0.4905,
+        "vs_constant": {
+         "n": 12665,
+         "battles": 6840,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 7915,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.01194,
+        "accuracy": 0.4881,
+        "vs_constant": {
+         "n": 7915,
+         "battles": 2605,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      }
+     },
+     "player": {
+      "all": {
+       "n": 207784,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0,
+       "accuracy": 0.5,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.5,
+         "n": 207784
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 19794,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 19794,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 19794,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 19794,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 71982,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 71982,
+         "battles": 9897,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 55054,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 55054,
+         "battles": 9829,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 25330,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 25330,
+         "battles": 6840,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 15830,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 15830,
+         "battles": 2605,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player": {
+      "n": 187990,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   },
+   "selfplay_team": {
+    "perspectives": {
+     "spectator": {
+      "all": {
+       "n": 440986,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.00149,
+       "accuracy": 0.5015,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.4985,
+         "n": 440986
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 46231,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00124,
+        "accuracy": 0.5012,
+        "vs_constant": {
+         "n": 46231,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 168057,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00135,
+        "accuracy": 0.5013,
+        "vs_constant": {
+         "n": 168057,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 127962,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00197,
+        "accuracy": 0.502,
+        "vs_constant": {
+         "n": 127962,
+         "battles": 46004,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 59803,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00258,
+        "accuracy": 0.5026,
+        "vs_constant": {
+         "n": 59803,
+         "battles": 31804,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 38933,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.00081,
+        "accuracy": 0.4992,
+        "vs_constant": {
+         "n": 38933,
+         "battles": 12669,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      }
+     },
+     "player": {
+      "all": {
+       "n": 974434,
+       "logloss": 0.69315,
+       "brier": 0.25,
+       "ece": 0.0,
+       "accuracy": 0.5,
+       "reliability": [
+        {
+         "bin": [
+          0.5,
+          0.6
+         ],
+         "mean_p": 0.5,
+         "win_rate": 0.5,
+         "n": 974434
+        }
+       ]
+      },
+      "by_turn": {
+       "preview": {
+        "n": 92462,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 92462,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "bring": {
+        "n": 92462,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 92462,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t1-2": {
+        "n": 336114,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 336114,
+         "battles": 46231,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t3-4": {
+        "n": 255924,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 255924,
+         "battles": 46004,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t5-6": {
+        "n": 119606,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 119606,
+         "battles": 31804,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       },
+       "t7+": {
+        "n": 77866,
+        "logloss": 0.69315,
+        "brier": 0.25,
+        "ece": 0.0,
+        "accuracy": 0.5,
+        "vs_constant": {
+         "n": 77866,
+         "battles": 12669,
+         "delta": 0.0,
+         "se": 0.0,
+         "delta_95ci": [
+          0.0,
+          0.0
+         ],
+         "beats": false
+        }
+       }
+      }
+     }
+    },
+    "player_vs_spectator": {
+     "player": {
+      "n": 881972,
+      "player_logloss": 0.69315,
+      "spectator_logloss": 0.69315,
+      "spectator_symmetrized_logloss": 0.69315
+     }
+    }
+   }
+  }
+ }
+}
