@@ -237,20 +237,49 @@
    "losing_buckets": []
   },
   "closed_in_battle_ece": {
-   "pass": false,
-   "worst_bucket": "t7+",
-   "ece": 0.09253,
-   "threshold": 0.03,
-   "n": 283,
+   "pass": null,
+   "test": "ece vs a calibrated model on the same rows",
+   "alpha": 0.05,
+   "power": {
+    "logits_1.25x_too_sharp": 0.106,
+    "logits_1.5x_too_sharp": 0.284
+   },
+   "power_needed": 0.8,
+   "rejected_buckets": [],
+   "reason": "too little data to tell: on 131 battles this test catches a model 1.5x too sharp 28% of the time, against 80% needed",
    "by_bucket": {
-    "t1-2": 0.02844,
-    "t3-4": 0.05058,
-    "t5-6": 0.07356,
-    "t7+": 0.09253
+    "t1-2": {
+     "ece": 0.02844,
+     "floor_median": 0.0587,
+     "threshold": 0.115,
+     "p_calibrated_worse": 0.974,
+     "battles": 131
+    },
+    "t3-4": {
+     "ece": 0.05058,
+     "floor_median": 0.0664,
+     "threshold": 0.1172,
+     "p_calibrated_worse": 0.829,
+     "battles": 119
+    },
+    "t5-6": {
+     "ece": 0.07356,
+     "floor_median": 0.0752,
+     "threshold": 0.1268,
+     "p_calibrated_worse": 0.543,
+     "battles": 101
+    },
+    "t7+": {
+     "ece": 0.09253,
+     "floor_median": 0.1165,
+     "threshold": 0.1905,
+     "p_calibrated_worse": 0.785,
+     "battles": 63
+    }
    }
   },
   "in_battle_pass": false,
-  "closed_sheet_pass": false,
+  "closed_sheet_pass": null,
   "all_pass": false
  },
  "eval_dataset": {
@@ -264,6 +293,6 @@
    "eval_selfplay_team.npz": "3c3c202106ee4997"
   },
   "dataset": "wp-v1c",
-  "at": "2026-09-22T20:55:54"
+  "at": "2026-09-27T19:12:33"
  }
 }

@@ -74,6 +74,92 @@ def vs_constant(p: np.ndarray, y: np.ndarray, battle: np.ndarray) -> dict[str, A
             "se": round(se, 5), "delta_95ci": [round(lo, 5), round(hi, 5)], "beats": bool(hi < 0)}
 
 
+CALIBRATION_ALPHA = 0.05
+CALIBRATION_SIMS = 1000
+# How far wrong a model has to be for the test's power to be reported: logits this many times too
+# sharp, i.e. the truth is sigmoid(logit(p) / T).
+POWER_AGAINST = (1.25, 1.5)
+# A test that would miss a model 1.5× too sharp more often than this cannot pass anything: not
+# rejecting is then "too little data to tell", and the verdict says so instead of passing.
+POWER_NEEDED = 0.8
+
+
+def _ece(p: np.ndarray, y: np.ndarray, bins: int = 10) -> float:
+    """`metrics`' ECE without the rest, vectorised, because the test below computes it thousands
+    of times. Same bins and same edges, so the two agree to rounding."""
+    idx = np.clip(np.digitize(p, np.linspace(0, 1, bins + 1)) - 1, 0, bins - 1)
+    n = np.bincount(idx, minlength=bins)
+    gap = np.abs(np.bincount(idx, weights=p, minlength=bins) - np.bincount(idx, weights=y, minlength=bins))
+    return float(gap.sum() / len(p)) if len(p) else 0.0
+
+
+def calibration_test(p: np.ndarray, y: np.ndarray, battle: np.ndarray, bucket: np.ndarray,
+                     buckets: tuple[str, ...], *, sims: int = CALIBRATION_SIMS, seed: int = 0) -> dict[str, Any]:
+    """Is this model's ECE worse than a *calibrated* model would score on these same rows?
+
+    ECE is biased upward on small n, so a threshold on it is a threshold on the sample size as much
+    as the model. On the 131-battle closed-sheet set a model that is calibrated by construction
+    gets under 0.03 at t7+ in 0% of redraws — the old gate could not be passed by anything, and
+    it was reading its own noise (docs/phase8-findings.md, `closed_calibration.py`).
+
+    So the null is simulated rather than assumed: outcomes redrawn from `p` itself, one uniform
+    per battle shared by all of its rows, because a battle has one winner and its rows cannot
+    disagree about it. Each bucket gets the ECE's distribution under that null and a p-value, and
+    the verdict fails when any bucket is past its Bonferroni threshold. Seeded, so re-scoring the
+    same model gives the same verdict.
+
+    A pass is only as good as the test's power, so that is part of the verdict: how often the
+    same rule catches a model whose logits are `POWER_AGAINST` times too sharp. Not rejecting on
+    a test with less than `POWER_NEEDED` of it is "too little data to tell" — `pass` is None and
+    `reason` says why — because gate rule 3 forbids a verdict from a statistic that could not
+    have come out the other way.
+    """
+    rng = np.random.default_rng(seed)
+    p = np.clip(p.astype(np.float64), 1e-6, 1 - 1e-6)
+    _, inv = np.unique(battle, return_inverse=True)
+    have = [b for b in buckets if (bucket == b).any()]
+    masks = {b: bucket == b for b in have}
+
+    def draw(truth: np.ndarray) -> dict[str, float]:
+        yy = (rng.random(inv.max() + 1)[inv] < truth).astype(np.float64)
+        return {b: _ece(p[m], yy[m]) for b, m in masks.items()}
+
+    null = [draw(p) for _ in range(sims)]
+    level = CALIBRATION_ALPHA / max(len(have), 1)
+    cut = {b: float(np.quantile([s[b] for s in null], 1 - level)) for b in have}
+    out: dict[str, Any] = {"sims": sims, "alpha": CALIBRATION_ALPHA, "per_bucket_level": round(level, 4),
+                           "by_bucket": {}}
+    for b in have:
+        obs = _ece(p[masks[b]], y[masks[b]].astype(np.float64))
+        dist = np.array([s[b] for s in null])
+        out["by_bucket"][b] = {"n": int(masks[b].sum()), "battles": int(len(np.unique(battle[masks[b]]))),
+                               "ece": round(obs, 5), "floor_median": round(float(np.median(dist)), 4),
+                               "threshold": round(cut[b], 4),
+                               "p_calibrated_worse": round(float(np.mean(dist >= obs)), 4)}
+    logit = np.log(p / (1 - p))
+    out["power"] = {}
+    for t in POWER_AGAINST:
+        truth = 1 / (1 + np.exp(-logit / t))
+        caught = [any(s[b] > cut[b] for b in have) for s in (draw(truth) for _ in range(sims // 2))]
+        out["power"][f"logits_{t}x_too_sharp"] = round(float(np.mean(caught)), 3)
+    rejected = [b for b, r in out["by_bucket"].items() if r["p_calibrated_worse"] <= level]
+    power = out["power"].get(f"logits_{POWER_AGAINST[-1]}x_too_sharp", 0.0)
+    out["rejected_buckets"] = rejected
+    if not have:
+        out["pass"] = None
+    elif rejected:
+        out["pass"] = False
+    elif power >= POWER_NEEDED:
+        out["pass"] = True
+    else:
+        n = len(np.unique(battle[np.isin(bucket, have)]))
+        out["pass"] = None
+        out["reason"] = (f"too little data to tell: on {n} battles this test catches a model "
+                         f"{POWER_AGAINST[-1]}x too sharp {power:.0%} of the time, "
+                         f"against {POWER_NEEDED:.0%} needed")
+    return out
+
+
 def _bucket(kind: np.ndarray, turn: np.ndarray) -> np.ndarray:
     out = np.empty(len(kind), dtype=object)
     out[:] = "t7+"
@@ -110,6 +196,10 @@ def evaluate_set(model: WPModel, d: dict[str, np.ndarray], usage: np.ndarray | N
                 me = m & (s["forfeit"] == flag)
                 if me.any():
                     entry[f"ended_{ended}"] = {k: v for k, v in metrics(s["p"][me], y[me]).items() if k != "reliability"}
+            if name == "spectator":
+                # Human held-out sets only: they are the small ones, and the ones a gate reads.
+                entry["calibration_test"] = calibration_test(s["p"][m], y[m], s["battle"][m], buckets[m],
+                                                             IN_BATTLE_BUCKETS)
         out["perspectives"][name] = entry
     out["player_vs_spectator"] = player_vs_spectator(d, p, s)
     if bring is not None:
@@ -298,14 +388,28 @@ def gates(results: dict[str, Any], baselines: dict[str, dict] | None = None) -> 
                 constant={b: (cconst.get(b) or {}).get("logloss") for b in chave},
                 delta_95ci={b: (cby[b].get("vs_constant") or {}).get("delta_95ci") for b in chave},
                 losing_buckets=closed_losing)
-        cworst = max(chave, key=lambda b: cby[b]["ece"])
-        verdict("closed_in_battle_ece", cby[cworst]["ece"] < ECE_GATE, worst_bucket=cworst,
-                ece=cby[cworst]["ece"], threshold=ECE_GATE, n=cby[cworst]["n"],
-                by_bucket={b: cby[b]["ece"] for b in chave})
+        # Not `ECE < 0.03`: on 131 battles a calibrated model cannot score that (0% of redraws at
+        # t7+), so the threshold was a statement about n. The question is asked against the
+        # calibrated model's own ECE on these rows instead, with the power to see a real fault
+        # recorded beside the verdict — a pass from a test that could not have failed is not one.
+        ct = closed.get("calibration_test")
+        if ct:
+            verdict("closed_in_battle_ece", ct["pass"], test="ece vs a calibrated model on the same rows",
+                    alpha=ct["alpha"], power=ct["power"], power_needed=POWER_NEEDED,
+                    rejected_buckets=ct["rejected_buckets"],
+                    **({"reason": ct["reason"]} if ct.get("reason") else {}),
+                    by_bucket={b: {k: r[k] for k in ("ece", "floor_median", "threshold", "p_calibrated_worse", "battles")}
+                               for b, r in ct["by_bucket"].items()})
+        else:
+            verdict("closed_in_battle_ece", None, note="no calibration test in this evaluation; re-run vgc wp eval")
 
     def group(keys: tuple[str, ...]) -> bool | None:
+        # A failure is a failure whatever else could not be decided; only with none does an
+        # undecided part make the whole undecided.
         vals = [out[k]["pass"] for k in keys if k in out]
-        return None if (not vals or None in vals) else all(vals)
+        if False in vals:
+            return False
+        return None if (not vals or None in vals) else True
 
     # One in-battle verdict per information regime, because there are separate jobs: each is what
     # the app needs to know before it draws a WP number on a battle played in that regime, while

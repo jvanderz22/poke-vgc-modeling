@@ -1064,3 +1064,54 @@ play 0.9901, so the single fit had been sharpening closed-sheet predictions ~11%
 warrant. It could not be fitted before this step, because it needs closed-sheet training rows.
 `GBTModel.predict` ignores calibration entirely, so the model the app actually serves in-battle
 does not yet receive it.
+
+## The closed-sheet ECE gate was reading its own noise
+
+Step 4 was going to decide between two readings of that 0.093: too little closed-sheet data, or a
+confidence fault a temperature per turn bucket would fix. Neither, it turns out. The measurement
+that should have come first is whether a gate of `ECE < 0.03` can be read on 131 battles at all
+(gate rule 3), and it cannot.
+
+`scripts/analysis/closed_calibration.py` redraws the outcomes from the model's own probabilities
+on the same rows, so the model is calibrated by construction, and records the ECE it gets. One
+uniform per battle is shared by all of its rows, because a battle has one winner:
+
+| bucket | battles | calibrated model's ECE (median) | calibrated model < 0.03 | observed | calibrated model scores worse |
+| --- | --- | --- | --- | --- | --- |
+| t1-2 | 131 | 0.060 | 3% | 0.028 | 98% |
+| t3-4 | 119 | 0.066 | 1% | 0.051 | 82% |
+| t5-6 | 101 | 0.075 | 0% | 0.074 | 54% |
+| t7+ | 63 | 0.118 | 0% | 0.093 | 80% |
+
+(`wp-v1c-sw-split-small`, [data](../data/analysis/closed_calibration_wp-v1c-sw-split-small.json).)
+No model could pass the gate on this set, and the observed ECE is inside what a calibrated model
+produces in every bucket. On the open-sheet held-out set, with ~7× the battles, the same floor is
+0.025–0.047: it shrinks with n as it should, and sits near 0.03 even there.
+
+Temperatures do not move it either. One per bucket, fitted on the 24,492 closed-sheet training
+rows, comes out 0.92–1.02 and leaves t7+ at 0.098; cross-fitted on the held-out set itself — not
+shippable, but the ceiling for any temperature — 0.093, which is where the single shipped
+temperature already is.
+
+So there was no measured calibration gap for closed-sheet self-play (step 4) or a GBT calibration
+path (step 6) to close, and the gate is rewritten instead. `closed_in_battle_ece` now asks whether
+the ECE is worse than a calibrated model plausibly scores on the same rows (Bonferroni over the
+four buckets, α = 0.05), and records the test's power: how often the same rule catches a model
+whose logits are 1.25× or 1.5× too sharp. A test that would miss 1.5× more than 20% of the time
+cannot pass anything, so not rejecting under it is **undecided** rather than a pass, with the
+reason written into the card. On 131 battles the power against 1.5× is 28% for the set encoder
+and 41% for the GBT — undecided, and saying why, is the honest verdict.
+
+What would decide it is battles. Resampling the held-out battles up to larger sets (the power
+depends on the predictions and the battle structure, not the observed outcomes, so this is sound
+for power and for nothing else — duplicated battles make the verdict itself reject spuriously):
+
+| held-out battles | 131 | 262 | 524 | 1,048 | 2,096 |
+| --- | --- | --- | --- | --- | --- |
+| set encoder, power vs 1.5× | 0.24 | 0.44 | 0.67 | 0.97 | 1.00 |
+| set encoder, power vs 1.25× | 0.11 | 0.11 | 0.23 | 0.42 | 0.78 |
+| GBT, power vs 1.5× | 0.39 | 0.63 | 0.91 | 1.00 | 1.00 |
+
+So ~450–750 closed-sheet held-out battles decide the gate at 1.5×, and ~2,000 at 1.25×, against
+131 today and 779 in the whole shard. That is scraping, not self-play — calibration measured on
+the bot does not carry to human games.

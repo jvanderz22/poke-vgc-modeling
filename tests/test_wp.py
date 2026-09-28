@@ -198,6 +198,66 @@ def test_vs_constant_clusters_by_battle():
     assert vs_constant(np.array([]), np.array([]), np.array([]))["n"] == 0
 
 
+def _battles(rng, nb: int, per: int, sharpness: float = 1.0):
+    """Synthetic held-out rows: `nb` battles of `per` rows, one winner each, split over the four
+    in-battle buckets. The model's logit is `sharpness` times the true one, so 1.0 is calibrated
+    and anything above it is overconfident."""
+    from vgc.wp.evaluate import IN_BATTLE_BUCKETS
+
+    battle = np.repeat(np.arange(nb), per)
+    bucket = np.tile(np.array(IN_BATTLE_BUCKETS)[np.arange(per) * 4 // per], nb)
+    truth = 1 / (1 + np.exp(-rng.normal(0, 1.2, nb * per)))
+    y = (rng.random(nb)[battle] < truth).astype(float)          # one draw per battle
+    p = 1 / (1 + np.exp(-np.log(truth / (1 - truth)) * sharpness))
+    return p, y, battle, bucket
+
+
+def test_the_calibration_test_asks_about_the_model_not_the_sample_size():
+    """ECE is biased upward on small n, so `ECE < 0.03` on 131 battles could not be passed by a
+    model calibrated by construction. The test compares against that model instead: a calibrated
+    model passes on few battles, and an overconfident one is caught once there are enough."""
+    from vgc.wp.evaluate import ECE_GATE, IN_BATTLE_BUCKETS, _ece, calibration_test
+
+    rng = np.random.default_rng(0)
+    p, y, battle, bucket = _battles(rng, 60, 8)
+    small = calibration_test(p, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400)
+    # Not rejected — where the old threshold would have failed it, because the floor is above it.
+    assert not small["rejected_buckets"]
+    assert all(r["floor_median"] > ECE_GATE for r in small["by_bucket"].values())
+    # But on 60 battles the test could not have caught much either, so that is not a pass.
+    assert small["power"]["logits_1.5x_too_sharp"] < 0.8
+    assert small["pass"] is None and "too little data" in small["reason"]
+
+    # With enough battles, not rejecting *is* a pass.
+    p, y, battle, bucket = _battles(rng, 3000, 8)
+    calibrated = calibration_test(p, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400)
+    assert calibrated["pass"] is True
+
+    p, y, battle, bucket = _battles(rng, 3000, 8, sharpness=1.6)
+    big = calibration_test(p, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400)
+    assert big["pass"] is False
+    assert big["power"]["logits_1.5x_too_sharp"] > 0.9
+
+    # The closed-sheet gate is this test's verdict, with its power carried beside it.
+    from vgc.wp.evaluate import gates
+
+    closed = lambda ct: {"human_closed": {"perspectives": {"spectator": {  # noqa: E731
+        "by_turn": {b: {"logloss": 0.6, "ece": 0.09, "n": 100} for b in IN_BATTLE_BUCKETS},
+        "calibration_test": ct}}}}
+    assert gates(closed(calibrated))["closed_in_battle_ece"]["pass"] is True
+    assert gates(closed(big))["closed_in_battle_ece"]["pass"] is False
+    undecided = gates(closed(small))["closed_in_battle_ece"]
+    assert undecided["pass"] is None and undecided["reason"] == small["reason"]
+    assert undecided["power"] == small["power"]
+    assert gates(closed(None))["closed_in_battle_ece"]["pass"] is None
+
+    # Seeded: the same rows give the same verdict twice.
+    again = calibration_test(p, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400)
+    assert again == big
+    # The fast ECE is `metrics`' ECE.
+    assert math.isclose(_ece(p, y), metrics(p, y)["ece"], abs_tol=1e-5)
+
+
 def test_metrics():
     y = np.array([1, 0, 1, 0], float)
     m = metrics(np.full(4, 0.5), y)

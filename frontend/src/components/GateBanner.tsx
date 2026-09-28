@@ -91,7 +91,17 @@ export function BattleGateBanner({ gates, verdict }: { gates: Gates | null | und
     return <div className="banner bad">No WP model is registered for this regulation.</div>;
   }
   const regime = SHEET_LABELS[verdict.sheets]?.regime ?? verdict.sheets;
-  if (verdict.pass == null) {
+  const undecided = Object.values(verdict.undecided ?? {});
+  if (verdict.pass == null && verdict.failed.length === 0 && undecided.length > 0) {
+    return (
+      <div className="banner warn">
+        <b>{gates.version}</b> cannot be verified with {regime} yet — {undecided.join("; ")}.
+        Nothing says it is wrong here, and nothing could have: read the number as a direction,
+        not a percentage.
+      </div>
+    );
+  }
+  if (verdict.pass == null && verdict.failed.length === 0) {
     return (
       <div className="banner warn">
         <b>{gates.version}</b> has not been scored with {regime}. The number below is not verified

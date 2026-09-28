@@ -199,8 +199,13 @@ def check_sheets(sheets: str) -> str:
 def regime_verdict(gates: dict[str, Any], sheets: str) -> dict[str, Any]:
     """One regime's in-battle verdict for a model, and which of its gates failed."""
     name, parts = REGIME_GATES[check_sheets(sheets)]
-    failed = [g for g in parts if isinstance(gates.get(g), dict) and gates[g].get("pass") is False]
-    return {"sheets": sheets, "gate": name, "pass": gates.get(name), "failed": failed}
+    got = {g: gates[g] for g in parts if isinstance(gates.get(g), dict)}
+    failed = [g for g, v in got.items() if v.get("pass") is False]
+    # A gate that ran and could not decide says why — "too little data to tell" is a different
+    # thing to show from "never scored", and the page needs to know which it is.
+    undecided = {g: v["reason"] for g, v in got.items() if v.get("pass") is None and v.get("reason")}
+    return {"sheets": sheets, "gate": name, "pass": gates.get(name), "failed": failed,
+            "undecided": undecided}
 
 
 def served(reg_id: str, role: str) -> str | None:

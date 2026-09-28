@@ -208,6 +208,53 @@
       "brier": 0.1862,
       "ece": 0.01448,
       "accuracy": 0.6995
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 7907,
+        "battles": 2899,
+        "ece": 0.01748,
+        "floor_median": 0.0135,
+        "threshold": 0.0256,
+        "p_calibrated_worse": 0.19
+       },
+       "t3-4": {
+        "n": 8190,
+        "battles": 2789,
+        "ece": 0.02008,
+        "floor_median": 0.0137,
+        "threshold": 0.0231,
+        "p_calibrated_worse": 0.059
+       },
+       "t5-6": {
+        "n": 6133,
+        "battles": 2412,
+        "ece": 0.02256,
+        "floor_median": 0.0147,
+        "threshold": 0.0237,
+        "p_calibrated_worse": 0.023
+       },
+       "t7+": {
+        "n": 5569,
+        "battles": 1571,
+        "ece": 0.03176,
+        "floor_median": 0.017,
+        "threshold": 0.0295,
+        "p_calibrated_worse": 0.005
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.992,
+       "logits_1.5x_too_sharp": 1.0
+      },
+      "rejected_buckets": [
+       "t7+"
+      ],
+      "pass": false
      }
     },
     "player_approx": {
@@ -660,6 +707,52 @@
       "brier": 0.19129,
       "ece": 0.06304,
       "accuracy": 0.703
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 365,
+        "battles": 131,
+        "ece": 0.02594,
+        "floor_median": 0.0595,
+        "threshold": 0.1127,
+        "p_calibrated_worse": 0.985
+       },
+       "t3-4": {
+        "n": 348,
+        "battles": 119,
+        "ece": 0.04337,
+        "floor_median": 0.0655,
+        "threshold": 0.1154,
+        "p_calibrated_worse": 0.912
+       },
+       "t5-6": {
+        "n": 241,
+        "battles": 101,
+        "ece": 0.04304,
+        "floor_median": 0.0761,
+        "threshold": 0.1224,
+        "p_calibrated_worse": 0.98
+       },
+       "t7+": {
+        "n": 283,
+        "battles": 63,
+        "ece": 0.12418,
+        "floor_median": 0.122,
+        "threshold": 0.1981,
+        "p_calibrated_worse": 0.467
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.122,
+       "logits_1.5x_too_sharp": 0.318
+      },
+      "rejected_buckets": [],
+      "pass": null,
+      "reason": "too little data to tell: on 131 battles this test catches a model 1.5x too sharp 32% of the time, against 80% needed"
      }
     },
     "player_approx": {
@@ -1103,6 +1196,52 @@
       "brier": 0.13293,
       "ece": 0.33337,
       "accuracy": 1.0
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 22,
+        "battles": 8,
+        "ece": 0.23546,
+        "floor_median": 0.2682,
+        "threshold": 0.4402,
+        "p_calibrated_worse": 0.696
+       },
+       "t3-4": {
+        "n": 24,
+        "battles": 8,
+        "ece": 0.27054,
+        "floor_median": 0.2456,
+        "threshold": 0.3977,
+        "p_calibrated_worse": 0.3
+       },
+       "t5-6": {
+        "n": 20,
+        "battles": 7,
+        "ece": 0.27003,
+        "floor_median": 0.1818,
+        "threshold": 0.3501,
+        "p_calibrated_worse": 0.14
+       },
+       "t7+": {
+        "n": 12,
+        "battles": 4,
+        "ece": 0.18866,
+        "floor_median": 0.2043,
+        "threshold": 0.5165,
+        "p_calibrated_worse": 0.992
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.12,
+       "logits_1.5x_too_sharp": 0.152
+      },
+      "rejected_buckets": [],
+      "pass": null,
+      "reason": "too little data to tell: on 8 battles this test catches a model 1.5x too sharp 15% of the time, against 80% needed"
      }
     },
     "player_approx": {
@@ -1555,6 +1694,51 @@
       "brier": 0.18322,
       "ece": 0.03206,
       "accuracy": 0.6958
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 2359,
+        "battles": 865,
+        "ece": 0.02105,
+        "floor_median": 0.0245,
+        "threshold": 0.0454,
+        "p_calibrated_worse": 0.672
+       },
+       "t3-4": {
+        "n": 2440,
+        "battles": 825,
+        "ece": 0.0236,
+        "floor_median": 0.0252,
+        "threshold": 0.0439,
+        "p_calibrated_worse": 0.623
+       },
+       "t5-6": {
+        "n": 1798,
+        "battles": 712,
+        "ece": 0.02661,
+        "floor_median": 0.0272,
+        "threshold": 0.0439,
+        "p_calibrated_worse": 0.526
+       },
+       "t7+": {
+        "n": 1572,
+        "battles": 441,
+        "ece": 0.04751,
+        "floor_median": 0.0334,
+        "threshold": 0.0555,
+        "p_calibrated_worse": 0.073
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.578,
+       "logits_1.5x_too_sharp": 0.988
+      },
+      "rejected_buckets": [],
+      "pass": true
      }
     },
     "player_approx": {
@@ -2007,6 +2191,51 @@
       "brier": 0.18749,
       "ece": 0.0245,
       "accuracy": 0.7011
+     },
+     "calibration_test": {
+      "sims": 1000,
+      "alpha": 0.05,
+      "per_bucket_level": 0.0125,
+      "by_bucket": {
+       "t1-2": {
+        "n": 5548,
+        "battles": 2034,
+        "ece": 0.02197,
+        "floor_median": 0.0166,
+        "threshold": 0.0303,
+        "p_calibrated_worse": 0.149
+       },
+       "t3-4": {
+        "n": 5750,
+        "battles": 1964,
+        "ece": 0.02297,
+        "floor_median": 0.0166,
+        "threshold": 0.0278,
+        "p_calibrated_worse": 0.08
+       },
+       "t5-6": {
+        "n": 4335,
+        "battles": 1700,
+        "ece": 0.02356,
+        "floor_median": 0.0176,
+        "threshold": 0.0298,
+        "p_calibrated_worse": 0.107
+       },
+       "t7+": {
+        "n": 3997,
+        "battles": 1130,
+        "ece": 0.02945,
+        "floor_median": 0.0204,
+        "threshold": 0.0342,
+        "p_calibrated_worse": 0.068
+       }
+      },
+      "power": {
+       "logits_1.25x_too_sharp": 0.914,
+       "logits_1.5x_too_sharp": 1.0
+      },
+      "rejected_buckets": [],
+      "pass": true
      }
     },
     "player_approx": {
@@ -3229,6 +3458,52 @@
        "brier": 0.25,
        "ece": 0.00587,
        "accuracy": 0.4941
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 7907,
+         "battles": 2899,
+         "ece": 0.01069,
+         "floor_median": 0.0068,
+         "threshold": 0.0243,
+         "p_calibrated_worse": 0.285
+        },
+        "t3-4": {
+         "n": 8190,
+         "battles": 2789,
+         "ece": 0.0072,
+         "floor_median": 0.0069,
+         "threshold": 0.0268,
+         "p_calibrated_worse": 0.479
+        },
+        "t5-6": {
+         "n": 6133,
+         "battles": 2412,
+         "ece": 0.0128,
+         "floor_median": 0.0074,
+         "threshold": 0.0267,
+         "p_calibrated_worse": 0.26
+        },
+        "t7+": {
+         "n": 5569,
+         "battles": 1571,
+         "ece": 0.0193,
+         "floor_median": 0.011,
+         "threshold": 0.0408,
+         "p_calibrated_worse": 0.231
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.032,
+        "logits_1.5x_too_sharp": 0.016
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 2899 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -3511,6 +3786,52 @@
        "brier": 0.25,
        "ece": 0.03205,
        "accuracy": 0.4679
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 365,
+         "battles": 131,
+         "ece": 0.00137,
+         "floor_median": 0.0315,
+         "threshold": 0.111,
+         "p_calibrated_worse": 1.0
+        },
+        "t3-4": {
+         "n": 348,
+         "battles": 119,
+         "ece": 0.00862,
+         "floor_median": 0.0316,
+         "threshold": 0.1149,
+         "p_calibrated_worse": 0.881
+        },
+        "t5-6": {
+         "n": 241,
+         "battles": 101,
+         "ece": 0.02697,
+         "floor_median": 0.0353,
+         "threshold": 0.139,
+         "p_calibrated_worse": 0.629
+        },
+        "t7+": {
+         "n": 283,
+         "battles": 63,
+         "ece": 0.00883,
+         "floor_median": 0.0866,
+         "threshold": 0.242,
+         "p_calibrated_worse": 0.956
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.02,
+        "logits_1.5x_too_sharp": 0.03
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 131 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -3793,6 +4114,52 @@
        "brier": 0.25,
        "ece": 0.5,
        "accuracy": 0.0
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 22,
+         "battles": 8,
+         "ece": 0.09091,
+         "floor_median": 0.1364,
+         "threshold": 0.4091,
+         "p_calibrated_worse": 0.705
+        },
+        "t3-4": {
+         "n": 24,
+         "battles": 8,
+         "ece": 0.125,
+         "floor_median": 0.125,
+         "threshold": 0.4167,
+         "p_calibrated_worse": 0.584
+        },
+        "t5-6": {
+         "n": 20,
+         "battles": 7,
+         "ece": 0.25,
+         "floor_median": 0.15,
+         "threshold": 0.45,
+         "p_calibrated_worse": 0.255
+        },
+        "t7+": {
+         "n": 12,
+         "battles": 4,
+         "ece": 0.16667,
+         "floor_median": 0.1667,
+         "threshold": 0.5,
+         "p_calibrated_worse": 0.597
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.016,
+        "logits_1.5x_too_sharp": 0.016
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 8 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -4075,6 +4442,52 @@
        "brier": 0.25,
        "ece": 0.02806,
        "accuracy": 0.4719
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 2359,
+         "battles": 865,
+         "ece": 0.0159,
+         "floor_median": 0.0117,
+         "threshold": 0.0422,
+         "p_calibrated_worse": 0.38
+        },
+        "t3-4": {
+         "n": 2440,
+         "battles": 825,
+         "ece": 0.00902,
+         "floor_median": 0.0123,
+         "threshold": 0.0426,
+         "p_calibrated_worse": 0.627
+        },
+        "t5-6": {
+         "n": 1798,
+         "battles": 712,
+         "ece": 0.02447,
+         "floor_median": 0.0133,
+         "threshold": 0.049,
+         "p_calibrated_worse": 0.221
+        },
+        "t7+": {
+         "n": 1572,
+         "battles": 441,
+         "ece": 0.01145,
+         "floor_median": 0.0219,
+         "threshold": 0.0722,
+         "p_calibrated_worse": 0.727
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.036,
+        "logits_1.5x_too_sharp": 0.066
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 865 battles this test catches a model 1.5x too sharp 7% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -4357,6 +4770,52 @@
        "brier": 0.25,
        "ece": 0.00372,
        "accuracy": 0.5037
+      },
+      "calibration_test": {
+       "sims": 1000,
+       "alpha": 0.05,
+       "per_bucket_level": 0.0125,
+       "by_bucket": {
+        "t1-2": {
+         "n": 5548,
+         "battles": 2034,
+         "ece": 0.00847,
+         "floor_median": 0.0081,
+         "threshold": 0.0281,
+         "p_calibrated_worse": 0.488
+        },
+        "t3-4": {
+         "n": 5750,
+         "battles": 1964,
+         "ece": 0.00643,
+         "floor_median": 0.0083,
+         "threshold": 0.0303,
+         "p_calibrated_worse": 0.623
+        },
+        "t5-6": {
+         "n": 4335,
+         "battles": 1700,
+         "ece": 0.00796,
+         "floor_median": 0.0091,
+         "threshold": 0.0331,
+         "p_calibrated_worse": 0.565
+        },
+        "t7+": {
+         "n": 3997,
+         "battles": 1130,
+         "ece": 0.02239,
+         "floor_median": 0.0129,
+         "threshold": 0.0469,
+         "p_calibrated_worse": 0.232
+        }
+       },
+       "power": {
+        "logits_1.25x_too_sharp": 0.036,
+        "logits_1.5x_too_sharp": 0.04
+       },
+       "rejected_buckets": [],
+       "pass": null,
+       "reason": "too little data to tell: on 2034 battles this test catches a model 1.5x too sharp 4% of the time, against 80% needed"
       }
      },
      "player_approx": {

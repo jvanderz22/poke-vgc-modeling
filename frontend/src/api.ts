@@ -301,7 +301,11 @@ export const SHEET_LABELS: Record<Sheets, { button: string; short: string; regim
 export type Mode = { sheets: Sheets; version: string | null; gate: string };
 
 /** A model's verdict in one regime, and which of that regime's gates it failed. */
-export type Verdict = { sheets: Sheets; gate: string; pass: boolean | null; failed: string[] };
+export type Verdict = {
+  sheets: Sheets; gate: string; pass: boolean | null; failed: string[];
+  /** Gates that ran and could not decide, with why — usually too few battles to tell. */
+  undecided: Record<string, string>;
+};
 
 export type LiveView = {
   id: string; name: string; sheets: Sheets;
