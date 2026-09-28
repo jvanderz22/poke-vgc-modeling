@@ -34,8 +34,9 @@ EVAL_SETS = {
     "human_ots_team": ["human/{bo3}/heldout_team.jsonl.gz"],
     "human_closed": ["human/{closed}/heldout_human.jsonl.gz"],
     "human_closed_team": ["human/{closed}/heldout_team.jsonl.gz"],
-    "selfplay_battle": ["selfplay/*/heldout_battle.jsonl.gz"],
-    "selfplay_team": ["selfplay/*/heldout_team.jsonl.gz"],
+    # `{runs}` is the self-play runs the training manifest names — see `_eval_files`.
+    "selfplay_battle": ["selfplay/{runs}/heldout_battle.jsonl.gz"],
+    "selfplay_team": ["selfplay/{runs}/heldout_team.jsonl.gz"],
 }
 
 # Self-play runs that are not the meta under open sheets, marked by the tag `vgc data generate`
@@ -56,8 +57,18 @@ EVAL_SETS = {
 SELFPLAY_EVAL_EXCLUDE = ("-spreads", "-closed")
 
 
-def _eval_files(snap: Path, patterns: list[str], bo3: str, closed: str) -> list[Path]:
-    files = sorted(f for pat in patterns for f in snap.glob(pat.format(bo3=bo3, closed=closed)))
+def _eval_files(snap: Path, patterns: list[str], bo3: str, closed: str, runs: list[str]) -> list[Path]:
+    """The held-out shards for one eval set.
+
+    Self-play held-out shards come from the runs the training manifest names, not from whatever
+    `selfplay/*` holds. The glob pooled every run on disk — three of them at snapshot VERSION 2,
+    older than any model's training rows — and it is the durable half of PLAN-v2 Phase 8 step 5:
+    an eval set that names its shards the way the training manifest does. The tag exclusion stays
+    as a second guard.
+    """
+    files = sorted({f for pat in patterns
+                    for run in (runs if "{runs}" in pat else [""])
+                    for f in snap.glob(pat.format(bo3=bo3, closed=closed, runs=run))})
     return [f for f in files
             if f.parent.parent.name != "selfplay"
             or not any(tag in f.parent.name for tag in SELFPLAY_EVAL_EXCLUDE)]
@@ -142,8 +153,10 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
         counts[split] = int(rows.sum())
     snap = paths.ROOT / "data" / "snapshots" / reg.id
     bo3 = reg.showdown_format + "bo3"
+    runs = sorted({Path(f["path"]).parent.name for f in manifest["files"]
+                   if Path(f["path"]).parent.parent.name == "selfplay"})
     for set_name, patterns in EVAL_SETS.items():
-        files = _eval_files(snap, patterns, bo3, reg.showdown_format)
+        files = _eval_files(snap, patterns, bo3, reg.showdown_format, runs)
         if files:
             d = featurize_files(files, reg, workers)
             np.savez_compressed(out / f"eval_{set_name}.npz", **d)
