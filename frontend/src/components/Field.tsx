@@ -1,4 +1,4 @@
-import type { LiveMon, LiveView, SpeedRead } from "../api";
+import { sideNames, type LiveMon, type LiveView, type SpeedRead } from "../api";
 
 const STAT_ORDER = ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"];
 
@@ -54,9 +54,9 @@ export function ActiveCard({ mon, own, onHp, onPick, selected }: {
   );
 }
 
-function Arrow({ read }: { read: SpeedRead }) {
-  const text = read.verdict === "faster" ? "you move first"
-    : read.verdict === "slower" ? "they move first"
+function Arrow({ read, watching }: { read: SpeedRead; watching: boolean }) {
+  const text = read.verdict === "faster" ? (watching ? `${read.mine} first` : "you move first")
+    : read.verdict === "slower" ? (watching ? `${read.theirs} first` : "they move first")
     : read.verdict === "undecided" ? "not decided yet" : "unknown";
   return (
     <span className={`speed-read ${read.verdict}`} title={
@@ -91,7 +91,7 @@ export function Field({ view, onHp, onPick, selected }: {
   return (
     <div className="panel field-panel">
       <div className="field-head">
-        <span className="dim tiny">Them</span>
+        <span className="dim tiny">{sideNames(view.perspective).p2}</span>
         {field.length > 0 && <span className="chips">{field.map((f) => <span key={f} className="chip field">{f}</span>)}</span>}
       </div>
       <div className="field-row">
@@ -104,7 +104,7 @@ export function Field({ view, onHp, onPick, selected }: {
       <div className="speed-strip">
         {view.speed.length === 0
           ? <span className="tiny dim">Speed reads once both sides are on the field.</span>
-          : view.speed.map((r, i) => <Arrow key={i} read={r} />)}
+          : view.speed.map((r, i) => <Arrow key={i} read={r} watching={view.perspective === "spectator"} />)}
       </div>
 
       <div className="field-row">
@@ -113,7 +113,7 @@ export function Field({ view, onHp, onPick, selected }: {
                         selected={selected?.side === "p1" && selected.slot === i} />
           : <div key={i} className="active-card empty">empty</div>)}
       </div>
-      <div className="field-head"><span className="dim tiny">You</span></div>
+      <div className="field-head"><span className="dim tiny">{sideNames(view.perspective).p1}</span></div>
     </div>
   );
 }

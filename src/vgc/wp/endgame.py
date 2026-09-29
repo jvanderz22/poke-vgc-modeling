@@ -71,6 +71,8 @@ def reason(reg: Regulation, state) -> str | None:
             return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
         if m.status and m.status not in STATUSES:
             return f"{m.species} is {m.status}, whose turn counter is not shown"
+    if not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
+        return "neither side's set is known"
     return None
 
 
@@ -89,18 +91,19 @@ def _mega(reg: Regulation, state, sid: str, m: Any, item: str | None, notes: lis
     return None
 
 
-def ours(reg: Regulation, battle, notes: list[str]) -> dict[str, Any]:
+def own_set(reg: Regulation, battle, sid: str, notes: list[str]) -> dict[str, Any]:
     """Your Pokémon as you built it. Its Stat Points in the order they were written, zeros left
     out, which is how the benchmark writes them — the text is part of the cache key."""
+    from vgc.battle.entry import side_entries
+
     state = battle.rp.state
-    me = state.perspective
-    m = _left(state, me)[0]
-    entry = next(e for e in battle.setup["mine"] if e["species"] == m.species)
+    m = _left(state, sid)[0]
+    entry = next(e for e in side_entries(battle.setup, sid) if e["species"] == m.species)
     s = {"species": entry["species"], "ability": entry["ability"], "nature": entry.get("nature"),
          "moves": list(entry["moves"]), "sp": {k: v for k, v in (entry.get("sp") or {}).items() if v}}
     if entry.get("item"):
         s["item"] = entry["item"]
-    s["mega"] = _mega(reg, state, me, m, entry.get("item"), notes)
+    s["mega"] = _mega(reg, state, sid, m, entry.get("item"), notes)
     return s
 
 
@@ -112,73 +115,100 @@ def _named(reg: Regulation, sheet: Any, species: str) -> dict[str, Any]:
             "moves": [(reg.dex.get_move(x) or {}).get("name", x) for x in sheet.moves]}
 
 
-def _with_sheet(battle, species: str, s: dict[str, Any]):
-    """The battle replayed as if their sheet had shown `s` for `species`."""
-    from vgc.battle.entry import replay
+def _with_sheet(battle, sid: str, species: str, s: dict[str, Any]):
+    """The battle replayed as if `sid`'s sheet had shown `s` for `species`."""
+    from vgc.battle.entry import replay, side_entries
 
     setup = copy.deepcopy(battle.setup)
-    for i, e in enumerate(setup["theirs"]):
+    entries = side_entries(setup, sid)
+    for i, e in enumerate(entries):
         if e["species"] == species:
-            setup["theirs"][i] = {"species": species, **{k: s.get(k) for k in ("item", "ability", "moves", "nature")}}
+            entries[i] = {"species": species, **{k: s.get(k) for k in ("item", "ability", "moves", "nature")}}
     return replay(battle.reg, setup, battle.journal)
 
 
-def feasible(reg: Regulation, state, species: str) -> tuple[list[int], bool]:
-    """Their Speed SP that this battle's turn order allows, and whether it allowed none (in which
-    case every value is returned, as the channel itself does)."""
+_PRIORS: dict[tuple, list[float]] = {}
+
+
+def _prior_mass(reg: Regulation, species: str, nature: str | None, moves: Any) -> list[float]:
+    """`speed_prior`'s mass, remembered: a closed sheet asks it for every Pokémon under every
+    candidate set, and it depends on only these."""
+    from vgc.belief.prior import speed_prior
+
+    key = (reg.id, species, nature, tuple(sorted(to_id(x) for x in moves or [])))
+    if key not in _PRIORS:
+        _PRIORS[key] = speed_prior(reg, species, nature, list(key[3])).mass
+    return _PRIORS[key]
+
+
+def _prior(reg: Regulation, s: dict[str, Any]) -> list[float]:
+    return _prior_mass(reg, s["species"], s.get("nature"), s.get("moves"))
+
+
+def speed_joint(reg: Regulation, state, sets: dict[str, dict[str, Any]]):
+    """The joint weight on the two Pokémon's Speed investments (`belief.speed.joint`), with the sets
+    being solved. Everyone else's prior is read off the state: its nature, and its moves as far as
+    they are known. Your own side is known exactly."""
     from vgc.belief import speed
 
     me = state.perspective
-    them = "p2" if me == "p1" else "p1"
-    known = {(me, m.species): m.sp["spe"] for m in state.sides[me].mons if m.sp}
-    b = speed.infer(reg, state, known).get((them, species))
-    if b is None:
-        return list(range(reg.sp_per_stat_cap + 1)), False
-    return list(b.feasible), b.contradicted
+    keys = tuple((sid, _left(state, sid)[0].species) for sid in ("p1", "p2"))
+    known = ({(me, m.species): m.sp["spe"] for m in state.sides[me].mons if m.sp}
+             if me in state.sides else {})
+    priors = {(sid, m.species): _prior_mass(reg, m.species, m.nature, m.moves or m.moves_used)
+              for sid, side in state.sides.items() for m in side.mons if speed.base_speed(reg, m.species)}
+    priors.update({k: _prior(reg, sets[k[0]]) for k in keys})
+    return speed.joint(reg, state, keys, priors, known)
 
 
-def candidates(reg: Regulation, battle, notes: list[str], top: int = TOP_SETS
+def candidates(reg: Regulation, battle, sid: str, notes: list[str], top: int = TOP_SETS
                ) -> tuple[list[dict[str, Any]], float]:
-    """Their sets to solve, each `{set, weight, feasible}`, and the posterior mass left unsolved.
+    """`sid`'s sets to solve, each `{set, weight}`, and the weight left unsolved.
 
-    An open sheet is one set. A closed sheet is the set belief (`belief.sets.given`), reweighted by
-    the turn-order likelihood under each set's item, ability and nature, and cut to the `top`."""
+    Yours is the set you built; an open sheet is the sheet. A closed sheet is the set belief
+    (`belief.sets.given`), reweighted by how likely this battle's turn order is under each set's
+    item, ability and nature — the joint Speed weight's total — and cut to the `top`."""
+    from vgc.battle.entry import side_entries
     from vgc.belief import sets as set_belief
-    from vgc.belief.prior import speed_prior
 
     state = battle.rp.state
-    them = "p2" if state.perspective == "p1" else "p1"
-    m = _left(state, them)[0]
-    if state.sides[them].sheet:
-        entry = next(e for e in battle.setup["theirs"] if e["species"] == m.species)
+    m = _left(state, sid)[0]
+    if sid == state.perspective:
+        return [{"set": own_set(reg, battle, sid, notes), "weight": 1.0, "known": True}], 0.0
+    if state.sides[sid].sheet:
+        entry = next(e for e in side_entries(battle.setup, sid) if e["species"] == m.species)
         s = {"species": entry["species"], **{k: entry.get(k) for k in ("item", "ability", "nature", "moves")}}
-        ok, contradicted = feasible(reg, state, m.species)
-        if contradicted:
-            notes.append(f"no Speed investment fits the turn order logged for {m.species}, "
-                         "so all of them are counted")
-        return [{"set": s, "weight": 1.0, "feasible": ok}], 0.0
+        return [{"set": s, "weight": 1.0}], 0.0
 
+    other = "p2" if sid == "p1" else "p1"
+    if other != state.perspective:
+        return [], 1.0                     # two closed sheets: not built (`reason` says so)
+    mine = own_set(reg, battle, other, [])
     belief = set_belief.given(reg, m)
     if not belief.sheets:
         notes.append(f"no set anybody has brought fits {m.species}")
         return [], 1.0
-    groups: dict[tuple, tuple[list[int], bool]] = {}
+    replays: dict[tuple, Any] = {}
+    likes: dict[tuple, float] = {}
     scored = []
     for sheet in belief.sheets:
         s = _named(reg, sheet, m.species)
         g = (sheet.item, sheet.ability, sheet.nature)
-        if g not in groups:
-            groups[g] = feasible(reg, _with_sheet(battle, m.species, s).state, m.species)
-        ok, contradicted = groups[g]
-        prior = speed_prior(reg, m.species, sheet.nature, list(sheet.moves))
-        like = 0.0 if contradicted else sum(prior.mass[v] for v in ok)
-        scored.append({"set": s, "weight": sheet.count * like, "feasible": ok, "count": sheet.count})
+        if g not in replays:
+            replays[g] = _with_sheet(battle, sid, m.species, s).state
+        # The likelihood depends on the set through its item, ability and nature (the replay) and
+        # its Speed prior, which its moves change only by which stats are dead.
+        lk = g + (tuple(_prior(reg, s)),)
+        if lk not in likes:
+            js = speed_joint(reg, replays[g], {sid: s, other: mine})
+            likes[lk] = 0.0 if js.contradicted else js.total
+        like = likes[lk]
+        scored.append({"set": s, "weight": sheet.count * like, "count": sheet.count})
     total = sum(c["weight"] for c in scored)
     if total <= 0:
         notes.append(f"no set fits the turn order logged for {m.species}; weighted by use alone")
         for c in scored:
             c["weight"] = float(c["count"])
-            c["feasible"] = list(range(reg.sp_per_stat_cap + 1))
         total = sum(c["weight"] for c in scored)
     scored.sort(key=lambda c: -c["weight"])
     for c in scored:
@@ -280,44 +310,54 @@ def facts(reg: Regulation, battle, sets: dict[str, dict[str, Any]]) -> dict[str,
 
 def plan(reg: Regulation, battle, search: dict[str, Any], sets: list[dict[str, Any]] | None = None
          ) -> dict[str, Any]:
-    """Every position one answer needs — per candidate set of theirs, per Speed class — with its
-    weight, or why there is none. `sets` pins their candidates (`{set, weight}`), which is how the
-    benchmark's closed-sheet variants are checked: the truth there is a known set."""
-    from vgc.belief.prior import speed_prior
+    """Every position one answer needs — per pair of sets being solved, per Speed class — with its
+    weight, or why there is none. `sets` pins the opposing side's candidates (`{set, weight}`),
+    which is how the benchmark's closed-sheet variants are checked: the truth there is a known set.
+
+    From a player's seat one side is known and the other is a sheet or a belief. From a
+    spectator's, both are sheets and both Speed investments are integrated (`speed_joint`)."""
+    from vgc.wp.solver import compose, partition_joint
 
     state = battle.rp.state
     why = reason(reg, state)
     if why:
         return {"eligible": False, "reason": why}
-    me = state.perspective
-    them = "p2" if me == "p1" else "p1"
     notes: list[str] = []
-    mine = ours(reg, battle, notes)
-    their_mon = _left(state, them)[0]
-    if sets is None:
-        cands, unsolved = candidates(reg, battle, notes)
-    else:
-        cands, unsolved = [], 0.0
-        for c in sets:
-            ok, _ = feasible(reg, _with_sheet(battle, their_mon.species, c["set"]).state, their_mon.species)
-            cands.append({"set": c["set"], "weight": c["weight"], "feasible": ok})
+    cands: dict[str, list[dict[str, Any]]] = {}
+    unsolved = 0.0
+    for sid in ("p1", "p2"):
+        if sets is not None and sid != state.perspective:
+            cands[sid] = [dict(c) for c in sets]
+        else:
+            cands[sid], u = candidates(reg, battle, sid, notes)
+            unsolved = max(unsolved, u)
     jobs = []
-    for i, c in enumerate(cands):
-        theirs = dict(c["set"])
-        theirs["mega"] = _mega(reg, state, them, their_mon, theirs.get("item"), notes)
-        both = {me: mine, them: theirs}
-        f = facts(reg, battle, both)
-        prior = speed_prior(reg, theirs["species"], theirs.get("nature"), [to_id(x) for x in theirs["moves"]])
-        allowed = set(c["feasible"])
-        mass = [w if spe in allowed else 0.0 for spe, w in enumerate(prior.mass)]
-        for name, k in solver.partition(reg, mine, theirs, mass, f, sides=(me, them)).items():
-            their_sp = solver.spread(reg, theirs, k["spe"])
-            sides = {me: mine, them: {**theirs, "sp": their_sp}}
-            jobs.append({"set": i, "class": name, "weight": c["weight"] * k["weight"], "spe": k["spe"],
-                         "position": solver.compose(reg, sides["p1"], sides["p2"], f, search)})
-    return {"eligible": bool(jobs), "reason": None if jobs else "no set of theirs to solve",
-            "sets": [{"set": c["set"], "weight": round(c["weight"], 4)} for c in cands],
-            "unsolved": round(unsolved, 4), "jobs": jobs, "notes": notes}
+    for c1 in cands["p1"]:
+        for c2 in cands["p2"]:
+            pair = {"p1": dict(c1["set"]), "p2": dict(c2["set"])}
+            view = state
+            for sid, c in (("p1", c1), ("p2", c2)):
+                m = _left(state, sid)[0]
+                pair[sid]["mega"] = pair[sid].get("mega") or _mega(reg, state, sid, m, pair[sid].get("item"), notes)
+                if not c.get("known") and not state.sides[sid].sheet:
+                    # A set from the belief, or pinned: the turn order is read with it on the sheet,
+                    # where an unseen Scarf is invisible to the Speed channel.
+                    view = _with_sheet(battle, sid, m.species, pair[sid]).state
+            js = speed_joint(reg, view, pair)
+            if js.contradicted:
+                notes.append("no pair of Speed investments fits the turn order logged, so all of them "
+                             "are counted")
+            f = facts(reg, battle, pair)
+            fixed = tuple(pair[sid]["sp"] if c.get("known") else None for sid, c in (("p1", c1), ("p2", c2)))
+            for name, k in partition_joint(reg, (pair["p1"], pair["p2"]), js, f, fixed).items():
+                sides = {sid: {**pair[sid], "sp": sp} for sid, sp in zip(("p1", "p2"), k["sp"])}
+                jobs.append({"sets": (cands["p1"].index(c1), cands["p2"].index(c2)), "class": name,
+                             "weight": c1["weight"] * c2["weight"] * k["weight"], "spe": k["spe"],
+                             "position": compose(reg, sides["p1"], sides["p2"], f, search)})
+    return {"eligible": bool(jobs), "reason": None if jobs else "no set to solve",
+            "sets": {sid: [{"set": {k: v for k, v in c["set"].items() if k not in ("sp", "mega")},
+                            "weight": round(c["weight"], 4)} for c in cs] for sid, cs in cands.items()},
+            "unsolved": round(unsolved, 4), "jobs": jobs, "notes": list(dict.fromkeys(notes))}
 
 
 def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) -> dict[str, Any] | None:

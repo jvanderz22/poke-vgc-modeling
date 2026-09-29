@@ -46,3 +46,20 @@ def test_a_new_position_cancels_the_old_one(reg):
     solving.request(reg, "f2a", _battle(reg, "F2", "A"))
     assert running.cancelled and solving._current is not running
     solving._current.cancel()
+
+
+@pytest.mark.showdown
+def test_cancelling_kills_the_search(reg):
+    """A deleted battle's search, or all of them at shutdown: node processes do not end with the
+    server that started them."""
+    solving.request(reg, "f6a", _battle(reg, "F6", "A"))
+    running = solving._current
+    time.sleep(1)
+    solving.cancel("someone-else")
+    assert solving._current is running
+    solving.cancel("f6a")
+    assert running.cancelled and solving._current is None
+    deadline = time.time() + 10
+    while running._procs and time.time() < deadline:
+        time.sleep(0.2)
+    assert not running._procs

@@ -76,8 +76,8 @@ def listing(reg_id: str, limit: int = 50) -> list[dict[str, Any]]:
         out.append({"id": blob["id"], "name": blob.get("name", ""),
                     "created": blob.get("created", ""), "updated": blob.get("updated", ""),
                     "turn": blob.get("turn", 0), "entries": len(blob.get("journal", [])),
-                    "theirs": [m["species"] for m in blob["setup"]["theirs"]],
-                    "sheets": sheets(blob), "result": blob.get("result")})
+                    "theirs": [m["species"] for m in entry.side_entries(blob["setup"], _other(blob["setup"]))],
+                    "sheets": sheets(blob), "perspective": perspective(blob), "result": blob.get("result")})
     out.sort(key=lambda b: b["updated"], reverse=True)
     return out[:limit]
 
@@ -99,13 +99,30 @@ def sheets(blob: dict[str, Any]) -> str:
     """
     from vgc.wp.models import CLOSED, OPEN
 
-    return OPEN if any(m.get("ability") is not None for m in blob["setup"]["theirs"]) else CLOSED
+    theirs = entry.side_entries(blob["setup"], _other(blob["setup"]))
+    return OPEN if any(m.get("ability") is not None for m in theirs) else CLOSED
+
+
+def perspective(blob: dict[str, Any]) -> str:
+    """Whose seat the battle is seen from: `p1` for your own game, `spectator` for someone else's
+    watched with both sheets open (observer mode, PLAN-v3 step 4)."""
+    return blob["setup"].get("perspective", "p1")
+
+
+def _other(setup: dict[str, Any]) -> str:
+    """The side a battle's regime is read off: the opponent, or player 2 when watching."""
+    return "p1" if setup.get("perspective", "p1") == "p2" else "p2"
 
 
 def create(reg: Regulation, name: str, my_team: str, theirs: list[dict[str, Any]],
-           version: str | None) -> dict[str, Any]:
+           version: str | None, p1_sheet: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """A battle of yours, or with `p1_sheet`, someone else's: two open sheets watched from outside,
+    neither side's Stat Points known."""
     now = dt.datetime.now().isoformat(timespec="seconds")
-    setup = {"perspective": "p1", "mine": entry.from_team(reg, my_team), "theirs": theirs}
+    if p1_sheet is not None:
+        setup = {"perspective": "spectator", "p1": p1_sheet, "p2": theirs}
+    else:
+        setup = {"perspective": "p1", "mine": entry.from_team(reg, my_team), "theirs": theirs}
     return save(reg.id, {"id": uuid.uuid4().hex[:12], "name": name or "Battle",
                          "regulation": reg.id, "version": version, "created": now,
                          "my_team": my_team, "setup": setup, "journal": [], "turn": 0,
@@ -228,11 +245,12 @@ def beliefs(reg: Regulation, state) -> tuple[dict, list[dict[str, Any]]]:
     from vgc.belief import speed as speed_channel
 
     mine = state.perspective
-    known = {(mine, m.species): m.sp["spe"] for m in state.sides[mine].mons if m.sp}
+    known = ({(mine, m.species): m.sp["spe"] for m in state.sides[mine].mons if m.sp}
+             if mine in state.sides else {})
     speeds = speed_channel.infer(reg, state, known)
-    them = "p2" if mine == "p1" else "p1"
     out, contradictions = {}, []
-    for m in state.sides[them].mons:
+    # Everyone whose spread is hidden: the opponent's six, or all twelve when watching.
+    for them, m in [(sid, m) for sid in ("p1", "p2") if sid != mine for m in state.sides[sid].mons]:
         key = (them, m.species)
         out[key] = sp_belief.combine(reg, key, m.nature, m.moves or m.moves_used, speeds.get(key))
         # A contradiction is not a discovery about the opponent — they did have *some* spread — so
@@ -274,8 +292,8 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
     from vgc.belief import sets as set_belief
 
     out = json.loads(json.dumps(obs))
-    them = "p2" if obs["perspective"] == "p1" else "p1"
-    for m in out["sides"][them]["mons"]:
+    hidden = [sid for sid in ("p1", "p2") if sid != obs["perspective"]]
+    for them, m in [(sid, m) for sid in hidden for m in out["sides"][sid]["mons"]]:
         mon = next((x for x in state.sides[them].mons if x.species == m["species"]), None)
         if mon is None:
             continue
@@ -295,7 +313,8 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
         note.setdefault(m["species"], {"sets": len(sb.sheets), "off_meta": sb.off_meta,
                                        "concentration": round(sb.concentration, 3),
                                        "evidence": sb.evidence})
-    out["sides"][them]["sheet"] = True
+    for sid in hidden:
+        out["sides"][sid]["sheet"] = True
     return out
 
 
@@ -419,7 +438,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
     belief, contradictions = beliefs(reg, state)
     out: dict[str, Any] = {
-        "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob), "turn": state.turn,
+        "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob),
+        "perspective": perspective(blob), "turn": state.turn,
         "started": state.started, "ended": state.ended, "winner": state.winner,
         "entries": len(battle.journal), "journal": battle.journal,
         "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
@@ -433,7 +453,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "derived": battle.rp.derived,
         "errors": battle.rp.errors,
         "speed": speed_read(reg, state, belief),
-        "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] == theirs],
+        "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] != mine],
         "contradictions": contradictions,
         # Whether the engine can be asked about this position (`/solve`), and if not, why.
         "endgame": {"eligible": (why := endgame.reason(reg, state)) is None, "reason": why},

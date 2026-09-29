@@ -78,8 +78,8 @@ def test_a_closed_sheet_weighs_its_sets_by_the_turn_order(reg, spec):
     do. With no evidence (C) the likeliest set is Life Orb."""
     blind = endgame.plan(reg, _battle(reg, spec, "F1", "C"), solver.SEARCH)
     seen = endgame.plan(reg, _battle(reg, spec, "F1", "D"), solver.SEARCH)
-    assert blind["sets"][0]["set"]["item"] == "Life Orb"
-    assert {s["set"]["item"] for s in seen["sets"]} == {"Choice Scarf"}
+    assert blind["sets"]["p2"][0]["set"]["item"] == "Life Orb"
+    assert {s["set"]["item"] for s in seen["sets"]["p2"]} == {"Choice Scarf"}
     assert 0 < seen["unsolved"] < 1 and abs(sum(j["weight"] for j in seen["jobs"]) + seen["unsolved"] - 1) < 1e-3
 
 
@@ -110,3 +110,54 @@ def test_position_speed_ties_where_the_engine_ties(reg, spec):
                        "p2": solver.position_speed(reg, theirs, sp, setup, "p2")}, (extra, out)
         if extra:
             assert out["active"][1][0]["status"] == "par" and "tailwind" in out["sides"][0]
+
+
+# --- observer mode: both spreads hidden (PLAN-v3 step 4) ------------------------------------------
+
+def spectate(setup, journal):
+    """A benchmark battle as someone watching it would enter it: both sheets, neither spread, and
+    HP as a percentage on both sides."""
+    sheet = lambda m: {k: m.get(k) for k in ("species", "item", "ability", "moves", "nature")}  # noqa: E731
+    maxhp = {m["species"]: m["stats"]["hp"] for m in setup["mine"]}
+    slots, out = {}, []
+    for e in journal:
+        if e.get("kind") in ("lead", "switch") and e["side"] == "p1":
+            slots[e["slot"]] = e["species"]
+        if e.get("kind") == "damage" and e["side"] == "p1" and e.get("hp") is not None:
+            e = {k: v for k, v in e.items() if k != "hp"} | {"pct": round(100 * e["hp"] / maxhp[slots[e["slot"]]])}
+        out.append(e)
+    return {"perspective": "spectator", "p1": [sheet(m) for m in setup["mine"]],
+            "p2": [sheet(m) for m in setup["theirs"]]}, out
+
+
+def _watched(reg, spec, fid, vid):
+    return Battle(reg, *spectate(*benchmark.build(reg, spec, fid, vid)))
+
+
+def test_watching_integrates_both_speeds(reg, spec):
+    """F1-B from the stands: the Mega Charizard's Speed is as hidden as the Basculegion's, so both
+    are averaged, and a Scarf Basculegion is faster for most pairs."""
+    battle = _watched(reg, spec, "F1", "B")
+    assert not battle.rp.errors and battle.rp.state.perspective == "spectator"
+    got = endgame.plan(reg, battle, solver.SEARCH)
+    weights = {j["class"]: j["weight"] for j in got["jobs"]}
+    assert abs(sum(weights.values()) - 1) < 1e-9 and weights["faster"] > 0.9
+    assert {j["position"]["setup"]["hp"]["p1"] for j in got["jobs"]} == {100}
+    assert len({j["position"]["p1"] for j in got["jobs"]}) > 1          # our spread varies too
+
+
+def test_an_ordering_between_the_two_rules_out_pairs(reg, spec):
+    """F8b-B: their Basculegion moved before our Gholdengo. With both hidden, no pair of Speed
+    investments in which the Gholdengo is faster keeps any weight."""
+    from vgc.belief import speed
+
+    battle = _watched(reg, spec, "F8b", "B")
+    state = battle.rp.state
+    sets = {sid: endgame.candidates(reg, battle, sid, [])[0][0]["set"] for sid in ("p1", "p2")}
+    js = endgame.speed_joint(reg, state, sets)
+    assert js.used and not js.contradicted
+    stat = lambda sid, sp: speed.speed_stat(reg, sets[sid]["species"], sets[sid]["nature"], sp)  # noqa: E731
+    for i, a in enumerate(js.values[0]):
+        for j, b in enumerate(js.values[1]):
+            if js.mass[i][j] > 0:
+                assert stat("p2", b) >= stat("p1", a)

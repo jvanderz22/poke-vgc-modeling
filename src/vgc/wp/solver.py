@@ -306,6 +306,41 @@ def partition(reg: Regulation, ours: dict[str, Any], theirs: dict[str, Any], mas
                 "ours": mine} for k, c in classes.items()}
 
 
+def partition_joint(reg: Regulation, sets: tuple[dict[str, Any], dict[str, Any]], js: Any,
+                    facts: dict[str, Any], fixed: tuple[dict | None, dict | None] = (None, None),
+                    sides: tuple[str, str] = ("p1", "p2")) -> dict[str, dict[str, Any]]:
+    """`partition` with both spreads unknown: every pair of Speed investments in `js`
+    (`belief.speed.JointSpeed`), grouped by the move order it gives in this position — the second
+    side faster than the first, tied, slower — each represented by its heaviest pair. A side
+    whose spread is known passes it in `fixed`, and `js` then has one value for it.
+
+    Still at most three solves a position: what the spreads do to a 1v1 is decide who moves first,
+    and the other stats they imply are `spread`'s assumption either way."""
+    def speeds(x: int) -> list[tuple[dict[str, int], int]]:
+        out = []
+        for spe in js.values[x]:
+            sp = fixed[x] if fixed[x] is not None else spread(reg, sets[x], spe)
+            out.append((sp, position_speed(reg, sets[x], sp, facts, sides[x])))
+        return out
+
+    a, b = speeds(0), speeds(1)
+    classes: dict[str, dict[str, Any]] = {}
+    for i, (_, sa) in enumerate(a):
+        for j, (_, sb) in enumerate(b):
+            m = js.mass[i][j]
+            if m <= 0:
+                continue
+            name = "faster" if sb > sa else "tied" if sb == sa else "slower"
+            c = classes.setdefault(name, {"mass": 0.0, "cell": (i, j), "top": 0.0})
+            c["mass"] += m
+            if m > c["top"]:
+                c["cell"], c["top"] = (i, j), m
+    total = sum(c["mass"] for c in classes.values())
+    return {k: {"weight": c["mass"] / total,
+                "spe": (js.values[0][c["cell"][0]], js.values[1][c["cell"][1]]),
+                "sp": (a[c["cell"][0]][0], b[c["cell"][1]][0]),
+                "speed": (a[c["cell"][0]][1], b[c["cell"][1]][1])} for k, c in classes.items()}
+
 def plan(reg: Regulation, spec: dict, search: dict[str, Any], only: list[str] | None = None
          ) -> tuple[list[tuple[str, str, dict[str, Any]]], dict[str, dict[str, dict[str, Any]]]]:
     """The solver inputs a solve needs — one per variant and Speed class — without running any."""

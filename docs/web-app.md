@@ -221,6 +221,15 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes) |
 
+### Watching someone else's game
+
+The third mode in the new-battle form, **Watching (both open)**, is for a game you are not in: on
+stream, at an event, or a replay. Paste both players' open sheets instead of choosing a team. Both
+sides are then entered the way theirs always were: HP as a percentage, Stat Points unknown. The
+number is player 1's chance, and the page names the sides P1 and P2. It runs the open-sheet model,
+and that model's gate is scored from exactly this seat (spectator rows). The Speed read and the
+engine's answer in a 1v1 average over both players' hidden spreads.
+
 ### The engine's answer in a 1v1
 
 When each side has one Pokémon left, the Battle page puts a second number under the model's: the

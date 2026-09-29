@@ -499,3 +499,95 @@ def orderings(reg: Regulation, obs: Any) -> list[list[list[str]]]:
         elif sign < 0 and tf >= ts:
             out.add((key(second), key(first)))
     return [[list(a), list(b)] for a, b in sorted(out)]
+
+
+# --- two unknowns at once ------------------------------------------------------------------------
+
+@dataclass
+class JointSpeed:
+    """The weight on every pair of Speed investments for two Pokémon, given the battle's turn order.
+
+    `mass[i][j]` is for `values[0][i]` and `values[1][j]`. A side whose spread is known has one value
+    with all the weight. `contradicted`: the orderings allow no pair, so the priors are returned as
+    they were and the caller should say so, as `SpeedBelief` does.
+    """
+
+    keys: tuple[tuple[str, str], tuple[str, str]]
+    values: tuple[list[int], list[int]]
+    mass: list[list[float]]
+    used: int = 0
+    contradicted: bool = False
+
+    @property
+    def total(self) -> float:
+        return sum(map(sum, self.mass))
+
+
+def joint(reg: Regulation, obs: Any, keys: tuple[tuple[str, str], tuple[str, str]],
+          priors: dict[tuple[str, str], list[float]], known: dict[tuple[str, str], int] | None = None
+          ) -> JointSpeed:
+    """The two Pokémon of a 1v1, their Speed weighed jointly against everything this battle showed.
+
+    `infer` narrows one unknown against a known Speed, and a pair of two unknowns is deferred. From
+    the outside of an open-sheet game, which is how every public replay sees one, that is every
+    pair. So the two Pokémon that matter are kept jointly:
+
+      the two priors (`priors`, by key)  multiplied, unless a key is in `known`
+      an ordering between the two        an indicator on the pair
+      an ordering with any other one     a likelihood: the prior mass of that Pokémon's Speed
+                                         investments under which the order could have happened.
+                                         Its prior comes from `priors` too, or it is known, or it
+                                         is flat when neither is given
+      an ordering between two others     not used
+
+    With one side known this is `infer` restricted to what the other could be, which is how the
+    player view reproduces the benchmark.
+    """
+    cap = reg.sp_per_stat_cap
+    known = known or {}
+    natures = {(sid, m.species): m.nature for sid, side in obs.sides.items() for m in side.mons}
+
+    def support(key: tuple[str, str]) -> tuple[list[int], list[float]]:
+        if key in known:
+            return [known[key]], [1.0]
+        p = priors.get(key) or [1.0] * (cap + 1)
+        return list(range(len(p))), list(p)
+
+    def band(ev: Any, key: tuple[str, str], sp: int) -> tuple[float, float] | None:
+        b = speed_band(reg, ev.forme or ev.species, natures.get(key), sp)
+        return None if b is None else (effective_speed(b[0], ev), effective_speed(b[1], ev))
+
+    (va, pa), (vb, pb) = support(keys[0]), support(keys[1])
+    fa, fb = [1.0] * len(va), [1.0] * len(vb)
+    both = [[1.0] * len(vb) for _ in va]
+    used = 0
+    for first, second, sign in pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", [])):
+        k1, k2 = (first.side, first.species), (second.side, second.species)
+        if base_speed(reg, first.forme or first.species) is None or base_speed(reg, second.forme or second.species) is None:
+            continue
+        if {k1, k2} == set(keys):
+            ia = 0 if k1 == keys[0] else 1
+            for i, a in enumerate(va):
+                for j, b in enumerate(vb):
+                    mine = (a, b) if ia == 0 else (b, a)
+                    if not _ordered(band(first, k1, mine[0]), band(second, k2, mine[1]), sign):
+                        both[i][j] = 0.0
+            used += 1
+            continue
+        for x, (vals, f) in enumerate(((va, fa), (vb, fb))):
+            if keys[x] not in (k1, k2):
+                continue
+            other = k2 if k1 == keys[x] else k1
+            ov, op = support(other)
+            total = sum(op) or 1.0
+            for i, s in enumerate(vals):
+                ok = sum(w for o, w in zip(ov, op)
+                         if _ordered(band(first, k1, s if k1 == keys[x] else o),
+                                     band(second, k2, o if k1 == keys[x] else s), sign))
+                f[i] *= ok / total
+            used += 1
+    mass = [[pa[i] * fa[i] * pb[j] * fb[j] * both[i][j] for j in range(len(vb))] for i in range(len(va))]
+    if not sum(map(sum, mass)):
+        return JointSpeed(keys, (va, vb), [[pa[i] * pb[j] for j in range(len(vb))] for i in range(len(va))],
+                          used, contradicted=True)
+    return JointSpeed(keys, (va, vb), mass, used)

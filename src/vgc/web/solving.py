@@ -35,8 +35,8 @@ WORKERS = max(1, min(6, (os.cpu_count() or 2) // 2))
 ASSUMPTIONS = [
     "Both sides play their best, as the engine sees it: each turn is solved as a game over the "
     "four moves a side has.",
-    "Their Speed investment is averaged over how people build it, narrowed by this battle's turn "
-    "order. Their other Stat Points are assumed: the main attacking stat maxed, then HP, then the "
+    "A hidden spread's Speed is averaged over how people build it, narrowed by this battle's turn "
+    "order. Its other Stat Points are assumed: the main attacking stat maxed, then HP, then the "
     "defences.",
     "Two damage rolls per hit stand for all sixteen.",
 ]
@@ -97,7 +97,7 @@ class Solve:
                 combined = endgame.combine(self.plan["jobs"], results)
                 self.done[depth] = combined | {
                     "elapsed": round(time.time() - self.started, 1),
-                    "positions": [{"set": j["set"], "class": j["class"], "weight": round(j["weight"], 4),
+                    "positions": [{"sets": j["sets"], "class": j["class"], "weight": round(j["weight"], 4),
                                    "value": r["value"], "leaf_mass": r["leaf_mass"]}
                                   for j, r in zip(self.plan["jobs"], results)]}
                 if combined["leaf_mass"] == 0:
@@ -149,3 +149,13 @@ def request(reg: Regulation, battle_id: str, battle) -> dict[str, Any]:
                 _current.cancel()
             _current = Solve(reg, battle_id, battle)
         return _current.status()
+
+
+def cancel(battle_id: str | None = None) -> None:
+    """Stop the search for `battle_id` (any, with None) and kill its processes: a deleted battle's,
+    or everything when the app shuts down. A node process outlives the server that started it."""
+    global _current
+    with _guard:
+        if _current is not None and (battle_id is None or _current.battle_id == battle_id):
+            _current.cancel()
+            _current = None

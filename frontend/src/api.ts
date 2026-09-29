@@ -297,8 +297,22 @@ export const SHEET_LABELS: Record<Sheets, { button: string; short: string; regim
   open: { button: "Open", short: "open sheets", regime: "open team sheets" },
 };
 
+/** Whose seat a battle is seen from: your own game (`p1`), or someone else's watched with both
+ *  sheets open (`spectator`), where the number is player 1's chance and neither spread is known. */
+export type Perspective = "p1" | "spectator";
+
 /** One battle mode the app can offer, and the model a battle in it would run. */
-export type Mode = { sheets: Sheets; version: string | null; gate: string };
+export type Mode = { id: string; sheets: Sheets; perspective: Perspective; version: string | null; gate: string };
+
+/** How a battle's two sides are named on screen. */
+export function sideNames(perspective: Perspective | undefined): Record<"p1" | "p2", string> {
+  return perspective === "spectator" ? { p1: "P1", p2: "P2" } : { p1: "You", p2: "Them" };
+}
+
+/** A battle's mode in a few words, for lists and headers. */
+export function modeLabel(sheets: Sheets, perspective: Perspective | undefined): string {
+  return perspective === "spectator" ? "watching, both sheets open" : SHEET_LABELS[sheets]?.short ?? sheets;
+}
 
 /** A model's verdict in one regime, and which of that regime's gates it failed. */
 export type Verdict = {
@@ -308,7 +322,7 @@ export type Verdict = {
 };
 
 export type LiveView = {
-  id: string; name: string; sheets: Sheets;
+  id: string; name: string; sheets: Sheets; perspective: Perspective;
   turn: number; started: boolean; ended: boolean; winner: string | null;
   entries: number;
   journal: Entry[];
@@ -338,15 +352,17 @@ export type LiveView = {
 /** The engine's answer to a 1v1 (`/api/battles/<id>/solve`): best play on both sides, searched
  *  `depth` turns deep so far, with `leaf_mass` the share of it that still rests on HP share rather
  *  than on the engine. Beside the model's number, never instead of it. */
+export type SolvedSet = { species: string; item: string | null; ability: string | null; nature: string | null; moves: string[] };
+
 export type EngineAnswer = {
   eligible: boolean; reason: string | null;
   depth?: number | null; max_depth?: number; searching?: number | null;
   value?: number | null; leaf_mass?: number | null;
-  positions?: { set: number; class: string; weight: number; value: number; leaf_mass: number }[];
+  positions?: { sets: [number, number]; class: string; weight: number; value: number; leaf_mass: number }[];
   elapsed?: number;
-  /** Their sets solved: one on an open sheet, the likeliest few on a closed one. */
-  sets?: { set: { species: string; item: string | null; ability: string | null; nature: string | null; moves: string[] }; weight: number }[];
-  /** The belief's weight on sets of theirs that were not solved. */
+  /** Each side's sets solved: yours, a sheet, or the likeliest few from the belief. */
+  sets?: Record<"p1" | "p2", { set: SolvedSet; weight: number }[]>;
+  /** The belief's weight on sets that were not solved. */
   unsolved?: number;
   assumptions?: string[];
   error?: string | null;
@@ -354,7 +370,7 @@ export type EngineAnswer = {
 
 export type BattleRow = {
   id: string; name: string; created: string; updated: string;
-  turn: number; entries: number; theirs: string[]; sheets: Sheets; result: string | null;
+  turn: number; entries: number; theirs: string[]; sheets: Sheets; perspective: Perspective; result: string | null;
 };
 
 export type TrajectoryRow = {
@@ -414,7 +430,7 @@ export const api = {
   battles: (reg: string) => call<{ battles: BattleRow[] }>(`/api/battles?regulation=${reg}`),
   newBattle: (body: {
     name?: string; my_team?: string; team_id?: string;
-    their_species?: string[]; their_team?: string; regulation: string;
+    their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
   battle: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}`),
   /** Several entries in one call when they belong together — a spread move and both its damage

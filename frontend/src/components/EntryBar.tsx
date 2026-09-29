@@ -289,7 +289,7 @@ function FieldPad({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) =
                     aria-pressed={c in view.sides[side].conditions}
                     onClick={() => onLog([{ kind: "side", side, condition: c,
                                             on: !(c in view.sides[side].conditions) }])}>
-              {side === "p1" ? "your " : "their "}{c}
+              {view.perspective === "spectator" ? `${side.toUpperCase()} ` : side === "p1" ? "your " : "their "}{c}
             </button>
           )))}
       </div>

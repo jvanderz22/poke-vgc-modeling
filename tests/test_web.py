@@ -296,11 +296,13 @@ def test_the_committed_pins_resolve_and_the_open_one_passes_its_gate():
 
 def test_the_modes_on_offer_are_the_regimes_the_backend_defines(client):
     """The new-battle form is built from this list, so a mode is offered exactly when the backend
-    has it — and each one says which model it would run and which gate that model answers to."""
+    has it — and each one says which model it would run and which gate that model answers to.
+    Watching someone else's game is a seat on the open-sheet regime, not a regime of its own."""
     from vgc.wp import models as wp_models
 
     modes = client.get("/api/models").json()["modes"]
-    assert [m["sheets"] for m in modes] == list(wp_models.SHEETS)
+    assert [m["sheets"] for m in modes if m["perspective"] == "p1"] == list(wp_models.SHEETS)
+    assert [m["sheets"] for m in modes if m["perspective"] == "spectator"] == [wp_models.OPEN]
     for m in modes:
         assert m["version"] == wp_models.in_battle_version("reg_mc", m["sheets"])
         assert m["gate"] == wp_models.REGIME_GATES[m["sheets"]][0]
@@ -524,3 +526,57 @@ def test_deleting_a_battle_removes_it(client, started):
     bid = started["id"]
     assert client.delete(f"/api/battles/{bid}").status_code == 200
     assert client.get(f"/api/battles/{bid}").status_code == 404
+
+
+# --- watching someone else's game (PLAN-v3 step 4) ------------------------------------------------
+
+@pytest.fixture(scope="module")
+def two_sheets():
+    """Two legal open sheets: the benchmark's fillers, six each."""
+    from vgc.regulation import load_regulation
+    from vgc.wp import benchmark
+
+    sets = benchmark.load(load_regulation("reg_mc"))["fillers"].strip().split("\n\n")
+    return "\n\n".join(sets[:6]), "\n\n".join(sets[1:7])
+
+
+@pytest.fixture
+def watched(client, two_sheets, battles_dir):
+    r = client.post("/api/battles", json={"name": "stream", "p1_team": two_sheets[0], "their_team": two_sheets[1]})
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def test_watching_is_offered_with_the_open_sheet_model(client):
+    modes = {m["id"]: m for m in client.get("/api/models").json()["modes"]}
+    assert modes["watching"]["perspective"] == "spectator" and modes["watching"]["sheets"] == "open"
+    assert modes["watching"]["version"] == modes["open"]["version"]
+    assert modes["watching"]["gate"] == modes["open"]["gate"]
+
+
+def test_a_watched_battle_knows_both_sheets_and_neither_spread(watched):
+    assert watched["perspective"] == "spectator" and watched["sheets"] == "open"
+    for sid in ("p1", "p2"):
+        mons = watched["sides"][sid]["mons"]
+        assert all(m["ability"] and m["moves"] for m in mons)
+        assert all(m["stats"] is None and m["hp_max"] is None for m in mons)
+
+
+def test_watching_needs_both_sheets(client, two_sheets, battles_dir):
+    r = client.post("/api/battles", json={"p1_team": two_sheets[0]})
+    assert r.status_code == 422
+
+
+def test_a_watched_turn_narrows_both_sides(client, watched):
+    """Both sides' spreads are hidden, so both get a belief panel, and the number is still there:
+    player 1's chance, from the open-sheet model."""
+    bid = watched["id"]
+    leads = [{"kind": "lead", "side": sid, "slot": slot, "species": sp}
+             for sid, pair in (("p1", ("Rillaboom", "Garchomp")), ("p2", ("Incineroar", "Pelipper")))
+             for slot, sp in enumerate(pair)]
+    view = entries(client, bid, *leads, {"kind": "turn", "n": 1})
+    assert view["started"] and view["wp"].get("error") is None and 0 <= view["wp"]["wp"] <= 1
+    assert {b["side"] for b in view["beliefs"]} == {"p1", "p2"}
+    assert view["endgame"] == {"eligible": False, "reason": "each side needs exactly one Pokémon left"}
+    listed = client.get("/api/battles").json()["battles"]
+    assert listed[0]["perspective"] == "spectator"

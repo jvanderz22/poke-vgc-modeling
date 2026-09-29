@@ -1490,3 +1490,33 @@ a Choice Scarf (Jolly 70%). With no evidence (F1-C), Life Orb leads at 32%.
 0.63, against 0.99 and 0.02 at three turns (about 20 s). The page shows the deepest finished
 answer with the share of it that rests on HP share, and fades it while that share is over half.
 
+## Observer mode: watching an open-sheet game, both spreads hidden
+
+Plan v3 step 4 (2026-09-29). A third mode on the Battle page, **Watching**, for someone else's
+open-sheet game: two sheets, a spectator's `BattleState`, HP as percentages on both sides, and WP
+oriented to player 1. It uses the open-sheet model and gate. `in_battle_ece` is scored on
+spectator rows, so this is the seat the served model was gated from; the registry and pins are
+unchanged.
+
+**Speed with two unknowns.** The turn-order channel narrows an unknown against a known Speed and
+defers a pair of two unknowns, which from the stands is every pair. `belief.speed.joint` keeps the
+two Pokémon of a 1v1 jointly:
+- their two priors multiplied;
+- an ordering between them is an indicator on the pair;
+- an ordering with anyone else is that Pokémon's prior mass under which it could have happened.
+
+On F8b-B, watched, no pair with the Gholdengo faster keeps any weight. The player view is the case
+where one side is a point mass. It goes through the same code and still reproduces all 32
+benchmark variants exactly. A closed sheet's candidates are weighted by the joint's total.
+Memoising it per item, ability, nature and Speed prior took a closed-sheet plan from ~9 s to well
+under one.
+
+**The solver over both spreads** (`solver.partition_joint`) is still at most three solves a
+position. Pairs of Speed investments are grouped by the move order they give, and each class is
+represented by its heaviest pair. Both sides' other stats are `spread`'s assumption. Watched, F1-B
+puts 94% on the Scarf Basculegion moving first once the Mega Charizard's Speed is hidden too.
+F8a-C, the Kingambit mirror, splits 45/45 with a 10% tie. In the running app it solves to 0.50
+(3% leaf mass at three turns), where the model says 0.68 for player 1.
+
+**A leak, fixed.** A search's node processes outlived a deleted battle and the server itself.
+Deleting a battle now cancels its search, and shutting the app down kills whatever is running.

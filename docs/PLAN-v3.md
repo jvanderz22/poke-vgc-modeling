@@ -19,7 +19,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ On the Battle page beside the model, deepening in the background. ⏳ Not yet checked against human 1v1s (step 3.6) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
-| Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP |
+| Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
 
 ---
 
@@ -197,7 +197,7 @@ Items 1–5 are done (2026-09-29; [phase8, "the solver in the app"](phase8-findi
 - It also found three items illegal in Reg M-C in the benchmark (F5's Choice Band, F11's Assault
   Vest, a filler's Choice Specs). Not fixed: replacing them is a redesign of those families.
 
-Item 6 is next.
+Item 6 waits for step 4: a replay is watched from outside, with both spreads hidden.
 
 In decided 1v1s the model's WP barely depends on the position. The solver gives the engine's
 answer under best play, which is a different claim from what a human game will do. Until the
@@ -230,14 +230,50 @@ labelled, and neither is presented as *the* number.
 6. **The check that decides what the numbers become.** Held-out human 1v1 endgames from replays:
    log loss and calibration of the solver against the model, clustered by battle. The solver
    assumes best play, and the corpus is ~1100-rated, so this can come out either way. Until it
-   is run, both numbers stay second opinions of each other.
+   is run, both numbers stay second opinions of each other. It runs on step 4's observer adapter.
 
-### 4. Condition the Speed prior on the item
+### 4. Observer mode: a battle watched with both sheets open
+
+A third way to run the Battle page, beside open and closed: watching someone else's open-sheet
+game (on stream, at an event, a replay). Both sheets are known and **neither side's Stat Points
+are**. It is also the view every public replay gives, so it is what step 3.6 is measured through.
+
+Items 1–4 are done (2026-09-29; [phase8, "observer mode"](phase8-findings.md)): the Watching mode,
+`belief.speed.joint`, `solver.partition_joint`, and the page. The player view goes through the same
+joint path and still reproduces all 32 benchmark variants. Item 5 is next.
+
+It is a *perspective* on open sheets, not a third information regime. The model and gate are the
+open-sheet ones (`wp-v1f-idp5`, `in_battle_pass`), and `in_battle_ece` is already scored on
+spectator rows. So the registry and pins do not change. An observer battle is the setting the served
+open-sheet model was gated in, arguably more exactly than the player view.
+
+1. **The battle.** A spectator `BattleState` from two open sheets: HP as percentages on both
+   sides, nothing exact. The WP is P(player 1 wins) (spectator records are oriented to p1), and the
+   page says "P1"/"P2" instead of "you"/"them".
+2. **Speed with both spreads hidden.** The turn-order channel narrows one unknown against a known
+   Speed and defers a pair of two unknowns. That is every pair here. For the two Pokémon of a
+   1v1, keep the joint weight over both Speed investments:
+   - the two speed priors multiplied;
+   - an ordering between the two is an indicator on the pair;
+   - an ordering with any other Pokémon is a likelihood, marginalised over that Pokémon's prior.
+
+   The player view becomes the special case where one side's Speed is a point mass, and it has to
+   reproduce the benchmark check exactly as now.
+3. **The solver averages over both spreads.** The Speed classes are the pair's move order
+   (faster / tied / slower), so it is still up to three solves a position, not nine. Each class is
+   represented by its heaviest cell. Both sides' other stats are `solver.spread`'s assumption, and
+   the display says so for both.
+4. **The page.** A third mode button. The form takes two sheets instead of your team and theirs.
+   The Speed read and the engine row work the same, over two unknowns.
+5. **Then step 3.6** on held-out open-sheet replays through this adapter, fed by `Observer`
+   instead of taps.
+
+### 5. Condition the Speed prior on the item
 
 A Choice Scarf set with under 4 Speed SP is not real, but `speed_prior` gives it 27% (F1-B), and the
 solver inherits that. The prior should read the item, as the belief already does for nature.
 
-### 5. Solver speed
+### 6. Solver speed
 
 F6 alone took 2 h 50 min, and step 3's latency depends on this. It is also Phase 9's search. The
 levers:
@@ -245,7 +281,7 @@ levers:
 - reuse results across depths (iterative deepening wants this anyway);
 - prune dominated moves.
 
-### 6. Remaining belief-to-app work
+### 7. Remaining belief-to-app work
 
 1. **`wp` vs `wp_open` on the real closed-sheet shard,** before changing which one the Battle page
    leads with. On a live position the two were 11–14 points apart.
@@ -254,7 +290,7 @@ levers:
 3. **Re-gate damage and bulk under TPO.** Both read the opponent's item and ability off a sheet a
    cartridge doesn't show. The app doesn't run them live until they pass.
 
-### 7. Housekeeping that pays on every retrain
+### 8. Housekeeping that pays on every retrain
 
 - **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
   Self-play eval sets already come from the training manifest's runs, so this is the durable
@@ -266,7 +302,7 @@ levers:
     calibration changes (`tests/test_endgames.py` catches it);
   - the `wp-v1`/`wp-v1c` feature datasets (~586 MB, untracked) can be deleted.
 
-### 8. Phase 9: policy strength (EWP and search)
+### 9. Phase 9: policy strength (EWP and search)
 
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
 - exact transitions from a serialized Showdown state (the endgame solver already does this);
@@ -283,7 +319,7 @@ The gates:
 
 **Then re-run Phase 6 against this policy.**
 
-### 9. Blocked behind Phase 9
+### 10. Blocked behind Phase 9
 
 - **Phase 10: matchup evaluation.** On demand only: simulate the one matchup in front of the user
   across its bring/lead combinations. Gated on Phase 6 passing for the Phase 9 policy.

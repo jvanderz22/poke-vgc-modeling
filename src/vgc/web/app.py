@@ -18,6 +18,7 @@ Scope, honestly stated, because the UI has to say the same thing:
 from __future__ import annotations
 
 import json
+from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -100,7 +101,16 @@ def gate_summary(version: str) -> dict[str, Any]:
             "headline": entry.get("headline", {}).get("human_spectator", {})}
 
 
-app = FastAPI(title="VGC battle companion", version="0.1")
+@asynccontextmanager
+async def _lifespan(_: FastAPI):
+    yield
+    # A 1v1 search runs in node processes the server started; they do not end with it.
+    from vgc.web import solving
+
+    solving.cancel()
+
+
+app = FastAPI(title="VGC battle companion", version="0.1", lifespan=_lifespan)
 
 
 class TeamText(BaseModel):
@@ -140,6 +150,8 @@ class NewBattle(BaseModel):
     their_species: list[str] = Field(default_factory=list,
                                      description="Team Preview Only: their six species")
     their_team: str = Field(default="", description="Open Team Sheets: their six sets as text")
+    p1_team: str = Field(default="", description="Watching someone else's game: player 1's open "
+                         "sheet as text, with `their_team` as player 2's. No team of yours.")
     version: str = ""
     regulation: str = "reg_mc"
 
@@ -174,14 +186,18 @@ def health(regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.get("/api/models")
 def models(regulation: str = "reg_mc") -> dict[str, Any]:
-    from vgc.wp.models import REGIME_GATES, SHEETS, default_version, in_battle_version, registered
+    from vgc.wp.models import OPEN, REGIME_GATES, SHEETS, default_version, in_battle_version, registered
 
     out = [gate_summary(e["version"]) | {"kind": e["kind"], "created": e["created"]}
            for e in registered(regulation)]
     # The battle modes the app can offer, in order, each with the model it would run. This list is
     # what the new-battle form is built from, so a mode exists in the UI exactly when it exists here.
-    modes = [{"sheets": s, "version": in_battle_version(regulation, s), "gate": REGIME_GATES[s][0]}
-             for s in SHEETS]
+    modes = [{"id": s, "sheets": s, "perspective": "p1", "version": in_battle_version(regulation, s),
+              "gate": REGIME_GATES[s][0]} for s in SHEETS]
+    # Watching someone else's open-sheet game: the open-sheet model and gate, from the seat that
+    # gate is scored from (`in_battle_ece` is measured on spectator rows). PLAN-v3 step 4.
+    modes.append({"id": "watching", "sheets": OPEN, "perspective": "spectator",
+                  "version": in_battle_version(regulation, OPEN), "gate": REGIME_GATES[OPEN][0]})
     return {"models": out, "default": default_version(regulation), "modes": modes}
 
 
@@ -444,6 +460,8 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
     still hidden, which is why it is one mode of one thing rather than two code paths.
     """
     reg = _reg(body.regulation)
+    if body.p1_team:
+        return _watch(reg, body)
     text = body.my_team
     if not text and body.team_id:
         saved = library.get(reg.id, body.team_id)
@@ -476,6 +494,32 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
     # The model is chosen by the regime the battle is played in, and recorded on the battle.
     version = body.version or in_battle_version(reg.id, OPEN if body.their_team else CLOSED)
     blob = live.create(reg, body.name, text, theirs, version)
+    return battle_view(blob["id"], reg.id)
+
+
+def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
+    from vgc.teams.showdown_text import TeamParseError, parse_team
+
+    try:
+        out = [{"species": m.species, "item": m.item or "", "ability": m.ability,
+                "moves": list(m.moves), "nature": m.nature} for m in parse_team(text).members]
+    except TeamParseError as e:
+        raise HTTPException(422, f"{whose} sheet: {e}") from e
+    unknown = [m["species"] for m in out if reg.dex.get_species(m["species"]) is None]
+    if unknown:
+        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+    return out
+
+
+def _watch(reg, body: NewBattle) -> dict[str, Any]:
+    """Someone else's game, both sheets open: a spectator's battle, whose WP is player 1's."""
+    from vgc.wp.models import OPEN, in_battle_version
+
+    if not body.their_team:
+        raise HTTPException(422, "watching needs both players' sheets")
+    p1, p2 = _sheet(reg, body.p1_team, "player 1's"), _sheet(reg, body.their_team, "player 2's")
+    version = body.version or in_battle_version(reg.id, OPEN)
+    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1)
     return battle_view(blob["id"], reg.id)
 
 
@@ -563,6 +607,9 @@ def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.delete("/api/battles/{battle_id}")
 def delete_battle(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    from vgc.web import solving
+
+    solving.cancel(battle_id)
     if not live.remove(_reg(regulation).id, battle_id):
         raise HTTPException(404, f"no battle {battle_id!r}")
     return {"deleted": battle_id}

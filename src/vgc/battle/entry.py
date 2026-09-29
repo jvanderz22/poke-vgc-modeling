@@ -127,7 +127,7 @@ def setup_state(reg: Regulation, setup: dict[str, Any]) -> BattleState:
     for sid in ("p1", "p2"):
         side = state.sides[sid]
         side.name = setup.get("names", {}).get(sid)
-        entries = setup["mine" if sid == setup.get("perspective", "p1") else "theirs"]
+        entries = side_entries(setup, sid)
         own = sid == state.perspective
         for spec in entries:
             m = Mon(_species_name(reg, spec["species"]))
@@ -149,6 +149,16 @@ def setup_state(reg: Regulation, setup: dict[str, Any]) -> BattleState:
             side.sheet = side.sheet or (not own and spec.get("ability") is not None)
         side.team_size = len(side.mons)
     return state
+
+
+def side_entries(setup: dict[str, Any], sid: str) -> list[dict[str, Any]]:
+    """One side's six as the setup gives them. A player's setup has `mine` and `theirs`; a
+    spectator's (someone else's game, watched with both sheets open) has `p1` and `p2`, since
+    neither is yours."""
+    persp = setup.get("perspective", "p1")
+    if persp == "spectator":
+        return setup[sid]
+    return setup["mine" if sid == persp else "theirs"]
 
 
 def _species_name(reg: Regulation, name: str) -> str:

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, ApiError, SHEET_LABELS, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Sheets, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -83,7 +83,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
           <div>
             <b>{view.name}</b>{" "}
             <span className="dim small">
-              {SHEET_LABELS[view.sheets]?.short ?? view.sheets} ·{" "}
+              {modeLabel(view.sheets, view.perspective)} ·{" "}
               {view.started ? `turn ${view.turn}` : "team preview"} · {view.entries} taps
             </span>
           </div>
@@ -157,7 +157,8 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
       </div>
       <div className="row tiny dim" style={{ justifyContent: "space-between", marginTop: 5 }}>
         <span>
-          {labelled && <>Model: </>}<b className="wp-num">{pct(wp.wp)}%</b> you win
+          {labelled && <>Model: </>}<b className="wp-num">{pct(wp.wp)}%</b>{" "}
+          {view.perspective === "spectator" ? "P1 wins" : "you win"}
           {wp.hi !== wp.lo && <> · {pct(wp.lo)}–{pct(wp.hi)}% depending on what they are holding</>}
         </span>
         <span title={wp.regime}>
@@ -202,7 +203,10 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const shallow = leaf > 0.5;
   const model = view.wp?.wp;
   const apart = !shallow && ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
-  const sets = ans.sets ?? [];
+  const hidden = view.perspective === "spectator" ? (["p1", "p2"] as const) : (["p2"] as const);
+  const names = sideNames(view.perspective);
+  const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
+  const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
   return (
     <div className="engine tiny dim">
       <div className="row" style={{ justifyContent: "space-between" }}>
@@ -218,9 +222,9 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {ans.searching != null && <> · looking {ans.searching} deep ({Math.round(ans.elapsed ?? 0)}s)</>}
         </span>
       </div>
-      {(sets.length > 1 || (ans.unsolved ?? 0) > 0) && (
+      {guessed && (
         <div>
-          Over their {sets.length} likeliest set{sets.length === 1 ? "" : "s"}
+          Over their {ans.sets?.[guessed]?.length} likeliest sets
           {(ans.unsolved ?? 0) > 0 && <>; {pct(ans.unsolved ?? 0)}% of what they might hold is not solved</>}.
         </div>
       )}
@@ -239,7 +243,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {ans.depth != null && <li>Past {ans.depth} turns, whoever has more HP left is counted as winning.</li>}
           {sets.map((s, i) => (
             <li key={`s${i}`}>
-              {sets.length > 1 && <>{pct(s.weight)}%: </>}
+              {hidden.length > 1 && <>{names[s.side]}: </>}{s.weight < 1 && <>{pct(s.weight)}%: </>}
               {s.set.species}{s.set.item ? ` @ ${s.set.item}` : ""}, {s.set.ability}, {s.set.nature ?? "nature unknown"}:{" "}
               {s.set.moves.join(", ")}
             </li>
@@ -262,7 +266,7 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       <div className="lead-grid">
         {(["p2", "p1"] as Side[]).map((side) => (
           <div key={side} className="row">
-            <span className="dim small" style={{ width: 54 }}>{side === "p1" ? "You" : "Them"}</span>
+            <span className="dim small" style={{ width: 54 }}>{sideNames(view.perspective)[side]}</span>
             {[0, 1].map((slot) => {
               const m = filled(side, slot);
               return (
@@ -414,15 +418,24 @@ function Belief({ view }: { view: LiveView }) {
   );
 }
 
+/** The new-battle form's mode buttons, by `Mode.id`. */
+const MODE_BUTTONS: Record<string, string> = {
+  closed: "Hidden (team preview only)", open: "Open", watching: "Watching (both open)",
+};
+
 /** Your battles, and the form that starts one. */
 function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate; teams: SavedTeam[] }) {
   const [rows, setRows] = useState<BattleRow[]>([]);
   const [pool, setPool] = useState<Species[]>([]);
   const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
   const [modes, setModes] = useState<Mode[]>([]);
-  const [sheets, setSheets] = useState<Sheets | null>(null);
+  const [modeId, setModeId] = useState<string | null>(null);
   const [theirs, setTheirs] = useState<(string | null)[]>(Array(6).fill(null));
   const [theirSheet, setTheirSheet] = useState("");
+  const [p1Sheet, setP1Sheet] = useState("");
+  const mode = modes.find((m) => m.id === modeId);
+  const sheets = mode?.sheets ?? null;
+  const watching = mode?.perspective === "spectator";
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -436,7 +449,7 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   useEffect(() => {
     api.models(reg).then((m) => {
       setModes(m.modes);
-      setSheets((cur) => cur ?? m.modes.find((x) => x.version)?.sheets ?? null);
+      setModeId((cur) => cur ?? m.modes.find((x) => x.version)?.id ?? null);
     }).catch(() => {});
   }, [reg]);
   useEffect(() => { if (!teamId && teams[0]) setTeamId(teams[0].id); }, [teams, teamId]);
@@ -449,7 +462,9 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     setError(null);
     try {
       const opponent = sheets === "open" ? { their_team: theirSheet } : { their_species: chosen };
-      const v = await api.newBattle({ name, team_id: teamId, regulation: reg, ...opponent });
+      const v = watching
+        ? await api.newBattle({ name, p1_team: p1Sheet, their_team: theirSheet, regulation: reg })
+        : await api.newBattle({ name, team_id: teamId, regulation: reg, ...opponent });
       navigate({ tab: "battle", battle: v.id, step: null });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
@@ -462,27 +477,29 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     <>
       <div className="panel">
         <h2>Start a battle</h2>
-        {teams.length === 0
-          ? <p className="small dim">Save a team on the <b>Teams</b> page first.</p>
+        <div className="row" style={{ marginBottom: 10 }}>
+          <span className="dim small">Team sheets</span>
+          {modes.map((m) => (
+            <button key={m.id} className={modeId === m.id ? "" : "ghost"}
+                    aria-pressed={modeId === m.id} disabled={!m.version}
+                    title={m.version ? `win probability from ${m.version}` : "no model for this mode"}
+                    onClick={() => setModeId(m.id)}>
+              {MODE_BUTTONS[m.id] ?? m.id}
+            </button>
+          ))}
+        </div>
+        {!watching && teams.length === 0
+          ? <p className="small dim">Save a team on the <b>Teams</b> page first, or watch someone else's game.</p>
           : (
             <>
               <div className="row" style={{ marginBottom: 10 }}>
-                <select value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-                  {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                {!watching && (
+                  <select value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+                    {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                )}
                 <input type="text" value={name} placeholder="what to call it (optional)"
                        style={{ flex: 1 }} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div className="row" style={{ marginBottom: 10 }}>
-                <span className="dim small">Team sheets</span>
-                {modes.map((m) => (
-                  <button key={m.sheets} className={sheets === m.sheets ? "" : "ghost"}
-                          aria-pressed={sheets === m.sheets} disabled={!m.version}
-                          title={m.version ? `win probability from ${m.version}` : "no model for this mode"}
-                          onClick={() => setSheets(m.sheets)}>
-                    {SHEET_LABELS[m.sheets]?.button ?? m.sheets}
-                  </button>
-                ))}
               </div>
               {sheets === "closed" ? (
                 <>
@@ -497,20 +514,32 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
                 </>
               ) : (
                 <>
-                  <label>Their open team sheet, as Showdown text</label>
-                  <textarea value={theirSheet} rows={10} style={{ width: "100%" }}
+                  {watching && (
+                    <>
+                      <label>Player 1's open team sheet, as Showdown text</label>
+                      <textarea value={p1Sheet} rows={8} style={{ width: "100%" }}
+                                placeholder={"Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nAdamant Nature\n- Fake Out\n..."}
+                                onChange={(e) => setP1Sheet(e.target.value)} />
+                    </>
+                  )}
+                  <label>{watching ? "Player 2's" : "Their"} open team sheet, as Showdown text</label>
+                  <textarea value={theirSheet} rows={watching ? 8 : 10} style={{ width: "100%" }}
                             placeholder={"Incineroar @ Sitrus Berry\nAbility: Intimidate\nCareful Nature\n- Fake Out\n..."}
                             onChange={(e) => setTheirSheet(e.target.value)} />
                 </>
               )}
               <div className="row" style={{ marginTop: 10 }}>
-                <button disabled={busy || !teamId || !sheets || (sheets === "closed" ? chosen.length !== 6 : !theirSheet.trim())}
+                <button disabled={busy || !sheets || (watching ? !(p1Sheet.trim() && theirSheet.trim())
+                                  : !teamId || (sheets === "closed" ? chosen.length !== 6 : !theirSheet.trim()))}
                         onClick={start}>Start</button>
                 {sheets === "closed" && <span className="tiny dim">{chosen.length}/6 chosen</span>}
               </div>
               {error && <p className="small err" style={{ marginBottom: 0 }}>{error}</p>}
               <p className="tiny dim" style={{ margin: "10px 2px 0" }}>
-                {sheets === "closed"
+                {watching
+                  ? <>Someone else's game: both sheets are shown and neither side's Stat Points are, so
+                      both Speeds are worked out from the battle, and the number is player 1's chance.</>
+                  : sheets === "closed"
                   ? <>Six species is all team preview gives you, and it is all this needs. Everything
                       else — their items, their abilities, how they built each one — is what the
                       battle is going to tell you, one tap at a time.</>
@@ -532,7 +561,7 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
                 <span><b>{b.name}</b> <span className="dim tiny">{b.updated.replace("T", " ")}</span></span>
                 <span className="dim tiny">{b.theirs.join(" · ")}</span>
                 <span className="dim tiny">
-                  {SHEET_LABELS[b.sheets]?.short ?? b.sheets} · {b.turn ? `turn ${b.turn}` : "preview"} · {b.entries} taps
+                  {modeLabel(b.sheets, b.perspective)} · {b.turn ? `turn ${b.turn}` : "preview"} · {b.entries} taps
                 </span>
                 <button className="danger" onClick={async (e) => {
                   e.preventDefault();
