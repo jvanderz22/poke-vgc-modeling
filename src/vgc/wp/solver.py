@@ -273,7 +273,8 @@ def speed_classes(reg: Regulation, spec: dict, fid: str, vid: str) -> dict[str, 
     _OURS_EXTRA.clear()
     for m in parse_team(spec["fillers"] + "\n\n" + (fam.get("extra_ours") or "")).members:
         _OURS_EXTRA[m.species] = {"species": m.species, "nature": m.nature, "item": m.item, "sp": m.sp.as_dict()}
-    prior = speed_prior(reg, theirs["species"], theirs.get("nature"), [to_id(m) for m in theirs.get("moves", [])])
+    prior = speed_prior(reg, theirs["species"], theirs.get("nature"), [to_id(m) for m in theirs.get("moves", [])],
+                        item=theirs.get("item"))
     order = var.get("order") or []
     classes = partition(reg, ours, theirs, prior.mass, facts_of(spec, fid, vid, theirs),
                         lambda sp: _fits(reg, order, ours, theirs, sp))

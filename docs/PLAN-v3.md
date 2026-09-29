@@ -268,10 +268,13 @@ open-sheet model was gated in, arguably more exactly than the player view.
 5. **Then step 3.6** on held-out open-sheet replays through this adapter, fed by `Observer`
    instead of taps.
 
-### 5. Condition the Speed prior on the item
+### 5. Condition the Speed prior on the item: done
 
-A Choice Scarf set with under 4 Speed SP is not real, but `speed_prior` gives it 27% (F1-B), and the
-solver inherits that. The prior should read the item, as the belief already does for nature.
+A Choice Scarf set with under 4 Speed SP is not real, but `speed_prior` gave it 27% (F1-B), and the
+solver inherited it. Scored on 135,245 observed turn orders, the fix that works is moving a
+Speed-raising item's 0-SP extreme to 32. It beats today's prior on every cut, most on Scarf
+pairs (−0.015 nats a pair). Reading the multiplier into the benchmark classes was *worse*. F1-B
+is now 0.097. [phase8, "the Speed prior reads the item"](phase8-findings.md).
 
 ### 6. Solver speed
 

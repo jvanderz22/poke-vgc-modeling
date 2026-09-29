@@ -20,26 +20,26 @@
    }
   },
   "F1/B": {
-   "value": 0.2715,
-   "leaf_mass": 0.0014,
+   "value": 0.0969,
+   "leaf_mass": 0.001,
    "classes": {
     "slower": {
-     "weight": 0.271,
-     "spe": 0,
-     "speed": 147.0,
-     "ours": 152.0,
-     "value": 0.9995,
-     "leaf_mass": 0.0014,
-     "nodes": 30598
+     "weight": 0.096,
+     "spe": 3,
+     "speed": 151,
+     "ours": 152,
+     "value": 1.0,
+     "leaf_mass": 0.001,
+     "nodes": 0
     },
     "faster": {
-     "weight": 0.729,
+     "weight": 0.904,
      "spe": 32,
-     "speed": 195.0,
-     "ours": 152.0,
-     "value": 0.0009,
-     "leaf_mass": 0.0014,
-     "nodes": 25662
+     "speed": 195,
+     "ours": 152,
+     "value": 0.001,
+     "leaf_mass": 0.001,
+     "nodes": 0
     }
    },
    "search": {
@@ -47,11 +47,11 @@
    }
   },
   "F1/D": {
-   "value": 0.0744,
+   "value": 0.061,
    "leaf_mass": 0.0013,
    "classes": {
     "slower": {
-     "weight": 0.0735,
+     "weight": 0.0601,
      "spe": 3,
      "speed": 151,
      "ours": 152,
@@ -60,7 +60,7 @@
      "nodes": 2768
     },
     "faster": {
-     "weight": 0.9265,
+     "weight": 0.9399,
      "spe": 32,
      "speed": 195,
      "ours": 152,
@@ -115,12 +115,12 @@
    "classes": {
     "faster": {
      "weight": 1.0,
-     "spe": 0,
-     "speed": 165.0,
-     "ours": 149.0,
+     "spe": 32,
+     "speed": 213,
+     "ours": 149,
      "value": 0.0003,
      "leaf_mass": 0.0014,
-     "nodes": 898
+     "nodes": 734
     }
    },
    "search": {
@@ -133,12 +133,12 @@
    "classes": {
     "faster": {
      "weight": 1.0,
-     "spe": 0,
-     "speed": 165.0,
-     "ours": 149.0,
+     "spe": 32,
+     "speed": 213,
+     "ours": 149,
      "value": 1,
      "leaf_mass": 0,
-     "nodes": 6226
+     "nodes": 4250
     }
    },
    "search": {
@@ -151,12 +151,12 @@
    "classes": {
     "faster": {
      "weight": 1.0,
-     "spe": 0,
-     "speed": 165.0,
-     "ours": 149.0,
+     "spe": 32,
+     "speed": 213,
+     "ours": 149,
      "value": 0.0003,
      "leaf_mass": 0.0014,
-     "nodes": 184954
+     "nodes": 155182
     }
    },
    "search": {
@@ -677,7 +677,7 @@
    }
   },
   "F1/C": {
-   "value": 0.701,
+   "value": 0.6294,
    "mix": {
     "A": 0.59,
     "B": 0.41

@@ -130,19 +130,20 @@ def _with_sheet(battle, sid: str, species: str, s: dict[str, Any]):
 _PRIORS: dict[tuple, list[float]] = {}
 
 
-def _prior_mass(reg: Regulation, species: str, nature: str | None, moves: Any) -> list[float]:
+def _prior_mass(reg: Regulation, species: str, nature: str | None, moves: Any,
+                item: str | None = None) -> list[float]:
     """`speed_prior`'s mass, remembered: a closed sheet asks it for every Pokémon under every
     candidate set, and it depends on only these."""
     from vgc.belief.prior import speed_prior
 
-    key = (reg.id, species, nature, tuple(sorted(to_id(x) for x in moves or [])))
+    key = (reg.id, species, nature, tuple(sorted(to_id(x) for x in moves or [])), to_id(item or ""))
     if key not in _PRIORS:
-        _PRIORS[key] = speed_prior(reg, species, nature, list(key[3])).mass
+        _PRIORS[key] = speed_prior(reg, species, nature, list(key[3]), item=item).mass
     return _PRIORS[key]
 
 
 def _prior(reg: Regulation, s: dict[str, Any]) -> list[float]:
-    return _prior_mass(reg, s["species"], s.get("nature"), s.get("moves"))
+    return _prior_mass(reg, s["species"], s.get("nature"), s.get("moves"), s.get("item"))
 
 
 def speed_joint(reg: Regulation, state, sets: dict[str, dict[str, Any]]):
@@ -155,7 +156,8 @@ def speed_joint(reg: Regulation, state, sets: dict[str, dict[str, Any]]):
     keys = tuple((sid, _left(state, sid)[0].species) for sid in ("p1", "p2"))
     known = ({(me, m.species): m.sp["spe"] for m in state.sides[me].mons if m.sp}
              if me in state.sides else {})
-    priors = {(sid, m.species): _prior_mass(reg, m.species, m.nature, m.moves or m.moves_used)
+    priors = {(sid, m.species): _prior_mass(reg, m.species, m.nature, m.moves or m.moves_used,
+                                            m.item or m.lost_item)
               for sid, side in state.sides.items() for m in side.mons if speed.base_speed(reg, m.species)}
     priors.update({k: _prior(reg, sets[k[0]]) for k in keys})
     return speed.joint(reg, state, keys, priors, known)

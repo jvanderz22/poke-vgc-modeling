@@ -33,8 +33,8 @@
    "hi": 0.7429,
    "wp_open": 0.7429,
    "hand": 0.0,
-   "solved": 0.2715,
-   "expected": 0.2715,
+   "solved": 0.0969,
+   "expected": 0.0969,
    "ahead": [],
    "last_move": {
     "p1": {},
@@ -54,8 +54,8 @@
    "hi": 0.6634,
    "wp_open": 0.7203,
    "hand": 0.59,
-   "solved": 0.701,
-   "expected": 0.701,
+   "solved": 0.6294,
+   "expected": 0.6294,
    "ahead": [],
    "last_move": {
     "p1": {},
@@ -78,8 +78,8 @@
    "hi": 0.6338,
    "wp_open": 0.7641,
    "hand": 0.0,
-   "solved": 0.0744,
-   "expected": 0.0744,
+   "solved": 0.061,
+   "expected": 0.061,
    "ahead": [
     [
      [
@@ -961,52 +961,61 @@
   {
    "family": "F1",
    "pair": "A\u2192B",
-   "expected": -0.728,
+   "expected": -0.903,
    "moved": -0.0439,
    "right_way": true,
-   "share": 0.06,
+   "share": 0.049,
    "same_model": true
   },
   {
    "family": "F1",
    "pair": "A\u2192D",
-   "expected": -0.925,
+   "expected": -0.939,
    "moved": -0.2194,
    "right_way": true,
-   "share": 0.237,
+   "share": 0.234,
+   "same_model": false
+  },
+  {
+   "family": "F1",
+   "pair": "B\u2192C",
+   "expected": 0.532,
+   "moved": -0.1781,
+   "right_way": false,
+   "share": -0.334,
    "same_model": false
   },
   {
    "family": "F1",
    "pair": "B\u2192E",
-   "expected": 0.728,
+   "expected": 0.903,
    "moved": -0.1845,
    "right_way": false,
-   "share": -0.253,
+   "share": -0.204,
    "same_model": false
   },
   {
    "family": "F1",
    "pair": "B\u2192F",
-   "expected": 0.728,
+   "expected": 0.903,
    "moved": -0.182,
    "right_way": false,
-   "share": -0.25,
+   "share": -0.202,
    "same_model": false
   },
   {
    "family": "F1",
    "pair": "C\u2192D",
-   "expected": -0.627,
+   "expected": -0.568,
    "moved": 0.0026,
    "right_way": false,
-   "share": -0.004,
+   "share": -0.005,
    "same_model": true
   },
   {
    "family": "F1",
    "pair": "D\u2192E",
-   "expected": 0.925,
+   "expected": 0.939,
    "moved": -0.009,
    "right_way": false,
    "share": -0.01,
@@ -1015,7 +1024,7 @@
   {
    "family": "F1",
    "pair": "D\u2192F",
-   "expected": 0.925,
+   "expected": 0.939,
    "moved": -0.0065,
    "right_way": false,
    "share": -0.007,
@@ -1227,15 +1236,15 @@
   },
   {
    "variant": "F1/B",
-   "error": 0.4714
+   "error": 0.646
   },
   {
    "variant": "F1/C",
-   "error": 0.1362
+   "error": 0.0646
   },
   {
    "variant": "F1/D",
-   "error": 0.493
+   "error": 0.5064
   },
   {
    "variant": "F1/E",
@@ -1422,10 +1431,10 @@
   }
  ],
  "summary": {
-  "direction_pairs": 29,
-  "right_way": 0.586,
-  "mean_share_of_gap": 0.047,
-  "mean_distance": 0.4046,
+  "direction_pairs": 30,
+  "right_way": 0.567,
+  "mean_share_of_gap": 0.037,
+  "mean_distance": 0.4076,
   "mean_abs_mix_error": 0.2892,
   "max_invariance": 0.0193,
   "decided": {

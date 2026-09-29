@@ -35,7 +35,7 @@ from vgc.belief import speed
 from vgc.data.observe import MoveEvent, Observer
 from vgc.regulation import Regulation, load_regulation
 
-PriorFn = Callable[[Regulation, str, str | None, list[str]], pr.SpeedPrior]
+PriorFn = Callable[[Regulation, str, str | None, list[str], str | None], pr.SpeedPrior]
 
 
 def effective_curve(reg: Regulation, ev: MoveEvent, cap: int) -> np.ndarray:
@@ -67,7 +67,7 @@ def build_priors(reg: Regulation, obs: Observer, fn: PriorFn, cap: int) -> dict[
     out = {}
     for sid, side in obs.sides.items():
         for mon in side.mons:
-            p = fn(reg, mon.species, mon.nature, list(mon.moves))
+            p = fn(reg, mon.species, mon.nature, list(mon.moves), mon.item)
             out[(sid, mon.species)] = np.asarray(p.mass[: cap + 1], dtype=float)
     return out
 
@@ -86,16 +86,19 @@ def main() -> None:
     pool_marks, _ = pr.benchmarks(reg, report={})   # force the no-corpus fallback
 
     candidates: dict[str, PriorFn] = {
-        "flat": lambda r, s, n, m: pr.flat_prior(r, s, n),
-        "imputed (impute_sp)": lambda r, s, n, m: pr.imputed_prior(r, s, n, m),
-        "structural": lambda r, s, n, m: pr.speed_prior(r, s, n, m, tier="structural"),
-        "benchmark (pool tier)": lambda r, s, n, m: pr.speed_prior(r, s, n, m, marks=pool_marks, tier="pool"),
-        "benchmark (usage tier)": lambda r, s, n, m: pr.speed_prior(r, s, n, m, marks=marks, tier=tier),
+        "flat": lambda r, s, n, m, i: pr.flat_prior(r, s, n),
+        "imputed (impute_sp)": lambda r, s, n, m, i: pr.imputed_prior(r, s, n, m),
+        "structural": lambda r, s, n, m, i: pr.speed_prior(r, s, n, m, tier="structural"),
+        "benchmark (pool tier)": lambda r, s, n, m, i: pr.speed_prior(r, s, n, m, marks=pool_marks, tier="pool"),
+        "benchmark (usage tier), item-blind": lambda r, s, n, m, i: pr.speed_prior(r, s, n, m, marks=marks, tier=tier),
+        # PLAN-v3 step 5: a Speed-raising item takes the uninvested extreme's weight to the fast one.
+        "benchmark (usage tier)": lambda r, s, n, m, i: pr.speed_prior(r, s, n, m, marks=marks, tier=tier, item=i),
     }
 
     # log-likelihood per pair, kept per replay so the bootstrap can resample whole games
     per_replay: dict[str, list[list[float]]] = {k: [] for k in candidates}
     close_only: dict[str, list[list[float]]] = {k: [] for k in candidates}
+    scarf_only: dict[str, list[list[float]]] = {k: [] for k in candidates}
     n_pairs = 0
 
     for path in sorted(glob.glob("data/replays/*/*.json.gz"))[: args.replays]:
@@ -117,6 +120,7 @@ def main() -> None:
         priors = {name: build_priors(reg, obs, fn, cap) for name, fn in candidates.items()}
         rows = {name: [] for name in candidates}
         close = {name: [] for name in candidates}
+        scarf = {name: [] for name in candidates}
         for a, b, sign in pairs:
             ca, cb = curves[id(a)], curves[id(b)]
             if not ca.any() or not cb.any():
@@ -127,6 +131,7 @@ def main() -> None:
             flat = np.ones(cap + 1) / (cap + 1)
             p_flat = order_probability(ca, cb, flat, flat, sign)
             is_close = 0.05 < p_flat < 0.95
+            is_scarf = "choicescarf" in (a.item, b.item)
             for name in candidates:
                 pa = priors[name].get((a.side, a.species))
                 pb = priors[name].get((b.side, b.species))
@@ -137,10 +142,13 @@ def main() -> None:
                 rows[name].append(ll)
                 if is_close:
                     close[name].append(ll)
+                if is_scarf:
+                    scarf[name].append(ll)
         for name in candidates:
             if rows[name]:
                 per_replay[name].append(rows[name])
                 close_only[name].append(close[name])
+                scarf_only[name].append(scarf[name])
 
     rng = np.random.default_rng(args.seed)
 
@@ -206,6 +214,11 @@ def main() -> None:
         "close_pairs_only": score(close_only),
         "vs_flat_all_pairs": paired(per_replay),
         "vs_flat_close_pairs": paired(close_only),
+        "scarf_pairs_only": score(scarf_only),
+        "vs_flat_scarf_pairs": paired(scarf_only),
+        "vs_item_blind_scarf_pairs": paired(scarf_only, base="benchmark (usage tier), item-blind"),
+        "vs_item_blind_all_pairs": paired(per_replay, base="benchmark (usage tier), item-blind"),
+        "vs_item_blind_close_pairs": paired(close_only, base="benchmark (usage tier), item-blind"),
         "note": "lower is better; the score is the negative log-likelihood the prior assigns to "
                 "the turn order that actually happened",
     }, indent=1))

@@ -1520,3 +1520,28 @@ F8a-C, the Kingambit mirror, splits 45/45 with a 10% tie. In the running app it 
 
 **A leak, fixed.** A search's node processes outlived a deleted battle and the server itself.
 Deleting a battle now cancels its search, and shutting the app down kills whatever is running.
+
+## The Speed prior reads the item
+
+Plan v3 step 5 (2026-09-29). `speed_prior` gave a Choice Scarf Basculegion 27% below the 4 Speed
+SP it needs to outspeed a Mega Charizard Y, which nobody builds, and the solver inherited it.
+A human's spread is not observable, so the candidates were scored on its consequences:
+`scripts/analysis/spread_prior.py` over every cached replay, 135,245 racing pairs. The 6,220 with
+a Scarf holder are where the effect lives. Nats per pair against today's prior, cluster bootstrap
+over replays:
+
+| variant | Scarf pairs | close pairs | all pairs |
+|---|---|---|---|
+| A: the item multiplies what each investment outruns | **+0.018** [+0.016, +0.021] | +0.002 | +0.001 |
+| B: A, and a Scarf's uninvested extreme goes to max | −0.002 [−0.005, +0.001] | −0.000 | −0.000 |
+| **C: only the extreme moves** | **−0.015** [−0.019, −0.011] | −0.0018 [−0.0023, −0.0013] | −0.0007 [−0.0009, −0.0005] |
+
+A was the obvious fix and is worse. With the multiplier, clearing a benchmark is cheaper, so the
+class minima fall and weight moves to low Speed, while Scarf holders in the data are fast. C wins
+on every cut and is what `speed_prior(item=...)` does now: a Speed-raising item takes the 0-SP
+extreme's weight to 32. Scarf Basculegion below 4 SP goes from 27% to 10%, and at 32 from 18% to
+35%.
+
+In the benchmark, F1-B (open sheet, Scarf) goes from 0.27 to **0.097**, F1-D 0.074 → 0.061, and
+F1-C's mix 0.70 → 0.63. F2's representative Annihilape moves to 32 Speed and its answers are
+unchanged. The served model's separation of lost from won 1v1s is 0.087 (was 0.09).

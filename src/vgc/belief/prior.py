@@ -67,7 +67,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-from vgc.belief.speed import speed_stat
+from vgc.belief.speed import ITEM_MULT, speed_stat
 from vgc.regulation import Regulation, offensive_stat, to_id
 
 TIERS = ("usage", "pool", "structural")
@@ -230,7 +230,7 @@ class SpeedPrior:
 def speed_prior(reg: Regulation, species: str, nature: str | None, moves: Iterable[str],
                 *, marks: list[tuple[int, float]] | None = None, tier: str | None = None,
                 report: dict[str, Any] | None = None, floor: float = 0.25,
-                extremes: float = 0.35, cap: int | None = None) -> SpeedPrior:
+                extremes: float = 0.35, cap: int | None = None, item: str | None = None) -> SpeedPrior:
     """Prior over their Speed investment, given the sheet.
 
     Three components, and the two free weights are deliberately blunt because the turn-order
@@ -263,8 +263,16 @@ def speed_prior(reg: Regulation, species: str, nature: str | None, moves: Iterab
     share = 1.0 - floor - extremes
     for c in classes:
         mass[c["min_sp"]] += share * max(c["gain"], 0.0) / gains
-    mass[0] += extremes / 2
-    mass[cap] += extremes / 2
+    if ITEM_MULT.get(to_id(item or ""), 1.0) > 1.0:
+        # Nobody holds a Choice Scarf to be slow, so the uninvested extreme goes to the fast one.
+        # Measured on 135,245 observed turn orders (PLAN-v3 step 5, phase8 findings): better on
+        # every cut, most on the 6,220 pairs with a Scarf holder (-0.015 nats a pair). Reading the
+        # item into the benchmark classes as well was worse (+0.018): it makes clearing a
+        # benchmark cheaper and moves weight to low Speed, and Scarf holders are fast.
+        mass[cap] += extremes
+    else:
+        mass[0] += extremes / 2
+        mass[cap] += extremes / 2
     return SpeedPrior(species, nature, tier, mass, len(classes), dead)
 
 
