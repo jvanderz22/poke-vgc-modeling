@@ -1,6 +1,6 @@
 # Decided endgames: positions where one revealed fact settles the game.
 #
-# DRAFT 2026-09-27, for review. Nothing reads this yet.
+# DRAFT 2026-09-27. Scored by `vgc wp benchmark` (vgc.wp.benchmark) since 2026-09-28.
 #
 # Each family is one position with variants that differ in a single fact. A WP model that uses
 # revealed set information correctly has to:
@@ -28,6 +28,96 @@
 regulation: reg_mc
 format: 1v1 and 2v2 endgames, doubles rules (spread moves hit one target when one is left)
 
+# How a family becomes a model input (`vgc.wp.benchmark`). Each variant is built as a hand-entry
+# journal — the taps a person would make — and scored through the app's own WP (`live.wp`, the
+# average over opponents drawn from the belief). So a fact counts only if the app can be told it.
+#
+#   build.ours / build.theirs   the Pokémon left, as sets; `hp` in percent; `mega` names the forme
+#   build.fainted               who else each side brought (all three have fainted by the end);
+#                               default: the first three `fillers` not clashing with the family
+#   build.field                 standing weather / terrain / Trick Room, with turns left
+#   extra_ours                  sets for our side beyond the fillers, in team text
+#   variant keys the builder reads:
+#     sheets                    open: their six sheets are known; closed: six species only
+#     theirs: {...}             overrides on their set (on a closed sheet, the truth, not shown)
+#     order: [[side, species, move], [side, species, move]]
+#                               an earlier turn on which the first moved before the second
+#     used: [[side, species, move]]   moves used earlier, with nothing to order them against
+#     locked_into: move         their Pokémon's last move before ours came in (a choice lock)
+#     reveal: [[side, species, item, value]]   an item shown (Frisk, Life Orb recoil, ...)
+#     consumed: item            their Pokémon used its item up earlier
+#     boosts: {stat: stages}    their Pokémon's stat stages
+#     weather_turns_left / terrain_turns_left / trick_room_turns_left   override build.field
+#     mix: {variant: weight}    with the fact hidden, WP should be this mix of the known variants
+#     faint_order: reversed     (F9) their fainted Pokémon go down in the opposite order
+#
+# Fillers are ours from `tests/fixtures/teams/valid_basic.txt` plus three, and serve as their
+# sheets too. They faint before the position starts, so they matter only through Last Respects'
+# count, Speed evidence, and F9.
+fillers: |
+  Rillaboom @ Miracle Seed
+  Ability: Grassy Surge
+  EVs: 32 HP / 32 Atk / 2 Spe
+  Adamant Nature
+  - Fake Out
+  - Grassy Glide
+  - Wood Hammer
+  - U-turn
+
+  Incineroar @ Sitrus Berry
+  Ability: Intimidate
+  EVs: 32 HP / 2 Atk / 16 Def / 16 SpD
+  Careful Nature
+  - Fake Out
+  - Flare Blitz
+  - Parting Shot
+  - Snarl
+
+  Garchomp @ Clear Amulet
+  Ability: Rough Skin
+  EVs: 2 HP / 32 Atk / 32 Spe
+  Jolly Nature
+  - Earthquake
+  - Dragon Claw
+  - Rock Slide
+  - Protect
+
+  Sinistcha @ Leftovers
+  Ability: Hospitality
+  EVs: 32 HP / 16 Def / 18 SpD
+  Bold Nature
+  - Matcha Gotcha
+  - Rage Powder
+  - Trick Room
+  - Strength Sap
+
+  Whimsicott @ Covert Cloak
+  Ability: Prankster
+  EVs: 32 HP / 2 Def / 32 Spe
+  Timid Nature
+  - Tailwind
+  - Moonblast
+  - Encore
+  - Protect
+
+  Amoonguss @ Rocky Helmet
+  Ability: Regenerator
+  EVs: 32 HP / 16 Def / 18 SpD
+  Relaxed Nature
+  - Spore
+  - Rage Powder
+  - Pollen Puff
+  - Protect
+
+  Pelipper @ Focus Sash
+  Ability: Drizzle
+  EVs: 32 HP / 2 SpA / 32 Spe
+  Modest Nature
+  - Hurricane
+  - Weather Ball
+  - Tailwind
+  - Protect
+
 families:
 
   # ---------------------------------------------------------------------------------------------
@@ -53,22 +143,43 @@ families:
       - "Aqua Jet (Life Orb) vs 0 HP Zard in sun: 47.7–57.5%  → one Aqua Jet does not KO us from full"
       - "Speed: our Zard 152. Non-Scarf Basculegion max 143 (Jolly 32). Scarf Basculegion ≥ 152
          needs only 4 Spe SP (Adamant 0 Spe + Scarf = 147)."
+    build:
+      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+             nature: Modest, sp: {hp: 2, spa: 32, spe: 32}, hp: 100,
+             moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
+      theirs: {species: Basculegion, item: Life Orb, ability: Adaptability, nature: Adamant, hp: 60,
+               moves: [Last Respects, Wave Crash, Aqua Jet, Protect]}
+      fainted: {ours: [Gholdengo, Rillaboom, Incineroar]}
+      field: {weather: Sunny Day, weather_turns_left: 4}
+    extra_ours: |
+      Gholdengo @ Choice Specs
+      Ability: Good as Gold
+      EVs: 2 HP / 32 SpA / 32 Spe
+      Timid Nature
+      - Make It Rain
+      - Shadow Ball
+      - Trick
+      - Protect
     variants:
-      A: {sheets: open, theirs_item: Life Orb, expected: 1.0,
+      A: {sheets: open, theirs_item: Life Orb, theirs: {item: Life Orb}, expected: 1.0,
           why: "we are faster; Solar Beam KOs; Aqua Jet first does not save them"}
-      B: {sheets: open, theirs_item: Choice Scarf, expected: 0.0, confidence: high,
+      B: {sheets: open, theirs_item: Choice Scarf, theirs: {item: Choice Scarf}, expected: 0.0,
+          confidence: high,
           why: "they are faster (any Scarf spread with ≥4 Spe SP); Last Respects KOs"}
-      C: {sheets: closed, evidence: none, expected: 0.59,
+      C: {sheets: closed, evidence: none, expected: 0.59, mix: {A: 0.59, B: 0.41},
           why: "mix: 41% of Basculegion carry Choice Scarf (usage), so ≈ 1 − 0.41"}
-      D: {sheets: closed, expected: 0.0,
+      D: {sheets: closed, expected: 0.0, theirs: {item: Choice Scarf},
           evidence: "earlier: their Basculegion's Wave Crash went before our Timid 32-Spe Gholdengo (149)",
+          order: [[p2, Basculegion, Wave Crash], [p1, Gholdengo, Shadow Ball]],
           why: "a non-Scarf Basculegion tops out at 143, so it is Scarf"}
       E: {sheets: closed, expected: 1.0,
           evidence: "earlier: our Zard's Heat Wave went before their Basculegion's Wave Crash",
+          order: [[p1, Charizard, Heat Wave], [p2, Basculegion, Wave Crash]],
           why: "Scarf with ≥4 Spe SP would have been faster; rules Scarf out (the SP belief says
                 how sure)"}
       F: {sheets: closed, expected: 1.0,
           evidence: "Life Orb recoil seen on their Basculegion",
+          reveal: [[p2, Basculegion, item, Life Orb]],
           why: "the item is revealed as Life Orb, so it is variant A"}
 
   # ---------------------------------------------------------------------------------------------
@@ -86,6 +197,11 @@ families:
       - "Rage Fist (50 BP) vs 32 HP / 32+ Def Gholdengo: 34.0–41.2%  → KOs ours from 30%"
       - "Shadow Ball (Life Orb) vs 32 HP / 32+ SpD Annihilape: 69.5–83.8%  → guaranteed 2HKO"
       - "Speed: Scarf Annihilape ≥ 165 (Adamant, 0 Spe) > our 149"
+    build:
+      ours: {species: Gholdengo, item: Life Orb, ability: Good as Gold, nature: Timid,
+             sp: {hp: 2, spa: 32, spe: 32}, hp: 30, moves: [Make It Rain, Shadow Ball, Nasty Plot, Protect]}
+      theirs: {species: Annihilape, item: Choice Scarf, ability: Defiant, nature: Adamant, hp: 100,
+               moves: [Rage Fist, Close Combat, Drain Punch, Rock Slide]}
     variants:
       A: {sheets: open, locked_into: Rage Fist, expected: 0.0,
           why: "they move first and Rage Fist KOs"}
@@ -114,11 +230,18 @@ families:
     fainted: {ours: 3, theirs: 3}
     calcs:
       - "as F1; Solar Beam needs a charge turn out of sun, and Last Respects KOs us during it"
+    build:
+      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+             nature: Modest, sp: {hp: 2, spa: 32, spe: 32}, hp: 100,
+             moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
+      theirs: {species: Basculegion, item: Life Orb, ability: Adaptability, nature: Adamant, hp: 60,
+               moves: [Last Respects, Wave Crash, Aqua Jet, Protect]}
+      field: {weather: Sunny Day}
     variants:
-      A: {weather_turns_left: 4, expected: 0.9, confidence: medium,
+      A: {sheets: open, weather_turns_left: 4, expected: 0.9, confidence: medium,
           why: "they can Protect once; sun is still up next turn and Solar Beam KOs.
                 A second Protect succeeds 1/3 of the time — the solver will price it"}
-      B: {weather_turns_left: 1, expected: 0.1, confidence: medium,
+      B: {sheets: open, weather_turns_left: 1, expected: 0.1, confidence: medium,
           why: "they Protect (58% carry it, and it is known here), sun ends, Solar Beam must charge"}
     note: "Identical positions to every version-1 model: only the turn count differs."
 
@@ -140,6 +263,13 @@ families:
       - {species: Charizard, item: Charizardite Y, mega: true, ability: Drought, hp: 100,
          moves_known: [Solar Beam, Heat Wave, Protect]}
     field: {weather: sun}
+    build:
+      ours: {species: Tyranitar, item: Chople Berry, ability: Sand Stream, nature: Adamant,
+             sp: {hp: 32, atk: 32, def: 2}, hp: 55, moves: [Rock Slide, Knock Off, Low Kick, Protect]}
+      theirs: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+               nature: Modest, hp: 100, moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
+      fainted: {ours: [Rillaboom, Garchomp, Sinistcha], theirs: [Incineroar, Garchomp, Whimsicott]}
+      field: {weather: Sunny Day}
     calcs:
       - "Rock Slide vs 32 HP / 32+ Def Mega Zard Y (single target): 131.8–157.8%  → OHKO"
       - "Solar Beam (sun) vs 32 HP / 32+ SpD Tyranitar: 60.8–72.4%  → KOs ours from 55%"
@@ -147,14 +277,14 @@ families:
       - "Speed: any Mega Zard Y ≥ 120 > our 81"
       - "Consecutive Protect: 1/3 chance for the second, 1/9 for the third"
     variants:
-      A: {trick_room_turns_left: 3, weather_turns_left: 5, expected: 0.9, confidence: medium,
+      A: {sheets: open, trick_room_turns_left: 3, weather_turns_left: 5, expected: 0.9, confidence: medium,
           why: "they can Protect once; Trick Room is still up next turn, and a second Protect is 1/3"}
-      B: {trick_room_turns_left: 1, weather_turns_left: 5, expected: 0.05, confidence: medium,
+      B: {sheets: open, trick_room_turns_left: 1, weather_turns_left: 5, expected: 0.05, confidence: medium,
           why: "they Protect, Trick Room ends, they are faster and the sun is still up"}
-      C: {trick_room_turns_left: 0, weather_turns_left: 1, expected: 0.85, confidence: medium,
+      C: {sheets: open, trick_room_turns_left: 0, weather_turns_left: 1, expected: 0.85, confidence: medium,
           why: "we Protect, the sun ends, Solar Beam must charge and Rock Slide KOs during it;
                 their own Protect only delays"}
-      D: {trick_room_turns_left: 0, weather_turns_left: 4, expected: 0.05, confidence: medium,
+      D: {sheets: open, trick_room_turns_left: 0, weather_turns_left: 4, expected: 0.05, confidence: medium,
           why: "our Protect buys one turn; the sun outlasts a second (1/3)"}
     note: >
       A/B vary only Trick Room and C/D only the sun. B and D are both "about to lose" for different
@@ -175,12 +305,19 @@ families:
       - "Extreme Speed (Adamant 32 Atk) vs our 2 HP / 0 Def Sneasler: 43.9–52.2%  → KOs ours from 40%"
       - "Close Combat vs 32 HP / 32+ Def Arcanine-H: 84.1–100.9%  → KOs from 50% for any spread"
       - "Focus Sash cannot matter: they are not at full HP"
+    build:
+      ours: {species: Sneasler, item: White Herb, ability: Unburden, nature: Jolly,
+             sp: {hp: 2, atk: 32, spe: 32}, hp: 40, moves: [Close Combat, Dire Claw, Fake Out, Protect]}
+      theirs: {species: Arcanine-Hisui, item: Choice Band, ability: Rock Head, nature: Adamant, hp: 50,
+               moves: [Flare Blitz, Extreme Speed, Head Smash, Protect]}
     variants:
       A: {sheets: open, extreme_speed: on sheet, expected: 0.0, why: "priority goes first and KOs"}
-      B: {sheets: open, extreme_speed: not on sheet, expected: 1.0, why: "we are faster; CC KOs"}
-      C: {sheets: closed, evidence: none, expected: 0.04,
+      B: {sheets: open, extreme_speed: not on sheet, expected: 1.0, why: "we are faster; CC KOs",
+          theirs: {moves: [Flare Blitz, Head Smash, Rock Slide, Protect]}}
+      C: {sheets: closed, evidence: none, expected: 0.04, mix: {A: 0.96, B: 0.04},
           why: "mix: 96% of Arcanine-Hisui run Extreme Speed"}
-      D: {sheets: closed, evidence: "they used Extreme Speed earlier", expected: 0.0, why: "as A"}
+      D: {sheets: closed, evidence: "they used Extreme Speed earlier", expected: 0.0, why: "as A",
+          used: [[p2, Arcanine-Hisui, Extreme Speed]]}
 
   # ---------------------------------------------------------------------------------------------
   - id: F6
@@ -197,14 +334,21 @@ families:
     calcs:
       - "Close Combat vs 2 HP / 0 Def Arcanine-H: 144.1–170.9% (vs max bulk 84.1–100.9%)"
       - "Extreme Speed vs our Sneasler: 43.9–52.2%. Rock Head: no recoil from Flare Blitz or Head Smash"
+    build:
+      ours: {species: Sneasler, item: White Herb, ability: Unburden, nature: Jolly,
+             sp: {hp: 2, atk: 32, spe: 32}, hp: 100, moves: [Close Combat, Dire Claw, Fake Out, Protect]}
+      theirs: {species: Arcanine-Hisui, item: Focus Sash, ability: Rock Head, nature: Adamant, hp: 100,
+               moves: [Flare Blitz, Extreme Speed, Head Smash, Protect]}
+      fainted: {theirs: [Rillaboom, Incineroar, Garchomp]}
     variants:
       A: {sheets: open, theirs_item: Focus Sash, expected: 0.05, confidence: medium,
           why: "CC → Sash holds at 1 HP → Flare Blitz; next turn Extreme Speed first finishes us.
                 Needs the solver: depends on Flare Blitz + ES covering our HP"}
-      B: {sheets: open, theirs_item: Focus Sash (consumed earlier), expected: 0.95,
+      B: {sheets: open, theirs_item: Focus Sash (consumed earlier), consumed: Focus Sash, expected: 0.95,
           why: "CC OHKOs any offensive spread; only a max-bulk spread can survive (6.3% roll)"}
-      C: {sheets: closed, evidence: none, expected: 0.1,
-          why: "mix: 94% carry Focus Sash, and at full HP it is intact"}
+      C: {sheets: closed, evidence: none, expected: 0.1, mix: {A: 0.94, B: 0.06},
+          why: "mix: 94% carry Focus Sash, and at full HP it is intact. B stands in for the other
+                6%: an Arcanine-Hisui with no Sash to hold"}
 
   # ---------------------------------------------------------------------------------------------
   - id: F7
@@ -224,13 +368,22 @@ families:
       - "Grassy Glide vs 32 HP / 32+ Def Sneasler at +1 Def (Grassy Seed): 13.3–16.0%  → KOs from 12%"
       - "Close Combat vs 32 HP / 32+ Def Rillaboom: 38.1–45.4%  → KOs ours from 35%"
       - "Speed: any Sneasler ≥ 140 > our 137, so without terrain they move first"
+    build:
+      ours: {species: Rillaboom, item: Miracle Seed, ability: Grassy Surge, nature: Adamant,
+             sp: {hp: 2, atk: 32, spe: 32}, hp: 35, moves: [Grassy Glide, Wood Hammer, Fake Out, U-turn]}
+      theirs: {species: Sneasler, item: Grassy Seed, ability: Unburden, nature: Jolly, hp: 12,
+               moves: [Close Combat, Dire Claw, Fake Out, Protect]}
+      fainted: {ours: [Incineroar, Garchomp, Sinistcha]}
+      field: {terrain: Grassy Terrain}
+      consumed: Grassy Seed
+      boosts: {def: 1}
     variants:
-      A: {terrain_turns_left: 3, expected: 0.85, confidence: medium,
+      A: {sheets: open, terrain_turns_left: 3, expected: 0.85, confidence: medium,
           why: "Glide has priority while terrain lasts; their Protect (76%) buys a turn, a second
                 one is 1/3"}
-      B: {terrain_turns_left: 1, expected: 0.2, confidence: medium,
+      B: {sheets: open, terrain_turns_left: 1, expected: 0.2, confidence: medium,
           why: "they Protect once and the terrain ends; then they are faster"}
-      C: {terrain_turns_left: 0, expected: 0.0, why: "no priority; they move first and CC KOs"}
+      C: {sheets: open, terrain_turns_left: 0, expected: 0.0, why: "no priority; they move first and CC KOs"}
     note: "We carry no Protect here on purpose (11% of Rillaboom do), so the stall is one-sided."
 
   # ---------------------------------------------------------------------------------------------
@@ -253,14 +406,22 @@ families:
       - "Sucker Punch (Black Glasses) vs 2 HP / 0 Def Kingambit: 19.7–23.7%  → cannot decide it from 75%"
       - "Speed: ours 86. Adamant Kingambit is 70 + Spe SP, so theirs is faster from 17 Spe SP,
          tied at 16. 84% are Adamant, 14% Brave (slower still), 1% Jolly."
+    build:
+      ours: {species: Kingambit, item: Black Glasses, ability: Defiant, nature: Adamant,
+             sp: {hp: 18, atk: 32, spe: 16}, hp: 75, moves: [Low Kick, Sucker Punch, Kowtow Cleave, Protect]}
+      theirs: {species: Kingambit, item: Black Glasses, ability: Defiant, nature: Adamant, hp: 75,
+               moves: [Low Kick, Sucker Punch, Protect, Kowtow Cleave]}
     variants:
       A: {sheets: open, theirs_item: Black Glasses, evidence: "earlier, their non-priority move went before ours",
+          order: [[p2, Kingambit, Low Kick], [p1, Kingambit, Kowtow Cleave]],
           expected: 0.0, why: "they have ≥17 Spe SP; their Low Kick lands first"}
       B: {sheets: open, theirs_item: Black Glasses, evidence: "earlier, ours went before theirs",
+          order: [[p1, Kingambit, Kowtow Cleave], [p2, Kingambit, Low Kick]],
           expected: 1.0, why: "≤15 Spe SP (a tie at 16 would have been a coin flip); our Low Kick lands first"}
       C: {sheets: open, theirs_item: Black Glasses, evidence: none, expected: from the SP prior,
           why: "P(Spe SP ≥ 17 | Adamant Kingambit), plus half the tie — the belief says how sure"}
       D: {sheets: open, theirs_item: Chople Berry, evidence: "as B (we are faster)", expected: 0.0,
+          theirs: {item: Chople Berry}, order: [[p1, Kingambit, Kowtow Cleave], [p2, Kingambit, Low Kick]],
           why: "our Low Kick is halved; they survive and their Low Kick KOs us"}
     note: "Low Kick is on 49% of Kingambit; the open sheet shows it here."
 
@@ -282,15 +443,24 @@ families:
       - "Aqua Jet (Adamant 32 Atk, Mystic Water) vs our Gholdengo: 35.3–42.6%  → chip, not a KO from full"
       - "Speed: ours 136. Adamant Basculegion ≤ 130 (always slower). Jolly is faster from 26 Spe SP
          (Jolly 25 = 135). 59% Adamant, 40% Jolly. Mystic Water means no Scarf."
+    build:
+      ours: {species: Gholdengo, item: Life Orb, ability: Good as Gold, nature: Modest,
+             sp: {hp: 2, spa: 32, spe: 32}, hp: 100, moves: [Shadow Ball, Make It Rain, Nasty Plot, Protect]}
+      theirs: {species: Basculegion, item: Mystic Water, ability: Adaptability, nature: Jolly, hp: 70,
+               moves: [Last Respects, Aqua Jet, Wave Crash, Protect]}
     variants:
-      A: {sheets: open, theirs_nature: Adamant, expected: 1.0, why: "they cannot reach 136"}
+      A: {sheets: open, theirs_nature: Adamant, theirs: {nature: Adamant}, expected: 1.0,
+          why: "they cannot reach 136"}
       B: {sheets: open, theirs_nature: Jolly, evidence: "earlier, their Wave Crash went before our Shadow Ball",
+          order: [[p2, Basculegion, Wave Crash], [p1, Gholdengo, Shadow Ball]],
           expected: 0.0, why: "≥26 Spe SP; Last Respects lands first"}
       C: {sheets: open, theirs_nature: Jolly, evidence: "earlier, our Shadow Ball went first",
+          order: [[p1, Gholdengo, Shadow Ball], [p2, Basculegion, Wave Crash]],
           expected: 1.0, why: "≤25 Spe SP; Shadow Ball lands first"}
       D: {sheets: open, theirs_nature: Jolly, evidence: none, expected: from the SP prior,
           why: "P(Spe SP ≥ 26 | Jolly Basculegion) — probably high, since Jolly is taken for Speed"}
       E: {sheets: closed, evidence: "Mystic Water seen (e.g. Frisk)", expected: from the belief,
+          reveal: [[p2, Basculegion, item, Mystic Water]],
           why: "mixes nature (59/40) with Speed SP; the item is the only thing known"}
 
   # ---------------------------------------------------------------------------------------------
@@ -299,9 +469,12 @@ families:
     mechanism: facts that cannot change the outcome
     base: F4 variant A
     variants:
-      A: {change: "the item of their fainted Incineroar revealed as Sitrus Berry", expected: same as base}
-      B: {change: "the moves of our fainted Rillaboom revealed", expected: same as base}
-      C: {change: "their fainted Pokémon listed in a different order", expected: same as base}
+      A: {change: "the item of their fainted Incineroar revealed as Sitrus Berry", expected: same as base,
+          reveal: [[p2, Incineroar, item, Sitrus Berry]]}
+      B: {change: "the moves of our fainted Rillaboom revealed", expected: same as base,
+          used: [[p1, Rillaboom, Wood Hammer]]}
+      C: {change: "their fainted Pokémon listed in a different order", expected: same as base,
+          faint_order: reversed}
     note: "Scored as |WP(variant) − WP(base)|, which should be 0 up to particle noise."
 
   # ---------------------------------------------------------------------------------------------

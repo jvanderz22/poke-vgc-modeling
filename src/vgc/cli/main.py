@@ -746,6 +746,26 @@ def cmd_wp_valcheck(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wp_benchmark(args: argparse.Namespace) -> int:
+    """Score the decided-endgame benchmark: each variant through the app's own WP."""
+    from vgc import paths
+    from vgc.wp import benchmark
+
+    reg = _reg(args)
+    res = benchmark.score(reg, args.version, k=args.k)
+    print(benchmark.format_report(res))
+    if args.version:
+        from vgc.wp.models import model_dir
+
+        out = model_dir(reg.id, args.version) / "benchmark.json"
+    else:
+        out = paths.ROOT / "data" / "analysis" / reg.id / "decided_endgames_served.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"version": args.version or "served", "k": args.k} | res, indent=1) + "\n")
+    print(f"→ {out.relative_to(paths.ROOT)}")
+    return 0
+
+
 def cmd_wp_preview(args: argparse.Namespace) -> int:
     from vgc.wp.models import default_version
     from vgc.wp.tools import preview
@@ -1238,6 +1258,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", required=True)
     p.add_argument("--dataset", required=True)
     p.set_defaults(func=cmd_wp_valcheck)
+    p = with_reg(wp.add_parser("benchmark", help="the decided-endgame benchmark, through the app's WP"))
+    p.add_argument("--version", help="score one model on every variant (default: the pin for each regime)")
+    p.add_argument("--k", type=int, default=24, help="opponents drawn from the belief per position")
+    p.set_defaults(func=cmd_wp_benchmark)
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")

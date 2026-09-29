@@ -1325,3 +1325,57 @@ spare in every bucket.
 rounding error: −0.007 nats, one seed. That does not reverse finding 1, which is about magnitude,
 but it does refute the reason preview rows were spared identity dropout ("masking costs the
 preview signal"), and the code comments now say so.
+
+## The decided-endgame benchmark, first scores: the models do not follow the deciding fact
+
+Plan v3 step 2 (2026-09-28). `vgc wp benchmark` builds each variant of
+[`decided_endgames.yaml`](../benchmarks/wp/reg_mc/decided_endgames.yaml) as a hand-entry journal,
+the taps a person would make, and scores it through the app's own WP (`live.wp`, 24 opponents
+drawn from the belief). The Speed pairs and choice locks the variants name reach the model input
+(`evidence`), which `tests/test_wp_benchmark.py` pins. `expected` is still hand-reasoned, but
+direction and invariance do not use it, and mixing compares a model with itself.
+
+**The benchmark tells a set-blind model apart.** `wp-v1e-gbt` moves by exactly 0 on every fact
+about a set. It moves only on Trick Room (0.21 of an expected 0.85, since Trick Room is one of its
+hand features) and on terrain. Every set encoder moves a little on most facts.
+
+WP moved between the two variants, against the gap in `expected`:
+
+| pair | fact | expected | gbt | v1d | v1e | v1f-idp5 |
+|---|---|---|---|---|---|---|
+| F1 A→B | Life Orb → Choice Scarf, on the sheet | −1.00 | 0 | −0.03 | −0.09 | −0.07 |
+| F1 D→E | Speed order: they were faster → we were | +1.00 | 0 | +0.00 | +0.04 | +0.07 |
+| F2 A→B | locked into Rage Fist → Close Combat | +1.00 | 0 | 0 | −0.01 | +0.00 |
+| F3 A→B | sun 4 turns left → 1 | −0.80 | 0 | 0 | −0.00 | −0.00 |
+| F4 A→B | Trick Room 3 turns left → 1 | −0.85 | −0.21 | −0.03 | −0.02 | −0.01 |
+| F5 A→B | Extreme Speed on the sheet → not | +1.00 | 0 | −0.01 | −0.01 | −0.00 |
+| F6 A→B | Focus Sash held → consumed | +0.90 | 0 | +0.05 | +0.11 | +0.09 |
+| F7 A→C | Grassy Terrain 3 turns left → none | −0.85 | +0.01 | +0.00 | +0.01 | +0.03 |
+| F8a A→B | Speed order in the Kingambit mirror | +1.00 | 0 | 0 | +0.00 | +0.02 |
+| F8b B→C | Speed order: they were faster → we were | +1.00 | 0 | 0 | +0.09 | +0.06 |
+
+Over all 26 direction pairs, the right way: gbt 15%, `wp-v1d` 46%, `wp-v1e` 69%,
+`wp-v1f-idp5` 85%. Each set of new inputs made the direction more often right, and never much
+bigger: the mean share of the gap moved is 0.02–0.04 for every model.
+
+- **Plan step 2's question: does `wp-v1e` move on F1-D/E, F2 and F8a/b?** No, not usefully.
+  0–9% of the way, and on F2 not at all. The inputs arrive and the model has learned almost
+  nothing from them.
+- **The timers are read and not used.** Featurizer 2 and 3 models have weather and terrain turns
+  as columns, and F3 and F7 are flat. `wp-v1f-idp5` moves F7 the wrong way.
+- **Mixing.** With the fact hidden, `wp-v1f-idp5` sits below its own mix of the known cases in all
+  three families (F1 −0.03, F5 −0.14, F6 −0.07). With so little movement between the known
+  cases, that says more about a closed-sheet offset than about mixing.
+- **Invariance.** A fainted Pokémon's used move moves `wp-v1f-idp5` by 0.020 (F9/B). The other
+  changes move nothing.
+- **Distance from `expected`.** About 0.42 for every model. These are decided positions, and
+  every model answers them near its prior for a 1v1 at those HP values.
+- **The served closed-sheet pin.** `wp-v1d` is featurizer 1 and cannot see a Speed order, a last
+  move or a timer at all. That costs little on this benchmark today, because `wp-v1f-idp5` barely
+  uses them either.
+
+What it means: a WP learned from ~1100-rated human games does not carry the mechanics that decide
+an endgame. They are rare in the data, and when they happen the outcome is already mostly in HP
+and numbers. Training alone is unlikely to close a 20× gap. The benchmark supports the route Phase 9
+already plans, where a revealed Scarf or choice lock acts through the engine in search and WP is
+read at the leaves. The solver that supplies `expected` is that route's first piece.

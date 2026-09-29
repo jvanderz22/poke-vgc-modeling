@@ -71,9 +71,11 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
 - **Served models are pinned** per role and regime in `models/served.json`. The regimes are named
   once (`SHEETS`, `REGIME_GATES` in `vgc.wp.models`), and the app's open/closed toggle is built
   from that list.
-- **The decided-endgame benchmark is drafted**:
-  [`benchmarks/wp/reg_mc/decided_endgames.yaml`](../benchmarks/wp/reg_mc/decided_endgames.yaml).
-  It has 1v1 families where one revealed fact decides the game. Nothing scores it yet.
+- **The decided-endgame benchmark is scored** (`vgc wp benchmark`,
+  [phase8, "decided-endgame benchmark"](phase8-findings.md)). Each variant is a hand-entry journal
+  scored through the app's WP. The set-blind GBT moves by exactly 0 on every set fact. The set
+  encoders move the right way on 46–85% of pairs, but only **2–4% of the distance**. The choice
+  lock, Speed orderings and timers barely move any model.
 
 ---
 
@@ -163,15 +165,16 @@ Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
 
 ### 2. Check that the model uses what is revealed
 
-1. **A benchmark runner and a solver** for the decided-endgame set. The truth comes from a solver
-   over the pinned engine, which is also the first piece of Phase 9's search. Score direction,
-   distance from the true answer, mixing (with the fact hidden, WP should be the belief-weighted
-   mix of the known cases) and invariance.
-2. **Does `wp-v1e` move on F1-D/E, F2 and F8a/b,** the families that Speed orderings and the
-   choice lock decide?
-3. **An ablation against a featurizer-v2 model,** to separate the effect of the timers from the
-   effect of the orderings.
-4. **2v2 families**, once the 1v1 set is agreed. For example, Sneasler with Rock Slide revealed
+1. ✅ **The benchmark runner.** `vgc wp benchmark` scores direction, distance, mixing and
+   invariance.
+2. ✅ **Does the model move on F1-D/E, F2 and F8a/b?** No: 0–9% of the way, and 0 on F2.
+3. ⛔ **The featurizer-v2 ablation is moot.** Neither the timers nor the orderings move any model,
+   so there is no effect to split between them.
+4. ⏳ **The solver** for `expected`, over the pinned engine. The benchmark shows learned WP will
+   not carry these facts, so this is also the first piece of Phase 9. It is 1v1 minimax over
+   simultaneous moves with chance: a matrix game at each node, engine transitions from a
+   serialized Showdown battle, and the opponent's hidden spread drawn from the belief.
+5. **2v2 families**, once the solver can price them. For example, Sneasler with Rock Slide revealed
    or not, plus Kingambit, against Charizard and a Mystic Water Basculegion.
 
 ### 3. Remaining belief-to-app work

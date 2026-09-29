@@ -1,0 +1,1248 @@
+{
+ "version": "wp-v1e-sw-split-small",
+ "k": 24,
+ "variants": [
+  {
+   "family": "F1",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.6858,
+   "lo": 0.6858,
+   "hi": 0.6858,
+   "wp_open": 0.6858,
+   "expected": 1.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F1",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.5943,
+   "lo": 0.5943,
+   "hi": 0.5943,
+   "wp_open": 0.5943,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F1",
+   "variant": "C",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.6814,
+   "lo": 0.5173,
+   "hi": 0.7897,
+   "wp_open": 0.6931,
+   "expected": 0.59,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": {
+    "A": 0.59,
+    "B": 0.41
+   }
+  },
+  {
+   "family": "F1",
+   "variant": "D",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.7303,
+   "lo": 0.5804,
+   "hi": 0.8313,
+   "wp_open": 0.6438,
+   "expected": 0.0,
+   "ahead": [
+    [
+     [
+      "p2",
+      "Basculegion",
+      "Basculegion"
+     ],
+     [
+      "p1",
+      "Gholdengo",
+      "Gholdengo"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {},
+    "p2": {
+     "Basculegion": "wavecrash"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F1",
+   "variant": "E",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.7719,
+   "lo": 0.6358,
+   "hi": 0.8635,
+   "wp_open": 0.6947,
+   "expected": 1.0,
+   "ahead": [
+    [
+     [
+      "p1",
+      "Charizard",
+      "Charizard-Mega-Y"
+     ],
+     [
+      "p2",
+      "Basculegion",
+      "Basculegion"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Charizard": "heatwave"
+    },
+    "p2": {
+     "Basculegion": "wavecrash"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F1",
+   "variant": "F",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.6881,
+   "lo": 0.5761,
+   "hi": 0.7914,
+   "wp_open": 0.6755,
+   "expected": 1.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced; the only way to learn it is that Basculegion moved first, and no WP model sees turn order.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F2",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.3095,
+   "lo": 0.3095,
+   "hi": 0.3095,
+   "wp_open": 0.3095,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {
+     "Annihilape": "ragefist"
+    }
+   },
+   "blind_spot": "choice lock \u2014 moves are featurized as an order-free set; nothing says which was last used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F2",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.296,
+   "lo": 0.296,
+   "hi": 0.296,
+   "wp_open": 0.296,
+   "expected": 1.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {
+     "Annihilape": "closecombat"
+    }
+   },
+   "blind_spot": "choice lock \u2014 moves are featurized as an order-free set; nothing says which was last used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F2",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2957,
+   "lo": 0.2957,
+   "hi": 0.2957,
+   "wp_open": 0.2957,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "choice lock \u2014 moves are featurized as an order-free set; nothing says which was last used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F3",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.5961,
+   "lo": 0.5961,
+   "hi": 0.5961,
+   "wp_open": 0.5961,
+   "expected": 0.9,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "weather turns \u2014 closed in featurizer version 2, which times weather like Trick Room. No model is trained on version 2 yet, so every current model still sees one row here.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F3",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.5952,
+   "lo": 0.5952,
+   "hi": 0.5952,
+   "wp_open": 0.5952,
+   "expected": 0.1,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "weather turns \u2014 closed in featurizer version 2, which times weather like Trick Room. No model is trained on version 2 yet, so every current model still sees one row here.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F4",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2308,
+   "lo": 0.2308,
+   "hi": 0.2308,
+   "wp_open": 0.2308,
+   "expected": 0.9,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none for Trick Room, which has always been timed; sun turns only from featurizer version 2. Variants A and B are the control: a version-1 model should already get them right.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F4",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2107,
+   "lo": 0.2107,
+   "hi": 0.2107,
+   "wp_open": 0.2107,
+   "expected": 0.05,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none for Trick Room, which has always been timed; sun turns only from featurizer version 2. Variants A and B are the control: a version-1 model should already get them right.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F4",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.1955,
+   "lo": 0.1955,
+   "hi": 0.1955,
+   "wp_open": 0.1955,
+   "expected": 0.85,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none for Trick Room, which has always been timed; sun turns only from featurizer version 2. Variants A and B are the control: a version-1 model should already get them right.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F4",
+   "variant": "D",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.1961,
+   "lo": 0.1961,
+   "hi": 0.1961,
+   "wp_open": 0.1961,
+   "expected": 0.05,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none for Trick Room, which has always been timed; sun turns only from featurizer version 2. Variants A and B are the control: a version-1 model should already get them right.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F5",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.6043,
+   "lo": 0.6043,
+   "hi": 0.6043,
+   "wp_open": 0.6043,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none on open sheets; on closed sheets the move is unknown until used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F5",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.594,
+   "lo": 0.594,
+   "hi": 0.594,
+   "wp_open": 0.594,
+   "expected": 1.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none on open sheets; on closed sheets the move is unknown until used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F5",
+   "variant": "C",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4527,
+   "lo": 0.3201,
+   "hi": 0.5708,
+   "wp_open": 0.5889,
+   "expected": 0.04,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none on open sheets; on closed sheets the move is unknown until used",
+   "base": null,
+   "mix": {
+    "A": 0.96,
+    "B": 0.04
+   }
+  },
+  {
+   "family": "F5",
+   "variant": "D",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.478,
+   "lo": 0.3792,
+   "hi": 0.5728,
+   "wp_open": 0.5464,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {
+     "Arcanine-Hisui": "extremespeed"
+    }
+   },
+   "blind_spot": "none on open sheets; on closed sheets the move is unknown until used",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F6",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.5167,
+   "lo": 0.5167,
+   "hi": 0.5167,
+   "wp_open": 0.5167,
+   "expected": 0.05,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none \u2014 held and lost items are both featurized",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F6",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.6288,
+   "lo": 0.6288,
+   "hi": 0.6288,
+   "wp_open": 0.6288,
+   "expected": 0.95,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none \u2014 held and lost items are both featurized",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F6",
+   "variant": "C",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.481,
+   "lo": 0.3458,
+   "hi": 0.6034,
+   "wp_open": 0.5956,
+   "expected": 0.1,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "none \u2014 held and lost items are both featurized",
+   "base": null,
+   "mix": {
+    "A": 0.94,
+    "B": 0.06
+   }
+  },
+  {
+   "family": "F7",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.3786,
+   "lo": 0.3786,
+   "hi": 0.3786,
+   "wp_open": 0.3786,
+   "expected": 0.85,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "terrain turns \u2014 closed in featurizer version 2, timed like weather and Trick Room. No model is trained on version 2 yet.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F7",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.3697,
+   "lo": 0.3697,
+   "hi": 0.3697,
+   "wp_open": 0.3697,
+   "expected": 0.2,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "terrain turns \u2014 closed in featurizer version 2, timed like weather and Trick Room. No model is trained on version 2 yet.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F7",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.3846,
+   "lo": 0.3846,
+   "hi": 0.3846,
+   "wp_open": 0.3846,
+   "expected": 0.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "terrain turns \u2014 closed in featurizer version 2, timed like weather and Trick Room. No model is trained on version 2 yet.\n",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8a",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4885,
+   "lo": 0.4885,
+   "hi": 0.4885,
+   "wp_open": 0.4885,
+   "expected": 0.0,
+   "ahead": [
+    [
+     [
+      "p2",
+      "Kingambit",
+      "Kingambit"
+     ],
+     [
+      "p1",
+      "Kingambit",
+      "Kingambit"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Kingambit": "kowtowcleave"
+    },
+    "p2": {
+     "Kingambit": "lowkick"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence \u2014 the belief channel has it; no WP model does",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8a",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4918,
+   "lo": 0.4918,
+   "hi": 0.4918,
+   "wp_open": 0.4918,
+   "expected": 1.0,
+   "ahead": [
+    [
+     [
+      "p1",
+      "Kingambit",
+      "Kingambit"
+     ],
+     [
+      "p2",
+      "Kingambit",
+      "Kingambit"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Kingambit": "kowtowcleave"
+    },
+    "p2": {
+     "Kingambit": "lowkick"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence \u2014 the belief channel has it; no WP model does",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8a",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4707,
+   "lo": 0.4707,
+   "hi": 0.4707,
+   "wp_open": 0.4707,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence \u2014 the belief channel has it; no WP model does",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8a",
+   "variant": "D",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4868,
+   "lo": 0.4868,
+   "hi": 0.4868,
+   "wp_open": 0.4868,
+   "expected": 0.0,
+   "ahead": [
+    [
+     [
+      "p1",
+      "Kingambit",
+      "Kingambit"
+     ],
+     [
+      "p2",
+      "Kingambit",
+      "Kingambit"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Kingambit": "kowtowcleave"
+    },
+    "p2": {
+     "Kingambit": "lowkick"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence \u2014 the belief channel has it; no WP model does",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8b",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4951,
+   "lo": 0.4951,
+   "hi": 0.4951,
+   "wp_open": 0.4951,
+   "expected": 1.0,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence; on closed sheets the nature too",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8b",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4202,
+   "lo": 0.4202,
+   "hi": 0.4202,
+   "wp_open": 0.4202,
+   "expected": 0.0,
+   "ahead": [
+    [
+     [
+      "p2",
+      "Basculegion",
+      "Basculegion"
+     ],
+     [
+      "p1",
+      "Gholdengo",
+      "Gholdengo"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Gholdengo": "shadowball"
+    },
+    "p2": {
+     "Basculegion": "wavecrash"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence; on closed sheets the nature too",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8b",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.5068,
+   "lo": 0.5068,
+   "hi": 0.5068,
+   "wp_open": 0.5068,
+   "expected": 1.0,
+   "ahead": [
+    [
+     [
+      "p1",
+      "Gholdengo",
+      "Gholdengo"
+     ],
+     [
+      "p2",
+      "Basculegion",
+      "Basculegion"
+     ]
+    ]
+   ],
+   "last_move": {
+    "p1": {
+     "Gholdengo": "shadowball"
+    },
+    "p2": {
+     "Basculegion": "wavecrash"
+    }
+   },
+   "blind_spot": "turn-order Speed evidence; on closed sheets the nature too",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8b",
+   "variant": "D",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4712,
+   "lo": 0.4712,
+   "hi": 0.4712,
+   "wp_open": 0.4712,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence; on closed sheets the nature too",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F8b",
+   "variant": "E",
+   "sheets": "closed",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.4822,
+   "lo": 0.3464,
+   "hi": 0.6041,
+   "wp_open": 0.6079,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": "turn-order Speed evidence; on closed sheets the nature too",
+   "base": null,
+   "mix": null
+  },
+  {
+   "family": "F9",
+   "variant": "A",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2308,
+   "lo": 0.2308,
+   "hi": 0.2308,
+   "wp_open": 0.2308,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": null,
+   "base": "F4/A",
+   "mix": null
+  },
+  {
+   "family": "F9",
+   "variant": "B",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2316,
+   "lo": 0.2316,
+   "hi": 0.2316,
+   "wp_open": 0.2316,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": null,
+   "base": "F4/A",
+   "mix": null
+  },
+  {
+   "family": "F9",
+   "variant": "C",
+   "sheets": "open",
+   "version": "wp-v1e-sw-split-small",
+   "wp": 0.2308,
+   "lo": 0.2308,
+   "hi": 0.2308,
+   "wp_open": 0.2308,
+   "expected": null,
+   "ahead": [],
+   "last_move": {
+    "p1": {},
+    "p2": {}
+   },
+   "blind_spot": null,
+   "base": "F4/A",
+   "mix": null
+  }
+ ],
+ "direction": [
+  {
+   "family": "F1",
+   "pair": "A\u2192B",
+   "expected": -1.0,
+   "moved": -0.0915,
+   "right_way": true,
+   "share": 0.091,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "A\u2192D",
+   "expected": -1.0,
+   "moved": 0.0445,
+   "right_way": false,
+   "share": -0.044,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "B\u2192C",
+   "expected": 0.59,
+   "moved": 0.0871,
+   "right_way": true,
+   "share": 0.148,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "B\u2192E",
+   "expected": 1.0,
+   "moved": 0.1776,
+   "right_way": true,
+   "share": 0.178,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "B\u2192F",
+   "expected": 1.0,
+   "moved": 0.0938,
+   "right_way": true,
+   "share": 0.094,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "C\u2192D",
+   "expected": -0.59,
+   "moved": 0.0489,
+   "right_way": false,
+   "share": -0.083,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "D\u2192E",
+   "expected": 1.0,
+   "moved": 0.0416,
+   "right_way": true,
+   "share": 0.042,
+   "same_model": true
+  },
+  {
+   "family": "F1",
+   "pair": "D\u2192F",
+   "expected": 1.0,
+   "moved": -0.0422,
+   "right_way": false,
+   "share": -0.042,
+   "same_model": true
+  },
+  {
+   "family": "F2",
+   "pair": "A\u2192B",
+   "expected": 1.0,
+   "moved": -0.0135,
+   "right_way": false,
+   "share": -0.014,
+   "same_model": true
+  },
+  {
+   "family": "F2",
+   "pair": "B\u2192C",
+   "expected": -1.0,
+   "moved": -0.0003,
+   "right_way": true,
+   "share": 0.0,
+   "same_model": true
+  },
+  {
+   "family": "F3",
+   "pair": "A\u2192B",
+   "expected": -0.8,
+   "moved": -0.0009,
+   "right_way": true,
+   "share": 0.001,
+   "same_model": true
+  },
+  {
+   "family": "F4",
+   "pair": "A\u2192B",
+   "expected": -0.85,
+   "moved": -0.0201,
+   "right_way": true,
+   "share": 0.024,
+   "same_model": true
+  },
+  {
+   "family": "F4",
+   "pair": "A\u2192D",
+   "expected": -0.85,
+   "moved": -0.0347,
+   "right_way": true,
+   "share": 0.041,
+   "same_model": true
+  },
+  {
+   "family": "F4",
+   "pair": "B\u2192C",
+   "expected": 0.8,
+   "moved": -0.0152,
+   "right_way": false,
+   "share": -0.019,
+   "same_model": true
+  },
+  {
+   "family": "F4",
+   "pair": "C\u2192D",
+   "expected": -0.8,
+   "moved": 0.0006,
+   "right_way": false,
+   "share": -0.001,
+   "same_model": true
+  },
+  {
+   "family": "F5",
+   "pair": "A\u2192B",
+   "expected": 1.0,
+   "moved": -0.0103,
+   "right_way": false,
+   "share": -0.01,
+   "same_model": true
+  },
+  {
+   "family": "F5",
+   "pair": "B\u2192C",
+   "expected": -0.96,
+   "moved": -0.1413,
+   "right_way": true,
+   "share": 0.147,
+   "same_model": true
+  },
+  {
+   "family": "F5",
+   "pair": "B\u2192D",
+   "expected": -1.0,
+   "moved": -0.116,
+   "right_way": true,
+   "share": 0.116,
+   "same_model": true
+  },
+  {
+   "family": "F6",
+   "pair": "A\u2192B",
+   "expected": 0.9,
+   "moved": 0.1121,
+   "right_way": true,
+   "share": 0.125,
+   "same_model": true
+  },
+  {
+   "family": "F6",
+   "pair": "B\u2192C",
+   "expected": -0.85,
+   "moved": -0.1478,
+   "right_way": true,
+   "share": 0.174,
+   "same_model": true
+  },
+  {
+   "family": "F7",
+   "pair": "A\u2192B",
+   "expected": -0.65,
+   "moved": -0.0089,
+   "right_way": true,
+   "share": 0.014,
+   "same_model": true
+  },
+  {
+   "family": "F7",
+   "pair": "A\u2192C",
+   "expected": -0.85,
+   "moved": 0.006,
+   "right_way": false,
+   "share": -0.007,
+   "same_model": true
+  },
+  {
+   "family": "F8a",
+   "pair": "A\u2192B",
+   "expected": 1.0,
+   "moved": 0.0033,
+   "right_way": true,
+   "share": 0.003,
+   "same_model": true
+  },
+  {
+   "family": "F8a",
+   "pair": "B\u2192D",
+   "expected": -1.0,
+   "moved": -0.005,
+   "right_way": true,
+   "share": 0.005,
+   "same_model": true
+  },
+  {
+   "family": "F8b",
+   "pair": "A\u2192B",
+   "expected": -1.0,
+   "moved": -0.0749,
+   "right_way": true,
+   "share": 0.075,
+   "same_model": true
+  },
+  {
+   "family": "F8b",
+   "pair": "B\u2192C",
+   "expected": 1.0,
+   "moved": 0.0866,
+   "right_way": true,
+   "share": 0.087,
+   "same_model": true
+  }
+ ],
+ "distance": [
+  {
+   "variant": "F1/A",
+   "error": 0.3142
+  },
+  {
+   "variant": "F1/B",
+   "error": 0.5943
+  },
+  {
+   "variant": "F1/C",
+   "error": 0.0914
+  },
+  {
+   "variant": "F1/D",
+   "error": 0.7303
+  },
+  {
+   "variant": "F1/E",
+   "error": 0.2281
+  },
+  {
+   "variant": "F1/F",
+   "error": 0.3119
+  },
+  {
+   "variant": "F2/A",
+   "error": 0.3095
+  },
+  {
+   "variant": "F2/B",
+   "error": 0.704
+  },
+  {
+   "variant": "F2/C",
+   "error": 0.2957
+  },
+  {
+   "variant": "F3/A",
+   "error": 0.3039
+  },
+  {
+   "variant": "F3/B",
+   "error": 0.4952
+  },
+  {
+   "variant": "F4/A",
+   "error": 0.6692
+  },
+  {
+   "variant": "F4/B",
+   "error": 0.1607
+  },
+  {
+   "variant": "F4/C",
+   "error": 0.6545
+  },
+  {
+   "variant": "F4/D",
+   "error": 0.1461
+  },
+  {
+   "variant": "F5/A",
+   "error": 0.6043
+  },
+  {
+   "variant": "F5/B",
+   "error": 0.406
+  },
+  {
+   "variant": "F5/C",
+   "error": 0.4127
+  },
+  {
+   "variant": "F5/D",
+   "error": 0.478
+  },
+  {
+   "variant": "F6/A",
+   "error": 0.4667
+  },
+  {
+   "variant": "F6/B",
+   "error": 0.3212
+  },
+  {
+   "variant": "F6/C",
+   "error": 0.381
+  },
+  {
+   "variant": "F7/A",
+   "error": 0.4714
+  },
+  {
+   "variant": "F7/B",
+   "error": 0.1697
+  },
+  {
+   "variant": "F7/C",
+   "error": 0.3846
+  },
+  {
+   "variant": "F8a/A",
+   "error": 0.4885
+  },
+  {
+   "variant": "F8a/B",
+   "error": 0.5082
+  },
+  {
+   "variant": "F8a/D",
+   "error": 0.4868
+  },
+  {
+   "variant": "F8b/A",
+   "error": 0.5049
+  },
+  {
+   "variant": "F8b/B",
+   "error": 0.4202
+  },
+  {
+   "variant": "F8b/C",
+   "error": 0.4932
+  }
+ ],
+ "mixing": [
+  {
+   "variant": "F1/C",
+   "wp": 0.6814,
+   "mix": 0.6483,
+   "error": 0.0331
+  },
+  {
+   "variant": "F5/C",
+   "wp": 0.4527,
+   "mix": 0.6039,
+   "error": -0.1512
+  },
+  {
+   "variant": "F6/C",
+   "wp": 0.481,
+   "mix": 0.5234,
+   "error": -0.0424
+  }
+ ],
+ "invariance": [
+  {
+   "variant": "F9/A",
+   "base": "F4/A",
+   "moved": 0.0
+  },
+  {
+   "variant": "F9/B",
+   "base": "F4/A",
+   "moved": 0.0008
+  },
+  {
+   "variant": "F9/C",
+   "base": "F4/A",
+   "moved": 0.0
+  }
+ ],
+ "summary": {
+  "direction_pairs": 26,
+  "right_way": 0.692,
+  "mean_share_of_gap": 0.044,
+  "mean_distance": 0.4196,
+  "mean_abs_mix_error": 0.0756,
+  "max_invariance": 0.0008
+ }
+}
