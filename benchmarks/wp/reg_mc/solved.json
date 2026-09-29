@@ -1,0 +1,720 @@
+{
+ "engine": "2ddfa0476f8207e12e204b1c69f7c7683b17633c",
+ "truth": {
+  "F1/A": {
+   "value": 0.9995,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 54426
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F1/B": {
+   "value": 0.2715,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 0.271,
+     "spe": 0,
+     "speed": 147.0,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 30598
+    },
+    "faster": {
+     "weight": 0.729,
+     "spe": 32,
+     "speed": 195.0,
+     "ours": 152.0,
+     "value": 0.0009,
+     "leaf_mass": 0.0014,
+     "nodes": 25662
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F1/D": {
+   "value": 0.0743,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 0.0735,
+     "spe": 3,
+     "speed": 151.5,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 30598
+    },
+    "faster": {
+     "weight": 0.9265,
+     "spe": 32,
+     "speed": 195.0,
+     "ours": 152.0,
+     "value": 0.0009,
+     "leaf_mass": 0.0014,
+     "nodes": 25662
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F1/E": {
+   "value": 0.9995,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 54426
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F1/F": {
+   "value": 0.9995,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 54426
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F2/A": {
+   "value": 0.0003,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 165.0,
+     "ours": 149.0,
+     "value": 0.0003,
+     "leaf_mass": 0.0014,
+     "nodes": 898
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F2/B": {
+   "value": 1.0,
+   "leaf_mass": 0.0,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 165.0,
+     "ours": 149.0,
+     "value": 1,
+     "leaf_mass": 0,
+     "nodes": 6226
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F2/C": {
+   "value": 0.0003,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 165.0,
+     "ours": 149.0,
+     "value": 0.0003,
+     "leaf_mass": 0.0014,
+     "nodes": 184954
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F3/A": {
+   "value": 0.9995,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 152.0,
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 54426
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F3/B": {
+   "value": 0.0232,
+   "leaf_mass": 0.037,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 152.0,
+     "value": 0.0232,
+     "leaf_mass": 0.037,
+     "nodes": 66002
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F4/A": {
+   "value": 0.9,
+   "leaf_mass": 0.0,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 120.0,
+     "ours": 81.0,
+     "value": 0.9,
+     "leaf_mass": 0,
+     "nodes": 404408
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F4/B": {
+   "value": 0.0132,
+   "leaf_mass": 0.037,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 120.0,
+     "ours": 81.0,
+     "value": 0.0132,
+     "leaf_mass": 0.037,
+     "nodes": 374092
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F4/C": {
+   "value": 0.914,
+   "leaf_mass": 0.1333,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 120.0,
+     "ours": 81.0,
+     "value": 0.914,
+     "leaf_mass": 0.1333,
+     "nodes": 1999782
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F4/D": {
+   "value": 0.0005,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 120.0,
+     "ours": 81.0,
+     "value": 0.0005,
+     "leaf_mass": 0.0014,
+     "nodes": 376736
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F5/A": {
+   "value": 0.0006,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 110.0,
+     "ours": 189.0,
+     "value": 0.0006,
+     "leaf_mass": 0.0014,
+     "nodes": 82008
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F5/B": {
+   "value": 0.9992,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 110.0,
+     "ours": 189.0,
+     "value": 0.9992,
+     "leaf_mass": 0.0014,
+     "nodes": 163919
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F5/D": {
+   "value": 0.0006,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 110.0,
+     "ours": 189.0,
+     "value": 0.0006,
+     "leaf_mass": 0.0014,
+     "nodes": 82008
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F6/A": {
+   "value": 0.1109,
+   "leaf_mass": 0.0036,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 110.0,
+     "ours": 189.0,
+     "value": 0.1109,
+     "leaf_mass": 0.0036,
+     "nodes": 4199716
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F6/B": {
+   "value": 0.9993,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 110.0,
+     "ours": 189.0,
+     "value": 0.9993,
+     "leaf_mass": 0.0014,
+     "nodes": 4007020
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F7/A": {
+   "value": 0.6804,
+   "leaf_mass": 0.0,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 154.0,
+     "ours": 137.0,
+     "value": 0.6804,
+     "leaf_mass": 0,
+     "nodes": 12831
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F7/B": {
+   "value": 0.0,
+   "leaf_mass": 0.0,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 154.0,
+     "ours": 137.0,
+     "value": 0,
+     "leaf_mass": 0,
+     "nodes": 12556
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F7/C": {
+   "value": 0.0,
+   "leaf_mass": 0.0,
+   "classes": {
+    "faster": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 154.0,
+     "ours": 137.0,
+     "value": 0,
+     "leaf_mass": 0,
+     "nodes": 7884
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8a/A": {
+   "value": 0.0315,
+   "leaf_mass": 0.0013,
+   "classes": {
+    "tied": {
+     "weight": 0.0617,
+     "spe": 16,
+     "speed": 86.0,
+     "ours": 86.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 1051076
+    },
+    "faster": {
+     "weight": 0.9383,
+     "spe": 32,
+     "speed": 102.0,
+     "ours": 86.0,
+     "value": 0.0007,
+     "leaf_mass": 0.0014,
+     "nodes": 365666
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8a/B": {
+   "value": 0.9732,
+   "leaf_mass": 0.0013,
+   "classes": {
+    "slower": {
+     "weight": 0.9478,
+     "spe": 0,
+     "speed": 70.0,
+     "ours": 86.0,
+     "value": 0.9993,
+     "leaf_mass": 0.0014,
+     "nodes": 403840
+    },
+    "tied": {
+     "weight": 0.0522,
+     "spe": 16,
+     "speed": 86.0,
+     "ours": 86.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 1051076
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8a/C": {
+   "value": 0.5428,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 0.5283,
+     "spe": 0,
+     "speed": 70.0,
+     "ours": 86.0,
+     "value": 0.9993,
+     "leaf_mass": 0.0014,
+     "nodes": 403840
+    },
+    "tied": {
+     "weight": 0.0291,
+     "spe": 16,
+     "speed": 86.0,
+     "ours": 86.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 1051076
+    },
+    "faster": {
+     "weight": 0.4426,
+     "spe": 32,
+     "speed": 102.0,
+     "ours": 86.0,
+     "value": 0.0007,
+     "leaf_mass": 0.0014,
+     "nodes": 365666
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8a/D": {
+   "value": 0.0406,
+   "leaf_mass": 0.0,
+   "classes": {
+    "slower": {
+     "weight": 0.9478,
+     "spe": 0,
+     "speed": 70.0,
+     "ours": 86.0,
+     "value": 0.0417,
+     "leaf_mass": 0,
+     "nodes": 426850
+    },
+    "tied": {
+     "weight": 0.0522,
+     "spe": 16,
+     "speed": 86.0,
+     "ours": 86.0,
+     "value": 0.0208,
+     "leaf_mass": 0,
+     "nodes": 1108628
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8b/A": {
+   "value": 0.9994,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 98.0,
+     "ours": 136.0,
+     "value": 0.9994,
+     "leaf_mass": 0.0014,
+     "nodes": 249696
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8b/B": {
+   "value": 0.0087,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "tied": {
+     "weight": 0.0159,
+     "spe": 26,
+     "speed": 136.0,
+     "ours": 136.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 380772
+    },
+    "faster": {
+     "weight": 0.9841,
+     "spe": 32,
+     "speed": 143.0,
+     "ours": 136.0,
+     "value": 0.0008,
+     "leaf_mass": 0.0014,
+     "nodes": 125728
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8b/C": {
+   "value": 0.9957,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 0.9926,
+     "spe": 0,
+     "speed": 107.0,
+     "ours": 136.0,
+     "value": 0.9994,
+     "leaf_mass": 0.0014,
+     "nodes": 295314
+    },
+    "tied": {
+     "weight": 0.0074,
+     "spe": 26,
+     "speed": 136.0,
+     "ours": 136.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 380772
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F8b/D": {
+   "value": 0.6842,
+   "leaf_mass": 0.0014,
+   "classes": {
+    "slower": {
+     "weight": 0.6818,
+     "spe": 0,
+     "speed": 107.0,
+     "ours": 136.0,
+     "value": 0.9994,
+     "leaf_mass": 0.0014,
+     "nodes": 295314
+    },
+    "tied": {
+     "weight": 0.0051,
+     "spe": 26,
+     "speed": 136.0,
+     "ours": 136.0,
+     "value": 0.5,
+     "leaf_mass": 0,
+     "nodes": 380772
+    },
+    "faster": {
+     "weight": 0.3131,
+     "spe": 32,
+     "speed": 143.0,
+     "ours": 136.0,
+     "value": 0.0008,
+     "leaf_mass": 0.0014,
+     "nodes": 125728
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F11/A": {
+   "value": 0.0417,
+   "leaf_mass": 0.0,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 80.0,
+     "ours": 169.0,
+     "value": 0.0417,
+     "leaf_mass": 0,
+     "nodes": 150690
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F11/B": {
+   "value": 0.125,
+   "leaf_mass": 0.0,
+   "classes": {
+    "slower": {
+     "weight": 1.0,
+     "spe": 0,
+     "speed": 80.0,
+     "ours": 169.0,
+     "value": 0.125,
+     "leaf_mass": 0,
+     "nodes": 150690
+    }
+   },
+   "search": {
+    "depth": 4
+   }
+  },
+  "F1/C": {
+   "value": 0.701,
+   "mix": {
+    "A": 0.59,
+    "B": 0.41
+   }
+  },
+  "F5/C": {
+   "value": 0.0405,
+   "mix": {
+    "A": 0.96,
+    "B": 0.04
+   }
+  },
+  "F6/C": {
+   "value": 0.1642,
+   "mix": {
+    "A": 0.94,
+    "B": 0.06
+   }
+  },
+  "F8b/E": {
+   "value": 0.8733,
+   "mix": {
+    "A": 0.6,
+    "D": 0.4
+   }
+  },
+  "F9/A": {
+   "value": 0.9,
+   "as": "F4/A"
+  },
+  "F9/B": {
+   "value": 0.9,
+   "as": "F4/A"
+  },
+  "F9/C": {
+   "value": 0.9,
+   "as": "F4/A"
+  }
+ }
+}

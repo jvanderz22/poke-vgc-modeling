@@ -74,8 +74,9 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
 - **The decided-endgame benchmark is scored** (`vgc wp benchmark`,
   [phase8, "decided-endgame benchmark"](phase8-findings.md)). Each variant is a hand-entry journal
   scored through the app's WP. The set-blind GBT moves by exactly 0 on every set fact. The set
-  encoders move the right way on 46–85% of pairs, but only **2–4% of the distance**. The choice
-  lock, Speed orderings and timers barely move any model.
+  encoders move the right way on 41–69% of pairs, but only **2–3% of the distance**. The truth
+  now comes from **a solver over the engine** (crits included). Against it, no model separates a
+  lost 1v1 from a won one: 0.07–0.15, against ≈ 0.95.
 
 ---
 
@@ -170,11 +171,18 @@ Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
 2. ✅ **Does the model move on F1-D/E, F2 and F8a/b?** No: 0–9% of the way, and 0 on F2.
 3. ⛔ **The featurizer-v2 ablation is moot.** Neither the timers nor the orderings move any model,
    so there is no effect to split between them.
-4. ⏳ **The solver** for `expected`, over the pinned engine. The benchmark shows learned WP will
-   not carry these facts, so this is also the first piece of Phase 9. It is 1v1 minimax over
-   simultaneous moves with chance: a matrix game at each node, engine transitions from a
-   serialized Showdown battle, and the opponent's hidden spread drawn from the belief.
-5. **2v2 families**, once the solver can price them. For example, Sneasler with Rock Slide revealed
+4. ✅ **The solver** (`vgc wp solve`). It is 1v1 minimax over simultaneous moves, with chance
+   enumerated (crits included), their Speed integrated over the prior, and positions cached as
+   they finish. Against its answers, no model separates lost from won 1v1s: separation is
+   0.07–0.15, against ≈ 0.95. [phase8, "endgame solver"](phase8-findings.md)
+5. **2v2 families.** The solver is 1v1; a second active Pokémon each multiplies the branching by
+   about 16. That makes it a Phase 9 search problem, not a benchmark one.
+6. **Condition the Speed prior on the item.** A Choice Scarf set with under 4 Speed SP is not
+   real, but the prior gives it 27% (F1-B).
+7. **Solver speed.** F6 alone took 2 h 50 min. The obvious levers:
+   - split one position across workers;
+   - reuse results across depths;
+   - prune dominated moves. For example, Sneasler with Rock Slide revealed
    or not, plus Kingambit, against Charizard and a Mystic Water Basculegion.
 
 ### 3. Remaining belief-to-app work

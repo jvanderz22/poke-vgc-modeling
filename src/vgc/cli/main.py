@@ -766,6 +766,27 @@ def cmd_wp_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wp_solve(args: argparse.Namespace) -> int:
+    """Solve the decided-endgame benchmark over the pinned engine, and store its truth."""
+    from vgc import paths
+    from vgc.wp import benchmark, solver
+
+    reg = _reg(args)
+    search = {"depth": args.depth} if args.depth else None
+    truth = solver.solve(reg, workers=args.workers, search=search, only=args.only)
+    out = benchmark.solved_path(reg)
+    old = json.loads(out.read_text())["truth"] if out.exists() and args.only else {}
+    out.write_text(json.dumps({"engine": showdown_sha(), "truth": old | truth}, indent=1) + "\n")
+    print(f"→ {out.relative_to(paths.ROOT)}")
+    return 0
+
+
+def showdown_sha() -> str:
+    from vgc.engine.showdown import head_sha
+
+    return head_sha()
+
+
 def cmd_wp_preview(args: argparse.Namespace) -> int:
     from vgc.wp.models import default_version
     from vgc.wp.tools import preview
@@ -1262,6 +1283,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", help="score one model on every variant (default: the pin for each regime)")
     p.add_argument("--k", type=int, default=24, help="opponents drawn from the belief per position")
     p.set_defaults(func=cmd_wp_benchmark)
+    p = with_reg(wp.add_parser("solve", help="the benchmark's truth, by search over the pinned engine"))
+    p.add_argument("--workers", type=int, default=6)
+    p.add_argument("--depth", type=int, help="turns searched before HP share decides (default 4)")
+    p.add_argument("--only", nargs="*", help="families or family/variant keys (merged into the stored truth)")
+    p.set_defaults(func=cmd_wp_solve)
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")

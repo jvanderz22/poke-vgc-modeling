@@ -49,6 +49,16 @@ def path(reg: Regulation) -> Path:
     return paths.ROOT / "benchmarks" / "wp" / reg.id / "decided_endgames.yaml"
 
 
+def solved_path(reg: Regulation) -> Path:
+    return path(reg).with_name("solved.json")
+
+
+def solved(reg: Regulation) -> dict[str, dict[str, Any]]:
+    """The engine's answer per variant (`vgc wp solve`), where it has been computed."""
+    p = solved_path(reg)
+    return json.loads(p.read_text())["truth"] if p.exists() else {}
+
+
 def load(reg: Regulation) -> dict[str, Any]:
     import yaml
 
@@ -88,7 +98,7 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
 
     fam, var = _variant(spec, fid, vid)
     b = fam["build"]
-    ours = b["ours"]
+    ours = {**b["ours"], **(var.get("ours") or {})}
     theirs = {**b["theirs"], **(var.get("theirs") or {})}
     pool = from_team(reg, spec["fillers"] + "\n\n" + (fam.get("extra_ours") or ""))
     by_species = {m["species"]: m for m in pool}
@@ -209,6 +219,7 @@ def score(reg: Regulation, version: str | None = None, *, k: int = 24) -> dict[s
     from vgc.wp.models import CLOSED, OPEN, in_battle_version
 
     spec = load(reg)
+    truth = solved(reg)
     rows: dict[tuple[str, str], dict[str, Any]] = {}
     for fam in spec["families"]:
         for vid in fam.get("variants") or {}:
@@ -226,7 +237,12 @@ def score(reg: Regulation, version: str | None = None, *, k: int = 24) -> dict[s
             ev = evidence(reg, rp.state)
             rows[(fid, vid)] = {"family": fid, "variant": vid, "sheets": sheets, "version": v,
                                 "wp": round(r["wp"], 4), "lo": round(r["lo"], 4), "hi": round(r["hi"], 4),
-                                "wp_open": round(r["wp_open"], 4), "expected": _expected(fam["variants"][vid].get("expected")),
+                                "wp_open": round(r["wp_open"], 4),
+                                # The engine's answer where it has been solved, else the hand one.
+                                "hand": _expected(fam["variants"][vid].get("expected")),
+                                "solved": (truth.get(f"{fid}/{vid}") or {}).get("value"),
+                                "expected": (truth.get(f"{fid}/{vid}") or {}).get(
+                                    "value", _expected(fam["variants"][vid].get("expected"))),
                                 "ahead": ev["ahead"], "last_move": ev["last_move"],
                                 "blind_spot": fam.get("blind_spot"), "base": var.get("base"),
                                 "mix": fam["variants"][vid].get("mix")}
@@ -261,6 +277,12 @@ def summarize(rows: dict[tuple[str, str], dict[str, Any]]) -> dict[str, Any]:
                                   "right_way": bool(moved * gap > 0), "share": round(moved / gap, 3),
                                   "same_model": a["version"] == b["version"]})
     right = [d["right_way"] for d in direction]
+    # Decided positions, scored on their own: what the model says where the truth is lost (≤ 5%)
+    # and where it is won (≥ 95%). Direction pairs miss a model that moves correctly around the
+    # wrong centre; this does not. A model that follows the game separates them by about 0.9.
+    lost = [r["wp"] for r in rows.values() if r["expected"] is not None and r["expected"] <= 0.05]
+    won = [r["wp"] for r in rows.values() if r["expected"] is not None and r["expected"] >= 0.95]
+    mean = lambda xs: round(sum(xs) / len(xs), 4) if xs else None  # noqa: E731
     return {
         "variants": list(rows.values()),
         "direction": direction, "distance": distance, "mixing": mixing, "invariance": invariance,
@@ -271,18 +293,22 @@ def summarize(rows: dict[tuple[str, str], dict[str, Any]]) -> dict[str, Any]:
             "mean_distance": round(sum(d["error"] for d in distance) / len(distance), 4) if distance else None,
             "mean_abs_mix_error": round(sum(abs(m["error"]) for m in mixing) / len(mixing), 4) if mixing else None,
             "max_invariance": max((i["moved"] for i in invariance), default=None),
+            "decided": {"lost_n": len(lost), "wp_when_lost": mean(lost), "won_n": len(won),
+                        "wp_when_won": mean(won),
+                        "separation": round(mean(won) - mean(lost), 4) if lost and won else None},
         },
     }
 
 
 def format_report(res: dict[str, Any]) -> str:
-    lines = [f"{'variant':9} {'sheets':6} {'model':24} {'WP':>6} {'band':>13} {'open':>6} {'exp':>5}  evidence"]
+    lines = [f"{'variant':9} {'sheets':6} {'model':24} {'WP':>6} {'band':>13} {'open':>6} {'truth':>5} {'hand':>5}  evidence"]
     for r in res["variants"]:
         exp = f"{r['expected']:.2f}" if r["expected"] is not None else "  —"
+        hand = f"{r['hand']:.2f}" if r.get("hand") is not None else "  —"
         ev = "; ".join(f"{a[0]} {a[2]} ≥ {b[0]} {b[2]}" for a, b in r["ahead"])
         lock = {s: m for s, mv in r["last_move"].items() for m in mv.values()}
         lines.append(f"{r['family'] + '/' + r['variant']:9} {r['sheets']:6} {r['version']:24} {r['wp']:6.3f} "
-                     f"[{r['lo']:.2f}, {r['hi']:.2f}] {r['wp_open']:6.3f} {exp:>5}  "
+                     f"[{r['lo']:.2f}, {r['hi']:.2f}] {r['wp_open']:6.3f} {exp:>5} {hand:>5}  "
                      f"{ev}{'  last ' + json.dumps(lock) if lock else ''}")
     lines.append("\ndirection (expected gap → WP moved):")
     for d in res["direction"]:

@@ -40,6 +40,7 @@ format: 1v1 and 2v2 endgames, doubles rules (spread moves hit one target when on
 #   variant keys the builder reads:
 #     sheets                    open: their six sheets are known; closed: six species only
 #     theirs: {...}             overrides on their set (on a closed sheet, the truth, not shown)
+#     ours: {...}               overrides on ours (F11's Scope Lens)
 #     order: [[side, species, move], [side, species, move]]
 #                               an earlier turn on which the first moved before the second
 #     used: [[side, species, move]]   moves used earlier, with nothing to order them against
@@ -49,11 +50,14 @@ format: 1v1 and 2v2 endgames, doubles rules (spread moves hit one target when on
 #     boosts: {stat: stages}    their Pokémon's stat stages
 #     weather_turns_left / terrain_turns_left / trick_room_turns_left   override build.field
 #     mix: {variant: weight}    with the fact hidden, WP should be this mix of the known variants
+#     truth_as: variant         a closed-sheet variant whose evidence pins it to a known case: the
+#                               solver solves that case's set, under this variant's evidence
 #     faint_order: reversed     (F9) their fainted Pokémon go down in the opposite order
 #
 # Fillers are ours from `tests/fixtures/teams/valid_basic.txt` plus three, and serve as their
 # sheets too. They faint before the position starts, so they matter only through Last Respects'
-# count, Speed evidence, and F9.
+# count, Speed evidence, and F9. All are legal in Reg M-C: the first draft had a Clear Amulet
+# Garchomp and an Amoonguss, neither of which is.
 fillers: |
   Rillaboom @ Miracle Seed
   Ability: Grassy Surge
@@ -73,7 +77,7 @@ fillers: |
   - Parting Shot
   - Snarl
 
-  Garchomp @ Clear Amulet
+  Garchomp @ Life Orb
   Ability: Rough Skin
   EVs: 2 HP / 32 Atk / 32 Spe
   Jolly Nature
@@ -100,13 +104,13 @@ fillers: |
   - Encore
   - Protect
 
-  Amoonguss @ Rocky Helmet
-  Ability: Regenerator
-  EVs: 32 HP / 16 Def / 18 SpD
-  Relaxed Nature
-  - Spore
-  - Rage Powder
-  - Pollen Puff
+  Dragonite @ Rocky Helmet
+  Ability: Inner Focus
+  EVs: 32 HP / 32 Atk / 2 Spe
+  Adamant Nature
+  - Dragon Claw
+  - Earthquake
+  - Tailwind
   - Protect
 
   Pelipper @ Focus Sash
@@ -168,16 +172,16 @@ families:
           why: "they are faster (any Scarf spread with ≥4 Spe SP); Last Respects KOs"}
       C: {sheets: closed, evidence: none, expected: 0.59, mix: {A: 0.59, B: 0.41},
           why: "mix: 41% of Basculegion carry Choice Scarf (usage), so ≈ 1 − 0.41"}
-      D: {sheets: closed, expected: 0.0, theirs: {item: Choice Scarf},
+      D: {sheets: closed, expected: 0.0, theirs: {item: Choice Scarf}, truth_as: B,
           evidence: "earlier: their Basculegion's Wave Crash went before our Timid 32-Spe Gholdengo (149)",
           order: [[p2, Basculegion, Wave Crash], [p1, Gholdengo, Shadow Ball]],
           why: "a non-Scarf Basculegion tops out at 143, so it is Scarf"}
-      E: {sheets: closed, expected: 1.0,
+      E: {sheets: closed, expected: 1.0, truth_as: A,
           evidence: "earlier: our Zard's Heat Wave went before their Basculegion's Wave Crash",
           order: [[p1, Charizard, Heat Wave], [p2, Basculegion, Wave Crash]],
           why: "Scarf with ≥4 Spe SP would have been faster; rules Scarf out (the SP belief says
                 how sure)"}
-      F: {sheets: closed, expected: 1.0,
+      F: {sheets: closed, expected: 1.0, truth_as: A,
           evidence: "Life Orb recoil seen on their Basculegion",
           reveal: [[p2, Basculegion, item, Life Orb]],
           why: "the item is revealed as Life Orb, so it is variant A"}
@@ -316,7 +320,7 @@ families:
           theirs: {moves: [Flare Blitz, Head Smash, Rock Slide, Protect]}}
       C: {sheets: closed, evidence: none, expected: 0.04, mix: {A: 0.96, B: 0.04},
           why: "mix: 96% of Arcanine-Hisui run Extreme Speed"}
-      D: {sheets: closed, evidence: "they used Extreme Speed earlier", expected: 0.0, why: "as A",
+      D: {sheets: closed, evidence: "they used Extreme Speed earlier", expected: 0.0, why: "as A", truth_as: A,
           used: [[p2, Arcanine-Hisui, Extreme Speed]]}
 
   # ---------------------------------------------------------------------------------------------
@@ -459,7 +463,7 @@ families:
           expected: 1.0, why: "≤25 Spe SP; Shadow Ball lands first"}
       D: {sheets: open, theirs_nature: Jolly, evidence: none, expected: from the SP prior,
           why: "P(Spe SP ≥ 26 | Jolly Basculegion) — probably high, since Jolly is taken for Speed"}
-      E: {sheets: closed, evidence: "Mystic Water seen (e.g. Frisk)", expected: from the belief,
+      E: {sheets: closed, evidence: "Mystic Water seen (e.g. Frisk)", expected: from the belief, mix: {A: 0.6, D: 0.4},
           reveal: [[p2, Basculegion, item, Mystic Water]],
           why: "mixes nature (59/40) with Speed SP; the item is the only thing known"}
 
@@ -476,6 +480,44 @@ families:
       C: {change: "their fainted Pokémon listed in a different order", expected: same as base,
           faint_order: reversed}
     note: "Scored as |WP(variant) − WP(base)|, which should be 0 up to particle noise."
+
+  # ---------------------------------------------------------------------------------------------
+  - id: F11
+    name: Lost unless the crit lands
+    mechanism: >
+      the only way out is a critical hit, so the answer is the crit rate: 1 in 24 normally, 1 in 8
+      at +1 stage (Scope Lens). A WP that says 0 here is wrong by exactly that much, and one that
+      does not move between the two variants is not reading the item.
+    blind_spot: "crit stage is not a model input; the item is"
+    ours:
+      - {species: Garchomp, item: Focus Sash, ability: Sand Veil, nature: Jolly,
+         sp: "32 Atk / 32 Spe / 2 HP", hp: 25, moves: [Dragon Claw, Rock Tomb, Swords Dance, Protect],
+         speed: 169}
+    theirs:
+      - {species: Incineroar, item: Assault Vest, ability: Intimidate, hp: 50,
+         moves_known: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
+    calcs:
+      - "Dragon Claw vs 32 HP / 2 Def Incineroar: 37.1–43.5%; on a crit 54.9–65.3%  → KOs from 50%
+         only on a crit"
+      - "Rock Tomb cannot KO from 50% even on a crit; there is no Earthquake (92–108%)"
+      - "Knock Off vs our 2 HP / 0 Def Garchomp: 42.7–50.8%, Flare Blitz 26.5–31.4%  → either KOs
+         ours from 25%"
+      - "Speed: our Garchomp 169 > any Incineroar. Focus Sash does nothing below full HP; Sand Veil
+         does nothing without sand; Fake Out fails after the first turn out"
+      - "A frail Incineroar (0 HP / 0 Def) takes up to ~56% uncritted, so 'any spread' does not hold
+         here; the solver's assumed spread is the bulky one"
+    build:
+      ours: {species: Garchomp, item: Focus Sash, ability: Sand Veil, nature: Jolly,
+             sp: {hp: 2, atk: 32, spe: 32}, hp: 25, moves: [Dragon Claw, Rock Tomb, Swords Dance, Protect]}
+      theirs: {species: Incineroar, item: Assault Vest, ability: Intimidate, nature: Careful, hp: 50,
+               moves: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
+    variants:
+      A: {sheets: open, expected: 0.042, why: "one Dragon Claw, which KOs only on a 1-in-24 crit"}
+      B: {sheets: open, expected: 0.125, ours_item: Scope Lens, ours: {item: Scope Lens},
+          why: "Scope Lens: +1 crit stage, 1 in 8"}
+    note: >
+      Protect buys nothing: they are no lower after it, and a second Protect is 1 in 3. Swords
+      Dance is a turn they KO us in. So the value is the crit rate of the one Dragon Claw.
 
   # ---------------------------------------------------------------------------------------------
   - id: F10

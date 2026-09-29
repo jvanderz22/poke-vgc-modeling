@@ -1379,3 +1379,63 @@ an endgame. They are rare in the data, and when they happen the outcome is alrea
 and numbers. Training alone is unlikely to close a 20× gap. The benchmark supports the route Phase 9
 already plans, where a revealed Scarf or choice lock acts through the engine in search and WP is
 read at the leaves. The solver that supplies `expected` is that route's first piece.
+
+## The endgame solver, and the benchmark against the engine's answer
+
+Plan v3 step 2 (2026-09-29). `vgc wp solve` replaces the benchmark's hand-reasoned `expected` with
+search over the pinned engine (`sidecar/showdown/endgame-solver.js`, `vgc.wp.solver`), stored in
+`benchmarks/wp/reg_mc/solved.json`. Scoring prefers it where it exists.
+
+**How it solves.** A 1v1 is a simultaneous-move game with chance. Each node is a matrix game over
+both sides' moves, solved for its minimax value, four turns deep. Three things were tried before
+this held up:
+
+- **Sampling chance was biased.** With a few seeds a node, a 90% Rock Slide came out at 67%.
+  With one or two deeper down, each player saw the dice before choosing, and two runs of the F4
+  stall gave 1.0 and 0.89. Chance is now **enumerated**. A scripted PRNG replays the turn down every
+  branch of every random call, with its true probability, and outcomes that reach the same state
+  are merged. Damage rolls use 2 representative rolls, and percentage rolls use 10.
+- **Crits count.** A position lost unless a 1-in-24 crit lands is worth 1 in 24, not 0. That is
+  the thin out a WP most needs to get right. What keeps crits affordable is a path-probability
+  cutoff: a line below 0.1% is scored by HP share instead of searched on, and its mass is
+  reported in `leaf_mass`. A crit that wins on the spot ends the battle and is counted exactly.
+  F11 was added for this: Garchomp's Dragon Claw KOs the Incineroar only on a crit, and it solves
+  to **0.0417 = 1/24** with Focus Sash and **0.125 = 1/8** with Scope Lens.
+- **Their hidden spread is integrated, not drawn.** It matters here through move order, so the
+  Speed prior (`belief.prior.speed_prior`) is summed over three classes (faster, tied, slower),
+  one solve each, with a named Speed ordering removing what it rules out. The rest of the spread
+  maxes the main offensive stat, then HP. Maxing every live offensive stat had given an Incineroar
+  with Snarl 32 SpA and 2 HP, and turned F11 into a plain KO.
+
+It took 3 h 13 min on 8 workers, 2 h 50 min of it F6. Both Pokémon are at full HP there, so the
+tree is deep. Every position is cached as it finishes (`.vgc/endgame-solver.jsonl`, keyed on the
+position and the solver's source), so a stopped solve keeps its work.
+
+**Where the engine corrected the hand reasoning:** F5-A needs the Sneasler to have been out a
+while, or Fake Out saves it (0.12). F7-B is 0.00, not 0.20. F4-A/C are 0.90/0.91; the first
+sampled solve had said 0.68. F8a-D, the Chople Berry mirror, is 0.04: our crit. F1-B is 0.27, not
+0.0, because the Speed prior puts 27% of a Scarf Basculegion's weight below the 4 Speed SP it needs
+to outspeed. The prior is not conditioned on the item, and for a Scarf set that is unrealistic.
+Fixing it belongs in `belief.prior`, not here.
+
+**Scored against it, no model separates a lost position from a won one.** Mean WP where the engine
+says lost (≤ 5%, 14 variants) and won (≥ 95%, 10 variants):
+
+| model | WP when lost | WP when won | separation (ideal ≈ 0.95) | direction right |
+|---|---|---|---|---|
+| wp-v1e-gbt | 0.44 | 0.51 | 0.07 | 14% |
+| wp-v1d | 0.40 | 0.50 | 0.10 | 41% |
+| wp-v1e | 0.38 | 0.53 | 0.15 | 59% |
+| wp-v1f-idp5 | 0.64 | 0.72 | 0.08 | 69% |
+| as served (both pins) | 0.59 | 0.68 | 0.09 | |
+
+- **A per-model offset dominates.** `wp-v1f-idp5` sits near 0.65 in these 1v1 endgames whatever
+  the position; `wp-v1e` sits near 0.35. The offset is larger than anything a deciding fact moves.
+- **F11, lost unless it crits:** `wp-v1f-idp5` says 0.69 where the truth is 0.04. A Scope Lens
+  should raise it to 0.125; `wp-v1e` and `wp-v1f-idp5` both move down instead.
+- **Invariance holds** except the 0.02 `wp-v1f-idp5` gives a fainted Pokémon's used move.
+
+This does not contradict the held-out calibration gates. Those average over real games, where
+1v1s decided by one fact are rare and short. It says the served WP should not be read as an answer
+in exactly the positions where a player most wants one. The solver itself is the thing that
+answers them.

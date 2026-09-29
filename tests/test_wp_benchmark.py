@@ -63,6 +63,35 @@ def test_a_closed_sheet_shows_only_what_was_revealed(reg, spec):
     assert _state(reg, spec, "F1", "F").sides["p2"].mons[0].item == "lifeorb"
 
 
+def test_the_solver_finds_the_priority_move_and_the_lock(reg, spec):
+    """Four positions whose answer does not depend on luck or on their spread: Extreme Speed on the
+    sheet loses it and its absence wins it (F5), and the choice lock decides F2 the same way. The
+    Fake Out a fresh Sneasler would have is the reason F5 needs the Pokémon to have been out.
+
+    Three turns deep, so a Protect stall is still undecided a ninth of the time (1/3 per extra
+    Protect) and the answer is near 0 or 1 rather than on it; `leaf_mass` says by how much."""
+    from vgc.wp.solver import solve
+
+    keys = ["F5/A", "F5/B", "F2/A", "F2/B"]
+    got = solve(reg, workers=4, only=keys, search={"depth": 3})
+    want = {"F5/A": 0.0, "F5/B": 1.0, "F2/A": 0.0, "F2/B": 1.0}
+    for k in keys:
+        assert abs(got[k]["value"] - want[k]) <= got[k]["leaf_mass"] + 1e-6, (k, got[k])
+    assert abs(got["F5/C"]["value"] - (0.96 * got["F5/A"]["value"] + 0.04 * got["F5/B"]["value"])) < 1e-3
+
+
+def test_a_speed_ordering_removes_the_speed_it_rules_out(reg, spec):
+    """F1-D: their Scarf Basculegion moved before our 149-Speed Gholdengo, so every Speed class it
+    could be in is at least that; unconditioned (B), the prior still has Scarf sets slower than the
+    Mega Charizard."""
+    from vgc.wp.solver import speed_classes
+
+    b, d = speed_classes(reg, spec, "F1", "B"), speed_classes(reg, spec, "F1", "D")
+    assert set(b) >= {"faster", "slower"}
+    assert all(c["speed"] >= 149 for c in d.values())
+    assert d.get("faster", {}).get("weight", 0) > b["faster"]["weight"]
+
+
 def test_invariance_variants_are_their_base_plus_one_change(reg, spec):
     base = _state(reg, spec, "F4", "A")
     changed = _state(reg, spec, "F9", "A")
