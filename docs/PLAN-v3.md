@@ -16,6 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ⏳ Not in the app yet (step 3) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP |
@@ -111,7 +112,7 @@ These come from measurements or explicit decisions. Each one has been broken at 
 ```
 L4  Team building      weakness report · slot completion · moveset & SP search
 L3  Team evaluation    on-demand matchup evaluation (the precomputed matrix is cancelled)
-WP  Win probability    in-battle WP per regime · belief over hidden sets · EWP(action)
+WP  Win probability    in-battle WP per regime · belief over hidden sets · 1v1 endgame solver · EWP(action)
 L2  Battle policy      heuristic → search (expectiminimax, EWP at the leaves)
 L1b Battle state       vgc.battle.state · Observer and entry adapters · vgc.battle.rules
 L1  Engine             pinned Showdown (Champions) · @smogon/calc 0.12.0 · poke-env 0.16.1
@@ -164,28 +165,73 @@ Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
   confidence. A seed ensemble would reduce it, but serving one needs `SetModel` to take several
   exports.
 
-### 2. Check that the model uses what is revealed
+### 2. Check that the model uses what is revealed: done
 
-1. ✅ **The benchmark runner.** `vgc wp benchmark` scores direction, distance, mixing and
-   invariance.
-2. ✅ **Does the model move on F1-D/E, F2 and F8a/b?** No: 0–9% of the way, and 0 on F2.
-3. ⛔ **The featurizer-v2 ablation is moot.** Neither the timers nor the orderings move any model,
-   so there is no effect to split between them.
-4. ✅ **The solver** (`vgc wp solve`). It is 1v1 minimax over simultaneous moves, with chance
-   enumerated (crits included), their Speed integrated over the prior, and positions cached as
-   they finish. Against its answers, no model separates lost from won 1v1s: separation is
-   0.07–0.15, against ≈ 0.95. [phase8, "endgame solver"](phase8-findings.md)
-5. **2v2 families.** The solver is 1v1; a second active Pokémon each multiplies the branching by
-   about 16. That makes it a Phase 9 search problem, not a benchmark one.
-6. **Condition the Speed prior on the item.** A Choice Scarf set with under 4 Speed SP is not
-   real, but the prior gives it 27% (F1-B).
-7. **Solver speed.** F6 alone took 2 h 50 min. The obvious levers:
-   - split one position across workers;
-   - reuse results across depths;
-   - prune dominated moves. For example, Sneasler with Rock Slide revealed
-   or not, plus Kingambit, against Charizard and a Mystic Water Basculegion.
+Details: [phase8, "decided-endgame benchmark" and "endgame solver"](phase8-findings.md).
+- ✅ **The benchmark runner** (`vgc wp benchmark`). It scores direction, distance, mixing,
+  invariance, and decided positions.
+- ✅ **The solver** (`vgc wp solve`). It is 1v1 minimax over simultaneous moves on the pinned
+  engine:
+  - chance enumerated, crits included;
+  - their Speed integrated over the prior;
+  - positions cached as they finish.
+- ✅ **The answer: no.** The models move 0–9% of the way on Speed orderings and choice lock. Against
+  the solver, no model separates a lost 1v1 from a won one: separation is 0.07–0.15, against
+  ≈ 0.95. `wp-v1f-idp5` says 0.69 where the answer is 1 in 24.
+- ⛔ **The featurizer-v2 ablation is moot.** Nothing moves the models, so there is no effect to
+  split.
+- **2v2 families wait for Phase 9's search.** A second active Pokémon a side multiplies the
+  branching by about 16.
 
-### 3. Remaining belief-to-app work
+### 3. The solver's answer beside the model's in the app, for 1v1 endgames
+
+In decided 1v1s the model's WP barely depends on the position. The solver gives the engine's
+answer under best play, which is a different claim from what a human game will do. Until the
+solver has been checked against human outcomes (principle 1), the Battle page shows **both**,
+labelled, and neither is presented as *the* number.
+
+1. **When:** both sides have exactly one Pokémon left. The model's number stays on screen
+   throughout; the solver's appears beside it.
+2. **The position from the live state.** An adapter from `BattleState` to a solver position:
+   - ours exactly, from the team we built;
+   - theirs from the sheet or what has been revealed: item, ability, moves, nature. On a closed
+     sheet, the belief's likeliest sets, solved each and weighted, with the rest reported as
+     unsolved mass;
+   - their Speed from the SP belief, narrowed by this battle's orderings, not the bare prior;
+   - HP, stat stages, status, items consumed, the choice lock, weather, terrain and Trick Room
+     turns, the fainted counts (Last Respects), and whether each Pokémon just came in (Fake Out).
+3. **The same answer twice.** Run every benchmark variant through its hand-entry journal, the
+   live state and the adapter. The result must reproduce `solved.json` within `leaf_mass`. That
+   checks the adapter against positions whose answers are already known.
+4. **Latency.** A solve takes seconds to hours; the page cannot wait.
+   - Solve in the background with iterative deepening (depth 1, 2, 3, …).
+   - Show the deepest finished answer with its depth and `leaf_mass`, and update it as it deepens.
+   - Reuse the position cache.
+5. **Display.** Two labelled numbers:
+   - the model's, with its gate verdict as now;
+   - the engine's, with the assumptions under it: best play on both sides, their spread's
+     non-Speed stats assumed, the depth searched.
+   
+   When the two disagree by more than ~20 points, say so rather than averaging.
+6. **The check that decides what the numbers become.** Held-out human 1v1 endgames from replays:
+   log loss and calibration of the solver against the model, clustered by battle. The solver
+   assumes best play, and the corpus is ~1100-rated, so this can come out either way. Until it
+   is run, both numbers stay second opinions of each other.
+
+### 4. Condition the Speed prior on the item
+
+A Choice Scarf set with under 4 Speed SP is not real, but `speed_prior` gives it 27% (F1-B), and the
+solver inherits that. The prior should read the item, as the belief already does for nature.
+
+### 5. Solver speed
+
+F6 alone took 2 h 50 min, and step 3's latency depends on this. It is also Phase 9's search. The
+levers:
+- split one position across workers;
+- reuse results across depths (iterative deepening wants this anyway);
+- prune dominated moves.
+
+### 6. Remaining belief-to-app work
 
 1. **`wp` vs `wp_open` on the real closed-sheet shard,** before changing which one the Battle page
    leads with. On a live position the two were 11–14 points apart.
@@ -194,7 +240,7 @@ Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
 3. **Re-gate damage and bulk under TPO.** Both read the opponent's item and ability off a sheet a
    cartridge doesn't show. The app doesn't run them live until they pass.
 
-### 4. Housekeeping that pays on every retrain
+### 7. Housekeeping that pays on every retrain
 
 - **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
   Self-play eval sets already come from the training manifest's runs, so this is the durable
@@ -206,11 +252,12 @@ Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
     calibration changes (`tests/test_endgames.py` catches it);
   - the `wp-v1`/`wp-v1c` feature datasets (~586 MB, untracked) can be deleted.
 
-### 5. Phase 9: policy strength (EWP and search)
+### 8. Phase 9: policy strength (EWP and search)
 
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
-- exact transitions from a serialized Showdown state;
-- common random numbers across actions;
+- exact transitions from a serialized Showdown state (the endgame solver already does this);
+- chance enumerated, not sampled. The solver found sampling biased: with few seeds a node, each
+  player effectively saw the dice before choosing. Its `ScriptedPRNG` is the starting point;
 - top-k pruning by the heuristic prior;
 - determinization over the Phase 8 belief, spreads included. This is where a hidden Scarf acts
   through the engine rather than having to be learned.
@@ -222,7 +269,7 @@ The gates:
 
 **Then re-run Phase 6 against this policy.**
 
-### 6. Blocked behind Phase 9
+### 9. Blocked behind Phase 9
 
 - **Phase 10: matchup evaluation.** On demand only: simulate the one matchup in front of the user
   across its bring/lead combinations. Gated on Phase 6 passing for the Phase 9 policy.
@@ -305,7 +352,7 @@ The gates:
 | W1 library, validation, bring/lead ranking | ✅ partial. Missing: pokepast.es import, calc panel |
 | W2 in-battle WP with gate banner | ✅. Missing: per-turn WP timeline |
 | W2b weakness and usage reports in the library | ⏳ |
-| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed toggle) | ✅. Missing: damage snapped to calc buckets |
+| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed toggle) | ✅. Missing: damage snapped to calc buckets, and the solver's answer beside the model's in 1v1 endgames (step 3) |
 | W4 EWP action table, on-demand bring/lead simulation | Behind Phases 9–10 |
 | W5 complete-my-team, moveset/SP suggestions | Behind Phase 11 |
 
