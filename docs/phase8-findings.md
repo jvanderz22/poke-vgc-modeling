@@ -1439,3 +1439,54 @@ This does not contradict the held-out calibration gates. Those average over real
 1v1s decided by one fact are rare and short. It says the served WP should not be read as an answer
 in exactly the positions where a player most wants one. The solver itself is the thing that
 answers them.
+
+## The solver in the app: a live 1v1 as solver positions
+
+Plan v3 step 3 (2026-09-29). `vgc.wp.endgame` turns a battle in which each side has one Pokémon
+left into the positions `vgc.wp.solver` searches. `vgc.web.solving` solves them in the background,
+one turn deeper at a time. The Battle page shows the result under the model's number, labelled
+separately.
+
+**One writer for both.** The benchmark and a live battle write positions through the same
+`solver.compose`. Empty entries are left out (no stages, not consumed), so the same position is
+written the same way either way. Our HP is written as the shortest percentage that gives back the
+exact HP: a whole 30 where the benchmark wrote 30. The written form is the cache key. The existing cache (34 positions, one
+of them 2 h 50 min of F6) was re-keyed rather than re-solved. The solver gained two setup fields:
+non-volatile status (burn, paralysis, poison) and side conditions with their turns left
+(Tailwind, screens). Before the re-key, six cached positions were solved again with the edited
+solver. Values, node counts and strategies were identical.
+
+**The same answer twice.** `endgame.check` runs every solved variant through its hand-entry
+journal, a replay and the adapter. All 32 give the positions and Speed-class weights
+`solver.plan` wrote, and values within `leaf_mass` of `solved.json`. A closed-sheet variant is
+checked with its set pinned to the truth's. Getting there found three problems:
+
+- **A choice lock the truth left out.** In F1-D and F5-D their Choice item holder makes its
+  evidence move on turn 1 and never leaves the field, so it is locked into that move. The solved
+  positions had it free. Solved with the lock, the answers are unchanged: F1-D 0.0744 (was
+  0.0743), F5-D 0.0006. The benchmark now writes the lock.
+- **F2-C's journal contradicted the variant.** "Not locked, just came in" was built with its
+  Annihilape arriving before five idle turns. It now arrives on the last turn. The model's number
+  for F2-C is unchanged (0.4843).
+- **Speed ties are the engine's, not the float's.** A Scarf on 101 Speed is 151 in Showdown, a tie
+  with 151, not 151.5. `solver.position_speed` follows the engine's arithmetic, including
+  paralysis, which halves after the other modifiers. A paralysed Scarf holder on 101 is 75, where
+  chaining the factors says 76. No benchmark class moved, and the test checks against the engine.
+
+**Found and not fixed: three benchmark items are illegal in Reg M-C.** F5's Arcanine-Hisui holds
+a Choice Band, F11's Incineroar an Assault Vest, and F1's filler Gholdengo Choice Specs. None of
+them are in the regulation's dex, and `validate_set` rejects all three. The engine simulates them
+anyway, so their solved values are real answers, but for sets nobody can bring. Replacing them
+changes the calcs each family was built on, so it is a redesign of F5 and F11, not a substitution.
+
+**A closed sheet.** The set belief's sets (`belief.sets.given`) are reweighted by the turn order:
+each set's share times the prior mass of Speed investments that could have produced this
+battle's orderings *with that set's item and nature*. The journal is replayed with the set on the
+sheet, because on a closed sheet an unseen Scarf is invisible to the Speed channel. The top three
+are solved, and the rest is reported as unsolved. On F1-D, with nothing pinned, every set left is
+a Choice Scarf (Jolly 70%). With no evidence (F1-C), Life Orb leads at 32%.
+
+**Depth.** One turn deep takes 1–9 s and is mostly HP share: F1-B's two Speed classes both read
+0.63, against 0.99 and 0.02 at three turns (about 20 s). The page shows the deepest finished
+answer with the share of it that rests on HP share, and fades it while that share is over half.
+

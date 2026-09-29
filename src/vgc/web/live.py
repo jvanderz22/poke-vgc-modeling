@@ -413,6 +413,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
          version: str | None = None, with_wp: bool = True) -> dict[str, Any]:
     """Everything one screen needs: the field, what you can tap, what is still being asked, what
     the Speed bound says, and the number — in that order of trustworthiness."""
+    from vgc.wp import endgame
+
     state = battle.rp.state
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
     belief, contradictions = beliefs(reg, state)
@@ -433,6 +435,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "speed": speed_read(reg, state, belief),
         "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] == theirs],
         "contradictions": contradictions,
+        # Whether the engine can be asked about this position (`/solve`), and if not, why.
+        "endgame": {"eligible": (why := endgame.reason(reg, state)) is None, "reason": why},
     }
     if with_wp and version:
         try:

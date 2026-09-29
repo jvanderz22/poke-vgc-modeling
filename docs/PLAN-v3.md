@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ⏳ Not in the app yet (step 3) |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ On the Battle page beside the model, deepening in the background. ⏳ Not yet checked against human 1v1s (step 3.6) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP |
@@ -185,6 +185,20 @@ Details: [phase8, "decided-endgame benchmark" and "endgame solver"](phase8-findi
 
 ### 3. The solver's answer beside the model's in the app, for 1v1 endgames
 
+Items 1–5 are done (2026-09-29; [phase8, "the solver in the app"](phase8-findings.md)):
+- `vgc.wp.endgame` is the adapter. It writes positions through the same `solver.compose` as the
+  benchmark, and a closed sheet's sets are reweighted by the turn order under each set's item.
+- `endgame.check` reproduces all 32 solved variants from their journals: same positions, same
+  weights, values within `leaf_mass`.
+- `vgc.web.solving` deepens from 1 to 4 turns in the background; `/api/battles/<id>/solve`.
+- The page labels both numbers and flags a gap of more than 20 points.
+- The check fixed a choice lock missing from F1-D/F5-D's truth (values unchanged) and F2-C's
+  journal.
+- It also found three items illegal in Reg M-C in the benchmark (F5's Choice Band, F11's Assault
+  Vest, a filler's Choice Specs). Not fixed: replacing them is a redesign of those families.
+
+Item 6 is next.
+
 In decided 1v1s the model's WP barely depends on the position. The solver gives the engine's
 answer under best play, which is a different claim from what a human game will do. Until the
 solver has been checked against human outcomes (principle 1), the Battle page shows **both**,
@@ -352,7 +366,7 @@ The gates:
 | W1 library, validation, bring/lead ranking | ✅ partial. Missing: pokepast.es import, calc panel |
 | W2 in-battle WP with gate banner | ✅. Missing: per-turn WP timeline |
 | W2b weakness and usage reports in the library | ⏳ |
-| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed toggle) | ✅. Missing: damage snapped to calc buckets, and the solver's answer beside the model's in 1v1 endgames (step 3) |
+| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed toggle, the engine's answer in 1v1s) | ✅. Missing: damage snapped to calc buckets |
 | W4 EWP action table, on-demand bring/lead simulation | Behind Phases 9–10 |
 | W5 complete-my-team, moveset/SP suggestions | Behind Phase 11 |
 

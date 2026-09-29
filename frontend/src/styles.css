@@ -333,6 +333,11 @@ a.btn-link:hover { background: var(--panel-2); }
 }
 .wp-fill { display: block; height: 100%; background: var(--accent); opacity: .95; }
 .wp-num { color: var(--text); font-size: 15px; }
+/* The engine's answer, under the model's and set apart from it: a second opinion, not a refinement. */
+.engine { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
+.engine .faded { opacity: .45; }
+.engine-apart { color: var(--warn); }
+.engine summary { cursor: pointer; }
 
 /* The field: theirs on top, yours below, and the Speed read between them where it belongs. */
 .field-panel { padding-top: 10px; }

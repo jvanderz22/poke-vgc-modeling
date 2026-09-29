@@ -71,6 +71,41 @@ def speed(reg: Regulation, s: dict[str, Any], sp: dict[str, int]) -> float:
     return calc_stats(mon, reg.dex, reg, species_id=forme)["spe"] * SPEED_ITEMS.get(to_id(s.get("item") or ""), 1.0)
 
 
+def _modify(value: int, factors: list[float]) -> int:
+    """`value` after a chain of `chainModify` factors, as Showdown does it: the factors multiplied
+    in 4096ths with rounding, and the result applied rounding half down. A Scarf on 101 is 151,
+    not 151.5, which is a Speed tie with a 151, not a win."""
+    mod = 4096
+    for f in factors:
+        mod = (mod * int(f * 4096) + 2048) >> 12
+    return (value * mod + 2047) // 4096
+
+
+def position_speed(reg: Regulation, s: dict[str, Any], sp: dict[str, int], facts: dict[str, Any],
+                   sid: str) -> int:
+    """The Speed that orders the turn in this position: the stat after its stage, then the item,
+    Tailwind and paralysis, each as the engine applies it. What decides which Speed class a spread
+    falls in, so it has to tie where the engine ties."""
+    from vgc.teams.sets import PokemonSet, StatPoints, calc_stats
+
+    mon = PokemonSet(species=s["species"], nature=s.get("nature"), sp=StatPoints.from_dict(sp))
+    forme = to_id(s["mega"]) if s.get("mega") else None
+    stat = calc_stats(mon, reg.dex, reg, species_id=forme)["spe"]
+    stage = ((facts.get("boosts") or {}).get(sid) or {}).get("spe", 0)
+    stat = stat * (2 + stage) // 2 if stage >= 0 else stat * 2 // (2 - stage)
+    factors = []
+    if not ((facts.get("consumed") or {}).get(sid)):
+        factors.append(SPEED_ITEMS.get(to_id(s.get("item") or ""), 1.0))
+    if "tailwind" in ((facts.get("sides") or {}).get(sid) or {}):
+        factors.append(2.0)
+    out = _modify(stat, [f for f in factors if f != 1.0])
+    # Paralysis runs last and is not one more factor: it applies the others (`finalModify`), then
+    # halves and floors. A paralysed Scarf holder on 101 is 75, where chaining would say 76.
+    if (facts.get("status") or {}).get(sid) == "par":
+        out = out * 50 // 100
+    return out
+
+
 def _fits(reg: Regulation, order: list, ours: dict, theirs: dict, their_sp: dict[str, int]) -> bool:
     """Whether their drawn spread could have produced every ordering the variant names. Ours is
     known; theirs is the Pokémon of the position. An ordering between two other Pokémon, or one
@@ -96,6 +131,68 @@ def _our_speed(reg: Regulation, ours: dict, species: str) -> float:
     return speed(reg, s, s["sp"])
 
 
+def facts_of(spec: dict, fid: str, vid: str, theirs: dict[str, Any]) -> dict[str, Any]:
+    """The state a benchmark variant puts the two Pokémon in, in the form `compose` takes: each
+    entry by side, as the live adapter (`vgc.wp.endgame`) produces it from a battle. `theirs` is
+    the set being solved, whose item decides whether an evidence move locked it."""
+    from vgc.wp.endgame import CHOICE_ITEMS
+
+    fam, var = _variant(spec, fid, vid)
+    b = fam["build"]
+    ours = {**b["ours"], **(var.get("ours") or {})}
+    field = dict(b.get("field") or {})
+    weather = var.get("weather_turns_left", field.get("weather_turns_left", 5 if field.get("weather") else 0))
+    terrain = var.get("terrain_turns_left", field.get("terrain_turns_left", 5 if field.get("terrain") else 0))
+    tr = var.get("trick_room_turns_left", field.get("trick_room_turns_left", 0))
+    out: dict[str, Any] = {
+        "hp": {"p1": ours.get("hp", 100), "p2": theirs.get("hp", 100)},
+        "mega": {SIDE[k]: bool(x.get("mega")) for k, x in (("ours", ours), ("theirs", theirs))},
+        "fainted": {"p1": 3, "p2": 3},
+        "boosts": {"p2": var.get("boosts") or b.get("boosts") or {}},
+        "consumed": {"p2": bool(var.get("consumed") or b.get("consumed"))},
+        "weather": [to_id(field["weather"]), weather] if field.get("weather") and weather else None,
+        "terrain": [to_id(field["terrain"]), terrain] if field.get("terrain") and terrain else None,
+        "trickroom": tr or None,
+    }
+    if "locked_into" in var:
+        if var["locked_into"]:
+            out["choicelock"] = {"p2": to_id(var["locked_into"])}
+        else:
+            out["fresh"] = {"p2": True}
+    elif to_id(theirs.get("item") or "") in CHOICE_ITEMS:
+        # Their Pokémon makes its evidence moves on turn 1 and stays in (`benchmark.build`), so a
+        # choice item has locked it into the last of them. Solving it unlocked answered a position
+        # the journal does not describe; for F1-D and F5-D the value came out the same.
+        moved = [e[2] for e in (var.get("order") or []) + (var.get("used") or [])
+                 if e[0] == "p2" and e[1] == theirs["species"]]
+        if moved:
+            out["choicelock"] = {"p2": to_id(moved[-1])}
+    return out
+
+
+def _pruned(x: Any) -> Any:
+    """Without the entries that say nothing: no stages, no lock, not consumed. The solver reads a
+    missing entry as the default, so this changes no position, only how it is written — and the
+    written form is the cache key, so a battle and a benchmark that describe one position have to
+    write it the same way."""
+    if isinstance(x, dict):
+        out = {k: _pruned(v) for k, v in x.items()}
+        return {k: v for k, v in out.items() if v is not None and v is not False and v != {} and v != []}
+    return x
+
+
+def compose(reg: Regulation, ours: dict[str, Any], theirs: dict[str, Any], facts: dict[str, Any],
+            search: dict[str, Any]) -> dict[str, Any]:
+    """One solver input: the two sets (theirs with a drawn spread in `sp`), the three fainted
+    fillers a side, and the state. Both the benchmark and a live battle are written through this,
+    which is what lets the one be checked against the other."""
+    fill = [f for f in FILLERS if f not in (ours["species"], theirs["species"])][:3]
+    filler_text = "\n\n".join(f"{f}\nAbility: {a}\n- Protect" for f, a in zip(
+        fill, [_ability(reg, f) for f in fill]))
+    return {"format": reg.showdown_format, "p1": _set_text(ours) + "\n\n" + filler_text,
+            "p2": _set_text(theirs) + "\n\n" + filler_text, "setup": _pruned(facts), "search": search}
+
+
 def position(reg: Regulation, spec: dict, fid: str, vid: str, their_sp: dict[str, int],
              search: dict[str, Any]) -> dict[str, Any]:
     """One solver input: the variant's set (or `truth_as`'s), their drawn spread, the state."""
@@ -105,33 +202,7 @@ def position(reg: Regulation, spec: dict, fid: str, vid: str, their_sp: dict[str
     b = fam["build"]
     ours = {**b["ours"], **(var.get("ours") or {})}
     theirs = {**b["theirs"], **(set_var.get("theirs") or {}), "sp": their_sp}
-    fill = [f for f in FILLERS if f not in (ours["species"], theirs["species"])][:3]
-    filler_text = "\n\n".join(f"{f}\nAbility: {a}\n- Protect" for f, a in zip(
-        fill, [_ability(reg, f) for f in fill]))
-    field = dict(b.get("field") or {})
-    weather = var.get("weather_turns_left", field.get("weather_turns_left", 5 if field.get("weather") else 0))
-    terrain = var.get("terrain_turns_left", field.get("terrain_turns_left", 5 if field.get("terrain") else 0))
-    tr = var.get("trick_room_turns_left", field.get("trick_room_turns_left", 0))
-    setup: dict[str, Any] = {
-        "hp": {"p1": ours.get("hp", 100), "p2": theirs.get("hp", 100)},
-        "mega": {SIDE[k]: bool(s.get("mega")) for k, s in (("ours", ours), ("theirs", theirs))},
-        "fainted": {"p1": 3, "p2": 3},
-        "boosts": {"p2": var.get("boosts") or b.get("boosts") or {}},
-        "consumed": {"p2": bool(var.get("consumed") or b.get("consumed"))},
-    }
-    if field.get("weather") and weather:
-        setup["weather"] = [to_id(field["weather"]), weather]
-    if field.get("terrain") and terrain:
-        setup["terrain"] = [to_id(field["terrain"]), terrain]
-    if tr:
-        setup["trickroom"] = tr
-    if "locked_into" in var:
-        if var["locked_into"]:
-            setup["choicelock"] = {"p2": to_id(var["locked_into"])}
-        else:
-            setup["fresh"] = {"p2": True}
-    return {"format": reg.showdown_format, "p1": _set_text(ours) + "\n\n" + filler_text,
-            "p2": _set_text(theirs) + "\n\n" + filler_text, "setup": setup, "search": search}
+    return compose(reg, ours, theirs, facts_of(spec, fid, vid, theirs), search)
 
 
 def _ability(reg: Regulation, species: str) -> str:
@@ -203,22 +274,35 @@ def speed_classes(reg: Regulation, spec: dict, fid: str, vid: str) -> dict[str, 
     for m in parse_team(spec["fillers"] + "\n\n" + (fam.get("extra_ours") or "")).members:
         _OURS_EXTRA[m.species] = {"species": m.species, "nature": m.nature, "item": m.item, "sp": m.sp.as_dict()}
     prior = speed_prior(reg, theirs["species"], theirs.get("nature"), [to_id(m) for m in theirs.get("moves", [])])
-    mine = speed(reg, ours, ours["sp"])
-    classes: dict[str, dict[str, Any]] = {}
-    for spe, mass in enumerate(prior.mass):
-        sp = spread(reg, theirs, spe)
-        if mass <= 0 or not _fits(reg, var.get("order") or [], ours, theirs, sp):
-            continue
-        theirs_speed = speed(reg, theirs, sp)
-        name = "faster" if theirs_speed > mine else "tied" if theirs_speed == mine else "slower"
-        c = classes.setdefault(name, {"mass": 0.0, "spe": spe, "top": 0.0})
-        c["mass"] += mass
-        if mass > c["top"]:
-            c["spe"], c["top"] = spe, mass
+    order = var.get("order") or []
+    classes = partition(reg, ours, theirs, prior.mass, facts_of(spec, fid, vid, theirs),
+                        lambda sp: _fits(reg, order, ours, theirs, sp))
     if not classes:
         raise ValueError(f"{fid}/{vid}: no Speed investment fits the named ordering")
+    return classes
+
+
+def partition(reg: Regulation, ours: dict[str, Any], theirs: dict[str, Any], mass: list[float],
+              facts: dict[str, Any], allowed: Any = None, sides: tuple[str, str] = ("p1", "p2")
+              ) -> dict[str, dict[str, Any]]:
+    """Their Speed SP, weighted by `mass` over those `allowed` leaves, grouped by the move order it
+    gives in this position — faster than ours, tied, slower — each with the SP that carries the
+    most weight to stand for it. Empty when nothing is allowed. `sides` are ours and theirs."""
+    mine = position_speed(reg, ours, ours["sp"], facts, sides[0])
+    classes: dict[str, dict[str, Any]] = {}
+    for spe, m in enumerate(mass):
+        sp = spread(reg, theirs, spe)
+        if m <= 0 or (allowed is not None and not allowed(sp)):
+            continue
+        theirs_speed = position_speed(reg, theirs, sp, facts, sides[1])
+        name = "faster" if theirs_speed > mine else "tied" if theirs_speed == mine else "slower"
+        c = classes.setdefault(name, {"mass": 0.0, "spe": spe, "top": 0.0})
+        c["mass"] += m
+        if m > c["top"]:
+            c["spe"], c["top"] = spe, m
     total = sum(c["mass"] for c in classes.values())
-    return {k: {"weight": c["mass"] / total, "spe": c["spe"], "speed": speed(reg, theirs, spread(reg, theirs, c["spe"])),
+    return {k: {"weight": c["mass"] / total, "spe": c["spe"],
+                "speed": position_speed(reg, theirs, spread(reg, theirs, c["spe"]), facts, sides[1]),
                 "ours": mine} for k, c in classes.items()}
 
 

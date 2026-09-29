@@ -158,6 +158,10 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
 
     turn = 1
     alive = {sid: [s for s in order[sid] if s != end[sid]] for sid in order}
+    # Not locked because it has only just come in: their Pokémon arrives on the last turn, after
+    # the idle ones, so the journal says what the variant says. Arriving before them would have
+    # it out for five turns without moving, which is no position a battle reaches.
+    held: int | None = None
     while any(alive.values()):
         turn += 1
         journal.append({"kind": "turn", "n": turn})
@@ -166,6 +170,11 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
             if victim is None:
                 continue
             slot = slots[sid].index(victim)
+            if (sid == "p2" and lock and var["locked_into"] is None and held is None
+                    and queue["p2"] == [end["p2"]]):
+                held = slot
+                alive[sid].remove(victim)
+                continue
             if sid == "p1" and lock and var["locked_into"] and len(alive["p1"]) == 1:
                 journal.append({"kind": "move", "side": "p2", "slot": slot_of("p2", end["p2"]),
                                 "move": var["locked_into"], "target": {"side": "p1", "slot": slot}})
@@ -174,7 +183,7 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
                 journal.append({"kind": "faint", "side": sid, "slot": slot})
             alive[sid].remove(victim)
             slots[sid][slot] = None
-            if queue[sid]:
+            if queue[sid] and not (sid == "p2" and held is not None):
                 arrive(sid, slot, "switch")
 
     field = dict(b.get("field") or {})
@@ -189,6 +198,9 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
     for t in range(turn + 1, last + 1):
         journal.append({"kind": "turn", "n": t})
         journal.extend(setters.get(t, []))
+    if held is not None:
+        journal.append({"kind": "faint", "side": "p2", "slot": held})
+        arrive("p2", held, "switch")
 
     for sid, s in (("p1", ours), ("p2", theirs)):
         if s.get("hp", 100) < 100:

@@ -545,6 +545,22 @@ def battle_trajectory(battle_id: str, regulation: str = "reg_mc") -> dict[str, A
             "turns": live.trajectory(reg, b, version)}
 
 
+@app.get("/api/battles/{battle_id}/solve")
+def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """The engine's answer to the 1v1 this battle is in, as deep as it has been searched so far.
+
+    The first call for a position starts the search in the background and returns at once; the
+    page asks again to see it deepen. Beside the model's number, never instead of it: the engine
+    assumes best play on both sides, and until that has been checked against how human 1v1s end,
+    neither number is the answer (PLAN-v3, step 3).
+    """
+    from vgc.web import solving
+
+    reg = _reg(regulation)
+    _, b = _battle(reg, battle_id)
+    return solving.request(reg, battle_id, b)
+
+
 @app.delete("/api/battles/{battle_id}")
 def delete_battle(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
     if not live.remove(_reg(regulation).id, battle_id):

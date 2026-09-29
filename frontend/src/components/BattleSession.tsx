@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, ApiError, SHEET_LABELS, type BattleRow, type Entry, type LiveView, type Mode, type SavedTeam, type Sheets, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, SHEET_LABELS, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Sheets, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -92,7 +92,8 @@ export function BattleSession({ reg, route, navigate, teams }: {
             <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
           </div>
         </div>
-        <WPBar view={view} />
+        <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
+        {step === null && view.endgame?.eligible && <EngineRow id={id} reg={reg} view={view} />}
       </div>
       <BattleGateBanner gates={view.gates} verdict={view.verdict} />
 
@@ -143,7 +144,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
  *  serving (docs/phase8-findings.md). Two numbers that disagree by a point are worth showing as
  *  two numbers.
  */
-function WPBar({ view }: { view: LiveView }) {
+function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean }) {
   const wp = view.wp;
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
   const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
@@ -156,7 +157,7 @@ function WPBar({ view }: { view: LiveView }) {
       </div>
       <div className="row tiny dim" style={{ justifyContent: "space-between", marginTop: 5 }}>
         <span>
-          <b className="wp-num">{pct(wp.wp)}%</b> you win
+          {labelled && <>Model: </>}<b className="wp-num">{pct(wp.wp)}%</b> you win
           {wp.hi !== wp.lo && <> · {pct(wp.lo)}–{pct(wp.hi)}% depending on what they are holding</>}
         </span>
         <span title={wp.regime}>
@@ -164,6 +165,87 @@ function WPBar({ view }: { view: LiveView }) {
           averaged over {wp.k} draws{open > 0 ? ` · ${open} of their six still open` : ""}
         </span>
       </div>
+    </div>
+  );
+}
+
+/** The engine's answer to a 1v1, beside the model's, and labelled as a different claim.
+ *
+ *  The model says how positions like this have gone in human games; the engine says what best
+ *  play from both sides is worth, searched a few turns deep on the pinned simulator. In decided
+ *  1v1s the model barely moves with the position (docs/phase8-findings.md), which is why this is
+ *  here. But the engine assumes play a ~1100-rated game does not have, and it has not yet been
+ *  checked against how human 1v1s end, so neither number is *the* answer. When they disagree the
+ *  page says so rather than averaging them.
+ *
+ *  The search deepens in the background, one turn at a time, and this asks again until it is done.
+ *  A shallow answer is mostly HP share, so it is shown faded, with how much of it rests on that. */
+function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView }) {
+  const [ans, setAns] = useState<EngineAnswer | null>(null);
+  useEffect(() => {
+    let live = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const tick = () => api.solve(id, reg).then((a) => {
+      if (!live) return;
+      setAns(a);
+      if (a.eligible && a.searching != null) timer = setTimeout(tick, 2000);
+    }).catch(() => { if (live) timer = setTimeout(tick, 5000); });
+    setAns(null);
+    tick();
+    return () => { live = false; clearTimeout(timer); };
+  }, [id, reg, view]);
+
+  if (!ans) return <div className="engine tiny dim">Engine: starting a search…</div>;
+  if (!ans.eligible) return ans.reason ? <div className="engine tiny dim">Engine: {ans.reason}.</div> : null;
+  const pct = (x: number) => Math.round(x * 100);
+  const leaf = ans.leaf_mass ?? 1;
+  const shallow = leaf > 0.5;
+  const model = view.wp?.wp;
+  const apart = !shallow && ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
+  const sets = ans.sets ?? [];
+  return (
+    <div className="engine tiny dim">
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <span>
+          Engine:{" "}
+          {ans.value != null
+            ? <><b className={`wp-num${shallow ? " faded" : ""}`}>{pct(ans.value)}%</b> with best play from both sides</>
+            : <>searching…</>}
+        </span>
+        <span>
+          {ans.depth != null && <>searched {ans.depth} of {ans.max_depth} turns</>}
+          {ans.depth != null && leaf >= 0.005 && <> · {pct(leaf)}% of it still decided by HP share</>}
+          {ans.searching != null && <> · looking {ans.searching} deep ({Math.round(ans.elapsed ?? 0)}s)</>}
+        </span>
+      </div>
+      {(sets.length > 1 || (ans.unsolved ?? 0) > 0) && (
+        <div>
+          Over their {sets.length} likeliest set{sets.length === 1 ? "" : "s"}
+          {(ans.unsolved ?? 0) > 0 && <>; {pct(ans.unsolved ?? 0)}% of what they might hold is not solved</>}.
+        </div>
+      )}
+      {apart && (
+        <div className="engine-apart">
+          The model and the engine are {Math.abs(pct(ans.value!) - pct(model!))} points apart. They answer
+          different questions (how games like this have gone, and best play from here), and neither has
+          been checked against how human 1v1s end yet.
+        </div>
+      )}
+      {ans.error && <div className="engine-apart">The search failed: {ans.error}</div>}
+      <details>
+        <summary>What the engine assumes</summary>
+        <ul className="derived">
+          {(ans.assumptions ?? []).map((a, i) => <li key={i}>{a}</li>)}
+          {ans.depth != null && <li>Past {ans.depth} turns, whoever has more HP left is counted as winning.</li>}
+          {sets.map((s, i) => (
+            <li key={`s${i}`}>
+              {sets.length > 1 && <>{pct(s.weight)}%: </>}
+              {s.set.species}{s.set.item ? ` @ ${s.set.item}` : ""}, {s.set.ability}, {s.set.nature ?? "nature unknown"}:{" "}
+              {s.set.moves.join(", ")}
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

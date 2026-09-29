@@ -78,8 +78,8 @@
    "hi": 0.8371,
    "wp_open": 0.6508,
    "hand": 0.0,
-   "solved": 0.0743,
-   "expected": 0.0743,
+   "solved": 0.0744,
+   "expected": 0.0744,
    "ahead": [
     [
      [
@@ -1235,7 +1235,7 @@
   },
   {
    "variant": "F1/D",
-   "error": 0.6659
+   "error": 0.6658
   },
   {
    "variant": "F1/E",

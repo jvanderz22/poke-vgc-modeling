@@ -11,7 +11,9 @@
  *            weather: [id, turns], terrain: [id, turns], trickroom: turns,
  *            boosts: {p1: {...}, p2: {...}}, consumed: {p1: bool, p2: bool},
  *            choicelock: {p1: moveid, p2: moveid}, timesAttacked: {p1: n, p2: n},
- *            fresh: {p1: bool, p2: bool} (just switched in; otherwise it has been out a while)},
+ *            fresh: {p1: bool, p2: bool} (just switched in; otherwise it has been out a while),
+ *            status: {p1: 'brn' | 'par' | 'psn', p2: ...},
+ *            sides: {p1: {tailwind | reflect | lightscreen | auroraveil: turns}, p2: {...}}},
  *    search: {depth, rolls (damage rolls per hit, default 2), rare (chance events below this
  *             probability do not happen, default 0: every crit counts), cutoff (a line whose
  *             probability falls below this is scored by HP share instead of searched on,
@@ -85,6 +87,14 @@ function setUp(pos) {
 			me.lastMove = b.dex.moves.get(lock);
 		}
 		if ((s.timesAttacked || {})[side.id]) me.timesAttacked = s.timesAttacked[side.id];
+		// Only the statuses whose effect is fixed once set. Sleep and bad poison carry a counter the
+		// cartridge does not show, so a position with either is not built (vgc.wp.endgame says so).
+		const status = (s.status || {})[side.id];
+		if (status) me.setStatus(status, me, null, true);
+		for (const [id, turns] of Object.entries((s.sides || {})[side.id] || {})) {
+			side.addSideCondition(id, me);
+			side.sideConditions[id].duration = turns;
+		}
 	}
 	b.makeRequest('move');
 	return b;
@@ -240,8 +250,10 @@ function main() {
 		process.stdout.write(JSON.stringify({
 			log: root.log, ended: root.ended, winner: root.winner, trickroom: root.field.pseudoWeather.trickroom || null,
 			weather: [root.field.weather, root.field.weatherState.duration],
+			sides: root.sides.map(s => Object.fromEntries(Object.entries(s.sideConditions).map(([k, v]) => [k, v.duration]))),
 			active: root.sides.map(s => s.active.filter(p => p && !p.fainted).map(p => ({
-				species: p.species.name, hp: p.hp, maxhp: p.maxhp, spe: p.getStat('spe'), item: p.item}))),
+				species: p.species.name, hp: p.hp, maxhp: p.maxhp, spe: p.getStat('spe'), item: p.item,
+				status: p.status}))),
 		}) + '\n');
 		return;
 	}

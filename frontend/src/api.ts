@@ -324,6 +324,8 @@ export type LiveView = {
    *  spread — so it means something logged here is wrong, and the fix is a tap. */
   contradictions: { species: string; channel: string; note: string }[];
   wp?: LiveWP;
+  /** Whether the engine can be asked about this position, and if not, why. */
+  endgame?: { eligible: boolean; reason: string | null };
   /** The verdicts for the model behind `wp`, so the page can say when it failed a gate. */
   gates?: Gates;
   /** The one of those verdicts that is about this battle's regime. */
@@ -331,6 +333,23 @@ export type LiveView = {
   /** Only on `/at/<index>`: which prefix this is, out of how many taps. */
   at?: number;
   entries_total?: number;
+};
+
+/** The engine's answer to a 1v1 (`/api/battles/<id>/solve`): best play on both sides, searched
+ *  `depth` turns deep so far, with `leaf_mass` the share of it that still rests on HP share rather
+ *  than on the engine. Beside the model's number, never instead of it. */
+export type EngineAnswer = {
+  eligible: boolean; reason: string | null;
+  depth?: number | null; max_depth?: number; searching?: number | null;
+  value?: number | null; leaf_mass?: number | null;
+  positions?: { set: number; class: string; weight: number; value: number; leaf_mass: number }[];
+  elapsed?: number;
+  /** Their sets solved: one on an open sheet, the likeliest few on a closed one. */
+  sets?: { set: { species: string; item: string | null; ability: string | null; nature: string | null; moves: string[] }; weight: number }[];
+  /** The belief's weight on sets of theirs that were not solved. */
+  unsolved?: number;
+  assumptions?: string[];
+  error?: string | null;
 };
 
 export type BattleRow = {
@@ -411,6 +430,7 @@ export const api = {
   trajectory: (id: string, reg: string) =>
     call<{ version: string; gates: Gates; turns: TrajectoryRow[] }>(
       `/api/battles/${id}/trajectory?regulation=${reg}`),
+  solve: (id: string, reg: string) => call<EngineAnswer>(`/api/battles/${id}/solve?regulation=${reg}`),
   deleteBattle: (id: string, reg: string) =>
     call<{ deleted: string }>(`/api/battles/${id}?regulation=${reg}`, { method: "DELETE" }),
 };

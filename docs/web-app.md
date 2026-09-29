@@ -219,6 +219,22 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/simulate` | Two teams → one seeded battle, narrated turn by turn with spectator WP |
 | `GET /api/endgames` | The decided-endgame set: games, criteria, what they were drawn from, gate verdicts. `only=all\|played_out\|misses` |
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
+| `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes) |
+
+### The engine's answer in a 1v1
+
+When each side has one Pokémon left, the Battle page puts a second number under the model's: the
+value of the position under best play on both sides, from a search over the pinned simulator
+(`vgc.wp.endgame`, `vgc.web.solving`). The two are labelled **Model** and **Engine**, and neither
+replaces the other. The model says how positions like this have gone in human games. The engine
+says what best play is worth, and it has not yet been checked against how human 1v1s end.
+
+The search deepens one turn at a time and the page shows the deepest finished answer. A shallow
+one is mostly "whoever has more HP left", so it is faded while more than half of it rests on
+that. When the two numbers are more than 20 points apart, the page says so. On a closed sheet the
+engine solves their three likeliest sets, weighted by what the battle's turn order allows, and
+says how much of the belief was left unsolved. Positions it cannot set up (Substitute, Encore,
+sleep, bad poison) say so instead.
 
 Validation is recomputed whenever a team is saved and never trusted from the file: the
 regulation's legality snapshot can change under a team that was legal when it was written.
