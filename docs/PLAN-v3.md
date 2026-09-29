@@ -15,7 +15,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Battle state (L1b) | ✅ One state object fed by two adapters: Showdown logs (`Observer`) and a person's taps (`battle.entry`) |
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
-| In-battle win probability | 🟡 Served (`wp-v1d-sw-split-small`, pinned per regime). **Fails the powered open-sheet calibration test**, as does every model |
+| In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP |
@@ -63,6 +63,11 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
   - **Speed orderings and the last move used are model inputs** (featurizer v3): false 0.006% of
     the time with sheets open and 0.008% with them hidden. Building them fixed four log-reading
     faults, one of which (Trace) corrupted 1 replay stream in 6.
+- **Open-sheet calibration** ([phase8, "wp-v1f"](phase8-findings.md)). Human validation is 20%
+  of groups (2,487 battles, up from ~590), and with it the existing turn-slope temperature passes
+  the powered test out of fold in both regimes. No training treatment beat seed noise.
+  `wp-v1f-idp5` passes every gate. Re-carded under the current test, `wp-v1d` passes too: "fails
+  every model" predated the 1.1× tolerance.
 - **Served models are pinned** per role and regime in `models/served.json`. The regimes are named
   once (`SHEETS`, `REGIME_GATES` in `vgc.wp.models`), and the app's open/closed toggle is built
   from that list.
@@ -126,34 +131,35 @@ refuses a mismatch.
 
 | Role | Model | Status |
 | --- | --- | --- |
-| `bring` | `wp-v1d-sw-split-small` | Only a set encoder has a bring head |
-| `in_battle_open` | `wp-v1d-sw-split-small` | Its card passes under the old 0.03 threshold; **the powered test fails it** |
-| `in_battle_closed` | `wp-v1d-sw-split-small` | Passes `closed_sheet_pass` (1,088 battles, 99.8% power) |
+| `bring` | `wp-v1f-idp5` | Top-4 overlap 0.702 vs usage 0.672; preview interval [−0.0107, −0.0036] |
+| `in_battle_open` | `wp-v1f-idp5` | Passes `in_battle_ece` (4,127 battles, power 1.0): t1-2 ECE 0.019, t7+ passes by 0.0001 |
+| `in_battle_closed` | `wp-v1d-sw-split-small` | Passes `closed_sheet_pass` (1,085 battles, power 0.98). Log loss 0.5633 against `wp-v1f-idp5`'s 0.5665 |
 
-`wp-v1e-sw-split-small` (featurizer v3) is registered and not pinned:
-- Open-sheet log loss 0.5502 against 0.5523 at its best calibration, equal on closed sheets.
-- The committed card is an epoch-4 retrain with no calibration applied.
+`wp-v1d` also passes open sheets under the current test (t1-2 by 0.0006, re-carded). It fails
+`player_beats_spectator`.
+
+Registered and not pinned:
+- `wp-v1e-sw-split-small`: an uncalibrated epoch-4 retrain that fails open t1-2.
 
 ---
 
 ## Next, in order
 
-### 1. Make in-battle WP calibrated on open sheets
+### 1. Make in-battle WP calibrated on open sheets: done
 
-The powered test (`in_battle_ece`, 4,127 held-out battles) fails every model. The miss has one
-shape: **over-confident in the middle of the range, right at the tails, strongest early.** At
-turns 1–2 a "75%" wins 66%, while 6% and 94% are right. A temperature can't fix that shape:
-single, per-regime and turn-dependent versions all helped partly and none passed. Details:
-[phase8 findings, "wp-v1e"](phase8-findings.md).
-
-1. **Treat the cause in training.** Early-game confidence in the middle of the range looks like
-   memorised teams or players. Try stronger identity dropout and regularisation, and check the
-   reliability curve with no calibrator.
-2. **If a calibrator is still needed,** use a two-parameter curve per regime (beta calibration),
-   fitted on human validation at about 20% of groups (about 1,150 open-sheet and 1,300
-   closed-sheet battles). The current 5% gives about 290 battles, and its temperature swung
-   0.87–1.55 between draws.
-3. **Pin by the gate.** Re-card `wp-v1d` under the new test when the pin changes.
+Details: [phase8 findings, "wp-v1f"](phase8-findings.md).
+- ✅ **Treat the cause in training.** Tried; nothing beat seed noise. Two seeds of one recipe
+  asked for temperatures of 1.10 and 0.87. Masking identity on preview rows
+  (`--id-dropout-preview 0.5`) is the recipe now, on direction and because it costs nothing.
+- ✅ **A calibrator on 20% of human groups.** The existing turn-slope temperature passes out of
+  fold. Beta calibration added nothing, so it was not built.
+- ✅ **Pin by the gate** (2026-09-28).
+  - `wp-v1f-idp5` for open sheets and brings. It fixes the early-turn miss, passes `all_pass` and
+    reads the Speed orderings. It passes open t7+ by 0.0001.
+  - `wp-v1d` stays on closed sheets, where it is 0.003 nats better and also passes.
+- **The fragility is early stopping.** Every run stops at epoch 3–4, and where it lands sets the
+  confidence. A seed ensemble would reduce it, but serving one needs `SetModel` to take several
+  exports.
 
 ### 2. Check that the model uses what is revealed
 
@@ -182,6 +188,8 @@ single, per-regime and turn-dependent versions all helped partly and none passed
 - **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
   Self-play eval sets already come from the training manifest's runs, so this is the durable
   version of that.
+- **`vgc wp valcheck`** scores a model's uncalibrated reliability on human validation. Use it to
+  compare recipes without reading the held-out gate.
 - **Caches that go stale:**
   - the stored decided-endgames list must be regenerated whenever the served model or its
     calibration changes (`tests/test_endgames.py` catches it);
@@ -230,7 +238,7 @@ The gates:
 - **Reported, not gated:** played-out-game calibration (`played_out_calibration`), forfeit vs
   played-out splits, `player_beats_spectator`.
 - **Calibration** (`vgc wp calibrate`):
-  - fits on the validation split, drawn per group, on raw logits;
+  - fits on the validation split, drawn per group (20% of human groups), on raw logits;
   - a temperature at turn 0 plus a slope per turn, per context and regime;
   - a calibration file without slopes reads as before.
 

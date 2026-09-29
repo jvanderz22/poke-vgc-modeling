@@ -1,8 +1,8 @@
 """Feature datasets for WP models: `data/features/<regulation>/<name>/`.
 
   train.npz, val.npz     from a checked training manifest, thinned (`features.train_orientations`);
-                         val is 5% of its battles by hash (the frozen held-out sets are never
-                         used for model selection)
+                         val is drawn by hash per group, at `VAL_RATE` for each source (the
+                         frozen held-out sets are never used for model selection)
   eval_<set>.npz         the frozen held-out shards, one file per evaluation set
   vocab.json, info.json  the vocabulary and feature layout the arrays were built with
 """
@@ -23,7 +23,13 @@ from vgc.data.splits import check_manifest, read_shard
 from vgc.regulation import Regulation
 
 FEATURES = paths.ROOT / "data" / "features"
-VAL_RATE = 0.05
+# Validation is drawn per source. Human validation is what early stopping and every calibrator
+# are fitted on, and at 5% of groups it was 287 open-sheet battles in 137 series: a temperature
+# fitted there swung 0.87–1.55 between draws and could not pass a test judged on 4,127 held-out
+# battles (docs/phase8-findings.md, "wp-v1e"). 20% is ~1,150 open-sheet and ~1,300 closed-sheet
+# battles. Self-play is 75% of the battles and a model is never selected on it, so it stays at 5%.
+# The draw is a threshold on one hash, so the 5% groups are inside the 20%.
+VAL_RATE = {"human": 0.20, "selfplay": 0.05}
 
 # Evaluation sets, named by the information regime they were played in, because gate rule 7 says
 # a number does not travel out of one. The Bo3 shard is Open Team Sheets; the non-Bo3 ladder shard
@@ -122,8 +128,8 @@ def featurize_files(files: list[Path], reg: Regulation, workers: int = 6, thin: 
     return _concat(parts)
 
 
-def _is_val(name: str) -> bool:
-    return int(hashlib.sha256(f"val:{name}".encode()).hexdigest()[:8], 16) / 16**8 < VAL_RATE
+def _is_val(name: str, rate: float) -> bool:
+    return int(hashlib.sha256(f"val:{name}".encode()).hexdigest()[:8], 16) / 16**8 < rate
 
 
 def val_battles(battle_names: np.ndarray, manifest: dict[str, Any]) -> np.ndarray:
@@ -134,7 +140,8 @@ def val_battles(battle_names: np.ndarray, manifest: dict[str, Any]) -> np.ndarra
     1.18 where held-out groups asked for 1.04, and early stopping read the same leak. Self-play
     has no groups, and a battle is its own group, as in `heldout_battle`."""
     group = {b["battle"]: b.get("group") or b["battle"] for b in manifest["battles"]}
-    return np.array([_is_val(group.get(n, n)) for n in battle_names])
+    rate = {b["battle"]: VAL_RATE[b["source"]] for b in manifest["battles"]}
+    return np.array([_is_val(group.get(n, n), rate.get(n, VAL_RATE["selfplay"])) for n in battle_names])
 
 
 def _subset(d: dict[str, np.ndarray], rows: np.ndarray) -> dict[str, np.ndarray]:
@@ -178,6 +185,42 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
         "n_num": fz.n_num, "n_glob": fz.n_glob,
         "rows": counts, "val_rate": VAL_RATE, "seconds": round(time.perf_counter() - t0, 1),
     }
+    (out / "info.json").write_text(json.dumps(info, indent=1) + "\n")
+    return info | {"out": str(out)}
+
+
+def resplit(reg: Regulation, source: str, name: str) -> dict[str, Any]:
+    """A new dataset with the same rows as `source` and validation redrawn at today's `VAL_RATE`.
+
+    Featurizing takes a quarter of an hour and the split does not depend on it: train and val are
+    one featurized pool, indexed against the same battle names, so the pool is rejoined and cut
+    again. The held-out files and the vocabulary are hard-linked, since they are byte-identical
+    and a dataset directory must be complete on its own.
+    """
+    import os
+
+    src, out = FEATURES / reg.id / source, FEATURES / reg.id / name
+    info = json.loads((src / "info.json").read_text())
+    manifest = json.loads((paths.ROOT / info["manifest"]).read_text())
+    tr, va = load(reg, source, "train"), load(reg, source, "val")
+    if not np.array_equal(tr["battle_names"], va["battle_names"]):
+        raise ValueError(f"{source}: train and val are not indexed against the same battles")
+    pool = {k: np.concatenate([tr[k], va[k]]) for k in tr if k != "battle_names"}
+    pool["battle_names"] = tr["battle_names"]
+    is_val = val_battles(pool["battle_names"], manifest)[pool["battle"]]
+    out.mkdir(parents=True, exist_ok=True)
+    counts = {}
+    for split, rows in (("train", ~is_val), ("val", is_val)):
+        np.savez_compressed(out / f"{split}.npz", **_subset(pool, np.nonzero(rows)[0]))
+        counts[split] = int(rows.sum())
+    for f in [*src.glob("eval_*.npz"), src / "vocab.json"]:
+        (out / f.name).unlink(missing_ok=True)
+        os.link(f, out / f.name)
+    val_src = pool["source"][is_val]
+    info = info | {"name": name, "rows": info["rows"] | counts, "val_rate": VAL_RATE, "val_split": "group",
+                   "resplit_from": source,
+                   "val_battles": {s: int(len(np.unique(pool["battle"][is_val][val_src == c])))
+                                   for s, c in (("selfplay", 0), ("human", 1))}}
     (out / "info.json").write_text(json.dumps(info, indent=1) + "\n")
     return info | {"out": str(out)}
 

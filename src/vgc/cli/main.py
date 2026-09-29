@@ -615,6 +615,14 @@ def cmd_wp_featurize(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wp_resplit(args: argparse.Namespace) -> int:
+    from vgc.wp.dataset import resplit
+
+    info = resplit(_reg(args), args.dataset, args.name)
+    print(json.dumps({k: info[k] for k in ("out", "rows", "val_rate", "val_battles")}, indent=1))
+    return 0
+
+
 def cmd_wp_train(args: argparse.Namespace) -> int:
     import subprocess
 
@@ -716,6 +724,25 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
     for bname, bres in all_results.items():
         if bname != "constant":
             models.update_card(reg.id, bname, headline=evaluate.headline(bres))
+    return 0
+
+
+def cmd_wp_valcheck(args: argparse.Namespace) -> int:
+    """Uncalibrated reliability on the human validation rows, to compare training recipes."""
+    from vgc.wp import evaluate, models
+    from vgc.wp.dataset import load
+
+    reg = _reg(args)
+    out = models.model_dir(reg.id, args.version)
+    model = models.load_model(reg.id, args.version)
+    model.calibration = {}
+    trained = out / "train.json"
+    baked = json.loads(trained.read_text()).get("temperature", 1.0) if trained.exists() else 1.0
+    r = evaluate.validation_report(model, load(reg, args.dataset, "val"), models.SHEETS_COL,
+                                   models.HUMAN_CTX_COL, baked)
+    print(evaluate.format_validation_report(r))
+    (out / "valcheck.json").write_text(json.dumps({"dataset": args.dataset, "baked_temperature": baked} | r,
+                                                  indent=1) + "\n")
     return 0
 
 
@@ -1182,6 +1209,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--name", default="wp-v1")
     p.add_argument("--workers", type=int, default=6)
     p.set_defaults(func=cmd_wp_featurize)
+    p = with_reg(wp.add_parser("resplit", help="copy a dataset with validation redrawn at the current rates"))
+    p.add_argument("--dataset", required=True, help="the dataset to copy")
+    p.add_argument("--name", required=True, help="the new dataset")
+    p.set_defaults(func=cmd_wp_resplit)
     p = with_reg(wp.add_parser("train", help="train a WP model version"))
     p.add_argument("--kind", choices=["logistic", "gbt", "set"], required=True)
     p.add_argument("--dataset", default="wp-v1")
@@ -1203,6 +1234,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--baseline", action="append", help="versions to compare against (repeatable; 'constant' = 50%%)")
     p.add_argument("--dataset", default="wp-v1")
     p.set_defaults(func=cmd_wp_eval)
+    p = with_reg(wp.add_parser("valcheck", help="uncalibrated reliability on human validation rows, per regime"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--dataset", required=True)
+    p.set_defaults(func=cmd_wp_valcheck)
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")

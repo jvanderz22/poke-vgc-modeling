@@ -176,6 +176,61 @@ def calibration_test(p: np.ndarray, y: np.ndarray, battle: np.ndarray, bucket: n
     return out
 
 
+def validation_report(model: WPModel, val: dict[str, np.ndarray], sheets_col: int, human_ctx_col: int,
+                      baked_temperature: float = 1.0) -> dict[str, Any]:
+    """Calibration on the human validation rows, per regime, with no calibrator — for choosing
+    between training recipes without reading the held-out sets that gate them.
+
+    `raw` undoes the temperature `set_torch` bakes into the export, so it is the network's own
+    logit. `one_temperature` is the same rows after the single temperature that fits them best:
+    what is left there is the part of the miss a temperature cannot reach, which is the shape
+    finding 5 describes. Fitted and scored on the same rows, so it is a comparison between
+    recipes and not a verdict; the verdict is `vgc wp eval`'s, on held-out groups.
+    """
+    from vgc.wp.models import fit_temperature
+
+    human = val["glob"][:, human_ctx_col] == 1
+    out: dict[str, Any] = {}
+    for sheets, flag in ((OPEN, 1), (CLOSED, 0)):
+        rows = human & (val["glob"][:, sheets_col] == flag)
+        if not rows.any():
+            continue
+        sub = {k: v[rows] for k, v in val.items() if k != "battle_names"}
+        p = np.clip(model.predict(sub)[0], 1e-6, 1 - 1e-6)
+        z = np.log(p / (1 - p)) * baked_temperature
+        s = symmetrize(sub, 1 / (1 + np.exp(-z)))
+        spec = (s["perspective"] == 0) & np.isin(_bucket(s["kind"], s["turn"]), IN_BATTLE_BUCKETS)
+        y, battle, bucket = s["y"][spec], s["battle"][spec], _bucket(s["kind"], s["turn"])[spec]
+        logit = np.log(s["p"][spec] / (1 - s["p"][spec]))
+        t = fit_temperature(logit, y)
+        res: dict[str, Any] = {"battles": int(len(np.unique(battle))), "temperature": round(t, 3)}
+        for name, q in (("raw", s["p"][spec]), ("one_temperature", 1 / (1 + np.exp(-logit / t)))):
+            res[name] = {"all": {k: v for k, v in metrics(q, y).items() if k != "reliability"},
+                         "test": calibration_test(q, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400),
+                         "reliability": {b: metrics(q[bucket == b], y[bucket == b])["reliability"]
+                                         for b in IN_BATTLE_BUCKETS if (bucket == b).any()}}
+        out[sheets] = res
+    return out
+
+
+def format_validation_report(r: dict[str, Any]) -> str:
+    lines = []
+    for sheets, res in r.items():
+        lines.append(f"== {sheets} sheets, human validation: {res['battles']} battles, "
+                     f"best single temperature {res['temperature']}")
+        for name in ("raw", "one_temperature"):
+            a, t = res[name]["all"], res[name]["test"]
+            verdict = {True: "pass", False: "FAIL", None: "undecided"}[t["pass"]]
+            lines.append(f"  {name:16} logloss {a['logloss']:.4f} ece {a['ece']:.4f}  test {verdict}"
+                         f" (power at 1.5x {t['power'].get('logits_1.5x_too_sharp')})")
+            for b, br in t["by_bucket"].items():
+                rel = res[name]["reliability"][b]
+                curve = " ".join(f"{c['mean_p']:.2f}→{c['win_rate']:.2f}" for c in rel if c["n"] >= 50)
+                lines.append(f"      {b:5} ece {br['ece']:.4f} cut {br['threshold']:.4f} p {br['p_calibrated_worse']:.3f}"
+                             f"  | {curve}")
+    return "\n".join(lines)
+
+
 def _bucket(kind: np.ndarray, turn: np.ndarray) -> np.ndarray:
     out = np.empty(len(kind), dtype=object)
     out[:] = "t7+"

@@ -1,13 +1,13 @@
 {
  "reg_mc": {
-  "decided": "2026-09-27",
-  "bring": "wp-v1d-sw-split-small",
-  "in_battle_open": "wp-v1d-sw-split-small",
+  "decided": "2026-09-28",
+  "bring": "wp-v1f-idp5",
+  "in_battle_open": "wp-v1f-idp5",
   "in_battle_closed": "wp-v1d-sw-split-small",
   "why": {
-   "bring": "Only a set encoder has a bring head. wp-v1d is trained on 10x the closed-sheet battles, and passes both regimes.",
-   "in_battle_open": "Passes in_battle_pass (played-out ECE 0.02987, a hair under 0.03). wp-v1d-gbt scores better (0.5415 vs 0.5523) but is set-blind: it gives the same number whatever the opponent is holding, and a set-blind model is not served.",
-   "in_battle_closed": "Passes closed_sheet_pass, decided on 1,088 held-out battles with 99.8% power against logits 1.5x too sharp. wp-v1d-gbt scores better (0.5593 vs 0.5633) and is not served for the same reason: it does not use revealed set information."
+   "bring": "Passes bring_beats_usage (top-4 overlap 0.702 vs usage 0.672) and is the first model whose preview interval clears zero by more than a rounding error ([-0.0107, -0.0036]). wp-v1d: 0.688, [-0.0092, -0.0003].",
+   "in_battle_open": "Passes in_battle_ece under the powered test (4,127 battles, power 1.0 at 1.5x), fixing the early-turn miss: t1-2 ECE 0.019 vs wp-v1d's 0.024. Passes t7+ by 0.0001. Open log loss 0.5528 vs 0.5523. Calibrated on 20% of human groups.",
+   "in_battle_closed": "Passes closed_sheet_pass (1,085 battles, power 0.98 at 1.5x) and scores 0.003 nats better on closed sheets than wp-v1f-idp5 (0.5633 vs 0.5665), which also passes. Chosen for the closed-sheet log loss over serving one model in both regimes (2026-09-28)."
   }
  }
 }

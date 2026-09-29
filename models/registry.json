@@ -328,22 +328,76 @@
     },
     "in_battle_ece": {
      "pass": true,
-     "worst_bucket": "t1-2",
-     "ece": 0.02365,
-     "threshold": 0.03,
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
+     "alpha": 0.05,
+     "power": {
+      "logits_1.25x_too_sharp": 0.976,
+      "logits_1.5x_too_sharp": 1.0
+     },
+     "power_needed": 0.8,
+     "rejected_buckets": [],
      "by_bucket": {
-      "t1-2": 0.02365,
-      "t3-4": 0.02133,
-      "t5-6": 0.01819,
-      "t7+": 0.02223
+      "t1-2": {
+       "ece": 0.02365,
+       "floor_median": 0.0113,
+       "threshold": 0.0243,
+       "p_calibrated_worse": 0.018,
+       "battles": 4127
+      },
+      "t3-4": {
+       "ece": 0.02133,
+       "floor_median": 0.0116,
+       "threshold": 0.0263,
+       "p_calibrated_worse": 0.146,
+       "battles": 3951
+      },
+      "t5-6": {
+       "ece": 0.01819,
+       "floor_median": 0.0124,
+       "threshold": 0.028,
+       "p_calibrated_worse": 0.454,
+       "battles": 3409
+      },
+      "t7+": {
+       "ece": 0.02223,
+       "floor_median": 0.015,
+       "threshold": 0.0339,
+       "p_calibrated_worse": 0.337,
+       "battles": 2215
+      }
      }
     },
-    "ece_spectator_played_out": {
-     "pass": true,
+    "played_out_calibration": {
      "ece": 0.02987,
      "logloss": 0.56365,
      "n": 28046,
-     "threshold": 0.03
+     "rejected_buckets": [
+      "t1-2",
+      "t3-4"
+     ],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.03997,
+       "floor_median": 0.015,
+       "threshold": 0.0294
+      },
+      "t3-4": {
+       "ece": 0.03124,
+       "floor_median": 0.0147,
+       "threshold": 0.0306
+      },
+      "t5-6": {
+       "ece": 0.02747,
+       "floor_median": 0.0149,
+       "threshold": 0.0331
+      },
+      "t7+": {
+       "ece": 0.03269,
+       "floor_median": 0.0182,
+       "threshold": 0.0385
+      }
+     }
     },
     "ece_player": {
      "pass": true,
@@ -413,11 +467,12 @@
     },
     "closed_in_battle_ece": {
      "pass": true,
-     "test": "ece vs a calibrated model on the same rows",
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
      "alpha": 0.05,
      "power": {
-      "logits_1.25x_too_sharp": 0.718,
-      "logits_1.5x_too_sharp": 0.998
+      "logits_1.25x_too_sharp": 0.422,
+      "logits_1.5x_too_sharp": 0.984
      },
      "power_needed": 0.8,
      "rejected_buckets": [],
@@ -425,29 +480,29 @@
       "t1-2": {
        "ece": 0.01817,
        "floor_median": 0.0223,
-       "threshold": 0.0391,
-       "p_calibrated_worse": 0.744,
+       "threshold": 0.0448,
+       "p_calibrated_worse": 0.854,
        "battles": 1085
       },
       "t3-4": {
        "ece": 0.02424,
        "floor_median": 0.0231,
-       "threshold": 0.0376,
-       "p_calibrated_worse": 0.439,
+       "threshold": 0.0454,
+       "p_calibrated_worse": 0.646,
        "battles": 1010
       },
       "t5-6": {
        "ece": 0.03617,
        "floor_median": 0.0252,
-       "threshold": 0.0421,
-       "p_calibrated_worse": 0.061,
+       "threshold": 0.049,
+       "p_calibrated_worse": 0.188,
        "battles": 824
       },
       "t7+": {
        "ece": 0.03897,
        "floor_median": 0.0348,
-       "threshold": 0.0609,
-       "p_calibrated_worse": 0.324,
+       "threshold": 0.0651,
+       "p_calibrated_worse": 0.471,
        "battles": 537
       }
      }
@@ -458,7 +513,7 @@
    },
    "manifest_sha256": "ab35b4707bc96b237511484e6386da12f21a59ba723e0f7bc0af9e36c5c14d65",
    "eval_sha256": "59de6626c82560cad5fe2a699592c9b3b4a749b302248a5386adffe54540f03b",
-   "eval_at": "2026-09-27T20:58:07"
+   "eval_at": "2026-09-28T18:22:25"
   },
   {
    "version": "wp-v1e-logistic",
@@ -788,13 +843,52 @@
     },
     "in_battle_ece": {
      "pass": false,
-     "test": "ece vs a calibrated model on the same rows",
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
      "alpha": 0.05,
      "power": {
-      "logits_1.25x_too_sharp": 1.0,
+      "logits_1.25x_too_sharp": 0.978,
       "logits_1.5x_too_sharp": 1.0
      },
      "power_needed": 0.8,
+     "rejected_buckets": [
+      "t1-2"
+     ],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.04368,
+       "floor_median": 0.0114,
+       "threshold": 0.0261,
+       "p_calibrated_worse": 0.0,
+       "battles": 4127
+      },
+      "t3-4": {
+       "ece": 0.02709,
+       "floor_median": 0.0116,
+       "threshold": 0.0283,
+       "p_calibrated_worse": 0.024,
+       "battles": 3951
+      },
+      "t5-6": {
+       "ece": 0.02356,
+       "floor_median": 0.0124,
+       "threshold": 0.0288,
+       "p_calibrated_worse": 0.105,
+       "battles": 3409
+      },
+      "t7+": {
+       "ece": 0.02233,
+       "floor_median": 0.015,
+       "threshold": 0.0339,
+       "p_calibrated_worse": 0.319,
+       "battles": 2215
+      }
+     }
+    },
+    "played_out_calibration": {
+     "ece": 0.04198,
+     "logloss": 0.57292,
+     "n": 28046,
      "rejected_buckets": [
       "t1-2",
       "t3-4",
@@ -802,81 +896,24 @@
      ],
      "by_bucket": {
       "t1-2": {
-       "ece": 0.04368,
-       "floor_median": 0.0114,
-       "threshold": 0.0201,
-       "p_calibrated_worse": 0.0,
-       "battles": 4127
-      },
-      "t3-4": {
-       "ece": 0.02709,
-       "floor_median": 0.0116,
-       "threshold": 0.0191,
-       "p_calibrated_worse": 0.0,
-       "battles": 3951
-      },
-      "t5-6": {
-       "ece": 0.02356,
-       "floor_median": 0.0124,
-       "threshold": 0.0207,
-       "p_calibrated_worse": 0.002,
-       "battles": 3409
-      },
-      "t7+": {
-       "ece": 0.02233,
-       "floor_median": 0.015,
-       "threshold": 0.0259,
-       "p_calibrated_worse": 0.052,
-       "battles": 2215
-      }
-     }
-    },
-    "ece_spectator_played_out": {
-     "pass": false,
-     "test": "ece vs a calibrated model on the same rows",
-     "alpha": 0.05,
-     "power": {
-      "logits_1.25x_too_sharp": 0.992,
-      "logits_1.5x_too_sharp": 1.0
-     },
-     "power_needed": 0.8,
-     "rejected_buckets": [
-      "t1-2",
-      "t3-4",
-      "t5-6",
-      "t7+"
-     ],
-     "ece": 0.04198,
-     "logloss": 0.57292,
-     "n": 28046,
-     "by_bucket": {
-      "t1-2": {
        "ece": 0.05527,
        "floor_median": 0.0148,
-       "threshold": 0.0271,
-       "p_calibrated_worse": 0.0,
-       "battles": 2450
+       "threshold": 0.031
       },
       "t3-4": {
        "ece": 0.04414,
        "floor_median": 0.0147,
-       "threshold": 0.025,
-       "p_calibrated_worse": 0.0,
-       "battles": 2443
+       "threshold": 0.0325
       },
       "t5-6": {
        "ece": 0.03635,
        "floor_median": 0.0151,
-       "threshold": 0.0253,
-       "p_calibrated_worse": 0.0,
-       "battles": 2271
+       "threshold": 0.0336
       },
       "t7+": {
        "ece": 0.03534,
        "floor_median": 0.018,
-       "threshold": 0.0325,
-       "p_calibrated_worse": 0.004,
-       "battles": 1560
+       "threshold": 0.0394
       }
      }
     },
@@ -947,55 +984,323 @@
      "losing_buckets": []
     },
     "closed_in_battle_ece": {
-     "pass": false,
-     "test": "ece vs a calibrated model on the same rows",
+     "pass": true,
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
      "alpha": 0.05,
      "power": {
-      "logits_1.25x_too_sharp": 0.684,
-      "logits_1.5x_too_sharp": 1.0
+      "logits_1.25x_too_sharp": 0.452,
+      "logits_1.5x_too_sharp": 0.992
      },
      "power_needed": 0.8,
-     "rejected_buckets": [
-      "t7+"
-     ],
+     "rejected_buckets": [],
      "by_bucket": {
       "t1-2": {
        "ece": 0.02863,
        "floor_median": 0.0226,
-       "threshold": 0.039,
-       "p_calibrated_worse": 0.204,
+       "threshold": 0.0435,
+       "p_calibrated_worse": 0.319,
        "battles": 1085
       },
       "t3-4": {
        "ece": 0.01952,
        "floor_median": 0.0233,
-       "threshold": 0.0399,
-       "p_calibrated_worse": 0.742,
+       "threshold": 0.0445,
+       "p_calibrated_worse": 0.858,
        "battles": 1010
       },
       "t5-6": {
        "ece": 0.04101,
        "floor_median": 0.0255,
-       "threshold": 0.0429,
-       "p_calibrated_worse": 0.022,
+       "threshold": 0.0491,
+       "p_calibrated_worse": 0.087,
        "battles": 824
       },
       "t7+": {
        "ece": 0.06124,
        "floor_median": 0.0331,
-       "threshold": 0.0583,
-       "p_calibrated_worse": 0.009,
+       "threshold": 0.0624,
+       "p_calibrated_worse": 0.015,
        "battles": 537
       }
      }
     },
     "in_battle_pass": false,
-    "closed_sheet_pass": false,
+    "closed_sheet_pass": true,
     "all_pass": false
    },
    "manifest_sha256": "ce78951464b9adda171366cc43db56b4d06d384af2821b2722ee4817b488c1e1",
    "eval_sha256": "3a30200b050e1ec3ae5bde5ee393c480b12951676e195b9d72c0d154d03172ca",
-   "eval_at": "2026-09-28T16:20:28"
+   "eval_at": "2026-09-28T19:09:33"
+  },
+  {
+   "version": "wp-v1f-idp5",
+   "regulation": "reg_mc",
+   "kind": "set",
+   "created": "2026-09-28T18:04:27",
+   "path": "models/wp/reg_mc/wp-v1f-idp5",
+   "headline": {
+    "human_spectator": {
+     "n": 43447,
+     "logloss": 0.55282,
+     "brier": 0.18978,
+     "ece": 0.01419
+    },
+    "human_player_approx": {
+     "n": 83307,
+     "logloss": 0.57551,
+     "brier": 0.19927,
+     "ece": 0.01533
+    },
+    "closed_spectator": {
+     "n": 11185,
+     "logloss": 0.56652,
+     "brier": 0.19489,
+     "ece": 0.01226
+    },
+    "closed_player_approx": {
+     "n": 20901,
+     "logloss": 0.58783,
+     "brier": 0.20358,
+     "ece": 0.01366
+    }
+   },
+   "gates": {
+    "beats_baselines": {
+     "pass": true,
+     "logloss": 0.55282,
+     "baselines": {
+      "wp-v1e-gbt": 0.54159,
+      "wp-v1e-logistic": 0.57367,
+      "constant": 0.69315
+     }
+    },
+    "ece_spectator": {
+     "pass": true,
+     "ece": 0.01419,
+     "threshold": 0.03
+    },
+    "in_battle_beats_constant": {
+     "pass": true,
+     "logloss": {
+      "t1-2": 0.6392,
+      "t3-4": 0.54362,
+      "t5-6": 0.47732,
+      "t7+": 0.45428
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.06113,
+       -0.04676
+      ],
+      "t3-4": [
+       -0.16169,
+       -0.13735
+      ],
+      "t5-6": [
+       -0.23303,
+       -0.19863
+      ],
+      "t7+": [
+       -0.26572,
+       -0.21201
+      ]
+     },
+     "losing_buckets": []
+    },
+    "in_battle_ece": {
+     "pass": true,
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
+     "alpha": 0.05,
+     "power": {
+      "logits_1.25x_too_sharp": 0.96,
+      "logits_1.5x_too_sharp": 1.0
+     },
+     "power_needed": 0.8,
+     "rejected_buckets": [],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.0189,
+       "floor_median": 0.011,
+       "threshold": 0.024,
+       "p_calibrated_worse": 0.113,
+       "battles": 4127
+      },
+      "t3-4": {
+       "ece": 0.01479,
+       "floor_median": 0.0118,
+       "threshold": 0.027,
+       "p_calibrated_worse": 0.677,
+       "battles": 3951
+      },
+      "t5-6": {
+       "ece": 0.01946,
+       "floor_median": 0.0125,
+       "threshold": 0.0291,
+       "p_calibrated_worse": 0.365,
+       "battles": 3409
+      },
+      "t7+": {
+       "ece": 0.03258,
+       "floor_median": 0.0141,
+       "threshold": 0.0327,
+       "p_calibrated_worse": 0.014,
+       "battles": 2215
+      }
+     }
+    },
+    "played_out_calibration": {
+     "ece": 0.02673,
+     "logloss": 0.56558,
+     "n": 28046,
+     "rejected_buckets": [
+      "t7+"
+     ],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.0271,
+       "floor_median": 0.0142,
+       "threshold": 0.0301
+      },
+      "t3-4": {
+       "ece": 0.02019,
+       "floor_median": 0.0146,
+       "threshold": 0.0312
+      },
+      "t5-6": {
+       "ece": 0.03114,
+       "floor_median": 0.0149,
+       "threshold": 0.0331
+      },
+      "t7+": {
+       "ece": 0.04397,
+       "floor_median": 0.0172,
+       "threshold": 0.0374
+      }
+     }
+    },
+    "ece_player": {
+     "pass": true,
+     "ece": 0.01533,
+     "threshold": 0.03
+    },
+    "player_beats_spectator": {
+     "pass": true,
+     "player": 0.5659,
+     "spectator": 0.5666,
+     "spectator_symmetrized": 0.5663
+    },
+    "bring_beats_usage": {
+     "pass": true,
+     "model": 0.7017,
+     "usage": 0.6721,
+     "chance": 0.6667
+    },
+    "preview_beats_constant": {
+     "pass": true,
+     "n": 4127,
+     "battles": 4127,
+     "logloss": 0.68596,
+     "constant": 0.69315,
+     "ece": 0.0135,
+     "delta": -0.00719,
+     "delta_95ci": [
+      -0.01074,
+      -0.00364
+     ]
+    },
+    "closed_in_battle_beats_constant": {
+     "pass": true,
+     "n": 10100,
+     "battles": 1085,
+     "logloss": {
+      "t1-2": 0.62799,
+      "t3-4": 0.54837,
+      "t5-6": 0.50589,
+      "t7+": 0.50215
+     },
+     "constant": {
+      "t1-2": 0.69315,
+      "t3-4": 0.69315,
+      "t5-6": 0.69315,
+      "t7+": 0.69315
+     },
+     "delta_95ci": {
+      "t1-2": [
+       -0.08074,
+       -0.04957
+      ],
+      "t3-4": [
+       -0.16965,
+       -0.11991
+      ],
+      "t5-6": [
+       -0.22044,
+       -0.15408
+      ],
+      "t7+": [
+       -0.24925,
+       -0.13275
+      ]
+     },
+     "losing_buckets": []
+    },
+    "closed_in_battle_ece": {
+     "pass": true,
+     "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+     "tolerance": 1.1,
+     "alpha": 0.05,
+     "power": {
+      "logits_1.25x_too_sharp": 0.33,
+      "logits_1.5x_too_sharp": 0.962
+     },
+     "power_needed": 0.8,
+     "rejected_buckets": [],
+     "by_bucket": {
+      "t1-2": {
+       "ece": 0.01107,
+       "floor_median": 0.0219,
+       "threshold": 0.0412,
+       "p_calibrated_worse": 0.984,
+       "battles": 1085
+      },
+      "t3-4": {
+       "ece": 0.02763,
+       "floor_median": 0.0232,
+       "threshold": 0.0448,
+       "p_calibrated_worse": 0.43,
+       "battles": 1010
+      },
+      "t5-6": {
+       "ece": 0.02957,
+       "floor_median": 0.0263,
+       "threshold": 0.0517,
+       "p_calibrated_worse": 0.504,
+       "battles": 824
+      },
+      "t7+": {
+       "ece": 0.03095,
+       "floor_median": 0.0353,
+       "threshold": 0.0708,
+       "p_calibrated_worse": 0.754,
+       "battles": 537
+      }
+     }
+    },
+    "in_battle_pass": true,
+    "closed_sheet_pass": true,
+    "all_pass": true
+   },
+   "manifest_sha256": "ce78951464b9adda171366cc43db56b4d06d384af2821b2722ee4817b488c1e1",
+   "eval_sha256": "3a30200b050e1ec3ae5bde5ee393c480b12951676e195b9d72c0d154d03172ca",
+   "eval_at": "2026-09-28T18:13:05"
   }
  ]
 }

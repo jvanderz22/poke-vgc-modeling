@@ -96,7 +96,8 @@ def _load(path: Path) -> dict[str, np.ndarray]:
         return {k: z[k] for k in ("cat", "num", "glob", "y", "bring", "source", "kind")}
 
 
-def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.Tensor]:
+def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0,
+             preview_wp_weight: float = 1.0) -> list[torch.Tensor]:
     # num stays float16 in memory (it's the bulk of the data) and is cast per batch.
     # Human rows are 28% of the data — more than their 11% share of battles, because self-play is
     # thinned (`features.train_orientations`) while human games are kept whole, both orientations
@@ -104,15 +105,23 @@ def _tensors(d: dict[str, np.ndarray], human_weight: float = 1.0) -> list[torch.
     # `--human-weight 4` they carry ~61% of the loss. The model also gets a human/self-play flag
     # in `glob`.
     w = np.where(d["source"] == 1, human_weight, 1.0).astype(np.float32)
+    # The WP loss on preview and bring rows has its own weight. There the teams are the whole
+    # input and a preview WP is not learnable from this corpus (phase 4, finding 1), so what those
+    # rows can teach the WP head is which pairings won — and the encoder is shared with turn rows.
+    # The bring head's weight is `w` either way: which four are brought is learnable, and needs
+    # the identities.
+    pre = d["kind"] <= KIND_BRING
+    wp_w = np.where(pre, w * preview_wp_weight, w).astype(np.float32)
     return [torch.from_numpy(d["cat"].astype(np.int16)), torch.from_numpy(d["num"].astype(np.float16)),
             torch.from_numpy(d["glob"]), torch.from_numpy(d["y"]), torch.from_numpy(d["bring"]),
             torch.from_numpy(w), torch.from_numpy(d["source"].astype(np.int64)),
-            torch.from_numpy(d["kind"].astype(np.int64))]
+            torch.from_numpy(d["kind"].astype(np.int64)), torch.from_numpy(wp_w)]
 
 
 def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str = "cpu",
            id_dropout_preview: float | None = None) -> list[torch.Tensor]:
     cat, num, glob, y, bring, w = (t[idx].to(device, non_blocking=True) for t in data[:6])
+    wp_w = data[8][idx].to(device, non_blocking=True) if len(data) > 8 else w
     cat = cat.long()
     rate = max(id_dropout, id_dropout_preview or 0.0)
     if rate > 0:
@@ -121,14 +130,16 @@ def _batch(data: list[torch.Tensor], idx, id_dropout: float = 0.0, device: str =
         # (base stats, types, move summary) that describe the position.
         rates = torch.full(cat.shape[:2], id_dropout, device=cat.device)
         if id_dropout_preview is not None and len(data) > 7:
-            # At preview and bring there is no board yet — identity is the whole input, so hiding
-            # it there teaches nothing and costs the matchup signal the preview gate measures.
-            # Turn/switch rows still need heavy masking to stop pairing memorisation.
+            # Preview and bring rows can take their own rate. They were once spared (0.0) on the
+            # theory that identity is the whole input there and masking it costs the preview
+            # signal. Measured, it did not: at 0.5 on both, wp-v1f-idp5 beat the constant at
+            # preview by more than any spared model, and the encoder those rows share with turn
+            # rows stopped learning pairings unmasked (docs/phase8-findings.md, "wp-v1f").
             is_preview = (data[7][idx].to(device) <= KIND_BRING).unsqueeze(-1)
             rates = torch.where(is_preview, torch.full_like(rates, id_dropout_preview), rates)
         hide = torch.rand(cat.shape[:2], device=cat.device) < rates
         cat = torch.where(hide.unsqueeze(-1), torch.full_like(cat, UNK), cat)
-    return [cat, num.float(), glob, y, bring, w]
+    return [cat, num.float(), glob, y, bring, w, wp_w]
 
 
 def _export(model: SetWP, sample: tuple, path: Path) -> None:
@@ -150,9 +161,9 @@ def _export(model: SetWP, sample: tuple, path: Path) -> None:
 
 
 def _losses(model: SetWP, batch: list[torch.Tensor], bring_weight: float) -> tuple[torch.Tensor, torch.Tensor]:
-    cat, num, glob, y, bring, w = batch
+    cat, num, glob, y, bring, w, wp_w = batch
     wp_logit, bring_logit = model(cat, num, glob)
-    wp_loss = (nn.functional.binary_cross_entropy_with_logits(wp_logit, y, reduction="none") * w).sum() / w.sum()
+    wp_loss = (nn.functional.binary_cross_entropy_with_logits(wp_logit, y, reduction="none") * wp_w).sum() / wp_w.sum()
     mask = bring >= 0
     if mask.any():
         bw = w.unsqueeze(1).expand_as(bring)[mask]
@@ -194,7 +205,8 @@ def _fit_temperature(logits: np.ndarray, y: np.ndarray) -> float:
 def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float = 3e-4, d: int = 128, layers: int = 3,
           heads: int = 4, dropout: float = 0.1, bring_weight: float = 0.3, seed: int = 0, patience: int = 2,
           threads: int = 6, weight_decay: float = 0.05, id_dropout: float = 0.0, device: str = "auto",
-          human_weight: float = 1.0, id_dropout_preview: float | None = None) -> dict:
+          human_weight: float = 1.0, id_dropout_preview: float | None = None,
+          preview_wp_weight: float = 1.0) -> dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.set_num_threads(threads)
@@ -203,7 +215,8 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     info = json.loads((data_dir / "info.json").read_text())
     vocab = json.loads((data_dir / "vocab.json").read_text())
     sizes = {k: len(vocab[k]) + 3 for k in ("species", "items", "abilities", "moves")}
-    tr, va = _tensors(_load(data_dir / "train.npz"), human_weight), _tensors(_load(data_dir / "val.npz"))
+    tr = _tensors(_load(data_dir / "train.npz"), human_weight, preview_wp_weight)
+    va = _tensors(_load(data_dir / "val.npz"))
     hp = {"d": d, "layers": layers, "heads": heads, "dropout": dropout}
     model = SetWP(sizes, info["n_num"], info["n_glob"], **hp).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -255,7 +268,7 @@ def train(data_dir: Path, out: Path, epochs: int = 20, bs: int = 512, lr: float 
     result = {"hyperparams": hp | {"epochs": epochs, "bs": bs, "lr": lr, "bring_weight": bring_weight, "seed": seed,
                                    "weight_decay": weight_decay, "id_dropout": id_dropout,
                                    "id_dropout_preview": id_dropout_preview,
-                                   "human_weight": human_weight},
+                                   "preview_wp_weight": preview_wp_weight, "human_weight": human_weight},
               "best_epoch": best[1], "val_wp_logloss": round(val["all"], 5), "selection_metric": round(best[0], 5),
               "selected_on": "human" if human_weight > 1 else "all", "temperature": round(temp, 4),
               "val_wp_logloss_calibrated": round(val_t["all"], 5),
@@ -283,15 +296,17 @@ def main() -> None:
     ap.add_argument("--human-weight", type=float, default=1.0, help="weight on human rows (they are 28% of the data)")
     ap.add_argument("--id-dropout-preview", type=float, default=None,
                     help="identity dropout for preview/bring rows only (default: same as --id-dropout). "
-                         "Team identity is the whole input before the battle starts, so masking it there "
-                         "costs the preview signal without preventing any memorisation.")
+                         "Sparing them (0.0) lets the shared encoder learn team pairings unmasked.")
+    ap.add_argument("--preview-wp-weight", type=float, default=1.0,
+                    help="weight of the WP loss on preview/bring rows (the bring loss keeps its weight). "
+                         "Preview WP is not learnable here, so those rows can only teach which pairings won.")
     ap.add_argument("--weight-decay", type=float, default=0.05)
     ap.add_argument("--id-dropout", type=float, default=0.0, help="chance of hiding a Pokémon's identity in training")
     a = ap.parse_args()
     r = train(a.data, a.out, epochs=a.epochs, bs=a.bs, d=a.d, layers=a.layers, lr=a.lr, dropout=a.dropout,
               bring_weight=a.bring_weight, seed=a.seed, threads=a.threads, weight_decay=a.weight_decay,
               id_dropout=a.id_dropout, device=a.device, human_weight=a.human_weight,
-              id_dropout_preview=a.id_dropout_preview)
+              id_dropout_preview=a.id_dropout_preview, preview_wp_weight=a.preview_wp_weight)
     print(json.dumps({k: v for k, v in r.items() if k != "history"}))
 
 

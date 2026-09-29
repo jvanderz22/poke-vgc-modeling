@@ -213,13 +213,14 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 11290,
         "battles": 4127,
         "ece": 0.04368,
         "floor_median": 0.0114,
-        "threshold": 0.0201,
+        "threshold": 0.0261,
         "p_calibrated_worse": 0.0
        },
        "t3-4": {
@@ -227,34 +228,32 @@
         "battles": 3951,
         "ece": 0.02709,
         "floor_median": 0.0116,
-        "threshold": 0.0191,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.0283,
+        "p_calibrated_worse": 0.024
        },
        "t5-6": {
         "n": 8685,
         "battles": 3409,
         "ece": 0.02356,
         "floor_median": 0.0124,
-        "threshold": 0.0207,
-        "p_calibrated_worse": 0.002
+        "threshold": 0.0288,
+        "p_calibrated_worse": 0.105
        },
        "t7+": {
         "n": 7734,
         "battles": 2215,
         "ece": 0.02233,
         "floor_median": 0.015,
-        "threshold": 0.0259,
-        "p_calibrated_worse": 0.052
+        "threshold": 0.0339,
+        "p_calibrated_worse": 0.319
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 1.0,
+       "logits_1.25x_too_sharp": 0.978,
        "logits_1.5x_too_sharp": 1.0
       },
       "rejected_buckets": [
-       "t1-2",
-       "t3-4",
-       "t5-6"
+       "t1-2"
       ],
       "pass": false
      },
@@ -262,13 +261,14 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 6776,
         "battles": 2450,
         "ece": 0.05527,
         "floor_median": 0.0148,
-        "threshold": 0.0271,
+        "threshold": 0.031,
         "p_calibrated_worse": 0.0
        },
        "t3-4": {
@@ -276,7 +276,7 @@
         "battles": 2443,
         "ece": 0.04414,
         "floor_median": 0.0147,
-        "threshold": 0.025,
+        "threshold": 0.0325,
         "p_calibrated_worse": 0.0
        },
        "t5-6": {
@@ -284,27 +284,26 @@
         "battles": 2271,
         "ece": 0.03635,
         "floor_median": 0.0151,
-        "threshold": 0.0253,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.0336,
+        "p_calibrated_worse": 0.005
        },
        "t7+": {
         "n": 5505,
         "battles": 1560,
         "ece": 0.03534,
         "floor_median": 0.018,
-        "threshold": 0.0325,
-        "p_calibrated_worse": 0.004
+        "threshold": 0.0394,
+        "p_calibrated_worse": 0.037
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.992,
+       "logits_1.25x_too_sharp": 0.838,
        "logits_1.5x_too_sharp": 1.0
       },
       "rejected_buckets": [
        "t1-2",
        "t3-4",
-       "t5-6",
-       "t7+"
+       "t5-6"
       ],
       "pass": false
      }
@@ -764,90 +763,90 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 3039,
         "battles": 1085,
         "ece": 0.02863,
         "floor_median": 0.0226,
-        "threshold": 0.039,
-        "p_calibrated_worse": 0.204
+        "threshold": 0.0435,
+        "p_calibrated_worse": 0.319
        },
        "t3-4": {
         "n": 2919,
         "battles": 1010,
         "ece": 0.01952,
         "floor_median": 0.0233,
-        "threshold": 0.0399,
-        "p_calibrated_worse": 0.742
+        "threshold": 0.0445,
+        "p_calibrated_worse": 0.858
        },
        "t5-6": {
         "n": 2093,
         "battles": 824,
         "ece": 0.04101,
         "floor_median": 0.0255,
-        "threshold": 0.0429,
-        "p_calibrated_worse": 0.022
+        "threshold": 0.0491,
+        "p_calibrated_worse": 0.087
        },
        "t7+": {
         "n": 2049,
         "battles": 537,
         "ece": 0.06124,
         "floor_median": 0.0331,
-        "threshold": 0.0583,
-        "p_calibrated_worse": 0.009
+        "threshold": 0.0624,
+        "p_calibrated_worse": 0.015
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.684,
-       "logits_1.5x_too_sharp": 1.0
+       "logits_1.25x_too_sharp": 0.452,
+       "logits_1.5x_too_sharp": 0.992
       },
-      "rejected_buckets": [
-       "t7+"
-      ],
-      "pass": false
+      "rejected_buckets": [],
+      "pass": true
      },
      "calibration_test_played_out": {
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 1649,
         "battles": 578,
         "ece": 0.05138,
         "floor_median": 0.0308,
-        "threshold": 0.0547,
-        "p_calibrated_worse": 0.031
+        "threshold": 0.0573,
+        "p_calibrated_worse": 0.039
        },
        "t3-4": {
         "n": 1725,
         "battles": 575,
         "ece": 0.03936,
         "floor_median": 0.0304,
-        "threshold": 0.0509,
-        "p_calibrated_worse": 0.141
+        "threshold": 0.0579,
+        "p_calibrated_worse": 0.245
        },
        "t5-6": {
         "n": 1330,
         "battles": 518,
         "ece": 0.06214,
         "floor_median": 0.0318,
-        "threshold": 0.0515,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.0561,
+        "p_calibrated_worse": 0.002
        },
        "t7+": {
         "n": 1362,
         "battles": 355,
         "ece": 0.07796,
         "floor_median": 0.0411,
-        "threshold": 0.0669,
-        "p_calibrated_worse": 0.004
+        "threshold": 0.0739,
+        "p_calibrated_worse": 0.008
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.512,
-       "logits_1.5x_too_sharp": 0.968
+       "logits_1.25x_too_sharp": 0.372,
+       "logits_1.5x_too_sharp": 0.914
       },
       "rejected_buckets": [
        "t5-6",
@@ -1311,89 +1310,91 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 215,
         "battles": 77,
         "ece": 0.09077,
         "floor_median": 0.084,
-        "threshold": 0.1485,
-        "p_calibrated_worse": 0.392
+        "threshold": 0.1534,
+        "p_calibrated_worse": 0.452
        },
        "t3-4": {
         "n": 223,
         "battles": 75,
         "ece": 0.08478,
         "floor_median": 0.0831,
-        "threshold": 0.1396,
-        "p_calibrated_worse": 0.476
+        "threshold": 0.1435,
+        "p_calibrated_worse": 0.506
        },
        "t5-6": {
         "n": 164,
         "battles": 63,
         "ece": 0.14343,
         "floor_median": 0.0879,
-        "threshold": 0.1453,
-        "p_calibrated_worse": 0.019
+        "threshold": 0.1507,
+        "p_calibrated_worse": 0.025
        },
        "t7+": {
         "n": 135,
         "battles": 40,
         "ece": 0.0992,
         "floor_median": 0.0995,
-        "threshold": 0.1792,
-        "p_calibrated_worse": 0.511
+        "threshold": 0.1983,
+        "p_calibrated_worse": 0.584
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.17,
-       "logits_1.5x_too_sharp": 0.29
+       "logits_1.25x_too_sharp": 0.09,
+       "logits_1.5x_too_sharp": 0.202
       },
       "rejected_buckets": [],
       "pass": null,
-      "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 29% of the time, against 80% needed"
+      "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 20% of the time, against 80% needed"
      },
      "calibration_test_played_out": {
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 158,
         "battles": 56,
         "ece": 0.11106,
         "floor_median": 0.0984,
-        "threshold": 0.1712,
-        "p_calibrated_worse": 0.341
+        "threshold": 0.1821,
+        "p_calibrated_worse": 0.339
        },
        "t3-4": {
         "n": 174,
         "battles": 56,
         "ece": 0.12762,
         "floor_median": 0.0941,
-        "threshold": 0.1576,
-        "p_calibrated_worse": 0.114
+        "threshold": 0.174,
+        "p_calibrated_worse": 0.157
        },
        "t5-6": {
         "n": 134,
         "battles": 51,
         "ece": 0.19671,
         "floor_median": 0.101,
-        "threshold": 0.1598,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.1698,
+        "p_calibrated_worse": 0.002
        },
        "t7+": {
         "n": 118,
         "battles": 33,
         "ece": 0.13318,
         "floor_median": 0.1101,
-        "threshold": 0.2002,
-        "p_calibrated_worse": 0.221
+        "threshold": 0.1975,
+        "p_calibrated_worse": 0.28
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.16,
-       "logits_1.5x_too_sharp": 0.298
+       "logits_1.25x_too_sharp": 0.102,
+       "logits_1.5x_too_sharp": 0.226
       },
       "rejected_buckets": [
        "t5-6"
@@ -1856,60 +1857,60 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 3227,
         "battles": 1176,
         "ece": 0.0398,
         "floor_median": 0.0214,
-        "threshold": 0.0376,
-        "p_calibrated_worse": 0.008
+        "threshold": 0.0422,
+        "p_calibrated_worse": 0.031
        },
        "t3-4": {
         "n": 3313,
         "battles": 1118,
         "ece": 0.02713,
         "floor_median": 0.0212,
-        "threshold": 0.0361,
-        "p_calibrated_worse": 0.175
+        "threshold": 0.0436,
+        "p_calibrated_worse": 0.364
        },
        "t5-6": {
         "n": 2430,
         "battles": 963,
         "ece": 0.03496,
         "floor_median": 0.0234,
-        "threshold": 0.0378,
-        "p_calibrated_worse": 0.042
+        "threshold": 0.0447,
+        "p_calibrated_worse": 0.135
        },
        "t7+": {
         "n": 2007,
         "battles": 586,
         "ece": 0.04207,
         "floor_median": 0.0296,
-        "threshold": 0.0515,
-        "p_calibrated_worse": 0.091
+        "threshold": 0.0611,
+        "p_calibrated_worse": 0.158
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.77,
-       "logits_1.5x_too_sharp": 1.0
+       "logits_1.25x_too_sharp": 0.428,
+       "logits_1.5x_too_sharp": 0.988
       },
-      "rejected_buckets": [
-       "t1-2"
-      ],
-      "pass": false
+      "rejected_buckets": [],
+      "pass": true
      },
      "calibration_test_played_out": {
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 1908,
         "battles": 687,
         "ece": 0.06627,
         "floor_median": 0.0284,
-        "threshold": 0.0511,
+        "threshold": 0.0549,
         "p_calibrated_worse": 0.0
        },
        "t3-4": {
@@ -1917,34 +1918,33 @@
         "battles": 686,
         "ece": 0.03652,
         "floor_median": 0.0271,
-        "threshold": 0.0459,
-        "p_calibrated_worse": 0.107
+        "threshold": 0.0519,
+        "p_calibrated_worse": 0.227
        },
        "t5-6": {
         "n": 1662,
         "battles": 641,
         "ece": 0.05507,
         "floor_median": 0.0284,
-        "threshold": 0.0472,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.0544,
+        "p_calibrated_worse": 0.011
        },
        "t7+": {
         "n": 1433,
         "battles": 419,
         "ece": 0.06681,
         "floor_median": 0.0351,
-        "threshold": 0.0623,
-        "p_calibrated_worse": 0.004
+        "threshold": 0.0703,
+        "p_calibrated_worse": 0.019
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.56,
-       "logits_1.5x_too_sharp": 0.988
+       "logits_1.25x_too_sharp": 0.276,
+       "logits_1.5x_too_sharp": 0.904
       },
       "rejected_buckets": [
        "t1-2",
-       "t5-6",
-       "t7+"
+       "t5-6"
       ],
       "pass": false
      }
@@ -2404,13 +2404,14 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 8063,
         "battles": 2951,
         "ece": 0.04575,
         "floor_median": 0.0136,
-        "threshold": 0.0238,
+        "threshold": 0.0301,
         "p_calibrated_worse": 0.0
        },
        "t3-4": {
@@ -2418,28 +2419,28 @@
         "battles": 2833,
         "ece": 0.03433,
         "floor_median": 0.0137,
-        "threshold": 0.0227,
-        "p_calibrated_worse": 0.0
+        "threshold": 0.0314,
+        "p_calibrated_worse": 0.002
        },
        "t5-6": {
         "n": 6255,
         "battles": 2446,
         "ece": 0.02441,
         "floor_median": 0.0145,
-        "threshold": 0.0244,
-        "p_calibrated_worse": 0.013
+        "threshold": 0.0321,
+        "p_calibrated_worse": 0.208
        },
        "t7+": {
         "n": 5727,
         "battles": 1629,
         "ece": 0.01711,
         "floor_median": 0.0173,
-        "threshold": 0.0303,
-        "p_calibrated_worse": 0.513
+        "threshold": 0.0369,
+        "p_calibrated_worse": 0.794
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.992,
+       "logits_1.25x_too_sharp": 0.888,
        "logits_1.5x_too_sharp": 1.0
       },
       "rejected_buckets": [
@@ -2452,13 +2453,14 @@
       "sims": 1000,
       "alpha": 0.05,
       "per_bucket_level": 0.0125,
+      "tolerance": 1.1,
       "by_bucket": {
        "t1-2": {
         "n": 4868,
         "battles": 1763,
         "ece": 0.0518,
         "floor_median": 0.0177,
-        "threshold": 0.0318,
+        "threshold": 0.0357,
         "p_calibrated_worse": 0.0
        },
        "t3-4": {
@@ -2466,7 +2468,7 @@
         "battles": 1757,
         "ece": 0.0527,
         "floor_median": 0.0171,
-        "threshold": 0.0287,
+        "threshold": 0.0355,
         "p_calibrated_worse": 0.0
        },
        "t5-6": {
@@ -2474,26 +2476,25 @@
         "battles": 1630,
         "ece": 0.03288,
         "floor_median": 0.0181,
-        "threshold": 0.0317,
-        "p_calibrated_worse": 0.005
+        "threshold": 0.0372,
+        "p_calibrated_worse": 0.053
        },
        "t7+": {
         "n": 4072,
         "battles": 1141,
         "ece": 0.02696,
         "floor_median": 0.0204,
-        "threshold": 0.0366,
-        "p_calibrated_worse": 0.141
+        "threshold": 0.0433,
+        "p_calibrated_worse": 0.385
        }
       },
       "power": {
-       "logits_1.25x_too_sharp": 0.944,
+       "logits_1.25x_too_sharp": 0.732,
        "logits_1.5x_too_sharp": 1.0
       },
       "rejected_buckets": [
        "t1-2",
-       "t3-4",
-       "t5-6"
+       "t3-4"
       ],
       "pass": false
      }
@@ -3804,89 +3805,89 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 11290,
          "battles": 4127,
          "ece": 0.02239,
          "floor_median": 0.0106,
-         "threshold": 0.0202,
-         "p_calibrated_worse": 0.007
+         "threshold": 0.0228,
+         "p_calibrated_worse": 0.017
         },
         "t3-4": {
          "n": 11611,
          "battles": 3951,
          "ece": 0.01696,
          "floor_median": 0.0113,
-         "threshold": 0.0194,
-         "p_calibrated_worse": 0.06
+         "threshold": 0.0267,
+         "p_calibrated_worse": 0.456
         },
         "t5-6": {
          "n": 8685,
          "battles": 3409,
          "ece": 0.016,
          "floor_median": 0.0127,
-         "threshold": 0.0207,
-         "p_calibrated_worse": 0.168
+         "threshold": 0.0282,
+         "p_calibrated_worse": 0.651
         },
         "t7+": {
          "n": 7734,
          "battles": 2215,
          "ece": 0.02143,
          "floor_median": 0.0147,
-         "threshold": 0.0246,
-         "p_calibrated_worse": 0.057
+         "threshold": 0.0338,
+         "p_calibrated_worse": 0.345
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 1.0,
+        "logits_1.25x_too_sharp": 0.97,
         "logits_1.5x_too_sharp": 1.0
        },
-       "rejected_buckets": [
-        "t1-2"
-       ],
-       "pass": false
+       "rejected_buckets": [],
+       "pass": true
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 6776,
          "battles": 2450,
          "ece": 0.02143,
          "floor_median": 0.014,
-         "threshold": 0.0265,
-         "p_calibrated_worse": 0.066
+         "threshold": 0.0278,
+         "p_calibrated_worse": 0.143
         },
         "t3-4": {
          "n": 7414,
          "battles": 2443,
          "ece": 0.01622,
          "floor_median": 0.0145,
-         "threshold": 0.0241,
-         "p_calibrated_worse": 0.343
+         "threshold": 0.0307,
+         "p_calibrated_worse": 0.716
         },
         "t5-6": {
          "n": 5901,
          "battles": 2271,
          "ece": 0.02017,
          "floor_median": 0.0154,
-         "threshold": 0.0253,
-         "p_calibrated_worse": 0.112
+         "threshold": 0.0331,
+         "p_calibrated_worse": 0.486
         },
         "t7+": {
          "n": 5505,
          "battles": 1560,
          "ece": 0.02834,
          "floor_median": 0.0177,
-         "threshold": 0.0291,
-         "p_calibrated_worse": 0.019
+         "threshold": 0.0389,
+         "p_calibrated_worse": 0.152
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.986,
+        "logits_1.25x_too_sharp": 0.826,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [],
@@ -4340,43 +4341,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3039,
          "battles": 1085,
          "ece": 0.00548,
          "floor_median": 0.021,
-         "threshold": 0.0384,
-         "p_calibrated_worse": 0.999
+         "threshold": 0.0421,
+         "p_calibrated_worse": 1.0
         },
         "t3-4": {
          "n": 2919,
          "battles": 1010,
          "ece": 0.02115,
          "floor_median": 0.0229,
-         "threshold": 0.04,
-         "p_calibrated_worse": 0.622
+         "threshold": 0.0432,
+         "p_calibrated_worse": 0.767
         },
         "t5-6": {
          "n": 2093,
          "battles": 824,
          "ece": 0.02376,
          "floor_median": 0.0252,
-         "threshold": 0.0426,
-         "p_calibrated_worse": 0.598
+         "threshold": 0.048,
+         "p_calibrated_worse": 0.759
         },
         "t7+": {
          "n": 2049,
          "battles": 537,
          "ece": 0.03897,
          "floor_median": 0.0303,
-         "threshold": 0.0538,
-         "p_calibrated_worse": 0.183
+         "threshold": 0.0593,
+         "p_calibrated_worse": 0.275
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.63,
-        "logits_1.5x_too_sharp": 0.998
+        "logits_1.25x_too_sharp": 0.444,
+        "logits_1.5x_too_sharp": 0.982
        },
        "rejected_buckets": [],
        "pass": true
@@ -4385,43 +4387,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1649,
          "battles": 578,
          "ece": 0.02499,
          "floor_median": 0.0286,
-         "threshold": 0.0534,
-         "p_calibrated_worse": 0.664
+         "threshold": 0.056,
+         "p_calibrated_worse": 0.704
         },
         "t3-4": {
          "n": 1725,
          "battles": 575,
          "ece": 0.03481,
          "floor_median": 0.03,
-         "threshold": 0.0501,
-         "p_calibrated_worse": 0.286
+         "threshold": 0.0566,
+         "p_calibrated_worse": 0.388
         },
         "t5-6": {
          "n": 1330,
          "battles": 518,
          "ece": 0.0383,
          "floor_median": 0.0322,
-         "threshold": 0.0519,
-         "p_calibrated_worse": 0.209
+         "threshold": 0.056,
+         "p_calibrated_worse": 0.323
         },
         "t7+": {
          "n": 1362,
          "battles": 355,
          "ece": 0.04725,
          "floor_median": 0.0377,
-         "threshold": 0.0661,
-         "p_calibrated_worse": 0.165
+         "threshold": 0.072,
+         "p_calibrated_worse": 0.277
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.468,
-        "logits_1.5x_too_sharp": 0.954
+        "logits_1.25x_too_sharp": 0.292,
+        "logits_1.5x_too_sharp": 0.886
        },
        "rejected_buckets": [],
        "pass": true
@@ -4874,93 +4877,95 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 215,
          "battles": 77,
          "ece": 0.07718,
          "floor_median": 0.0764,
-         "threshold": 0.1426,
-         "p_calibrated_worse": 0.495
+         "threshold": 0.1579,
+         "p_calibrated_worse": 0.493
         },
         "t3-4": {
          "n": 223,
          "battles": 75,
          "ece": 0.1102,
          "floor_median": 0.0826,
-         "threshold": 0.1413,
-         "p_calibrated_worse": 0.106
+         "threshold": 0.1412,
+         "p_calibrated_worse": 0.143
         },
         "t5-6": {
          "n": 164,
          "battles": 63,
          "ece": 0.12137,
          "floor_median": 0.0858,
-         "threshold": 0.1471,
-         "p_calibrated_worse": 0.079
+         "threshold": 0.1497,
+         "p_calibrated_worse": 0.106
         },
         "t7+": {
          "n": 135,
          "battles": 40,
          "ece": 0.07984,
          "floor_median": 0.1013,
-         "threshold": 0.1721,
-         "p_calibrated_worse": 0.791
+         "threshold": 0.182,
+         "p_calibrated_worse": 0.822
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.134,
-        "logits_1.5x_too_sharp": 0.258
+        "logits_1.25x_too_sharp": 0.098,
+        "logits_1.5x_too_sharp": 0.21
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 26% of the time, against 80% needed"
+       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 21% of the time, against 80% needed"
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 158,
          "battles": 56,
          "ece": 0.08867,
          "floor_median": 0.0898,
-         "threshold": 0.1674,
-         "p_calibrated_worse": 0.517
+         "threshold": 0.1741,
+         "p_calibrated_worse": 0.507
         },
         "t3-4": {
          "n": 174,
          "battles": 56,
          "ece": 0.13673,
          "floor_median": 0.0913,
-         "threshold": 0.1498,
-         "p_calibrated_worse": 0.05
+         "threshold": 0.1683,
+         "p_calibrated_worse": 0.079
         },
         "t5-6": {
          "n": 134,
          "battles": 51,
          "ece": 0.14145,
          "floor_median": 0.0949,
-         "threshold": 0.1574,
-         "p_calibrated_worse": 0.043
+         "threshold": 0.1702,
+         "p_calibrated_worse": 0.073
         },
         "t7+": {
          "n": 118,
          "battles": 33,
          "ece": 0.09603,
          "floor_median": 0.1103,
-         "threshold": 0.2018,
-         "p_calibrated_worse": 0.666
+         "threshold": 0.2005,
+         "p_calibrated_worse": 0.718
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.14,
-        "logits_1.5x_too_sharp": 0.274
+        "logits_1.25x_too_sharp": 0.07,
+        "logits_1.5x_too_sharp": 0.198
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 27% of the time, against 80% needed"
+       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 20% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -5410,43 +5415,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3227,
          "battles": 1176,
          "ece": 0.02616,
          "floor_median": 0.0202,
-         "threshold": 0.0371,
-         "p_calibrated_worse": 0.185
+         "threshold": 0.0396,
+         "p_calibrated_worse": 0.251
         },
         "t3-4": {
          "n": 3313,
          "battles": 1118,
          "ece": 0.02096,
          "floor_median": 0.0214,
-         "threshold": 0.0363,
-         "p_calibrated_worse": 0.532
+         "threshold": 0.0432,
+         "p_calibrated_worse": 0.7
         },
         "t5-6": {
          "n": 2430,
          "battles": 963,
          "ece": 0.02787,
          "floor_median": 0.0233,
-         "threshold": 0.0384,
-         "p_calibrated_worse": 0.237
+         "threshold": 0.0451,
+         "p_calibrated_worse": 0.414
         },
         "t7+": {
          "n": 2007,
          "battles": 586,
          "ece": 0.03464,
          "floor_median": 0.0289,
-         "threshold": 0.0504,
-         "p_calibrated_worse": 0.223
+         "threshold": 0.0577,
+         "p_calibrated_worse": 0.345
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.722,
-        "logits_1.5x_too_sharp": 1.0
+        "logits_1.25x_too_sharp": 0.374,
+        "logits_1.5x_too_sharp": 0.992
        },
        "rejected_buckets": [],
        "pass": true
@@ -5455,43 +5461,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1908,
          "battles": 687,
          "ece": 0.03515,
          "floor_median": 0.0253,
-         "threshold": 0.0495,
-         "p_calibrated_worse": 0.147
+         "threshold": 0.0527,
+         "p_calibrated_worse": 0.19
         },
         "t3-4": {
          "n": 2107,
          "battles": 686,
          "ece": 0.02459,
          "floor_median": 0.0277,
-         "threshold": 0.048,
-         "p_calibrated_worse": 0.664
+         "threshold": 0.0508,
+         "p_calibrated_worse": 0.75
         },
         "t5-6": {
          "n": 1662,
          "battles": 641,
          "ece": 0.0428,
          "floor_median": 0.0282,
-         "threshold": 0.0479,
-         "p_calibrated_worse": 0.047
+         "threshold": 0.0511,
+         "p_calibrated_worse": 0.1
         },
         "t7+": {
          "n": 1433,
          "battles": 419,
          "ece": 0.05245,
          "floor_median": 0.0339,
-         "threshold": 0.0619,
-         "p_calibrated_worse": 0.047
+         "threshold": 0.0644,
+         "p_calibrated_worse": 0.087
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.468,
-        "logits_1.5x_too_sharp": 0.97
+        "logits_1.25x_too_sharp": 0.34,
+        "logits_1.5x_too_sharp": 0.94
        },
        "rejected_buckets": [],
        "pass": true
@@ -5944,42 +5951,43 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 8063,
          "battles": 2951,
          "ece": 0.02136,
          "floor_median": 0.0125,
-         "threshold": 0.024,
-         "p_calibrated_worse": 0.036
+         "threshold": 0.027,
+         "p_calibrated_worse": 0.075
         },
         "t3-4": {
          "n": 8298,
          "battles": 2833,
          "ece": 0.01645,
          "floor_median": 0.0136,
-         "threshold": 0.0236,
-         "p_calibrated_worse": 0.221
+         "threshold": 0.0296,
+         "p_calibrated_worse": 0.628
         },
         "t5-6": {
          "n": 6255,
          "battles": 2446,
          "ece": 0.01531,
          "floor_median": 0.0151,
-         "threshold": 0.0245,
-         "p_calibrated_worse": 0.474
+         "threshold": 0.0317,
+         "p_calibrated_worse": 0.835
         },
         "t7+": {
          "n": 5727,
          "battles": 1629,
          "ece": 0.02112,
          "floor_median": 0.017,
-         "threshold": 0.0293,
-         "p_calibrated_worse": 0.18
+         "threshold": 0.0359,
+         "p_calibrated_worse": 0.485
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.988,
+        "logits_1.25x_too_sharp": 0.874,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [],
@@ -5989,42 +5997,43 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 4868,
          "battles": 1763,
          "ece": 0.01818,
          "floor_median": 0.0165,
-         "threshold": 0.0316,
-         "p_calibrated_worse": 0.388
+         "threshold": 0.033,
+         "p_calibrated_worse": 0.468
         },
         "t3-4": {
          "n": 5307,
          "battles": 1757,
          "ece": 0.01663,
          "floor_median": 0.0171,
-         "threshold": 0.0299,
-         "p_calibrated_worse": 0.549
+         "threshold": 0.035,
+         "p_calibrated_worse": 0.764
         },
         "t5-6": {
          "n": 4239,
          "battles": 1630,
          "ece": 0.02162,
          "floor_median": 0.0177,
-         "threshold": 0.0304,
-         "p_calibrated_worse": 0.213
+         "threshold": 0.037,
+         "p_calibrated_worse": 0.533
         },
         "t7+": {
          "n": 4072,
          "battles": 1141,
          "ece": 0.02292,
          "floor_median": 0.0199,
-         "threshold": 0.0346,
-         "p_calibrated_worse": 0.293
+         "threshold": 0.0412,
+         "p_calibrated_worse": 0.564
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.898,
+        "logits_1.25x_too_sharp": 0.682,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [],
@@ -7312,13 +7321,14 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 11290,
          "battles": 4127,
          "ece": 0.03241,
          "floor_median": 0.0105,
-         "threshold": 0.0206,
+         "threshold": 0.0226,
          "p_calibrated_worse": 0.0
         },
         "t3-4": {
@@ -7326,28 +7336,28 @@
          "battles": 3951,
          "ece": 0.01677,
          "floor_median": 0.0123,
-         "threshold": 0.0202,
-         "p_calibrated_worse": 0.094
+         "threshold": 0.0286,
+         "p_calibrated_worse": 0.581
         },
         "t5-6": {
          "n": 8685,
          "battles": 3409,
          "ece": 0.03083,
          "floor_median": 0.0138,
-         "threshold": 0.0229,
-         "p_calibrated_worse": 0.0
+         "threshold": 0.0307,
+         "p_calibrated_worse": 0.01
         },
         "t7+": {
          "n": 7734,
          "battles": 2215,
          "ece": 0.04425,
          "floor_median": 0.0177,
-         "threshold": 0.0296,
-         "p_calibrated_worse": 0.0
+         "threshold": 0.0366,
+         "p_calibrated_worse": 0.001
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 1.0,
+        "logits_1.25x_too_sharp": 0.932,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [
@@ -7361,13 +7371,14 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 6776,
          "battles": 2450,
          "ece": 0.04744,
          "floor_median": 0.0139,
-         "threshold": 0.0267,
+         "threshold": 0.0293,
          "p_calibrated_worse": 0.0
         },
         "t3-4": {
@@ -7375,34 +7386,32 @@
          "battles": 2443,
          "ece": 0.02953,
          "floor_median": 0.0154,
-         "threshold": 0.0258,
-         "p_calibrated_worse": 0.004
+         "threshold": 0.0319,
+         "p_calibrated_worse": 0.041
         },
         "t5-6": {
          "n": 5901,
          "battles": 2271,
          "ece": 0.03374,
          "floor_median": 0.0171,
-         "threshold": 0.0274,
-         "p_calibrated_worse": 0.0
+         "threshold": 0.0357,
+         "p_calibrated_worse": 0.03
         },
         "t7+": {
          "n": 5505,
          "battles": 1560,
          "ece": 0.04454,
          "floor_median": 0.0212,
-         "threshold": 0.0365,
-         "p_calibrated_worse": 0.002
+         "threshold": 0.0432,
+         "p_calibrated_worse": 0.01
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.968,
+        "logits_1.25x_too_sharp": 0.782,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [
         "t1-2",
-        "t3-4",
-        "t5-6",
         "t7+"
        ],
        "pass": false
@@ -7855,43 +7864,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3039,
          "battles": 1085,
          "ece": 0.03441,
          "floor_median": 0.0206,
-         "threshold": 0.0374,
-         "p_calibrated_worse": 0.03
+         "threshold": 0.0428,
+         "p_calibrated_worse": 0.063
         },
         "t3-4": {
          "n": 2919,
          "battles": 1010,
          "ece": 0.0463,
          "floor_median": 0.0241,
-         "threshold": 0.0404,
-         "p_calibrated_worse": 0.0
+         "threshold": 0.0453,
+         "p_calibrated_worse": 0.012
         },
         "t5-6": {
          "n": 2093,
          "battles": 824,
          "ece": 0.02859,
          "floor_median": 0.0282,
-         "threshold": 0.046,
-         "p_calibrated_worse": 0.482
+         "threshold": 0.0528,
+         "p_calibrated_worse": 0.63
         },
         "t7+": {
          "n": 2049,
          "battles": 537,
          "ece": 0.04408,
          "floor_median": 0.0366,
-         "threshold": 0.0647,
-         "p_calibrated_worse": 0.254
+         "threshold": 0.0693,
+         "p_calibrated_worse": 0.324
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.608,
-        "logits_1.5x_too_sharp": 0.994
+        "logits_1.25x_too_sharp": 0.384,
+        "logits_1.5x_too_sharp": 0.966
        },
        "rejected_buckets": [
         "t3-4"
@@ -7902,47 +7912,47 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1649,
          "battles": 578,
          "ece": 0.06124,
          "floor_median": 0.028,
-         "threshold": 0.0519,
-         "p_calibrated_worse": 0.001
+         "threshold": 0.0569,
+         "p_calibrated_worse": 0.003
         },
         "t3-4": {
          "n": 1725,
          "battles": 575,
          "ece": 0.05698,
          "floor_median": 0.0321,
-         "threshold": 0.0525,
-         "p_calibrated_worse": 0.004
+         "threshold": 0.0583,
+         "p_calibrated_worse": 0.018
         },
         "t5-6": {
          "n": 1330,
          "battles": 518,
          "ece": 0.02764,
          "floor_median": 0.0355,
-         "threshold": 0.0588,
-         "p_calibrated_worse": 0.804
+         "threshold": 0.0636,
+         "p_calibrated_worse": 0.865
         },
         "t7+": {
          "n": 1362,
          "battles": 355,
          "ece": 0.04646,
          "floor_median": 0.0453,
-         "threshold": 0.082,
-         "p_calibrated_worse": 0.464
+         "threshold": 0.0863,
+         "p_calibrated_worse": 0.554
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.396,
-        "logits_1.5x_too_sharp": 0.91
+        "logits_1.25x_too_sharp": 0.228,
+        "logits_1.5x_too_sharp": 0.798
        },
        "rejected_buckets": [
-        "t1-2",
-        "t3-4"
+        "t1-2"
        ],
        "pass": false
       }
@@ -8394,93 +8404,95 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 215,
          "battles": 77,
          "ece": 0.11603,
          "floor_median": 0.077,
-         "threshold": 0.1451,
-         "p_calibrated_worse": 0.103
+         "threshold": 0.1454,
+         "p_calibrated_worse": 0.092
         },
         "t3-4": {
          "n": 223,
          "battles": 75,
          "ece": 0.10616,
          "floor_median": 0.0868,
-         "threshold": 0.1413,
-         "p_calibrated_worse": 0.209
+         "threshold": 0.1523,
+         "p_calibrated_worse": 0.248
         },
         "t5-6": {
          "n": 164,
          "battles": 63,
          "ece": 0.07637,
          "floor_median": 0.1021,
-         "threshold": 0.163,
-         "p_calibrated_worse": 0.853
+         "threshold": 0.1743,
+         "p_calibrated_worse": 0.868
         },
         "t7+": {
          "n": 135,
          "battles": 40,
          "ece": 0.14231,
          "floor_median": 0.1354,
-         "threshold": 0.2259,
-         "p_calibrated_worse": 0.415
+         "threshold": 0.2323,
+         "p_calibrated_worse": 0.477
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.154,
-        "logits_1.5x_too_sharp": 0.28
+        "logits_1.25x_too_sharp": 0.094,
+        "logits_1.5x_too_sharp": 0.164
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 28% of the time, against 80% needed"
+       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 16% of the time, against 80% needed"
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 158,
          "battles": 56,
          "ece": 0.13618,
          "floor_median": 0.0888,
-         "threshold": 0.1651,
-         "p_calibrated_worse": 0.07
+         "threshold": 0.1732,
+         "p_calibrated_worse": 0.078
         },
         "t3-4": {
          "n": 174,
          "battles": 56,
          "ece": 0.14581,
          "floor_median": 0.1006,
-         "threshold": 0.1673,
-         "p_calibrated_worse": 0.061
+         "threshold": 0.167,
+         "p_calibrated_worse": 0.065
         },
         "t5-6": {
          "n": 134,
          "battles": 51,
          "ece": 0.10534,
          "floor_median": 0.1135,
-         "threshold": 0.1834,
-         "p_calibrated_worse": 0.598
+         "threshold": 0.1887,
+         "p_calibrated_worse": 0.634
         },
         "t7+": {
          "n": 118,
          "battles": 33,
          "ece": 0.16278,
          "floor_median": 0.1512,
-         "threshold": 0.2526,
-         "p_calibrated_worse": 0.387
+         "threshold": 0.2641,
+         "p_calibrated_worse": 0.38
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.106,
-        "logits_1.5x_too_sharp": 0.198
+        "logits_1.25x_too_sharp": 0.076,
+        "logits_1.5x_too_sharp": 0.194
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 20% of the time, against 80% needed"
+       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 19% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -8930,43 +8942,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3227,
          "battles": 1176,
          "ece": 0.02829,
          "floor_median": 0.0197,
-         "threshold": 0.0381,
-         "p_calibrated_worse": 0.11
+         "threshold": 0.0416,
+         "p_calibrated_worse": 0.186
         },
         "t3-4": {
          "n": 3313,
          "battles": 1118,
          "ece": 0.0194,
          "floor_median": 0.0233,
-         "threshold": 0.0389,
-         "p_calibrated_worse": 0.74
+         "threshold": 0.0443,
+         "p_calibrated_worse": 0.864
         },
         "t5-6": {
          "n": 2430,
          "battles": 963,
          "ece": 0.03676,
          "floor_median": 0.0259,
-         "threshold": 0.0438,
-         "p_calibrated_worse": 0.075
+         "threshold": 0.0495,
+         "p_calibrated_worse": 0.184
         },
         "t7+": {
          "n": 2007,
          "battles": 586,
          "ece": 0.03303,
          "floor_median": 0.0346,
-         "threshold": 0.0591,
-         "p_calibrated_worse": 0.565
+         "threshold": 0.0655,
+         "p_calibrated_worse": 0.646
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.642,
-        "logits_1.5x_too_sharp": 0.992
+        "logits_1.25x_too_sharp": 0.366,
+        "logits_1.5x_too_sharp": 0.964
        },
        "rejected_buckets": [],
        "pass": true
@@ -8975,43 +8988,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1908,
          "battles": 687,
          "ece": 0.04546,
          "floor_median": 0.0262,
-         "threshold": 0.0488,
-         "p_calibrated_worse": 0.029
+         "threshold": 0.0503,
+         "p_calibrated_worse": 0.046
         },
         "t3-4": {
          "n": 2107,
          "battles": 686,
          "ece": 0.02934,
          "floor_median": 0.0289,
-         "threshold": 0.0493,
-         "p_calibrated_worse": 0.49
+         "threshold": 0.0529,
+         "p_calibrated_worse": 0.607
         },
         "t5-6": {
          "n": 1662,
          "battles": 641,
          "ece": 0.03988,
          "floor_median": 0.0318,
-         "threshold": 0.0535,
-         "p_calibrated_worse": 0.175
+         "threshold": 0.0581,
+         "p_calibrated_worse": 0.284
         },
         "t7+": {
          "n": 1433,
          "battles": 419,
          "ece": 0.05757,
          "floor_median": 0.0401,
-         "threshold": 0.0729,
-         "p_calibrated_worse": 0.094
+         "threshold": 0.0776,
+         "p_calibrated_worse": 0.141
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.38,
-        "logits_1.5x_too_sharp": 0.938
+        "logits_1.25x_too_sharp": 0.256,
+        "logits_1.5x_too_sharp": 0.896
        },
        "rejected_buckets": [],
        "pass": true
@@ -9464,13 +9478,14 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 8063,
          "battles": 2951,
          "ece": 0.03477,
          "floor_median": 0.0126,
-         "threshold": 0.0243,
+         "threshold": 0.027,
          "p_calibrated_worse": 0.0
         },
         "t3-4": {
@@ -9478,33 +9493,32 @@
          "battles": 2833,
          "ece": 0.02173,
          "floor_median": 0.0145,
-         "threshold": 0.0243,
-         "p_calibrated_worse": 0.044
+         "threshold": 0.032,
+         "p_calibrated_worse": 0.305
         },
         "t5-6": {
          "n": 6255,
          "battles": 2446,
          "ece": 0.03145,
          "floor_median": 0.0163,
-         "threshold": 0.027,
-         "p_calibrated_worse": 0.001
+         "threshold": 0.0337,
+         "p_calibrated_worse": 0.039
         },
         "t7+": {
          "n": 5727,
          "battles": 1629,
          "ece": 0.05067,
          "floor_median": 0.0201,
-         "threshold": 0.0328,
-         "p_calibrated_worse": 0.0
+         "threshold": 0.0426,
+         "p_calibrated_worse": 0.001
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.996,
+        "logits_1.25x_too_sharp": 0.812,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [
         "t1-2",
-        "t5-6",
         "t7+"
        ],
        "pass": false
@@ -9513,13 +9527,14 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 4868,
          "battles": 1763,
          "ece": 0.04948,
          "floor_median": 0.0164,
-         "threshold": 0.0314,
+         "threshold": 0.034,
          "p_calibrated_worse": 0.0
         },
         "t3-4": {
@@ -9527,34 +9542,32 @@
          "battles": 1757,
          "ece": 0.03328,
          "floor_median": 0.018,
-         "threshold": 0.0301,
-         "p_calibrated_worse": 0.002
+         "threshold": 0.0362,
+         "p_calibrated_worse": 0.036
         },
         "t5-6": {
          "n": 4239,
          "battles": 1630,
          "ece": 0.03416,
          "floor_median": 0.02,
-         "threshold": 0.0344,
-         "p_calibrated_worse": 0.015
+         "threshold": 0.0394,
+         "p_calibrated_worse": 0.067
         },
         "t7+": {
          "n": 4072,
          "battles": 1141,
          "ece": 0.04851,
          "floor_median": 0.0246,
-         "threshold": 0.0423,
-         "p_calibrated_worse": 0.001
+         "threshold": 0.0493,
+         "p_calibrated_worse": 0.018
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.856,
+        "logits_1.25x_too_sharp": 0.642,
         "logits_1.5x_too_sharp": 1.0
        },
        "rejected_buckets": [
-        "t1-2",
-        "t3-4",
-        "t7+"
+        "t1-2"
        ],
        "pass": false
       }
@@ -10759,21 +10772,22 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 11290,
          "battles": 4127,
          "ece": 0.0163,
          "floor_median": 0.0054,
-         "threshold": 0.0197,
-         "p_calibrated_worse": 0.049
+         "threshold": 0.0202,
+         "p_calibrated_worse": 0.046
         },
         "t3-4": {
          "n": 11611,
          "battles": 3951,
          "ece": 0.01158,
          "floor_median": 0.0058,
-         "threshold": 0.0217,
+         "threshold": 0.02,
          "p_calibrated_worse": 0.163
         },
         "t5-6": {
@@ -10781,21 +10795,21 @@
          "battles": 3409,
          "ece": 0.01698,
          "floor_median": 0.0062,
-         "threshold": 0.0223,
-         "p_calibrated_worse": 0.062
+         "threshold": 0.0208,
+         "p_calibrated_worse": 0.059
         },
         "t7+": {
          "n": 7734,
          "battles": 2215,
          "ece": 0.03051,
          "floor_median": 0.0098,
-         "threshold": 0.033,
-         "p_calibrated_worse": 0.027
+         "threshold": 0.0334,
+         "p_calibrated_worse": 0.028
         }
        },
        "power": {
         "logits_1.25x_too_sharp": 0.034,
-        "logits_1.5x_too_sharp": 0.028
+        "logits_1.5x_too_sharp": 0.034
        },
        "rejected_buckets": [],
        "pass": null,
@@ -10805,6 +10819,7 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 6776,
@@ -10812,40 +10827,40 @@
          "ece": 0.02302,
          "floor_median": 0.0077,
          "threshold": 0.0266,
-         "p_calibrated_worse": 0.029
+         "p_calibrated_worse": 0.031
         },
         "t3-4": {
          "n": 7414,
          "battles": 2443,
          "ece": 0.01726,
          "floor_median": 0.0074,
-         "threshold": 0.0255,
-         "p_calibrated_worse": 0.093
+         "threshold": 0.0254,
+         "p_calibrated_worse": 0.094
         },
         "t5-6": {
          "n": 5901,
          "battles": 2271,
          "ece": 0.0233,
          "floor_median": 0.008,
-         "threshold": 0.0264,
-         "p_calibrated_worse": 0.033
+         "threshold": 0.0279,
+         "p_calibrated_worse": 0.037
         },
         "t7+": {
          "n": 5505,
          "battles": 1560,
          "ece": 0.03933,
          "floor_median": 0.011,
-         "threshold": 0.0402,
-         "p_calibrated_worse": 0.016
+         "threshold": 0.0403,
+         "p_calibrated_worse": 0.02
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.024,
-        "logits_1.5x_too_sharp": 0.034
+        "logits_1.25x_too_sharp": 0.032,
+        "logits_1.5x_too_sharp": 0.02
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 2450 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+       "reason": "too little data to tell: on 2450 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -11133,67 +11148,69 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3039,
          "battles": 1085,
          "ece": 0.00346,
          "floor_median": 0.0107,
-         "threshold": 0.0377,
-         "p_calibrated_worse": 0.833
+         "threshold": 0.0413,
+         "p_calibrated_worse": 0.858
         },
         "t3-4": {
          "n": 2919,
          "battles": 1010,
          "ece": 0.00531,
          "floor_median": 0.011,
-         "threshold": 0.0396,
-         "p_calibrated_worse": 0.76
+         "threshold": 0.0406,
+         "p_calibrated_worse": 0.769
         },
         "t5-6": {
          "n": 2093,
          "battles": 824,
          "ece": 0.01744,
          "floor_median": 0.0127,
-         "threshold": 0.0478,
-         "p_calibrated_worse": 0.359
+         "threshold": 0.048,
+         "p_calibrated_worse": 0.369
         },
         "t7+": {
          "n": 2049,
          "battles": 537,
          "ece": 0.02172,
          "floor_median": 0.0212,
-         "threshold": 0.0708,
-         "p_calibrated_worse": 0.49
+         "threshold": 0.0705,
+         "p_calibrated_worse": 0.481
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.03,
-        "logits_1.5x_too_sharp": 0.046
+        "logits_1.25x_too_sharp": 0.022,
+        "logits_1.5x_too_sharp": 0.024
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 1085 battles this test catches a model 1.5x too sharp 5% of the time, against 80% needed"
+       "reason": "too little data to tell: on 1085 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1649,
          "battles": 578,
          "ece": 0.00394,
          "floor_median": 0.0155,
-         "threshold": 0.0506,
-         "p_calibrated_worse": 0.879
+         "threshold": 0.0564,
+         "p_calibrated_worse": 0.871
         },
         "t3-4": {
          "n": 1725,
          "battles": 575,
          "ece": 0.00029,
          "floor_median": 0.0154,
-         "threshold": 0.0519,
+         "threshold": 0.0568,
          "p_calibrated_worse": 1.0
         },
         "t5-6": {
@@ -11201,25 +11218,25 @@
          "battles": 518,
          "ece": 0.01729,
          "floor_median": 0.0165,
-         "threshold": 0.0564,
-         "p_calibrated_worse": 0.493
+         "threshold": 0.0632,
+         "p_calibrated_worse": 0.478
         },
         "t7+": {
          "n": 1362,
          "battles": 355,
          "ece": 0.02496,
          "floor_median": 0.025,
-         "threshold": 0.0907,
-         "p_calibrated_worse": 0.504
+         "threshold": 0.0958,
+         "p_calibrated_worse": 0.532
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.032,
-        "logits_1.5x_too_sharp": 0.038
+        "logits_1.25x_too_sharp": 0.02,
+        "logits_1.5x_too_sharp": 0.028
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 578 battles this test catches a model 1.5x too sharp 4% of the time, against 80% needed"
+       "reason": "too little data to tell: on 578 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -11507,14 +11524,15 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 215,
          "battles": 77,
          "ece": 0.04419,
          "floor_median": 0.0395,
-         "threshold": 0.1442,
-         "p_calibrated_worse": 0.486
+         "threshold": 0.1535,
+         "p_calibrated_worse": 0.497
         },
         "t3-4": {
          "n": 223,
@@ -11529,71 +11547,72 @@
          "battles": 63,
          "ece": 0.03049,
          "floor_median": 0.0488,
-         "threshold": 0.1646,
-         "p_calibrated_worse": 0.693
+         "threshold": 0.18,
+         "p_calibrated_worse": 0.698
         },
         "t7+": {
          "n": 135,
          "battles": 40,
          "ece": 0.07037,
          "floor_median": 0.063,
-         "threshold": 0.2297,
-         "p_calibrated_worse": 0.498
+         "threshold": 0.2481,
+         "p_calibrated_worse": 0.501
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.03,
-        "logits_1.5x_too_sharp": 0.03
+        "logits_1.25x_too_sharp": 0.024,
+        "logits_1.5x_too_sharp": 0.01
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+       "reason": "too little data to tell: on 77 battles this test catches a model 1.5x too sharp 1% of the time, against 80% needed"
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 158,
          "battles": 56,
          "ece": 0.02532,
          "floor_median": 0.0443,
-         "threshold": 0.1772,
-         "p_calibrated_worse": 0.733
+         "threshold": 0.1709,
+         "p_calibrated_worse": 0.748
         },
         "t3-4": {
          "n": 174,
          "battles": 56,
          "ece": 0.04598,
          "floor_median": 0.046,
-         "threshold": 0.1696,
-         "p_calibrated_worse": 0.535
+         "threshold": 0.1782,
+         "p_calibrated_worse": 0.54
         },
         "t5-6": {
          "n": 134,
          "battles": 51,
          "ece": 0.00746,
          "floor_median": 0.0522,
-         "threshold": 0.1866,
-         "p_calibrated_worse": 0.966
+         "threshold": 0.2015,
+         "p_calibrated_worse": 0.963
         },
         "t7+": {
          "n": 118,
          "battles": 33,
          "ece": 0.04237,
          "floor_median": 0.0763,
-         "threshold": 0.2627,
+         "threshold": 0.2586,
          "p_calibrated_worse": 0.733
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.034,
-        "logits_1.5x_too_sharp": 0.028
+        "logits_1.25x_too_sharp": 0.022,
+        "logits_1.5x_too_sharp": 0.036
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+       "reason": "too little data to tell: on 56 battles this test catches a model 1.5x too sharp 4% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -11881,43 +11900,44 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 3227,
          "battles": 1176,
          "ece": 0.01782,
          "floor_median": 0.0107,
-         "threshold": 0.0383,
-         "p_calibrated_worse": 0.25
+         "threshold": 0.039,
+         "p_calibrated_worse": 0.253
         },
         "t3-4": {
          "n": 3313,
          "battles": 1118,
          "ece": 0.01222,
          "floor_median": 0.0107,
-         "threshold": 0.04,
-         "p_calibrated_worse": 0.454
+         "threshold": 0.0409,
+         "p_calibrated_worse": 0.439
         },
         "t5-6": {
          "n": 2430,
          "battles": 963,
          "ece": 0.02716,
          "floor_median": 0.0121,
-         "threshold": 0.0461,
-         "p_calibrated_worse": 0.124
+         "threshold": 0.0449,
+         "p_calibrated_worse": 0.134
         },
         "t7+": {
          "n": 2007,
          "battles": 586,
          "ece": 0.02167,
          "floor_median": 0.0192,
-         "threshold": 0.0708,
-         "p_calibrated_worse": 0.425
+         "threshold": 0.0663,
+         "p_calibrated_worse": 0.435
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.032,
-        "logits_1.5x_too_sharp": 0.028
+        "logits_1.25x_too_sharp": 0.026,
+        "logits_1.5x_too_sharp": 0.03
        },
        "rejected_buckets": [],
        "pass": null,
@@ -11927,47 +11947,48 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 1908,
          "battles": 687,
          "ece": 0.03354,
          "floor_median": 0.0131,
-         "threshold": 0.0493,
-         "p_calibrated_worse": 0.09
+         "threshold": 0.0537,
+         "p_calibrated_worse": 0.102
         },
         "t3-4": {
          "n": 2107,
          "battles": 686,
          "ece": 0.02349,
          "floor_median": 0.0131,
-         "threshold": 0.0496,
-         "p_calibrated_worse": 0.241
+         "threshold": 0.0543,
+         "p_calibrated_worse": 0.251
         },
         "t5-6": {
          "n": 1662,
          "battles": 641,
          "ece": 0.03249,
          "floor_median": 0.0144,
-         "threshold": 0.0496,
-         "p_calibrated_worse": 0.117
+         "threshold": 0.0557,
+         "p_calibrated_worse": 0.126
         },
         "t7+": {
          "n": 1433,
          "battles": 419,
          "ece": 0.05059,
          "floor_median": 0.022,
-         "threshold": 0.0761,
-         "p_calibrated_worse": 0.118
+         "threshold": 0.0827,
+         "p_calibrated_worse": 0.13
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.046,
-        "logits_1.5x_too_sharp": 0.034
+        "logits_1.25x_too_sharp": 0.014,
+        "logits_1.5x_too_sharp": 0.02
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 687 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+       "reason": "too little data to tell: on 687 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       }
      },
      "player_approx": {
@@ -12255,93 +12276,95 @@
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 8063,
          "battles": 2951,
          "ece": 0.01569,
          "floor_median": 0.0069,
-         "threshold": 0.0229,
-         "p_calibrated_worse": 0.105
+         "threshold": 0.0248,
+         "p_calibrated_worse": 0.099
         },
         "t3-4": {
          "n": 8298,
          "battles": 2833,
          "ece": 0.01133,
          "floor_median": 0.0067,
-         "threshold": 0.0245,
-         "p_calibrated_worse": 0.262
+         "threshold": 0.0259,
+         "p_calibrated_worse": 0.25
         },
         "t5-6": {
          "n": 6255,
          "battles": 2446,
          "ece": 0.01303,
          "floor_median": 0.0073,
-         "threshold": 0.027,
-         "p_calibrated_worse": 0.223
+         "threshold": 0.0271,
+         "p_calibrated_worse": 0.242
         },
         "t7+": {
          "n": 5727,
          "battles": 1629,
          "ece": 0.03361,
          "floor_median": 0.0113,
-         "threshold": 0.0389,
-         "p_calibrated_worse": 0.031
+         "threshold": 0.0397,
+         "p_calibrated_worse": 0.037
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.048,
-        "logits_1.5x_too_sharp": 0.03
+        "logits_1.25x_too_sharp": 0.018,
+        "logits_1.5x_too_sharp": 0.024
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 2951 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
+       "reason": "too little data to tell: on 2951 battles this test catches a model 1.5x too sharp 2% of the time, against 80% needed"
       },
       "calibration_test_played_out": {
        "sims": 1000,
        "alpha": 0.05,
        "per_bucket_level": 0.0125,
+       "tolerance": 1.1,
        "by_bucket": {
         "t1-2": {
          "n": 4868,
          "battles": 1763,
          "ece": 0.0189,
          "floor_median": 0.0088,
-         "threshold": 0.0308,
-         "p_calibrated_worse": 0.16
+         "threshold": 0.0315,
+         "p_calibrated_worse": 0.128
         },
         "t3-4": {
          "n": 5307,
          "battles": 1757,
          "ece": 0.01479,
          "floor_median": 0.0091,
-         "threshold": 0.0298,
-         "p_calibrated_worse": 0.267
+         "threshold": 0.0305,
+         "p_calibrated_worse": 0.236
         },
         "t5-6": {
          "n": 4239,
          "battles": 1630,
          "ece": 0.0197,
          "floor_median": 0.0096,
-         "threshold": 0.032,
-         "p_calibrated_worse": 0.152
+         "threshold": 0.0337,
+         "p_calibrated_worse": 0.14
         },
         "t7+": {
          "n": 4072,
          "battles": 1141,
          "ece": 0.03536,
          "floor_median": 0.0128,
-         "threshold": 0.0485,
-         "p_calibrated_worse": 0.056
+         "threshold": 0.0458,
+         "p_calibrated_worse": 0.062
         }
        },
        "power": {
-        "logits_1.25x_too_sharp": 0.032,
-        "logits_1.5x_too_sharp": 0.038
+        "logits_1.25x_too_sharp": 0.034,
+        "logits_1.5x_too_sharp": 0.032
        },
        "rejected_buckets": [],
        "pass": null,
-       "reason": "too little data to tell: on 1763 battles this test catches a model 1.5x too sharp 4% of the time, against 80% needed"
+       "reason": "too little data to tell: on 1763 battles this test catches a model 1.5x too sharp 3% of the time, against 80% needed"
       }
      },
      "player_approx": {

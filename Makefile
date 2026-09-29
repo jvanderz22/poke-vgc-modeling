@@ -108,8 +108,8 @@ models: $(FEATURES)
 	$(VGC) wp train --regulation $(REG) --kind logistic --dataset $(DATASET)
 	$(VGC) wp train --regulation $(REG) --kind gbt      --dataset $(DATASET)
 	$(VGC) wp train --regulation $(REG) --kind set      --dataset $(DATASET) --epochs $(EPOCHS) \
-	    --threads $(WORKERS) -- --d 64 --layers 2 --dropout 0.3 --weight-decay 0.1 \
-	    --id-dropout 0.5 --id-dropout-preview 0.0 --human-weight 4 --bs 512 --lr 2e-4
+	    --threads $(WORKERS) -- --d 64 --layers 2 --dropout 0.3 --weight-decay 0.05 \
+	    --id-dropout 0.5 --id-dropout-preview 0.5 --human-weight 4 --bs 2048 --lr 3e-4
 	$(MAKE) evaluate VERSION=$(DATASET)-set
 
 evaluate:

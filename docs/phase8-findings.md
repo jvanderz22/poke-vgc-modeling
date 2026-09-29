@@ -1255,3 +1255,73 @@ humans — is mostly done by the data now (held-out groups ask ~1.04 in battle).
 mid-range, early-game over-confidence that looks like memorised teams or players, to be treated in
 training first; a two-parameter calibrator with ~20% of human groups for validation if that is not
 enough. `wp-v1e` as committed is the epoch-4 retrain, uncalibrated; `wp-v1d` stays served.
+
+## wp-v1f: open-sheet calibration came from validation size, not from training
+
+Plan v3 step 1 (2026-09-28). Every number below the "Held-out" heading was read once, for a model
+chosen beforehand on validation.
+
+**1. Validation is 20% of human groups.** `vgc wp resplit` redraws validation from an existing
+dataset without re-featurizing (train and val are one pool indexed against the same battles), and
+`VAL_RATE` is now per source: human 20%, self-play 5% (a model is never selected on self-play).
+`wp-v1f` is `wp-v1e`'s rows with 2,487 human validation battles (1,267 open-sheet, 1,220
+closed-sheet) instead of ~590. The price is 15% fewer human training battles.
+
+**2. No training treatment beat seed noise.** Same recipe as `wp-v1e`, scored on human validation
+with no calibrator (`vgc wp valcheck`, which undoes the temperature `set_torch` bakes in):
+
+| run | change | open logloss | open t1-2 ECE | T wanted (open) | closed logloss |
+|---|---|---|---|---|---|
+| base | none | 0.5339 | 0.054 | 1.15 | 0.5505 |
+| nopre | WP loss 0 on preview/bring rows | 0.5279 | 0.047 | 1.10 | 0.5522 |
+| nopre, seed 1 | same | 0.5321 | 0.024 | **0.87** | 0.5495 |
+| idp5 | identity dropout 0.5 on preview/bring rows too | 0.5304 | 0.039 | 1.10 | 0.5518 |
+
+Two seeds of one recipe want temperatures of 1.10 and 0.87. Every run stops at epoch 3 or 4, with
+validation loss rising from the next epoch while training loss keeps falling, so how confident a
+model is depends mostly on where early stopping lands. Removing or masking the identity signal on
+preview rows is directionally right (each beat base on open sheets), but the gap is the size of the
+seed spread. It is not shown to fix calibration.
+
+**3. The turn-slope temperature that already existed is enough once validation is big enough.**
+Two-fold by group on validation: fit on one half, test on the other.
+
+| model | calibrator | open ECE | open test | closed ECE | closed test |
+|---|---|---|---|---|---|
+| base | none | 0.026 | fail (t1-2 0.054) | 0.034 | fail |
+| base | temperature + turn slope | 0.012 | pass | 0.016 | pass |
+| base | beta + turn slope | 0.013 | pass | 0.016 | pass |
+| nopre | temperature + turn slope | 0.014 | pass | 0.016 | pass |
+| nopre | beta + turn slope | 0.014 | pass | 0.016 | pass |
+
+Beta calibration adds nothing over the two-parameter temperature, so no new calibrator was built.
+What failed before was the fit, not the curve: ~140 series cannot pin down a turn slope.
+
+**4. Held-out, once.** `idp5` was chosen on validation. It ties `nopre`, passes closed sheets
+uncalibrated, and keeps the preview WP head trained, which the bring/lead ranking in
+`vgc wp preview` and the Library page sorts on (a `nopre` model could only be pinned in battle). It
+was calibrated with `vgc wp calibrate` on the 20% validation (open: T 1.27 at turn 0, slope −0.058
+per turn, so 0.85 from turn 7; closed: T 0.91, slope +0.027) and scored:
+
+| | wp-v1d (served) | wp-v1e, uncalibrated | wp-v1f-idp5 |
+|---|---|---|---|
+| open spectator logloss | 0.5523 | 0.5605 | 0.5528 |
+| closed spectator logloss | 0.5633 | 0.5653 | 0.5665 |
+| open ECE t1-2 / t3-4 / t5-6 / t7+ | 0.024 / 0.021 / 0.018 / 0.022 | 0.044 / 0.027 / 0.024 / 0.022 | 0.019 / 0.015 / 0.019 / 0.033 |
+| `in_battle_ece` (open, power 1.0 at 1.5×) | pass, t1-2 by 0.0006 | **fail** at t1-2 | pass, t7+ by 0.0001 |
+| `closed_sheet_pass` | pass | pass | pass |
+| `preview_beats_constant` 95% CI | [−0.0092, −0.0003] | fail | [−0.0107, −0.0036] |
+| `all_pass` | fail (`player_beats_spectator`) | fail | **pass** |
+
+**5. The plan's premise was stale.** "The powered test fails every model" was measured before the
+1.1× tolerance (point 6 of the `wp-v1e` section) went in, and the committed cards had not been
+re-scored since. Re-carded under the current test, `wp-v1d` passes open sheets too, by 0.0006 at
+t1-2. Both cards now carry the same test. The t1-2 miss the plan was aimed at is fixed in `idp5`
+(0.019 against 0.024 for `wp-v1d`), but it passes t7+ by a hair: the negative slope sharpens late
+turns, and the played-out report rejects t7+ (report only, point 7). Neither pass has margin to
+spare in every bucket.
+
+**6. Preview.** `idp5` is the first model whose preview interval clears zero by more than a
+rounding error: −0.007 nats, one seed. That does not reverse finding 1, which is about magnitude,
+but it does refute the reason preview rows were spared identity dropout ("masking costs the
+preview signal"), and the code comments now say so.

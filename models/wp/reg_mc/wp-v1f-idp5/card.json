@@ -1,15 +1,15 @@
 {
- "version": "wp-v1e-sw-split-small",
+ "version": "wp-v1f-idp5",
  "kind": "set",
  "regulation": "reg_mc",
- "created": "2026-09-28T15:10:36",
+ "created": "2026-09-28T18:04:27",
  "perspectives": [
   "spectator",
   "player"
  ],
  "info_regime": "ots",
  "dataset": {
-  "name": "wp-v1e",
+  "name": "wp-v1f",
   "regulation": "reg_mc",
   "manifest": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
   "manifest_battles": 50827,
@@ -17,8 +17,8 @@
   "n_num": 166,
   "n_glob": 44,
   "rows": {
-   "train": 944343,
-   "val": 47240,
+   "train": 869377,
+   "val": 122206,
    "eval_human_ots": 47617,
    "eval_human_ots_team": 122584,
    "eval_human_closed": 43271,
@@ -26,9 +26,17 @@
    "eval_selfplay_battle": 168790,
    "eval_selfplay_team": 713376
   },
-  "val_rate": 0.05,
+  "val_rate": {
+   "human": 0.2,
+   "selfplay": 0.05
+  },
   "seconds": 868.9,
-  "val_split": "group"
+  "val_split": "group",
+  "resplit_from": "wp-v1e",
+  "val_battles": {
+   "selfplay": 1839,
+   "human": 2487
+  }
  },
  "training_manifest": {
   "path": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
@@ -46,7 +54,7 @@
   }
  },
  "git": {
-  "sha": "61963c5fa25bba06d7214d9fa9a0c4b037c8149b",
+  "sha": "a038b317f54a82bec6307760fff3898d171b4c90",
   "dirty": true
  },
  "training": {
@@ -62,52 +70,53 @@
    "seed": 0,
    "weight_decay": 0.05,
    "id_dropout": 0.5,
-   "id_dropout_preview": 0.0,
+   "id_dropout_preview": 0.5,
+   "preview_wp_weight": 1.0,
    "human_weight": 4.0
   },
-  "best_epoch": 4,
-  "val_wp_logloss": 0.53328,
-  "selection_metric": 0.54112,
+  "best_epoch": 3,
+  "val_wp_logloss": 0.56397,
+  "selection_metric": 0.56618,
   "selected_on": "human",
-  "temperature": 1.1887,
-  "val_wp_logloss_calibrated": 0.53016,
-  "val_wp_logloss_human": 0.54112,
+  "temperature": 1.1711,
+  "val_wp_logloss_calibrated": 0.56197,
+  "val_wp_logloss_human": 0.56618,
   "parameters": 154898,
   "torch": "2.2.2",
   "device": "cpu",
-  "train_rows": 944343,
-  "val_rows": 47240
+  "train_rows": 869377,
+  "val_rows": 122206
  },
  "headline": {
   "human_spectator": {
    "n": 43447,
-   "logloss": 0.56047,
-   "brier": 0.19294,
-   "ece": 0.0295
+   "logloss": 0.55282,
+   "brier": 0.18978,
+   "ece": 0.01419
   },
   "human_player_approx": {
    "n": 83307,
-   "logloss": 0.58526,
-   "brier": 0.20307,
-   "ece": 0.04103
+   "logloss": 0.57551,
+   "brier": 0.19927,
+   "ece": 0.01533
   },
   "closed_spectator": {
    "n": 11185,
-   "logloss": 0.5653,
-   "brier": 0.19306,
-   "ece": 0.02529
+   "logloss": 0.56652,
+   "brier": 0.19489,
+   "ece": 0.01226
   },
   "closed_player_approx": {
    "n": 20901,
-   "logloss": 0.58944,
-   "brier": 0.20271,
-   "ece": 0.03561
+   "logloss": 0.58783,
+   "brier": 0.20358,
+   "ece": 0.01366
   }
  },
  "gates": {
   "beats_baselines": {
    "pass": true,
-   "logloss": 0.56047,
+   "logloss": 0.55282,
    "baselines": {
     "wp-v1e-gbt": 0.54159,
     "wp-v1e-logistic": 0.57367,
@@ -116,16 +125,16 @@
   },
   "ece_spectator": {
    "pass": true,
-   "ece": 0.0295,
+   "ece": 0.01419,
    "threshold": 0.03
   },
   "in_battle_beats_constant": {
    "pass": true,
    "logloss": {
-    "t1-2": 0.64677,
-    "t3-4": 0.55223,
-    "t5-6": 0.48475,
-    "t7+": 0.46151
+    "t1-2": 0.6392,
+    "t3-4": 0.54362,
+    "t5-6": 0.47732,
+    "t7+": 0.45428
    },
    "constant": {
     "t1-2": 0.69315,
@@ -135,128 +144,124 @@
    },
    "delta_95ci": {
     "t1-2": [
-     -0.05708,
-     -0.03567
+     -0.06113,
+     -0.04676
     ],
     "t3-4": [
-     -0.15536,
-     -0.12648
+     -0.16169,
+     -0.13735
     ],
     "t5-6": [
-     -0.22609,
-     -0.19069
+     -0.23303,
+     -0.19863
     ],
     "t7+": [
-     -0.25822,
-     -0.20506
+     -0.26572,
+     -0.21201
     ]
    },
    "losing_buckets": []
   },
   "in_battle_ece": {
-   "pass": false,
+   "pass": true,
    "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
    "tolerance": 1.1,
    "alpha": 0.05,
    "power": {
-    "logits_1.25x_too_sharp": 0.978,
+    "logits_1.25x_too_sharp": 0.96,
     "logits_1.5x_too_sharp": 1.0
    },
    "power_needed": 0.8,
-   "rejected_buckets": [
-    "t1-2"
-   ],
+   "rejected_buckets": [],
    "by_bucket": {
     "t1-2": {
-     "ece": 0.04368,
-     "floor_median": 0.0114,
-     "threshold": 0.0261,
-     "p_calibrated_worse": 0.0,
+     "ece": 0.0189,
+     "floor_median": 0.011,
+     "threshold": 0.024,
+     "p_calibrated_worse": 0.113,
      "battles": 4127
     },
     "t3-4": {
-     "ece": 0.02709,
-     "floor_median": 0.0116,
-     "threshold": 0.0283,
-     "p_calibrated_worse": 0.024,
+     "ece": 0.01479,
+     "floor_median": 0.0118,
+     "threshold": 0.027,
+     "p_calibrated_worse": 0.677,
      "battles": 3951
     },
     "t5-6": {
-     "ece": 0.02356,
-     "floor_median": 0.0124,
-     "threshold": 0.0288,
-     "p_calibrated_worse": 0.105,
+     "ece": 0.01946,
+     "floor_median": 0.0125,
+     "threshold": 0.0291,
+     "p_calibrated_worse": 0.365,
      "battles": 3409
     },
     "t7+": {
-     "ece": 0.02233,
-     "floor_median": 0.015,
-     "threshold": 0.0339,
-     "p_calibrated_worse": 0.319,
+     "ece": 0.03258,
+     "floor_median": 0.0141,
+     "threshold": 0.0327,
+     "p_calibrated_worse": 0.014,
      "battles": 2215
     }
    }
   },
   "played_out_calibration": {
-   "ece": 0.04198,
-   "logloss": 0.57292,
+   "ece": 0.02673,
+   "logloss": 0.56558,
    "n": 28046,
    "rejected_buckets": [
-    "t1-2",
-    "t3-4",
-    "t5-6"
+    "t7+"
    ],
    "by_bucket": {
     "t1-2": {
-     "ece": 0.05527,
-     "floor_median": 0.0148,
-     "threshold": 0.031
+     "ece": 0.0271,
+     "floor_median": 0.0142,
+     "threshold": 0.0301
     },
     "t3-4": {
-     "ece": 0.04414,
-     "floor_median": 0.0147,
-     "threshold": 0.0325
+     "ece": 0.02019,
+     "floor_median": 0.0146,
+     "threshold": 0.0312
     },
     "t5-6": {
-     "ece": 0.03635,
-     "floor_median": 0.0151,
-     "threshold": 0.0336
+     "ece": 0.03114,
+     "floor_median": 0.0149,
+     "threshold": 0.0331
     },
     "t7+": {
-     "ece": 0.03534,
-     "floor_median": 0.018,
-     "threshold": 0.0394
+     "ece": 0.04397,
+     "floor_median": 0.0172,
+     "threshold": 0.0374
     }
    }
   },
   "ece_player": {
-   "pass": false,
-   "ece": 0.04103,
+   "pass": true,
+   "ece": 0.01533,
    "threshold": 0.03
   },
   "player_beats_spectator": {
    "pass": true,
-   "player": 0.57531,
-   "spectator": 0.57631,
-   "spectator_symmetrized": 0.57539
+   "player": 0.5659,
+   "spectator": 0.5666,
+   "spectator_symmetrized": 0.5663
   },
   "bring_beats_usage": {
    "pass": true,
-   "model": 0.7049,
-   "usage": 0.6724,
+   "model": 0.7017,
+   "usage": 0.6721,
    "chance": 0.6667
   },
   "preview_beats_constant": {
-   "pass": false,
+   "pass": true,
    "n": 4127,
    "battles": 4127,
-   "logloss": 0.69233,
+   "logloss": 0.68596,
    "constant": 0.69315,
-   "ece": 0.04085,
-   "delta": -0.00082,
+   "ece": 0.0135,
+   "delta": -0.00719,
    "delta_95ci": [
-    -0.00785,
-    0.00621
+    -0.01074,
+    -0.00364
    ]
   },
   "closed_in_battle_beats_constant": {
@@ -264,10 +269,10 @@
    "n": 10100,
    "battles": 1085,
    "logloss": {
-    "t1-2": 0.61769,
-    "t3-4": 0.53855,
-    "t5-6": 0.50673,
-    "t7+": 0.52911
+    "t1-2": 0.62799,
+    "t3-4": 0.54837,
+    "t5-6": 0.50589,
+    "t7+": 0.50215
    },
    "constant": {
     "t1-2": 0.69315,
@@ -277,20 +282,20 @@
    },
    "delta_95ci": {
     "t1-2": [
-     -0.09687,
-     -0.05404
+     -0.08074,
+     -0.04957
     ],
     "t3-4": [
-     -0.18425,
-     -0.12494
+     -0.16965,
+     -0.11991
     ],
     "t5-6": [
-     -0.22471,
-     -0.14813
+     -0.22044,
+     -0.15408
     ],
     "t7+": [
-     -0.2528,
-     -0.07528
+     -0.24925,
+     -0.13275
     ]
    },
    "losing_buckets": []
@@ -301,45 +306,45 @@
    "tolerance": 1.1,
    "alpha": 0.05,
    "power": {
-    "logits_1.25x_too_sharp": 0.452,
-    "logits_1.5x_too_sharp": 0.992
+    "logits_1.25x_too_sharp": 0.33,
+    "logits_1.5x_too_sharp": 0.962
    },
    "power_needed": 0.8,
    "rejected_buckets": [],
    "by_bucket": {
     "t1-2": {
-     "ece": 0.02863,
-     "floor_median": 0.0226,
-     "threshold": 0.0435,
-     "p_calibrated_worse": 0.319,
+     "ece": 0.01107,
+     "floor_median": 0.0219,
+     "threshold": 0.0412,
+     "p_calibrated_worse": 0.984,
      "battles": 1085
     },
     "t3-4": {
-     "ece": 0.01952,
-     "floor_median": 0.0233,
-     "threshold": 0.0445,
-     "p_calibrated_worse": 0.858,
+     "ece": 0.02763,
+     "floor_median": 0.0232,
+     "threshold": 0.0448,
+     "p_calibrated_worse": 0.43,
      "battles": 1010
     },
     "t5-6": {
-     "ece": 0.04101,
-     "floor_median": 0.0255,
-     "threshold": 0.0491,
-     "p_calibrated_worse": 0.087,
+     "ece": 0.02957,
+     "floor_median": 0.0263,
+     "threshold": 0.0517,
+     "p_calibrated_worse": 0.504,
      "battles": 824
     },
     "t7+": {
-     "ece": 0.06124,
-     "floor_median": 0.0331,
-     "threshold": 0.0624,
-     "p_calibrated_worse": 0.015,
+     "ece": 0.03095,
+     "floor_median": 0.0353,
+     "threshold": 0.0708,
+     "p_calibrated_worse": 0.754,
      "battles": 537
     }
    }
   },
-  "in_battle_pass": false,
+  "in_battle_pass": true,
   "closed_sheet_pass": true,
-  "all_pass": false
+  "all_pass": true
  },
  "eval_dataset": {
   "sha256": "3a30200b050e1ec3ae5bde5ee393c480b12951676e195b9d72c0d154d03172ca",
@@ -351,7 +356,7 @@
    "eval_selfplay_battle.npz": "ecb4e84963701e5d",
    "eval_selfplay_team.npz": "7914a9725a5e5fb4"
   },
-  "dataset": "wp-v1e",
-  "at": "2026-09-28T19:09:33"
+  "dataset": "wp-v1f",
+  "at": "2026-09-28T18:13:05"
  }
 }

@@ -487,10 +487,23 @@ def test_validation_keeps_a_bo3_series_together():
     where there is no group."""
     from vgc.wp.dataset import val_battles
 
-    manifest = {"battles": [{"battle": f"s{s}-g{g}", "group": f"series-{s}"} for s in range(400) for g in range(3)]
-                + [{"battle": f"sp-{i}", "group": None} for i in range(2000)]}
+    manifest = {"battles": [{"battle": f"s{s}-g{g}", "source": "human", "group": f"series-{s}"}
+                            for s in range(400) for g in range(3)]
+                + [{"battle": f"sp-{i}", "source": "selfplay", "group": None} for i in range(2000)]}
     names = np.array([b["battle"] for b in manifest["battles"]])
     val = val_battles(names, manifest)
     series = val[:1200].reshape(400, 3)
     assert (series.all(axis=1) | ~series.any(axis=1)).all()  # all three games, or none
     assert series[:, 0].any() and val[1200:].any() and not val[1200:].all()
+
+
+def test_validation_rate_is_per_source():
+    """Human validation is what calibrators and early stopping are fitted on, so it is drawn at a
+    higher rate than self-play, and each source gets its own rate."""
+    from vgc.wp.dataset import VAL_RATE, val_battles
+
+    manifest = {"battles": [{"battle": f"h-{i}", "source": "human", "group": f"g-{i}"} for i in range(4000)]
+                + [{"battle": f"sp-{i}", "source": "selfplay", "group": None} for i in range(4000)]}
+    val = val_battles(np.array([b["battle"] for b in manifest["battles"]]), manifest)
+    assert abs(val[:4000].mean() - VAL_RATE["human"]) < 0.02
+    assert abs(val[4000:].mean() - VAL_RATE["selfplay"]) < 0.01

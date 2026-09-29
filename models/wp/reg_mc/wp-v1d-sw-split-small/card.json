@@ -154,22 +154,76 @@
   },
   "in_battle_ece": {
    "pass": true,
-   "worst_bucket": "t1-2",
-   "ece": 0.02365,
-   "threshold": 0.03,
+   "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+   "tolerance": 1.1,
+   "alpha": 0.05,
+   "power": {
+    "logits_1.25x_too_sharp": 0.976,
+    "logits_1.5x_too_sharp": 1.0
+   },
+   "power_needed": 0.8,
+   "rejected_buckets": [],
    "by_bucket": {
-    "t1-2": 0.02365,
-    "t3-4": 0.02133,
-    "t5-6": 0.01819,
-    "t7+": 0.02223
+    "t1-2": {
+     "ece": 0.02365,
+     "floor_median": 0.0113,
+     "threshold": 0.0243,
+     "p_calibrated_worse": 0.018,
+     "battles": 4127
+    },
+    "t3-4": {
+     "ece": 0.02133,
+     "floor_median": 0.0116,
+     "threshold": 0.0263,
+     "p_calibrated_worse": 0.146,
+     "battles": 3951
+    },
+    "t5-6": {
+     "ece": 0.01819,
+     "floor_median": 0.0124,
+     "threshold": 0.028,
+     "p_calibrated_worse": 0.454,
+     "battles": 3409
+    },
+    "t7+": {
+     "ece": 0.02223,
+     "floor_median": 0.015,
+     "threshold": 0.0339,
+     "p_calibrated_worse": 0.337,
+     "battles": 2215
+    }
    }
   },
-  "ece_spectator_played_out": {
-   "pass": true,
+  "played_out_calibration": {
    "ece": 0.02987,
    "logloss": 0.56365,
    "n": 28046,
-   "threshold": 0.03
+   "rejected_buckets": [
+    "t1-2",
+    "t3-4"
+   ],
+   "by_bucket": {
+    "t1-2": {
+     "ece": 0.03997,
+     "floor_median": 0.015,
+     "threshold": 0.0294
+    },
+    "t3-4": {
+     "ece": 0.03124,
+     "floor_median": 0.0147,
+     "threshold": 0.0306
+    },
+    "t5-6": {
+     "ece": 0.02747,
+     "floor_median": 0.0149,
+     "threshold": 0.0331
+    },
+    "t7+": {
+     "ece": 0.03269,
+     "floor_median": 0.0182,
+     "threshold": 0.0385
+    }
+   }
   },
   "ece_player": {
    "pass": true,
@@ -239,11 +293,12 @@
   },
   "closed_in_battle_ece": {
    "pass": true,
-   "test": "ece vs a calibrated model on the same rows",
+   "test": "ece vs a model miscalibrated by the tolerance, on the same rows",
+   "tolerance": 1.1,
    "alpha": 0.05,
    "power": {
-    "logits_1.25x_too_sharp": 0.718,
-    "logits_1.5x_too_sharp": 0.998
+    "logits_1.25x_too_sharp": 0.422,
+    "logits_1.5x_too_sharp": 0.984
    },
    "power_needed": 0.8,
    "rejected_buckets": [],
@@ -251,29 +306,29 @@
     "t1-2": {
      "ece": 0.01817,
      "floor_median": 0.0223,
-     "threshold": 0.0391,
-     "p_calibrated_worse": 0.744,
+     "threshold": 0.0448,
+     "p_calibrated_worse": 0.854,
      "battles": 1085
     },
     "t3-4": {
      "ece": 0.02424,
      "floor_median": 0.0231,
-     "threshold": 0.0376,
-     "p_calibrated_worse": 0.439,
+     "threshold": 0.0454,
+     "p_calibrated_worse": 0.646,
      "battles": 1010
     },
     "t5-6": {
      "ece": 0.03617,
      "floor_median": 0.0252,
-     "threshold": 0.0421,
-     "p_calibrated_worse": 0.061,
+     "threshold": 0.049,
+     "p_calibrated_worse": 0.188,
      "battles": 824
     },
     "t7+": {
      "ece": 0.03897,
      "floor_median": 0.0348,
-     "threshold": 0.0609,
-     "p_calibrated_worse": 0.324,
+     "threshold": 0.0651,
+     "p_calibrated_worse": 0.471,
      "battles": 537
     }
    }
@@ -293,6 +348,6 @@
    "eval_selfplay_team.npz": "e6aa1ca65532384a"
   },
   "dataset": "wp-v1d",
-  "at": "2026-09-27T20:58:07"
+  "at": "2026-09-28T18:22:25"
  }
 }
