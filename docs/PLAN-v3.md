@@ -412,6 +412,15 @@ most of it compute. Lever 3 is ½–1 day if it is wanted.
 
 ### 9. Phase 9: policy strength (EWP and search)
 
+**First milestone: the endgame solver beyond 1v1** ([PLAN-endgame-doubles](PLAN-endgame-doubles.md),
+proposed 2026-09-30). With at most two Pokémon left a side there is no bench, so 2v1, 1v2 and 2v2 are
+move-only states. Solving them under realistic play on both sides (pruned choices, a KO extension)
+reruns the step 3.6 check where more games are decided, and becomes this search's oracle once a line
+reaches two or fewer a side, on open and closed sheets. About 5½ days plus overnight Kaggle runs.
+
+It starts by checking the 1v1 on closed sheets. The page leads with the engine there, but step
+3.6's check ran on open-sheet games only (principle 4).
+
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
 - exact transitions from a serialized Showdown state (the endgame solver already does this);
 - chance enumerated, not sampled. The solver found sampling biased: with few seeds a node, each
@@ -525,6 +534,7 @@ Design and API: [docs/web-app.md](web-app.md).
 - [PLAN.md](PLAN.md): original research, full architecture, phases 0–4.
 - Findings: [phase0](phase0-findings.md) · [phase4](phase4-findings.md) ·
   [phase6](phase6-findings.md) · [phase8](phase8-findings.md).
+- [PLAN-endgame-doubles](PLAN-endgame-doubles.md): the solver for 2v1, 1v2 and 2v2 (Phase 9's first milestone).
 - [regulation-change](regulation-change.md) · [cloud-compute](cloud-compute.md) ·
   [web-app](web-app.md).
 - Sources: [VGC-Bench](https://arxiv.org/html/2506.10326.pdf) ·

@@ -1,0 +1,191 @@
+# The endgame solver beyond 1v1: 2v1, 1v2 and 2v2
+
+_Written 2026-09-30. A proposal, not started._ It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
+1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
+strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
+
+---
+
+## Why
+
+- **The 1v1 engine beats the model on real games.** On held-out human 1v1s its Brier score was
+  0.090, against the model's 0.197, and the side it called won 48 of 50 confident calls
+  ([phase8](phase8-findings.md)). The model does not follow what decides an endgame; the engine does.
+- **But few games reach a 1v1.** Only 217 of 1,703 held-out open-sheet games do. Many more pass
+  through a 2v2 or a 2v1 first, and many are decided there. How many is the first thing stage 3 counts.
+- **Phase 9 needs the same machinery at doubles scale**: joint choices with targets, chance
+  enumerated, and a matrix game solved at a size the 1v1 never reaches. Building it here, on
+  positions with a checkable answer, is cheaper than building it inside a full-battle search.
+
+## Why this is a bounded step
+
+**With four brought and at most two left a side, there is no bench, so there are no switches.**
+Every state here is 2v1, 1v2 or 2v2, and every choice is a move and a target. Switching arrives
+with a third Pokémon left, and that belongs to Phase 9. The simulator already plays the doubles
+rules exactly (spread damage, redirection, Helping Hand, retargeting after a KO mid-turn). What
+has to change is how the solver sets up a position, lists the choices and pays for the search.
+
+**How big it gets** (_estimate_):
+
+| | choices a side | cells in a turn's matrix | attacks a turn | cost of one turn vs 1v1 |
+| --- | --- | --- | --- | --- |
+| 1v1 | ~4 | ~16 | ~2 | 1× |
+| 2v1 / 1v2 | ~4 and ~25–49 | ~100–200 | ~3 | ~20–50× |
+| 2v2 | ~25–49 | ~600–2,400 | ~4 | ~10³–10⁴× |
+
+A slot has ~5–7 choices: Protect, each single-target attack at each live foe, spread and status
+moves. A side's choice is the pair of its slots' choices. Chance compounds per attack, although
+merging outcomes by state (95% of replays were duplicates in the 1v1 profile) takes much of it
+back. **So a 2v2 turn searched exactly costs about what 2–3 turns of 1v1 did.** Depth 1 plus
+something better than HP share at the leaves would be the target for exact search. Stage 1
+measures the estimate, and realistic-play pruning (below) is how the plan avoids depending on it.
+
+## Stages
+
+Revised the same day: **realistic play on both sides is the approach, not the fallback.** Each
+Pokémon's choices are cut to the few a good player would consider before the matrix is built.
+The answer is the value of that restricted game, and how far it can be from the exact value is
+measured, starting with the 1v1s already solved. At ~3 choices a slot, a 2v2 turn has ~81 cells
+instead of ~2,400, so the solver can fill the matrix as it does now. Double oracle and the F10
+benchmark leave the critical path. Closed sheets stay on it, because the page has to work in
+both regimes (decided 2026-09-30).
+
+Each stage ends in a check. With pruning off, the 1v1 answers must stay bit-identical throughout:
+the benchmark's stored truth, and a sample of step 3.6's positions.
+
+### 0. The 1v1 on closed sheets, checked (½ day, plus a night on Kaggle)
+
+The Battle page already leads with the engine's 1v1 number on a closed sheet, but the check
+behind that (step 3.6) ran on open-sheet games only. Principle 4 says a number belongs to the
+regime it was measured in, so this comes first. It is also the closed-sheet machinery that
+stages 2 and 3 need.
+
+- **Both sides from the belief.** A closed-sheet replay seen from the stands hides both sides'
+  sets, and `endgame.candidates` refuses that case today. Extend it:
+  - each side's likeliest sets, as the player view already weighs them;
+  - the pair weighted jointly by the turn order (`speed_joint` over both);
+  - at most 3 × 3 set pairs per answer, times the Speed classes.
+- **The check.** Held-out closed-sheet games (1,025 from the stands) at their first 1v1:
+  - the engine against the served closed-sheet model (`wp-v1d-sw-split-small`);
+  - the same scoring as step 3.6, reported by how much of the set belief was left unsolved;
+  - exported with `--export`, solved overnight on Kaggle.
+- **What it decides:** whether the engine keeps leading the 1v1 on closed sheets. If it loses,
+  the page leads with the model there and shows the engine underneath, as the page did before
+  step 3.6.
+
+### 1. The solver plays doubles positions, with realistic-play pruning (1½ days)
+
+- **Position format.** A side lists one or two active Pokémon, each with its own HP, stat stages,
+  status, item consumed, choice lock, "just arrived" (Fake Out) and Protect counter. `setUp`
+  leads with them and faints the fillers behind.
+- **Choices.** Each slot's usable moves: at each live foe for single-target moves, untargeted for
+  spread and self moves, at the ally only where that means something (Helping Hand, Pollen
+  Puff). The solver still throws on any choice the simulator rejects.
+- **Realistic-play pruning.** Choices are scored in the solver with Showdown's own damage
+  calculation (`actions.getDamage` at a middle roll, no crit), so there is no call out to Python.
+  Per slot, keep:
+  - a move that KOs a foe, and the best-damage attack at each live foe;
+  - Protect, unless it fails for having been used the turn before;
+  - Fake Out if it would work, plus speed control and support by category (Tailwind, Trick Room,
+    Icy Wind, Follow Me, Rage Powder, Helping Hand, Snarl);
+  - then cut to `k` by score (default 3, a search setting).
+
+  For the pair, drop two attacks aimed at a foe that one of them KOs outright (overkill), keeping
+  the pair that KOs and hits the other foe. The same rule applies to both sides, so the answer
+  is best play within realistic play.
+- **The KO extension.** Each KO adds a turn to the search budget. A line that trades Pokémon is
+  then searched on into the smaller state, where the solver is cheap and strong, instead of
+  stopping at HP share. (This is the old "depth by material" at a fraction of the code.)
+- **`stats` in the output**: replays, distinct outcomes, matrix sizes per state kind, and cells
+  pruned. This is how the estimates above get measured, at no extra cost.
+- **Check, before any doubles code: pruning on the 1v1s we already have.** About 300 1v1
+  positions have exact answers in the cache. Solve them again with pruning on and report how often
+  each side's exact best move survives, and the value gap (mean, worst, and how many are off by
+  more than 0.05). In a 1v1 there are only ~4 moves, so `k = 3` is a real test of the scoring. If
+  it drops the right move often, fix the scoring before scaling it up.
+- **Check, after:** hand-read debug logs for one position of each kind; every listed choice
+  accepted over a round of self-play turns.
+
+### 2. The adapter, for open sheets, closed sheets and Watching mode (2 days)
+
+- **`vgc.wp.endgame`.** Accept at most two Pokémon left a side. Per Pokémon: Fake Out
+  freshness, the Protect counter, a choice lock, items consumed.
+- **The Protect counter.** `stall` is a volatile, so today such a position is not built. It is
+  too common in doubles to refuse, so the solver learns to set it up.
+- **Speed.** Each hidden Pokémon's Speed class is taken against each Pokémon it could move before
+  or after. The classes are multiplied, and the heaviest are solved until 90% of the weight is
+  covered; the rest is reported as unsolved mass. The pair case reproduces `partition_joint`
+  exactly.
+- **Closed sheets.** Each hidden Pokémon has its likeliest sets from the belief, weighted by the
+  turn order, as stage 0 does for one.
+  - Two hidden Pokémon multiply: up to 9 set pairs per side, times the Speed orders, and 81 when
+    both sides are hidden (the check's view from the stands).
+  - The combinations are solved heaviest first until 90% of the weight is covered, or a cap on
+    positions is reached (about 12 for the page, more for the overnight check). The rest is
+    reported as unsolved mass, as the 1v1 does now.
+  - Pruning cuts the cost of each position, not the count, so the cap is what keeps a closed-sheet
+    2v2 answerable. The page says how much of the belief its answer covers.
+
+### 3. The human check (½ day, plus overnight on Kaggle)
+
+- **The step 3.6 check again, in both regimes**, at each held-out game's first 2v1/1v2 and first
+  2v2 (open-sheet games, and closed-sheet games as stage 0 reads them), through
+  `--export` and `scripts/cloud/kaggle_solve.sh`. Engine against model, log loss and Brier,
+  cluster bootstrap by group, reported by state kind, by leaf mass, and by how many choices were
+  pruned.
+- **Pruning in doubles.** On the 2v1/1v2 positions small enough to solve exactly, the same
+  comparison as stage 1's (best move kept, value gap).
+- **The decision is per state kind and per regime.** The engine leads the page only where it beats the model,
+  as in the 1v1. Realistic play is closer to how people play than full best play, but the field
+  is ~1100-rated, so each state kind has to earn its place.
+
+### 4. The app (1 day, only for what passed)
+
+- The engine's row appears in 2v1, 1v2 and 2v2 for the state kinds that passed.
+- It shows the depth, the leaf mass, "realistic play, k choices a Pokémon", and the unsolved mass
+  from Speed orders and, on a closed sheet, from the set belief.
+- It deepens in the background as now, and shows only a finished answer.
+
+### Later, only if a check asks for them
+
+- **Double oracle over the full matrix**, if the pruning gap is too large to accept and the full
+  2v2 matrix is too slow to fill. It gives the exact value while visiting only the cells the
+  answer depends on.
+- **The F10 benchmark's truth** from the solver, with a person reading each principal line. It
+  tests the models, not the solver, so it waits.
+- **Revival Blessing**, with the real fainted teammates of an open sheet in place of fillers.
+
+## How it fits Phase 9
+
+Phase 9 (PLAN-v3 step 9) is a policy over whole battles: `EWP(a)` with exact transitions, chance
+enumerated, a belief over hidden sets, and the learned WP at the leaves. This plan builds its
+bottom layer:
+
+- **The same machinery:** joint choices with targets, realistic-play pruning (Phase 9's "top-k
+  pruning by the heuristic prior", built and measured here first), chance at doubles scale, and
+  Speed integrated over four Pokémon.
+- **An exact oracle for its leaves.** Once a line reaches two or fewer a side, Phase 9 can ask
+  the solver instead of the model, in the state kinds where the solver passed the human check.
+  That is where the model is weakest.
+- **So the order is:** 1v2 and 2v1 first (about 20–50× a 1v1), then 2v2, then Phase 9 above
+  them. I would make this Phase 9's first milestone rather than a separate step.
+
+## Risks, and what would stop it
+
+| Risk | What happens |
+| --- | --- |
+| Realistic-play pruning drops the move that decides the game | Measured first on ~300 exact 1v1s, then on exact 2v1/1v2s; `k` and the keep rules are search settings; double oracle over the full matrix is the exact fallback |
+| HP share is a poor leaf when four Pokémon are on the field | The KO extension moves most leaves into smaller states; leaf mass is reported per state kind |
+| The assumed non-Speed spread matters more (spread moves put more KOs on a threshold) | Flagged on the page. Integrating the bulk thresholds the way Speed is integrated is a later step |
+| Positions per answer explode on closed sheets (sets × Speed orders; 81 set combinations when both sides are hidden) | Heaviest first to 90% of the weight or a cap, the rest reported as unsolved mass, and the check reported by that mass |
+| The engine loses to the model on closed sheets | Stage 0 finds out for the 1v1 before anything is built. The model keeps the page in that regime |
+| Best play is the wrong model of ~1100-rated players in 2v2 | Stage 3 measures it per state kind and regime, and the model keeps the page where the engine loses |
+
+## Estimate
+
+About 5½ working days plus two or three overnight Kaggle runs: stage 0 ½ day plus the night,
+stage 1 1½ days, stage 2 2 days, stage 3 ½ day plus the night, stage 4 1 day. Two answers come on
+day one:
+- stage 0's run, launched that evening, says whether the closed-sheet 1v1 should keep leading;
+- stage 1's pruning check on the cached 1v1s says whether the scoring keeps the right move. If it
+  does not, that is fixed before anything is built on it.
