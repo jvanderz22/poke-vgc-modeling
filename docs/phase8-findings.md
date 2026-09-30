@@ -1591,7 +1591,8 @@ every position from the stands averaged with its mirror. The Watching page showe
 number. It now pairs them as `vgc wp eval` does (`c2744f8`). The table above is the fixed model.
 
 Open: one game (`gen9championsvgc2026regmcbo3-2683090653`) crashes the simulator inside
-`BattleActions.useMove` for both of its positions. Its error is kept in the results file.
+`BattleActions.useMove` for both of its positions. Its error is kept in the results file. Fixed
+since: see "Solver speed, first pass" below.
 
 ## Which number leads on a closed sheet: the position as shown
 
@@ -1655,3 +1656,75 @@ Nothing in the app changes, because neither channel runs live: the SP belief beh
 is combined from the Speed channel alone. To make them sound with sheets hidden, an unrevealed item
 or ability would have to be bounded over everything the set belief still allows, taking the union
 of the feasible sets. That costs power, and nothing waits on it.
+
+## Solver speed, first pass: where the time goes
+
+Plan v3 step 8 (2026-09-30). This pass fixed the crash, then profiled before building anything.
+Profiling used an instrumented copy of `endgame-solver.js`, which timed each phase of a replay and
+counted branches by the kind of random call that opened them. It ran on two sets: the heaviest Speed
+class of each of the 31 games that did not finish, capped at 90 s, and 18 positions from 12 finished
+games, capped at 240 s. Both sets used six at a time, as the check does.
+
+**The crash was the solver's own position, in two ways.**
+- `setUp` wrote a choice lock's last move as a plain `Move`. `State.serializeBattle` writes that
+  as `[DataMove:id]`, which it cannot read back, so after one copy `lastMove` was a string, and
+  Encore read `.flags` off it. It is now an `ActiveMove`, as the simulator leaves it.
+- The root request was made without the `DisableMove` pass that `endTurn` runs before every later
+  one. A choice-locked Pokémon was offered all four moves at the root, and anything but the lock
+  failed. The pass now runs. The benchmark's five locked positions give the same values and leaf
+  mass, with 1.1–60× fewer turns simulated (F5-D slower: 5,003 → 84).
+- The game itself is a No Guard Mega Raichu Y against a Scarf Annihilape locked into Phantom Force
+  at 6%. Zap Cannon lands through the dig, so the engine gives player 1 a certain win, and player 1
+  lost. The game is a test fixture now.
+
+**Where the time goes** (the 31 slow positions, ~2,500 s):
+
+| | share |
+| --- | --- |
+| simulating the turn, replays that finish | 48% |
+| simulating the turn, replays that stop at a branch | 10% |
+| deserializing the battle for each replay | 39% |
+| serializing children, position keys, matrix solves | ~1% |
+
+The cost is ~2.5 ms a replay, and it is steady (the cache's 386 solved positions: 3.0 ms median,
+p10–p90 2.3–3.9). So the time is the replay count. **992k replays reached only 40k distinct
+outcomes: 95% of finished replays merged into an outcome already found.** The waste has one source:
+68% of all replays were spawned by 10-way percentage rolls, 88% of those from
+`BattleActions.secondaries` and 12% from `selfDrops`. Both do `random(100) < chance`, and they roll
+even when the chance is 100% or absent. The 10 representatives are then 10 identical branches, and
+within a turn the rolls of both moves multiply. The within-solve cache hit 52 times against 679
+misses, and the matrix solves cost nothing.
+
+**Measured, not built: the secondaries as `randomChance(chance, 100)`.** This is the same
+distribution, and exact for every chance, where the 10 representatives were exact only for
+multiples of 10. It was prototyped in the scratch profiler:
+
+| | before | after |
+| --- | --- | --- |
+| slow set, finished inside 90 s | 6 of 31 | **21 of 31** |
+| sample, total time at depth 2 | 1,225 s (capped) | **186 s** (6.6×; median position 2.5×, heavy ones 9–13×) |
+| sample, depth 3 | out of reach | **1,245 s, all 18 finished**; 1–10× depth 2, median 3× |
+| values | | identical to four decimals on all 22 positions finished both ways |
+
+**Depth 3 costs about what depth 2 cost before,** because most lines of a 1v1 end inside the extra
+turn, where the plan had guessed tens of times more work. It also matters. The typical depth-2
+answer rests a third on HP share (leaf mass 0.333: a Protect stall's third), and at depth 3 that
+falls to 0.037. Answers move with it: 0.72 → 0.97, 0.82 → 0.98, 0.15 → 0.06.
+
+**Also found: the 2–5-hit distribution is wrong.** A 2–5-hit move samples a 20-item array (7× 2,
+7× 3, 3× 4, 3× 5). Twenty is over 16, so it is taken as a percentage roll, and its 10 representatives
+give 0.40 / 0.30 / 0.10 / 0.20 against the true 0.35 / 0.35 / 0.15 / 0.15. A `sample` that groups
+equal items would be exact, with 4 branches instead of 10.
+
+**The plan's levers, re-ranked by this.**
+- Reusing results across depths saves the shallower searches, a small share of the next depth's
+  cost.
+- Pruning dominated moves is the riskiest, and the matrix is 4×4 at most.
+- Splitting across workers helps only the page.
+- The chance tree is where the replays are: the secondaries, then the multi-hit `sample`, then
+  deserialization (39%, a cheaper copy of the battle).
+
+One caveat for "only the time may change": the cache key has no `reach`, so a subtree solved under
+one `cutoff` budget is reused under another. A lever that changes the order of visits can move an
+answer within its leaf mass.
+

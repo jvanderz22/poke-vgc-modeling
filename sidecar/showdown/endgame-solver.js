@@ -84,7 +84,10 @@ function setUp(pos) {
 			b.activeMove = b.dex.getActiveMove(lock);
 			me.addVolatile('choicelock');
 			b.activeMove = null;
-			me.lastMove = b.dex.moves.get(lock);
+			// An ActiveMove, as the simulator leaves it: a plain Move does not survive
+			// `State.serializeBattle` (it comes back as the string "[DataMove:id]"), and Encore
+			// then read `.flags` off that string and crashed.
+			me.lastMove = b.dex.getActiveMove(lock);
 		}
 		if ((s.timesAttacked || {})[side.id]) me.timesAttacked = s.timesAttacked[side.id];
 		// Only the statuses whose effect is fixed once set. Sleep and bad poison carry a counter the
@@ -94,6 +97,19 @@ function setUp(pos) {
 		for (const [id, turns] of Object.entries((s.sides || {})[side.id] || {})) {
 			side.addSideCondition(id, me);
 			side.sideConditions[id].duration = turns;
+		}
+	}
+	// What `endTurn` does before every later request: disable the moves a lock (or Taunt, or a
+	// move that cannot be used twice) rules out. Without it the root offered a choice-locked
+	// Pokémon all four moves, and choosing another one did nothing but fail.
+	for (const side of b.sides) {
+		const me = side.pokemon[0];
+		for (const slot of me.moveSlots) { slot.disabled = false; slot.disabledSource = ''; }
+		b.runEvent('DisableMove', me);
+		for (const slot of me.moveSlots) {
+			const move = b.dex.getActiveMove(slot.id);
+			b.singleEvent('DisableMove', move, null, me);
+			if (move.flags['cantusetwice'] && me.lastMove?.id === slot.id) me.disableMove(slot.id);
 		}
 	}
 	b.makeRequest('move');

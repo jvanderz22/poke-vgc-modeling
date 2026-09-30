@@ -182,6 +182,19 @@ def test_a_replay_stops_at_its_first_1v1_and_plans_from_both_sheets(reg):
     assert abs(sum(j["weight"] for j in got["jobs"]) - 1) < 1e-9 and got["unsolved"] == 0
 
 
+def test_a_choice_lock_holds_from_the_first_turn_and_survives_a_copy(reg):
+    """Annihilape locked into Phantom Force against a Raichu with Encore: the solver crashed once
+    the lock's last move had been copied into a child battle, and at the root it offered the locked
+    side all four moves. Mega Raichu Y's No Guard lands Zap Cannon through Phantom Force, so it wins."""
+    battle = endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2683090653"))
+    jobs = endgame.plan(reg, battle, {**solver.SEARCH, "depth": 2})["jobs"]
+    assert jobs and all(j["position"]["setup"]["choicelock"] == {"p2": "phantomforce"} for j in jobs)
+    for j in jobs:
+        r = solver.run(j["position"])
+        assert r["moves"]["p2"] == ["move 2 1, pass"]
+        assert r["value"] == 1
+
+
 def test_a_replay_that_never_reaches_a_1v1_gives_none(reg):
     assert endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2684057197")) is None
 

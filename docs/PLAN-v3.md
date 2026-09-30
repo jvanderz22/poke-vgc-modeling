@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3+ is out of reach at scale (step 8) |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3 is within reach at scale once the profiled lever is built (step 8) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
@@ -349,7 +349,7 @@ sheets hidden"](phase8-findings.md)):
     them, and their training manifests' shards had been re-extracted, so they could not be rebuilt.
     `scripts/analysis/preview_signal.py` and `selfplay_value.py` read `wp-v1`, and say so.
 
-### 8. Solver speed: next
+### 8. Solver speed: first pass done, levers next
 
 Now that the engine leads the page in a 1v1, how deep it gets is how good that number is. It is
 also Phase 9's search. What step 3.6 measured:
@@ -357,10 +357,8 @@ also Phase 9's search. What step 3.6 measured:
   at depth 2, with 6 workers. Depth 3 was out of reach for the check.
 - **The hard positions drop out.** 30 of 205 games had a position that did not finish in 180 s,
   so the check scores the engine on the 1v1s it can solve. F6 alone took 2 h 50 min.
-- **One game crashes the simulator**, inside `BattleActions.useMove`
-  (`gen9championsvgc2026regmcbo3-2683090653`, error kept in
-  `data/analysis/reg_mc/solver_vs_humans.json`). Fix it first. It is either an adapter position
-  the engine should not be given or a solver bug.
+- **One game crashed the simulator** (`gen9championsvgc2026regmcbo3-2683090653`). It was a solver
+  bug, fixed in the first pass below.
 
 The levers:
 - **reuse results across depths.** The solver's cache is keyed on position *and* depth
@@ -375,23 +373,42 @@ times. Reuse and pruning may buy a few times that. So depth 3 over all 205 games
 reach, and the goal may become depth 3 on the 1v1s with few options, or faster depth 2 for the page.
 
 **How to go at it: a first pass, then a decision.**
-1. **First pass (~½ day):**
-   - fix the crash game;
-   - profile a few slow positions to see where the time goes: copying battle states, listing
-     chance outcomes, or the matrix-game solve. This is a guess until measured.
-   - Report the numbers before building a lever.
-2. **Decide with those numbers:** chase depth 3, or make depth 2 faster for the page. Then build
-   the levers the profile points at, in the order above.
+1. ✅ **First pass** (2026-09-30; [phase8, "solver speed, first pass"](phase8-findings.md)):
+   - **The crash is fixed.** A choice lock's last move did not survive the battle copy, and the
+     root offered a locked Pokémon all four moves. The benchmark's five locked positions give the
+     same answers, with up to 60× less work. The game is a test fixture now.
+   - **The time is the replay count** (~2.5 ms each: 39% deserializing, 58% simulating). 95% of
+     finished replays duplicate an outcome already found. 68% of replays come from 10-way
+     percentage rolls on move secondaries, which branch even when the chance is 100%.
+   - **Prototyped, not built: the secondaries as one `randomChance`.** It is the same
+     distribution. Values are identical on 22 positions, 21 of the 31 timed-out positions finish in
+     90 s (6 before), and the sample's depth 2 is 6.6× faster. **Depth 3 finished on all 18 sample
+     positions** for about what depth 2 cost before (1–10× depth 2, median 3×, not tens of times).
+     The typical leaf mass falls from 0.333 to 0.037.
+   - **Also found:** 2–5-hit moves are approximated wrongly (0.40/0.30/0.10/0.20 for
+     0.35/0.35/0.15/0.15). Grouping equal items in `sample` is exact and branches 4 ways, not 10.
+2. **Decide with those numbers.** Recommended: chase depth 3. It is now affordable, and it
+   settles most of what depth 2 leaves to HP share. The levers, re-ranked by the profile:
+   1. secondaries and self-drops as `randomChance` (measured above);
+   2. an exact multi-hit `sample` (a correctness fix as well);
+   3. a cheaper battle copy than deserializing per replay (39% of the time);
+   4. the plan's original three (reuse across depths, pruning, splitting across workers) only if
+      depth 3 still leaves too many positions out. The profile gives each little.
+
+   Any edit to the solver invalidates its whole cache (the key hashes the source), and
+   `test_the_same_positions_give_the_stored_answers` skips until the benchmark is re-solved at
+   depth 4 (hours; F6 alone was 2 h 50 min). So land the levers together and re-solve once. That
+   skip applies now, after the crash fix.
 3. **Every lever must leave the answers unchanged.** Each is checked against the benchmark's
    stored truth (`vgc wp solve`) and a sample of step 3.6's solved positions at the same depth.
-   Only the time may change.
+   Only the time may change. The multi-hit fix is the exception: it is meant to change answers
+   with a 2–5-hit move in them, and a change is expected only there. The cache key has no `reach`,
+   so a lever that changes the order of visits can move an answer within its leaf mass.
 4. **Measure with the step 3.6 run itself:** the same 205 games
-   (`scripts/analysis/solver_vs_humans.py`), with fewer timeouts. It is a few hours of compute at
-   depth 2. Rerun at depth 3, likely overnight, once that is affordable, or on the subset it
-   reaches.
+   (`scripts/analysis/solver_vs_humans.py`), now at `--depths 2,3`, with fewer timeouts.
 
-Estimate: 1½ to 3 days of working sessions, plus the compute for the runs. The spread is almost
-all in how much the levers buy.
+Estimate: the first pass took the half day. Levers 1–2 and the benchmark re-solve are about a day,
+most of it compute. Lever 3 is ½–1 day if it is wanted.
 
 ### 9. Phase 9: policy strength (EWP and search)
 
