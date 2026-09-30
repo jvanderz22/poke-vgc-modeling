@@ -176,6 +176,35 @@ def test_manifest_check_catches_held_out_data(reg, frozen, tmp_path):
     assert any("changed" in p for p in splits.check_manifest(m, reg))
 
 
+def test_an_eval_manifest_names_its_shards_and_checks_their_splits(reg, frozen, tmp_path):
+    """An eval set is the files its manifest names, by hash, not whatever a glob finds today."""
+    rules, teams = frozen
+    kept = [t for t in teams if not rules.team_heldout(t)]
+    held = next(t for t in teams if rules.team_heldout(t))
+    recs = [_rec(f"run-{i}", "selfplay", (kept[0], kept[1])) for i in range(200)]
+    battle = [r for r in recs if rules.split_of_record(r) == "heldout_battle"]
+    run = tmp_path / "selfplay" / "run"
+    splits.write_shard(run / "heldout_battle.jsonl.gz", [dumps(r) for r in battle])
+    m = splits.build_eval_manifest({"selfplay_battle": [run / "heldout_battle.jsonl.gz"]}, reg)
+    assert m["sets"]["selfplay_battle"][0]["split"] == "heldout_battle"
+    assert m["sets"]["selfplay_battle"][0]["records"] == len(battle)
+    assert splits.check_eval_manifest(m, reg) == [] and splits.check_eval_manifest(m, reg, deep=True) == []
+
+    # A shard whose records are not the split its name says is refused when the manifest is built.
+    splits.write_shard(run / "heldout_team.jsonl.gz", [dumps(r) for r in battle])
+    with pytest.raises(ValueError, match="is heldout_battle, not heldout_team"):
+        splits.build_eval_manifest({"selfplay_team": [run / "heldout_team.jsonl.gz"]}, reg)
+    # So is a training shard.
+    splits.write_shard(run / "train.jsonl.gz", [dumps(r) for r in recs[:3]])
+    with pytest.raises(ValueError, match="not a held-out shard"):
+        splits.build_eval_manifest({"x": [run / "train.jsonl.gz"]}, reg)
+
+    # A file edited afterwards is caught by its hash.
+    splits.write_shard(run / "heldout_battle.jsonl.gz",
+                       [dumps(r) for r in battle + [_rec("run-x", "selfplay", (held, kept[0]))]])
+    assert any("changed" in p for p in splits.check_eval_manifest(m, reg))
+
+
 def test_observer_rejects_unknown_perspective(reg):
     with pytest.raises(ValueError):
         Observer("p3", reg.dex)

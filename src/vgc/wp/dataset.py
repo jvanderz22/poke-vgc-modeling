@@ -3,8 +3,15 @@
   train.npz, val.npz     from a checked training manifest, thinned (`features.train_orientations`);
                          val is drawn by hash per group, at `VAL_RATE` for each source (the
                          frozen held-out sets are never used for model selection)
-  eval_<set>.npz         the frozen held-out shards, one file per evaluation set
+  eval_<set>.npz         the frozen held-out shards, one file per evaluation set, as named by an
+                         eval manifest; hard links into the eval-set cache
   vocab.json, info.json  the vocabulary and feature layout the arrays were built with
+
+The eval-set cache, `data/features/<regulation>/_eval/`, holds one featurized file per set of
+shards, keyed on the shards' sha256, the featurizer version and the vocabulary. The eval sets are
+more rows than training (self-play `heldout_team` alone is ~700k), and a retrain that keeps them
+used to featurize them again. The key is only as good as the rule that a change to what the
+featurizer outputs bumps `Featurizer.VERSION`; `vgc wp featurize --fresh` rebuilds regardless.
 """
 
 from __future__ import annotations
@@ -12,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import json
 import multiprocessing as mp
+import os
 import time
 from pathlib import Path
 from typing import Any, Iterator
@@ -19,7 +27,7 @@ from typing import Any, Iterator
 import numpy as np
 
 from vgc import paths
-from vgc.data.splits import check_manifest, read_shard
+from vgc.data.splits import build_eval_manifest, check_eval_manifest, check_manifest, read_shard
 from vgc.regulation import Regulation
 
 FEATURES = paths.ROOT / "data" / "features"
@@ -58,8 +66,8 @@ EVAL_SETS = {
 #             name is the exact mistake this phase exists to undo.
 #
 # A tag is a weak key, so the rule is stated where the tag is written (`cmd_data_generate`) and
-# enforced here; the durable fix is an eval manifest that names its shards the way the training
-# manifest does.
+# enforced here, when an eval manifest is first derived. After that the manifest names its shards
+# by hash, the way the training manifest does, and a run that appears later cannot join.
 SELFPLAY_EVAL_EXCLUDE = ("-spreads", "-closed")
 
 
@@ -68,9 +76,8 @@ def _eval_files(snap: Path, patterns: list[str], bo3: str, closed: str, runs: li
 
     Self-play held-out shards come from the runs the training manifest names, not from whatever
     `selfplay/*` holds. The glob pooled every run on disk — three of them at snapshot VERSION 2,
-    older than any model's training rows — and it is the durable half of PLAN-v2 Phase 8 step 5:
-    an eval set that names its shards the way the training manifest does. The tag exclusion stays
-    as a second guard.
+    older than any model's training rows. This is only used to derive an eval manifest; the
+    manifest is what a dataset is built from. The tag exclusion stays as a second guard.
     """
     files = sorted({f for pat in patterns
                     for run in (runs if "{runs}" in pat else [""])
@@ -78,6 +85,68 @@ def _eval_files(snap: Path, patterns: list[str], bo3: str, closed: str, runs: li
     return [f for f in files
             if f.parent.parent.name != "selfplay"
             or not any(tag in f.parent.name for tag in SELFPLAY_EVAL_EXCLUDE)]
+
+def eval_sets(reg: Regulation, manifest: dict[str, Any]) -> dict[str, list[Path]]:
+    """The held-out shards each eval set takes, for a training manifest, as found on disk now."""
+    snap = paths.ROOT / "data" / "snapshots" / reg.id
+    runs = sorted({Path(f["path"]).parent.name for f in manifest["files"]
+                   if Path(f["path"]).parent.parent.name == "selfplay"})
+    return {name: _eval_files(snap, patterns, reg.showdown_format + "bo3", reg.showdown_format, runs)
+            for name, patterns in EVAL_SETS.items()}
+
+
+def eval_manifest_path(reg: Regulation, name: str) -> Path:
+    return paths.ROOT / "data" / "snapshots" / reg.id / "manifests" / f"{name}.json"
+
+
+def eval_cache_dir(reg: Regulation) -> Path:
+    return FEATURES / reg.id / "_eval"
+
+
+def eval_key(reg: Regulation, entries: list[dict[str, Any]], vocab_json: str) -> str:
+    """What an eval set's rows depend on: the shards' bytes, the featurizer and its vocabulary."""
+    from vgc.wp.features import Featurizer
+
+    blob = json.dumps({"regulation": reg.id, "featurizer_version": Featurizer.VERSION,
+                       "vocab_sha256": hashlib.sha256(vocab_json.encode()).hexdigest(),
+                       "shards": sorted(e["sha256"] for e in entries)}, sort_keys=True)
+    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+
+
+def cached_eval_set(reg: Regulation, name: str, entries: list[dict[str, Any]], vocab_json: str,
+                    workers: int = 6, fresh: bool = False) -> tuple[Path, dict[str, Any]]:
+    """The featurized file for one eval set, from the cache or built into it."""
+    key = eval_key(reg, entries, vocab_json)
+    path = eval_cache_dir(reg) / f"{name}-{key}.npz"
+    meta_path = path.with_suffix(".json")
+    if not fresh and path.exists() and meta_path.exists():
+        return path, json.loads(meta_path.read_text()) | {"cached": True}
+    d = featurize_files([paths.ROOT / e["path"] for e in entries], reg, workers)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.stem}.tmp.npz")
+    np.savez_compressed(tmp, **d)
+    tmp.replace(path)
+    from vgc.wp.features import Featurizer
+
+    meta = {"set": name, "key": key, "regulation": reg.id, "featurizer_version": Featurizer.VERSION,
+            "rows": int(len(d["y"])), "shards": entries}
+    meta_path.write_text(json.dumps(meta, indent=1) + "\n")
+    return path, meta | {"cached": False}
+
+
+def prune_eval_cache(reg: Regulation, dry_run: bool = False) -> list[tuple[Path, int]]:
+    """Cached eval sets no dataset links to any more (a hard-link count of one), with their sizes.
+    Deleting a dataset leaves its eval sets here, so this is the second half of deleting one."""
+    gone = []
+    for f in sorted(eval_cache_dir(reg).glob("*.npz")):
+        st = f.stat()
+        if st.st_nlink == 1:
+            gone.append((f, st.st_size))
+            if not dry_run:
+                f.unlink()
+                f.with_suffix(".json").unlink(missing_ok=True)
+    return gone
+
 
 _W: dict[str, Any] = {}
 
@@ -150,17 +219,41 @@ def _subset(d: dict[str, np.ndarray], rows: np.ndarray) -> dict[str, np.ndarray]
     return out
 
 
-def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> dict[str, Any]:
+def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6,
+          eval_manifest: str | None = None, fresh: bool = False) -> dict[str, Any]:
+    """A feature dataset from a checked training manifest and an eval manifest.
+
+    Without `eval_manifest`, one is derived from the training manifest (`eval_sets`) and written
+    as `<name>-eval`. Pass an existing one's name to score a new dataset on exactly the rows an
+    older one was scored on.
+    """
     from vgc.wp.features import Featurizer
 
     manifest = json.loads(manifest_path.read_text())
     problems = check_manifest(manifest, reg)
     if problems:
         raise ValueError(f"manifest {manifest_path} fails its check: {problems[:3]}")
+    if eval_manifest:
+        ev_path = eval_manifest_path(reg, eval_manifest)
+        ev = json.loads(ev_path.read_text())
+    else:
+        ev_path = eval_manifest_path(reg, f"{name}-eval")
+        ev = build_eval_manifest(eval_sets(reg, manifest), reg)
+    problems = check_eval_manifest(ev, reg)
+    if problems:
+        raise ValueError(f"eval manifest {ev_path.name} fails its check: {problems[:3]}")
+    if None not in (ev["snapshot_version"], manifest["snapshot_version"]) \
+            and ev["snapshot_version"] != manifest["snapshot_version"]:
+        raise ValueError(f"eval shards are snapshot version {ev['snapshot_version']} and training shards "
+                         f"{manifest['snapshot_version']}: re-extract the older ones")
+    if not eval_manifest:
+        ev_path.parent.mkdir(parents=True, exist_ok=True)
+        ev_path.write_text(json.dumps(ev, indent=1) + "\n")
     out = FEATURES / reg.id / name
     out.mkdir(parents=True, exist_ok=True)
     fz = Featurizer(reg)
-    (out / "vocab.json").write_text(json.dumps(fz.vocab.to_json()))
+    vocab_json = json.dumps(fz.vocab.to_json())
+    (out / "vocab.json").write_text(vocab_json)
     t0 = time.perf_counter()
     train = featurize_files([paths.ROOT / f["path"] for f in manifest["files"]], reg, workers, thin=True)
     val_battle = val_battles(train["battle_names"], manifest)
@@ -169,20 +262,20 @@ def build(reg: Regulation, manifest_path: Path, name: str, workers: int = 6) -> 
     for split, rows in (("train", ~is_val), ("val", is_val)):
         np.savez_compressed(out / f"{split}.npz", **_subset(train, np.nonzero(rows)[0]))
         counts[split] = int(rows.sum())
-    snap = paths.ROOT / "data" / "snapshots" / reg.id
-    bo3 = reg.showdown_format + "bo3"
-    runs = sorted({Path(f["path"]).parent.name for f in manifest["files"]
-                   if Path(f["path"]).parent.parent.name == "selfplay"})
-    for set_name, patterns in EVAL_SETS.items():
-        files = _eval_files(snap, patterns, bo3, reg.showdown_format, runs)
-        if files:
-            d = featurize_files(files, reg, workers)
-            np.savez_compressed(out / f"eval_{set_name}.npz", **d)
-            counts[f"eval_{set_name}"] = int(len(d["y"]))
+    # A set the eval manifest no longer names must not linger to be scored by `vgc wp eval`.
+    for f in out.glob("eval_*.npz"):
+        f.unlink()
+    cache = {}
+    for set_name, entries in ev["sets"].items():
+        src, meta = cached_eval_set(reg, set_name, entries, vocab_json, workers, fresh)
+        os.link(src, out / f"eval_{set_name}.npz")
+        counts[f"eval_{set_name}"] = meta["rows"]
+        cache[set_name] = {"key": meta["key"], "cached": meta["cached"]}
     info = {
         "name": name, "regulation": reg.id, "manifest": str(manifest_path.resolve().relative_to(paths.ROOT)),
-        "manifest_battles": len(manifest["battles"]), "featurizer_version": Featurizer.VERSION,
-        "n_num": fz.n_num, "n_glob": fz.n_glob,
+        "manifest_battles": len(manifest["battles"]),
+        "eval_manifest": str(ev_path.resolve().relative_to(paths.ROOT)), "eval_cache": cache,
+        "featurizer_version": Featurizer.VERSION, "n_num": fz.n_num, "n_glob": fz.n_glob,
         "rows": counts, "val_rate": VAL_RATE, "seconds": round(time.perf_counter() - t0, 1),
     }
     (out / "info.json").write_text(json.dumps(info, indent=1) + "\n")
@@ -197,8 +290,6 @@ def resplit(reg: Regulation, source: str, name: str) -> dict[str, Any]:
     again. The held-out files and the vocabulary are hard-linked, since they are byte-identical
     and a dataset directory must be complete on its own.
     """
-    import os
-
     src, out = FEATURES / reg.id / source, FEATURES / reg.id / name
     info = json.loads((src / "info.json").read_text())
     manifest = json.loads((paths.ROOT / info["manifest"]).read_text())
@@ -223,6 +314,13 @@ def resplit(reg: Regulation, source: str, name: str) -> dict[str, Any]:
                                    for s, c in (("selfplay", 0), ("human", 1))}}
     (out / "info.json").write_text(json.dumps(info, indent=1) + "\n")
     return info | {"out": str(out)}
+
+
+def battles_in(reg: Regulation, name: str, split: str) -> set[str]:
+    """The battles with a row in one split of a dataset. `battle_names` alone will not do: train
+    and val are indexed against one shared list."""
+    with np.load(FEATURES / reg.id / name / f"{split}.npz") as z:
+        return set(z["battle_names"][np.unique(z["battle"])].tolist())
 
 
 def load(reg: Regulation, name: str, split: str) -> dict[str, np.ndarray]:

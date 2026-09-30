@@ -565,7 +565,10 @@ def cmd_data_check(args: argparse.Namespace) -> int:
     from vgc.data import splits
 
     reg = _reg(args)
-    problems = splits.check_manifest(json.loads(Path(args.manifest).read_text()), reg)
+    m = json.loads(Path(args.manifest).read_text())
+    # An eval manifest's splits are re-derived record by record here, which a featurize skips.
+    problems = (splits.check_eval_manifest(m, reg, deep=True) if m.get("purpose") == "eval"
+                else splits.check_manifest(m, reg))
     for p in problems[:50]:
         print(p)
     print("clean" if not problems else f"{len(problems)} problems")
@@ -610,9 +613,34 @@ def cmd_wp_featurize(args: argparse.Namespace) -> int:
     from vgc.wp.dataset import build
 
     reg = _reg(args)
-    info = build(reg, SNAPSHOTS / reg.id / "manifests" / f"{args.manifest}.json", args.name, workers=args.workers)
+    info = build(reg, SNAPSHOTS / reg.id / "manifests" / f"{args.manifest}.json", args.name, workers=args.workers,
+                 eval_manifest=args.eval_manifest, fresh=args.fresh)
     print(json.dumps(info, indent=1))
     return 0
+
+
+def cmd_wp_prune_eval_cache(args: argparse.Namespace) -> int:
+    from vgc.wp.dataset import prune_eval_cache
+
+    gone = prune_eval_cache(_reg(args), dry_run=args.dry_run)
+    for f, size in gone:
+        print(f"  {f.name}  {size / 1e6:.0f} MB")
+    print(f"{len(gone)} cached eval sets no dataset uses, {sum(s for _, s in gone) / 1e6:.0f} MB: "
+          + ("not removed (dry run)" if args.dry_run else "removed"))
+    return 0
+
+
+def _dataset(reg, args: argparse.Namespace) -> str:
+    """`--dataset`, or the one the model was trained on: the only default that cannot be stale."""
+    if args.dataset:
+        return args.dataset
+    from vgc.wp import models
+
+    card = json.loads((models.model_dir(reg.id, args.version) / "card.json").read_text())
+    name = (card.get("dataset") or {}).get("name")
+    if not name:
+        raise SystemExit(f"{args.version}'s card names no dataset; pass --dataset")
+    return name
 
 
 def cmd_wp_resplit(args: argparse.Namespace) -> int:
@@ -674,7 +702,7 @@ def cmd_wp_calibrate(args: argparse.Namespace) -> int:
     from vgc.wp.models import calibrate
 
     reg = _reg(args)
-    temps = calibrate(reg.id, args.version, load(reg, args.dataset, "val"))
+    temps = calibrate(reg.id, args.version, load(reg, _dataset(reg, args), "val"))
     print(f"{args.version} temperatures: {json.dumps(temps)}")
     return 0
 
@@ -684,6 +712,7 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
     from vgc.wp.dataset import FEATURES, load, merge
 
     reg = _reg(args)
+    args.dataset = _dataset(reg, args)
     base = FEATURES / reg.id / args.dataset
     data = {p.stem[len("eval_"):]: load(reg, args.dataset, p.stem) for p in sorted(base.glob("eval_*.npz"))}
     # Every held-out human OTS game (held out by replay group or by team): the headline set.
@@ -728,22 +757,53 @@ def cmd_wp_eval(args: argparse.Namespace) -> int:
 
 
 def cmd_wp_valcheck(args: argparse.Namespace) -> int:
-    """Uncalibrated reliability on the human validation rows, to compare training recipes."""
+    """Uncalibrated reliability on the human validation rows, to compare training recipes.
+
+    With several versions, each after the first is compared with it on the same rows. They must
+    share a dataset, since validation is drawn per dataset and two datasets' rows differ."""
+    import numpy as np
+
     from vgc.wp import evaluate, models
-    from vgc.wp.dataset import load
+    from vgc.wp.dataset import FEATURES, battles_in, load
+    from vgc.wp.features import check_featurizer
 
     reg = _reg(args)
-    out = models.model_dir(reg.id, args.version)
-    model = models.load_model(reg.id, args.version)
-    model.calibration = {}
-    trained = out / "train.json"
-    baked = json.loads(trained.read_text()).get("temperature", 1.0) if trained.exists() else 1.0
-    r = evaluate.validation_report(model, load(reg, args.dataset, "val"), models.SHEETS_COL,
-                                   models.HUMAN_CTX_COL, baked)
-    print(evaluate.format_validation_report(r))
-    (out / "valcheck.json").write_text(json.dumps({"dataset": args.dataset, "baked_temperature": baked} | r,
-                                                  indent=1) + "\n")
-    return 0
+    versions = args.version
+    args.version = versions[0]
+    dataset = _dataset(reg, args)
+    info = json.loads((FEATURES / reg.id / dataset / "info.json").read_text())
+    check_featurizer(info, f"dataset {dataset}")
+    val = load(reg, dataset, "val")
+    val_battles = set(val["battle_names"][np.unique(val["battle"])].tolist())
+    rows = {}
+    for version in versions:
+        out = models.model_dir(reg.id, version)
+        card = json.loads((out / "card.json").read_text())
+        check_featurizer(card.get("dataset") or {}, version, against=info)
+        # A model trained on another dataset may have trained on these rows: wp-v1e's models,
+        # scored on wp-v1f's validation (20% of groups where wp-v1e held out 5%), read 0.05 nats
+        # better than wp-v1f's, which had never seen them. So it is checked, not assumed.
+        trained_on = (card.get("dataset") or {}).get("name")
+        if trained_on and trained_on != dataset:
+            seen = len(val_battles & battles_in(reg, trained_on, "train"))
+            if seen:
+                print(f"skipping {version}: {seen} of {dataset}'s {len(val_battles)} validation battles "
+                      f"are in the training rows of {trained_on}, which it was trained on")
+                continue
+        model = models.load_model(reg.id, version)
+        model.calibration = {}
+        trained = out / "train.json"
+        baked = json.loads(trained.read_text()).get("temperature", 1.0) if trained.exists() else 1.0
+        rows[version] = evaluate.validation_rows(model, val, models.SHEETS_COL, models.HUMAN_CTX_COL, baked)
+        r = evaluate.validation_report(None, None, rows=rows[version])
+        print(f"### {version}")
+        print(evaluate.format_validation_report(r))
+        (out / "valcheck.json").write_text(json.dumps({"dataset": dataset, "baked_temperature": baked} | r,
+                                                      indent=1) + "\n")
+    if len(rows) > 1 and versions[0] in rows:
+        cmp = evaluate.compare_validation(rows, versions[0])
+        print(evaluate.format_comparison(rows, cmp, versions[0]))
+    return 0 if len(rows) == len(versions) else 1
 
 
 def cmd_wp_benchmark(args: argparse.Namespace) -> int:
@@ -1234,7 +1294,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--split", choices=["train", "heldout_battle", "heldout_team", "heldout_human"], default="train")
     p.add_argument("files", nargs="*", help="snapshot shards (default: every <split> shard)")
     p.set_defaults(func=cmd_data_manifest)
-    p = with_reg(data.add_parser("check", help="re-check a manifest against the frozen split"))
+    p = with_reg(data.add_parser("check", help="re-check a training or eval manifest against the frozen split"))
     p.add_argument("manifest")
     p.set_defaults(func=cmd_data_check)
     p = with_reg(data.add_parser("parity", help="live poke-env view vs re-derived snapshots"))
@@ -1246,17 +1306,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     wp = sub.add_parser("wp", help="win probability models").add_subparsers(dest="wp_cmd", required=True)
     p = with_reg(wp.add_parser("featurize", help="feature arrays from a checked manifest + the held-out sets"))
-    p.add_argument("--manifest", default="wp-v1-train")
-    p.add_argument("--name", default="wp-v1")
+    p.add_argument("--manifest", required=True, help="training manifest name, e.g. wp-v1e-train")
+    p.add_argument("--name", required=True, help="the dataset to write")
+    p.add_argument("--eval-manifest", help="score on the eval sets this names (default: derive one and "
+                                           "write it as <name>-eval)")
+    p.add_argument("--fresh", action="store_true", help="featurize the eval sets even if cached")
     p.add_argument("--workers", type=int, default=6)
     p.set_defaults(func=cmd_wp_featurize)
+    p = with_reg(wp.add_parser("prune-eval-cache", help="remove cached eval sets no dataset links to"))
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_wp_prune_eval_cache)
     p = with_reg(wp.add_parser("resplit", help="copy a dataset with validation redrawn at the current rates"))
     p.add_argument("--dataset", required=True, help="the dataset to copy")
     p.add_argument("--name", required=True, help="the new dataset")
     p.set_defaults(func=cmd_wp_resplit)
     p = with_reg(wp.add_parser("train", help="train a WP model version"))
     p.add_argument("--kind", choices=["logistic", "gbt", "set"], required=True)
-    p.add_argument("--dataset", default="wp-v1")
+    p.add_argument("--dataset", required=True)
     p.add_argument("--version")
     p.add_argument("--epochs", type=int, default=20)
     p.add_argument("--threads", type=int, default=6)
@@ -1264,20 +1330,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_wp_train)
     p = with_reg(wp.add_parser("card", help="write a model card for a set model trained outside `wp train`"))
     p.add_argument("--version", required=True)
-    p.add_argument("--dataset", default="wp-v1")
+    p.add_argument("--dataset", required=True)
     p.set_defaults(func=cmd_wp_card)
     p = with_reg(wp.add_parser("calibrate", help="fit per-context temperatures on the validation split"))
     p.add_argument("--version", required=True)
-    p.add_argument("--dataset", default="wp-v1")
+    p.add_argument("--dataset", help="default: the one the model was trained on")
     p.set_defaults(func=cmd_wp_calibrate)
     p = with_reg(wp.add_parser("eval", help="calibration and accuracy on the frozen held-out sets"))
     p.add_argument("--version", required=True)
     p.add_argument("--baseline", action="append", help="versions to compare against (repeatable; 'constant' = 50%%)")
-    p.add_argument("--dataset", default="wp-v1")
+    p.add_argument("--dataset", help="default: the one --version was trained on")
     p.set_defaults(func=cmd_wp_eval)
     p = with_reg(wp.add_parser("valcheck", help="uncalibrated reliability on human validation rows, per regime"))
-    p.add_argument("--version", required=True)
-    p.add_argument("--dataset", required=True)
+    p.add_argument("--version", required=True, action="append",
+                   help="repeatable: each after the first is compared with it on the same rows")
+    p.add_argument("--dataset", help="default: the one the first --version was trained on")
     p.set_defaults(func=cmd_wp_valcheck)
     p = with_reg(wp.add_parser("benchmark", help="the decided-endgame benchmark, through the app's WP"))
     p.add_argument("--version", help="score one model on every variant (default: the pin for each regime)")

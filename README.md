@@ -57,8 +57,9 @@ vgc data manifest --name wp-v1-train             # training manifest, refused if
 vgc data parity --n 50                           # snapshots vs what poke-env showed live
 vgc data stats
 
-vgc wp featurize --manifest wp-v1-train          # feature arrays from a checked manifest
-vgc wp train --kind set --epochs 12              # (baselines: --kind logistic | gbt)
+vgc wp featurize --manifest wp-v1-train --name wp-v1   # features; eval sets named by an eval manifest, cached
+vgc wp train --kind set --dataset wp-v1 --epochs 12    # (baselines: --kind logistic | gbt)
+vgc wp valcheck --version <a> --version <b>      # recipes compared on human validation, paired by battle
 vgc wp eval --version <v> --baseline wp-v1-gbt   # held-out human games; writes gate verdicts
 vgc wp registry                                  # every model, with the gates it failed
 vgc wp endgames                                  # held-out human games it called at 90%+ before the end

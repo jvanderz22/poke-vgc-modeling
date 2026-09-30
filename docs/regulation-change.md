@@ -142,10 +142,10 @@ minutes: [docs/cloud-compute.md](cloud-compute.md). Step 4's generation is the o
 on CPU.
 
 ```bash
-vgc wp featurize -r reg_md --manifest wp-v1-train --name wp-v1
-vgc wp train -r reg_md --kind logistic
-vgc wp train -r reg_md --kind gbt
-vgc wp train -r reg_md --kind set --epochs 20
+vgc wp featurize -r reg_md --manifest wp-v1-train --name wp-v1   # also writes the eval manifest wp-v1-eval
+vgc wp train -r reg_md --kind logistic --dataset wp-v1
+vgc wp train -r reg_md --kind gbt --dataset wp-v1
+vgc wp train -r reg_md --kind set --dataset wp-v1 --epochs 20
 vgc wp eval  -r reg_md --version wp-v1-set --baseline wp-v1-gbt --baseline wp-v1-logistic --baseline constant
 vgc wp registry
 vgc sim validate -r reg_md          # does self-play predict human results in the new regulation?

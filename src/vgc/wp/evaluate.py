@@ -176,8 +176,9 @@ def calibration_test(p: np.ndarray, y: np.ndarray, battle: np.ndarray, bucket: n
     return out
 
 
-def validation_report(model: WPModel, val: dict[str, np.ndarray], sheets_col: int, human_ctx_col: int,
-                      baked_temperature: float = 1.0) -> dict[str, Any]:
+def validation_report(model: WPModel | None, val: dict[str, np.ndarray] | None, sheets_col: int = 0,
+                      human_ctx_col: int = 0, baked_temperature: float = 1.0,
+                      rows: dict[str, dict[str, np.ndarray]] | None = None) -> dict[str, Any]:
     """Calibration on the human validation rows, per regime, with no calibrator — for choosing
     between training recipes without reading the held-out sets that gate them.
 
@@ -186,11 +187,34 @@ def validation_report(model: WPModel, val: dict[str, np.ndarray], sheets_col: in
     what is left there is the part of the miss a temperature cannot reach, which is the shape
     finding 5 describes. Fitted and scored on the same rows, so it is a comparison between
     recipes and not a verdict; the verdict is `vgc wp eval`'s, on held-out groups.
+
+    `rows`, from `validation_rows`, saves predicting twice when the caller also compares.
     """
+    if rows is None:
+        rows = validation_rows(model, val, sheets_col, human_ctx_col, baked_temperature)
+    out: dict[str, Any] = {}
+    for sheets, r in rows.items():
+        y, battle, bucket = r["y"], r["battle"], r["bucket"]
+        res: dict[str, Any] = {"battles": int(len(np.unique(battle))), "temperature": round(r["temperature"], 3)}
+        for name in ("raw", "one_temperature"):
+            q = r[name]
+            res[name] = {"all": {k: v for k, v in metrics(q, y).items() if k != "reliability"},
+                         "test": calibration_test(q, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400),
+                         "reliability": {b: metrics(q[bucket == b], y[bucket == b])["reliability"]
+                                         for b in IN_BATTLE_BUCKETS if (bucket == b).any()}}
+        out[sheets] = res
+    return out
+
+
+def validation_rows(model: WPModel, val: dict[str, np.ndarray], sheets_col: int, human_ctx_col: int,
+                    baked_temperature: float = 1.0) -> dict[str, dict[str, np.ndarray]]:
+    """Per regime, the in-battle spectator rows of human validation: the label, the battle, the
+    turn bucket, and the prediction raw and after the one temperature that fits them best. Rows
+    come out in the dataset's order, so two models scored on one dataset are row-aligned."""
     from vgc.wp.models import fit_temperature
 
     human = val["glob"][:, human_ctx_col] == 1
-    out: dict[str, Any] = {}
+    out: dict[str, dict[str, np.ndarray]] = {}
     for sheets, flag in ((OPEN, 1), (CLOSED, 0)):
         rows = human & (val["glob"][:, sheets_col] == flag)
         if not rows.any():
@@ -200,17 +224,77 @@ def validation_report(model: WPModel, val: dict[str, np.ndarray], sheets_col: in
         z = np.log(p / (1 - p)) * baked_temperature
         s = symmetrize(sub, 1 / (1 + np.exp(-z)))
         spec = (s["perspective"] == 0) & np.isin(_bucket(s["kind"], s["turn"]), IN_BATTLE_BUCKETS)
-        y, battle, bucket = s["y"][spec], s["battle"][spec], _bucket(s["kind"], s["turn"])[spec]
-        logit = np.log(s["p"][spec] / (1 - s["p"][spec]))
-        t = fit_temperature(logit, y)
-        res: dict[str, Any] = {"battles": int(len(np.unique(battle))), "temperature": round(t, 3)}
-        for name, q in (("raw", s["p"][spec]), ("one_temperature", 1 / (1 + np.exp(-logit / t)))):
-            res[name] = {"all": {k: v for k, v in metrics(q, y).items() if k != "reliability"},
-                         "test": calibration_test(q, y, battle, bucket, IN_BATTLE_BUCKETS, sims=400),
-                         "reliability": {b: metrics(q[bucket == b], y[bucket == b])["reliability"]
-                                         for b in IN_BATTLE_BUCKETS if (bucket == b).any()}}
-        out[sheets] = res
+        raw = s["p"][spec]
+        logit = np.log(raw / (1 - raw))
+        t = fit_temperature(logit, s["y"][spec])
+        out[sheets] = {"y": s["y"][spec], "battle": s["battle"][spec],
+                       "bucket": _bucket(s["kind"], s["turn"])[spec], "temperature": t,
+                       "raw": raw, "one_temperature": 1 / (1 + np.exp(-logit / t))}
     return out
+
+
+def row_logloss(p: np.ndarray, y: np.ndarray) -> np.ndarray:
+    p = np.clip(p.astype(np.float64), 1e-6, 1 - 1e-6)
+    return -(y * np.log(p) + (1 - y) * np.log(1 - p))
+
+
+def paired_logloss(a: np.ndarray, b: np.ndarray, y: np.ndarray, battle: np.ndarray,
+                   boots: int = 2000, seed: int = 0) -> dict[str, Any]:
+    """`b`'s log loss minus `a`'s on the same rows, with a 95% interval from resampling battles.
+
+    Paired, because two models scored on one set share every hard game, so their difference is
+    far tighter than the two losses' own intervals suggest. Clustered, because a battle's rows
+    share one winner."""
+    diff = row_logloss(b, y) - row_logloss(a, y)
+    ids, inv = np.unique(battle, return_inverse=True)
+    n = np.bincount(inv).astype(float)
+    tot = np.bincount(inv, weights=diff)
+    idx = np.random.default_rng(seed).integers(0, len(ids), (boots, len(ids)))
+    lo, hi = np.percentile(tot[idx].sum(1) / n[idx].sum(1), [2.5, 97.5])
+    return {"delta": round(float(diff.mean()), 5), "ci95": [round(float(lo), 5), round(float(hi), 5)],
+            "battles": int(len(ids)),
+            "verdict": "better" if hi < 0 else "worse" if lo > 0 else "not distinguishable"}
+
+
+def compare_validation(rows: dict[str, dict[str, dict[str, np.ndarray]]], base: str) -> dict[str, Any]:
+    """Every version against `base` on human validation, per regime, raw and at one temperature.
+
+    One temperature is the comparison that matters for a recipe, since every served model is
+    calibrated; raw says how much of the gap is only confidence. Scored on the rows the
+    temperature was fitted on, so it chooses between recipes and is never a verdict."""
+    out: dict[str, Any] = {}
+    for version, by_regime in rows.items():
+        if version == base:
+            continue
+        out[version] = {}
+        for sheets, r in by_regime.items():
+            b = rows[base].get(sheets)
+            if b is None:
+                continue
+            if not (np.array_equal(b["y"], r["y"]) and np.array_equal(b["battle"], r["battle"])):
+                raise ValueError(f"{version} and {base} were not scored on the same {sheets}-sheet rows")
+            out[version][sheets] = {name: paired_logloss(b[name], r[name], r["y"], r["battle"])
+                                    for name in ("raw", "one_temperature")}
+    return out
+
+
+def format_comparison(rows: dict[str, dict[str, dict[str, np.ndarray]]], cmp: dict[str, Any], base: str) -> str:
+    lines = [f"== against {base}, human validation, in-battle spectator rows (Δ = log loss minus {base}'s)"]
+    for sheets in (OPEN, CLOSED):
+        have = [v for v in rows if sheets in rows[v]]
+        if not have:
+            continue
+        lines.append(f"  {sheets} sheets")
+        for v in have:
+            r = rows[v][sheets]
+            ll = {n: float(row_logloss(r[n], r["y"]).mean()) for n in ("raw", "one_temperature")}
+            line = (f"    {v:28} raw {ll['raw']:.4f}  one T {ll['one_temperature']:.4f} (T {r['temperature']:.2f})")
+            c = cmp.get(v, {}).get(sheets)
+            if c:
+                o = c["one_temperature"]
+                line += f"  Δ one T {o['delta']:+.4f} [{o['ci95'][0]:+.4f}, {o['ci95'][1]:+.4f}] {o['verdict']}"
+            lines.append(line)
+    return "\n".join(lines)
 
 
 def format_validation_report(r: dict[str, Any]) -> str:

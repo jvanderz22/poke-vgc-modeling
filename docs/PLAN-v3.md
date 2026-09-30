@@ -90,6 +90,9 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
 - **On a closed sheet the number is the position as shown** (step 6). It beat the average over
   drawn sets by 0.015 nats on 1,025 held-out closed-sheet games, and it now leads the page and the
   brings preview. The damage and bulk channels fail soundness with sheets hidden and stay off.
+- **Eval sets are named and cached** (step 7). A dataset's eval sets come from an eval manifest
+  that names its shards by hash, featurized once per shards and featurizer. `vgc wp valcheck`
+  compares recipes on shared validation rows and refuses a model that trained on them.
 
 ---
 
@@ -316,19 +319,38 @@ sheets hidden"](phase8-findings.md)):
    investment. Neither runs live, so nothing changes. Making them sound would mean bounding over
    the items and abilities the set belief still allows, and that is deferred.
 
-### 7. Housekeeping that pays on every retrain: next
+### 7. Housekeeping that pays on every retrain: done
 
-- **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
-  Self-play eval sets already come from the training manifest's runs, so this is the durable
-  version of that.
-- **`vgc wp valcheck`** scores a model's uncalibrated reliability on human validation. Use it to
-  compare recipes without reading the held-out gate.
-- **Caches that go stale:**
-  - the stored decided-endgames list must be regenerated whenever the served model or its
-    calibration changes (`tests/test_endgames.py` catches it);
-  - the `wp-v1`/`wp-v1c` feature datasets (~586 MB, untracked) can be deleted.
+- **Eval manifests.** `vgc wp featurize` builds its eval sets from an eval manifest
+  (`manifests/<name>-eval.json`), not from globs. The manifest names each held-out shard by
+  sha256, and every record's split is recomputed as it is written. `--eval-manifest <name>` scores
+  a new dataset on exactly the rows an older one was scored on. `vgc data check` re-derives an eval
+  manifest's splits record by record.
+- **An eval-set cache** (`data/features/<reg>/_eval/`), keyed on the shards' sha256, the featurizer
+  version and the vocabulary. Datasets hard-link into it.
+  - A retrain that keeps its eval shards no longer featurizes them again. That was ~1M rows on
+    M-C, more than training.
+  - Checked on real data: the cached `human_closed_team` is array-for-array `wp-v1e`'s, and
+    rebuilding `wp-mb1` from its manifest through the new path reproduced every array.
+  - `--fresh` rebuilds regardless. `vgc wp prune-eval-cache` removes sets no dataset links to.
+- **`vgc wp valcheck` compares recipes.** Repeat `--version`, and each is compared with the first
+  on the same human validation rows: log loss after one temperature, with a 95% interval
+  resampled by battle.
+  - It refuses a model that trained on any of those rows. `wp-v1e`'s models, scored on `wp-v1f`'s
+    validation, read 0.05 nats better than `wp-v1f-idp5`: 1,900 of the 4,326 battles were in their
+    training rows.
+  - `--dataset` defaults to the one the model was trained on, for `eval` and `calibrate` too.
+    `featurize --name`, `train --dataset` and `card --dataset` are now required. The default was
+    `wp-v1`, the oldest dataset.
+- **Stale caches:**
+  - the decided-endgames list is regenerated whenever the served model or its calibration
+    changes. `tests/test_endgames.py` catches a stale one;
+  - the `wp-v1`/`wp-v1c` feature datasets (~586 MB) are deletable: no model card names them.
+    Their training manifests' shards have been re-extracted since, so they cannot be rebuilt;
+    `scripts/analysis/preview_signal.py` and `selfplay_value.py` read `wp-v1`. **Not deleted
+    yet: waiting on a yes.**
 
-### 8. Solver speed
+### 8. Solver speed: next
 
 Now that the engine leads the page in a 1v1, how deep it gets is how good that number is. It is
 also Phase 9's search. What step 3.6 measured:

@@ -49,8 +49,8 @@ MAX_MINUTES=30 RATE=0.34 SHUTDOWN=1 bash scripts/cloud/run_training.sh reg_mc wp
     --epochs 12 --d 128 --layers 3 --dropout 0.2 --id-dropout 0.3 --bs 2048
 # download /tmp/wp-result-*.tgz, then locally:
 tar xzf wp-result-cloud-20261202-1200.tgz            # lands in models/wp/reg_mc/<version>/
-vgc wp card      --version <version>                 # writes the model card + registry entry
-vgc wp calibrate --version <version>                 # per-context temperatures (train/val rows only)
+vgc wp card      --version <version> --dataset wp-v1 # writes the model card + registry entry
+vgc wp calibrate --version <version>                 # per-context temperatures (val rows of the card's dataset)
 vgc wp eval      --version <version> --baseline wp-v1-gbt --baseline constant
 ```
 

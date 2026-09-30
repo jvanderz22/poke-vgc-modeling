@@ -182,3 +182,73 @@ def check_manifest(manifest: dict[str, Any], reg: Regulation) -> list[str]:
             if split != "train":
                 problems.append(f"{rec['battle']} ({rec['source']}, {f['path']}) is {split}")
     return problems
+
+
+# --- eval manifests --------------------------------------------------------------------
+
+def build_eval_manifest(sets: dict[str, list[Path]], reg: Regulation) -> dict[str, Any]:
+    """The held-out shards each evaluation set is built from, by hash.
+
+    The sets used to be globs over `data/snapshots`, so a shard that appeared on disk joined an
+    eval set under a name that had not changed, and two belief-gating runs did exactly that on
+    2026-09-20. Named here, a set only changes when a new manifest names new files. Each file's
+    split is its name (`heldout_human.jsonl.gz` holds `heldout_human`), and it is recomputed for
+    every record as the file is read: a record that disagrees and the manifest is not written.
+    """
+    rules = load_rules(reg)
+    out: dict[str, list[dict[str, Any]]] = {}
+    versions: set[int] = set()
+    for name, files in sets.items():
+        entries = []
+        for path in sorted(files):
+            split = path.name.split(".")[0]
+            if split not in SPLIT_NAMES or split == "train":
+                raise ValueError(f"{path} is not a held-out shard")
+            n = 0
+            for rec in read_shard(path):
+                n += 1
+                versions.add(rec.get("v"))
+                if (got := rules.split_of_record(rec)) != split:
+                    raise ValueError(f"{name}: {rec['battle']} in {path} is {got}, not {split}")
+            entries.append({"path": str(path.resolve().relative_to(paths.ROOT)), "sha256": _sha256(path),
+                            "split": split, "records": n})
+        if entries:
+            out[name] = entries
+    if len(versions) > 1:
+        raise ValueError(f"snapshot versions {sorted(versions)} across the eval sets — re-extract the older shards")
+    return {
+        "regulation": reg.id, "purpose": "eval", "created": dt.datetime.now().isoformat(timespec="seconds"),
+        "split_file_sha256": _sha256(split_path(reg)), "snapshot_version": versions.pop() if versions else None,
+        "sets": out,
+    }
+
+
+def check_eval_manifest(manifest: dict[str, Any], reg: Regulation, deep: bool = False) -> list[str]:
+    """Problems that make an eval manifest unusable; empty means clean.
+
+    Every record's split was recomputed when the manifest was built. While each file's bytes and
+    the frozen split file are unchanged that answer cannot change, so the hashes are the check;
+    `deep` recomputes it anyway."""
+    rules = load_rules(reg)
+    problems = verify_frozen(reg)
+    if manifest.get("purpose") != "eval":
+        problems.append(f"purpose is {manifest.get('purpose')!r}, not 'eval'")
+    if manifest["split_file_sha256"] != _sha256(split_path(reg)):
+        problems.append("the frozen split file changed since this manifest was built")
+    for name, entries in manifest["sets"].items():
+        for f in entries:
+            p = paths.ROOT / f["path"]
+            if not p.exists():
+                problems.append(f"{name}: missing file {f['path']}")
+                continue
+            if _sha256(p) != f["sha256"]:
+                problems.append(f"{name}: file changed since the manifest was built: {f['path']}")
+                continue
+            if not deep:
+                continue
+            for rec in read_shard(p):
+                split = rules.split_of_record(rec)
+                if split != f["split"]:
+                    problems.append(f"{name}: {rec['battle']} ({f['path']}) is {split}, not {f['split']}")
+                    break
+    return problems

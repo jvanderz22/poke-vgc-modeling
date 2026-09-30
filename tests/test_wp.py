@@ -507,3 +507,75 @@ def test_validation_rate_is_per_source():
     val = val_battles(np.array([b["battle"] for b in manifest["battles"]]), manifest)
     assert abs(val[:4000].mean() - VAL_RATE["human"]) < 0.02
     assert abs(val[4000:].mean() - VAL_RATE["selfplay"]) < 0.01
+
+
+def test_an_eval_set_is_featurized_once_per_shards_featurizer_and_vocab(reg, tmp_path, monkeypatch):
+    """A retrain that keeps its eval sets must not featurize ~1M rows again, and one whose shards,
+    featurizer or vocabulary changed must."""
+    from vgc.wp import dataset
+
+    monkeypatch.setattr(dataset, "FEATURES", tmp_path)
+    calls = []
+
+    def fake(files, reg, workers=6, thin=False):
+        calls.append(files)
+        return {"y": np.ones(3, np.float32), "battle": np.zeros(3, np.int32), "battle_names": np.array(["b"])}
+
+    monkeypatch.setattr(dataset, "featurize_files", fake)
+    entries = [{"path": "data/x/heldout_human.jsonl.gz", "sha256": "a" * 64, "split": "heldout_human", "records": 3}]
+    first, meta = dataset.cached_eval_set(reg, "human_ots", entries, "{}")
+    assert not meta["cached"] and meta["rows"] == 3 and len(calls) == 1
+    again, meta = dataset.cached_eval_set(reg, "human_ots", entries, "{}")
+    assert again == first and meta["cached"] and len(calls) == 1
+
+    changed = [entries[0] | {"sha256": "b" * 64}]
+    assert dataset.cached_eval_set(reg, "human_ots", changed, "{}")[0] != first
+    assert dataset.cached_eval_set(reg, "human_ots", entries, '{"v": 1}')[0] != first
+    monkeypatch.setattr(Featurizer, "VERSION", Featurizer.VERSION + 1)
+    assert dataset.cached_eval_set(reg, "human_ots", entries, "{}")[0] != first
+    assert len(calls) == 4
+    dataset.cached_eval_set(reg, "human_ots", entries, "{}", fresh=True)
+    assert len(calls) == 5
+
+
+def test_pruning_keeps_what_a_dataset_links_to(reg, tmp_path, monkeypatch):
+    import os
+
+    from vgc.wp import dataset
+
+    monkeypatch.setattr(dataset, "FEATURES", tmp_path)
+    cache = dataset.eval_cache_dir(reg)
+    cache.mkdir(parents=True)
+    for name in ("kept", "orphan"):
+        (cache / f"{name}.npz").write_bytes(b"rows")
+        (cache / f"{name}.json").write_text("{}")
+    (tmp_path / "ds").mkdir()
+    os.link(cache / "kept.npz", tmp_path / "ds" / "eval_x.npz")
+    assert [f.name for f, _ in dataset.prune_eval_cache(reg, dry_run=True)] == ["orphan.npz"]
+    assert (cache / "orphan.npz").exists()
+    dataset.prune_eval_cache(reg)
+    assert sorted(f.name for f in cache.iterdir()) == ["kept.json", "kept.npz"]
+
+
+def test_recipes_are_compared_on_the_same_rows_paired_by_battle():
+    """Two models share every hard game, so the interval is on the difference, resampled by
+    battle; and rows that do not line up are refused rather than compared."""
+    from vgc.wp.evaluate import compare_validation, paired_logloss
+
+    rng = np.random.default_rng(0)
+    battle = np.repeat(np.arange(800), 5)
+    z = rng.normal(0, 1.5, 800)[battle]
+    y = (rng.random(800) < 1 / (1 + np.exp(-z[::5])))[battle].astype(float)
+    good, blunt = 1 / (1 + np.exp(-z)), 1 / (1 + np.exp(-z / 3))
+    r = paired_logloss(blunt, good, y, battle)
+    assert r["verdict"] == "better" and r["ci95"][1] < 0 and r["battles"] == 800
+    assert paired_logloss(good, good, y, battle)["verdict"] == "not distinguishable"
+
+    def rows(p):
+        return {"open": {"y": y, "battle": battle, "raw": p, "one_temperature": p}}
+
+    cmp = compare_validation({"a": rows(blunt), "b": rows(good)}, "a")
+    assert cmp["b"]["open"]["one_temperature"]["verdict"] == "better"
+    shuffled = rows(good) | {"open": rows(good)["open"] | {"battle": battle[::-1]}}
+    with pytest.raises(ValueError, match="same open-sheet rows"):
+        compare_validation({"a": rows(blunt), "b": shuffled}, "a")
