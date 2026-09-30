@@ -1592,3 +1592,42 @@ number. It now pairs them as `vgc wp eval` does (`c2744f8`). The table above is 
 
 Open: one game (`gen9championsvgc2026regmcbo3-2683090653`) crashes the simulator inside
 `BattleActions.useMove` for both of its positions. Its error is kept in the results file.
+
+## Which number leads on a closed sheet: the position as shown
+
+Plan v3 step 6, item 1 (2026-09-29). The Battle page led with `wp`, the served model averaged over
+`k` opponents drawn from the set belief, and showed `wp_open` beside it: the position with what has
+not been revealed left unknown. On a live position the two were 11–14 points apart. The masked-sheet
+comparison above favoured `open` by 0.011, but its mask holds turn-0 information fixed for the whole
+game, and a real Team Preview Only game is not like that. So this asks the genuine closed-sheet
+games, against who won (`scripts/analysis/wp_open_vs_particles.py`,
+`data/analysis/reg_mc/wp_open_vs_particles.json`). It uses every held-out, human, closed-sheet
+spectator snapshot, the served closed-sheet model (`wp-v1d-sw-split-small`), and 8 draws a
+position, each filling only what the game had not revealed, conditioned on what it had. That gives
+1,025 games in 994 groups and 10,624 positions, with a paired cluster bootstrap:
+
+| | positions | log loss, drawn | log loss, as shown | as shown − drawn |
+| --- | --- | --- | --- | --- |
+| all | 10,624 | 0.580 | **0.565** | −0.015 [−0.027, −0.004], as shown better |
+| played out | 6,280 | 0.596 | **0.577** | −0.020 [−0.034, −0.005], as shown better |
+| preview | 3,685 | 0.570 | **0.557** | −0.013, as shown better |
+| t1-2 / t3-4 / t5-6 | | | | −0.018 / −0.017 / −0.015, as shown better in each |
+| t7+ | 1,635 | 0.521 | **0.505** | −0.016 [−0.034, +0.002], not distinguishable |
+
+The two are equally confident (0.203 against 0.203 from 0.5), so this is information, not
+calibration. The models have been trained on closed-sheet rows since `wp-v1c`, so a position with
+unknowns in it is one they know. A drawn set, by contrast, is a guess presented to them as fact.
+
+**What changed:**
+- `live.wp` returns the position as shown as `wp`, which the page, the per-turn curve and the
+  benchmark all read. The draws are still made: their mean is `drawn`, and their 10th-to-90th spread
+  is the band showing what the hidden sets are worth.
+- The closed-sheet brings preview (step 6, item 2) builds the legal stand-in team the simulator
+  needs, then hides its sets again. It had taken each species' most common set as fact.
+- On an open sheet nothing is unknown but the spread, which no model reads, so nothing changes
+  there. On the decided-endgame benchmark the served models' mixing error fell from 0.289 to 0.152,
+  and the lost/won separation went from 0.087 to 0.101.
+
+The preview's evidence is the preview bucket above, which is the closed-sheet in-battle model from
+the stands. The bring ranking uses the default model from the player's seat, which was not measured
+separately.

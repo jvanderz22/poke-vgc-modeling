@@ -129,22 +129,16 @@ export function BattleSession({ reg, route, navigate, teams }: {
 
 /** The number, and how much of it is still guesswork.
  *
- *  Every WP model was trained with the opponent's sets visible — the known-flags are 1.000 across
- *  all 433,052 rows — so a Team Preview Only position is not one any of them has been shown. The
- *  bar is therefore an average over `k` complete opponents drawn from the belief: each draw is a
- *  fully-known position, so each is a row the model knows, and the mean is an estimate of the
- *  expectation over the ones it does not.
+ *  The number is the position as shown: what their sheet or this battle has not revealed is left
+ *  unknown, which is how the closed-sheet rows the models were trained on look. On 1,025 held-out
+ *  closed-sheet games that beat averaging over opponents drawn from the belief
+ *  (docs/phase8-findings.md, "which number leads on a closed sheet").
  *
- *  The band is the 10th-to-90th spread of those draws, and it is the honest part. A wide band
- *  means their hidden sets decide this position and the single number is not worth much; a narrow
- *  one means it barely matters what they are holding. That is a different thing from the model
- *  being uncertain, and it is the thing you can do something about — every reveal narrows it.
- *
- *  `wp_open` sits beside it rather than being hidden, because the gate would not settle between
- *  them: over 400 held-out games the averaged number beats filling in one guessed set on every
- *  model tried, but whether it beats leaving the opponent unknown depends on which model is
- *  serving (docs/phase8-findings.md). Two numbers that disagree by a point are worth showing as
- *  two numbers.
+ *  The band is still drawn: the 10th-to-90th spread of `k` complete opponents, and it is the honest
+ *  part. A wide band means their hidden sets decide this position and the single number is not
+ *  worth much; a narrow one means it barely matters what they are holding. That is a different
+ *  thing from the model being uncertain, and it is the thing you can do something about: every
+ *  reveal narrows it. The draws' mean sits beside the number for comparison.
  */
 function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean }) {
   // `labelled` is a 1v1, where this is the second number under the engine's.
@@ -165,8 +159,8 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           {wp.hi !== wp.lo && <> · {pct(wp.lo)}–{pct(wp.hi)}% depending on what they are holding</>}
         </span>
         <span title={wp.regime}>
-          {wp.wp_open != null && <>{pct(wp.wp_open)}% with their sets left unknown · </>}
-          averaged over {wp.k} draws{open > 0 ? ` · ${open} of their six still open` : ""}
+          {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 && <>{pct(wp.drawn)}% averaged over {wp.k} drawn sets · </>}
+          {open > 0 ? `${open} of their six still open` : `band from ${wp.k} draws`}
         </span>
       </div>
     </div>

@@ -15,7 +15,10 @@ from vgc.meta import usage
 from vgc.regulation import to_id
 
 FIXTURES = Path(__file__).parent / "fixtures"
-REPLAYS = sorted((FIXTURES / "replays").glob("*.json"))
+# The counts below are these three games. Named, so a fixture added for another test is not
+# counted here.
+REPLAYS = [FIXTURES / "replays" / f"gen9championsvgc2026regmcbo3-{n}.json"
+           for n in (2684057197, 2684058730, 2684171856)]
 
 
 @pytest.fixture(scope="module")

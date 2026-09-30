@@ -16,12 +16,14 @@ from vgc.belief import speed
 from vgc.data.observe import Observer
 
 FIXTURES = Path(__file__).parent / "fixtures"
-REPLAYS = sorted((FIXTURES / "replays").glob("*.json"))
+# Named, not the first in the folder: the Trick Room test needs this game, and a fixture added for
+# another test sorted ahead of it once.
+REPLAY = FIXTURES / "replays" / "gen9championsvgc2026regmcbo3-2684057197.json"
 
 
 @pytest.fixture(scope="module")
 def replay():
-    return json.loads(REPLAYS[0].read_text())
+    return json.loads(REPLAY.read_text())
 
 
 @pytest.fixture(scope="module")

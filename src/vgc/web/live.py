@@ -319,45 +319,25 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
 
 
 def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
-    """One number per record, as `vgc.wp.models.symmetrize` gives it: P(the player wins) for a
-    player record, and P(p1 wins) for a spectator one — which featurizes as two rows, one per seat,
-    averaged as the p1 row and one minus the p2 row. `symmetrize` itself keys on battle and point,
-    which every draw of one position shares, so it cannot pair these."""
-    out, at = [], 0
-    for rec in recs:
-        n = len(fz.orientations(rec))
-        rows = p[at:at + n]
-        at += n
-        out.append(float(rows[0]) if n == 1 else (float(rows[0]) + 1 - float(rows[1])) / 2)
-    return out
+    from vgc.wp.tools import per_record
+
+    return per_record(recs, fz, p)
 
 
 def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
-    """P(you win) from here — an average over what they might be holding, not one guess.
+    """P(you win) from here, from the position as it has been shown: what their sheet or this
+    battle has not revealed is left unknown.
 
-    Until 2026-09-21 every WP model was trained with the opponent fully visible — known-flags
-    1.000 across all 433,052 rows — because the closed-sheet shard existed on disk and was absent
-    from the manifest. It is in the mix now (since `wp-v1c`), and that moved the numbers a little
-    without changing the shape of the problem: every model still fails `closed_in_battle_ece`,
-    overconfident late in a closed-sheet game.
+    That is a measured choice (docs/phase8-findings.md, "which number leads on a closed sheet").
+    Until 2026-09-29 the number was the average over `k` opponents drawn from the set belief, each
+    a fully-known row. On 1,025 held-out closed-sheet games the position as shown beat that average
+    by 0.015 nats, at every turn bucket to t5-6, at the same confidence. Since `wp-v1c` the models
+    have been trained on closed-sheet rows, so a position with unknowns in it is one they know. On
+    an open sheet nothing is unknown but the spread, which no model reads, so the two are the same
+    number there.
 
-    What the mix did buy is the reason to prefer drawing over guessing, which is now measured
-    rather than assumed. `scripts/analysis/partial_information.py` masks held-out games against
-    themselves and finds the penalty is **non-monotone**: hiding a quarter of the opponent costs
-    more than hiding all of it (ECE 0.053 against 0.047, and 0.110 against 0.072 at t7+). A real
-    Team Preview Only position sits in that hole. Filling it with complete draws moves it out;
-    guessing one set keeps it in, because a wrong guess is a *partly* wrong opponent — and
-    Incineroar's most common set is **17.7% of its sheets**, so that guess is wrong five times in
-    six.
-
-    The one it does now is draw `k` complete opponents from the belief and average. Every one of
-    them is a fully-known row, so every one is in distribution; the mean is a Monte-Carlo estimate
-    of the expectation the plan calls `WP_v2(o) = E_belief[...]`, and the spread between the 10th
-    and 90th percentile is what their hidden sets are actually worth in this position.
-
-    `wp_open` is kept alongside: the true position with the unknowns left unknown. No model has
-    ever been shown one, so it is a diagnostic rather than an answer — but when it disagrees with
-    the mean, the disagreement is worth seeing rather than hiding.
+    The draws are still made. Their mean is `drawn`, and their 10th-to-90th spread (`lo`, `hi`) is
+    what their hidden sets are worth in this position: a wide band means what they hold decides it.
     """
     import random
 
@@ -385,12 +365,12 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
     mean = sum(draws) / max(len(draws), 1)
     lo = draws[max(0, int(0.1 * len(draws)) - 1)] if draws else 0.0
     hi = draws[min(len(draws) - 1, int(0.9 * len(draws)))] if draws else 0.0
-    return {"version": version, "wp": mean, "lo": lo, "hi": hi, "k": k,
-            "wp_open": per[-1], "kind": kind,
+    return {"version": version, "wp": per[-1], "drawn": mean, "lo": lo, "hi": hi, "k": k, "kind": kind,
             "belief": [{"species": sp} | v for sp, v in sorted(note.items())],
-            "regime": ("An average over " + str(k) + " complete opponents drawn from the belief: "
-                       "their items, abilities, natures and moves from other players' team "
-                       "sheets, narrowed by what this battle has shown. Their spreads are not "
+            "regime": ("The position as shown, with what has not been revealed left unknown. The "
+                       "band is " + str(k) + " complete opponents drawn from the belief (items, "
+                       "abilities, natures and moves from other players' sheets, narrowed by this "
+                       "battle): what their hidden sets are worth here. Their spreads are not "
                        "filled in, because no model has been trained on an opponent's.")}
 
 
@@ -402,10 +382,9 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     information (a move logged before its damage), and a curve drawn over that measures data
     entry, not the game.
 
-    Each turn is still an average over drawn opponents, with fewer draws than the live number
-    because this is a whole game at once and a curve does not need the precision a decision does.
-    What the curve is really showing is the belief narrowing as well as the position changing —
-    the two are not separable here and the page says so.
+    Each turn is the position as shown, as the live number is, with a band from fewer draws than
+    the live one, because this is a whole game at once and a curve does not need the precision a
+    decision does.
     """
     import random
 
@@ -428,7 +407,7 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
                                 for sid in ("p1", "p2")}})
         shown = evidence(reg, rp.state)
         recs.append([_record(_particle(reg, obs, rp.state, rng, {}), kind, "human", evidence=shown)
-                     for _ in range(k)])
+                     for _ in range(k)] + [_record(obs, kind, "human", evidence=shown)])
     if not recs:
         return []
     model, fz = _load(reg, version)
@@ -437,9 +416,9 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     per = _per_record(flat, fz, p)
     at = 0
     for row, group in zip(rows, recs):
-        draws = per[at:at + len(group)]
+        draws, shown_wp = per[at:at + len(group) - 1], per[at + len(group) - 1]
         at += len(group)
-        row["wp"] = sum(draws) / max(len(draws), 1)
+        row["wp"] = shown_wp
         row["lo"], row["hi"] = min(draws), max(draws)
     return rows
 

@@ -79,6 +79,8 @@ export type PreviewResult = {
   mine: string[];
   theirs: string[];
   inferred_sets: InferredSet[] | null;
+  /** Closed sheets: their sets were left unknown in every number. */
+  hidden: boolean;
 };
 
 export type SimEvent = { kind: string; text: string; side: "p1" | "p2" | null };
@@ -268,15 +270,14 @@ export type SPBelief = {
   contradicted: string | null;
 };
 
-/** `wp` is an average over `k` complete opponents drawn from the belief — each draw is a
- *  fully-known position, which is the only kind any model was trained on — and `lo`/`hi` are the
- *  10th and 90th percentile of those draws, so the width is what their hidden sets are worth
- *  here. `wp_open` is the true position with the unknowns left unknown: no model has seen one,
- *  so it is a diagnostic rather than an answer. */
+/** `wp` is the position as shown, with what has not been revealed left unknown: on held-out
+ *  closed-sheet games that beat averaging over drawn sets. `drawn` is that average over `k`
+ *  opponents drawn from the belief, and `lo`/`hi` are the 10th and 90th percentile of the draws,
+ *  so the width is what their hidden sets are worth here. On an open sheet all three agree. */
 export type LiveWP = {
   version?: string;
   wp?: number; lo?: number; hi?: number; k?: number;
-  wp_open?: number;
+  drawn?: number;
   kind?: string;
   /** What is still open about each of their six, and how concentrated the belief is. */
   belief?: {

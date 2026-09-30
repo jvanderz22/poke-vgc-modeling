@@ -2,9 +2,9 @@
 
 `benchmarks/wp/<regulation>/decided_endgames.yaml` holds families of positions that differ in one
 fact. Each variant is built here as a hand-entry journal — the taps a person would make at the
-table — and scored through the app's own WP (`web.live.wp`: the average over opponents drawn from
-the belief). So a fact counts only if the app can be told it, and the number scored is the number
-a person would be shown.
+table — and scored through the app's own WP (`web.live.wp`: the position as shown, with what
+has not been revealed left unknown). So a fact counts only if the app can be told it, and the number
+scored is the number a person would be shown.
 
 Four scores, as the benchmark file defines them:
   direction   between two variants whose expected answers differ by at least half, does WP move
@@ -249,7 +249,7 @@ def score(reg: Regulation, version: str | None = None, *, k: int = 24) -> dict[s
             ev = evidence(reg, rp.state)
             rows[(fid, vid)] = {"family": fid, "variant": vid, "sheets": sheets, "version": v,
                                 "wp": round(r["wp"], 4), "lo": round(r["lo"], 4), "hi": round(r["hi"], 4),
-                                "wp_open": round(r["wp_open"], 4),
+                                "drawn": round(r["drawn"], 4),
                                 # The engine's answer where it has been solved, else the hand one.
                                 "hand": _expected(fam["variants"][vid].get("expected")),
                                 "solved": (truth.get(f"{fid}/{vid}") or {}).get("value"),
@@ -313,14 +313,14 @@ def summarize(rows: dict[tuple[str, str], dict[str, Any]]) -> dict[str, Any]:
 
 
 def format_report(res: dict[str, Any]) -> str:
-    lines = [f"{'variant':9} {'sheets':6} {'model':24} {'WP':>6} {'band':>13} {'open':>6} {'truth':>5} {'hand':>5}  evidence"]
+    lines = [f"{'variant':9} {'sheets':6} {'model':24} {'WP':>6} {'band':>13} {'drawn':>6} {'truth':>5} {'hand':>5}  evidence"]
     for r in res["variants"]:
         exp = f"{r['expected']:.2f}" if r["expected"] is not None else "  —"
         hand = f"{r['hand']:.2f}" if r.get("hand") is not None else "  —"
         ev = "; ".join(f"{a[0]} {a[2]} ≥ {b[0]} {b[2]}" for a, b in r["ahead"])
         lock = {s: m for s, mv in r["last_move"].items() for m in mv.values()}
         lines.append(f"{r['family'] + '/' + r['variant']:9} {r['sheets']:6} {r['version']:24} {r['wp']:6.3f} "
-                     f"[{r['lo']:.2f}, {r['hi']:.2f}] {r['wp_open']:6.3f} {exp:>5} {hand:>5}  "
+                     f"[{r['lo']:.2f}, {r['hi']:.2f}] {r['drawn']:6.3f} {exp:>5} {hand:>5}  "
                      f"{ev}{'  last ' + json.dumps(lock) if lock else ''}")
     lines.append("\ndirection (expected gap → WP moved):")
     for d in res["direction"]:

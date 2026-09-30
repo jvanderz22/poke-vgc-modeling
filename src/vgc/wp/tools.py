@@ -1,8 +1,9 @@
 """User-facing WP tools: team-preview advice and replay trajectories.
 
-  preview(my_team, their_team)   the player's view at team preview (open team sheets): WP for
-                                 all 15 brings × 6 lead pairs, plus the bring head's guess at
-                                 which 4 the opponent brings
+  preview(my_team, their_team)   the player's view at team preview: WP for all 15 brings × 6
+                                 lead pairs, plus the bring head's guess at which 4 the opponent
+                                 brings. With `hidden`, their sets are left unknown, as a closed
+                                 sheet shows them
   replay_trajectory(replay)      spectator WP for p1 at every decision point of a human replay
 """
 
@@ -66,27 +67,60 @@ def preview_observations(reg: Regulation, my_team: str, their_team: str) -> dict
     return {"player": player.observation(), "spectator": spectator.observation()}
 
 
-def preview(reg: Regulation, my_team: str, their_team: str, version: str, context: str = "human") -> dict[str, Any]:
+def hide(obs: dict[str, Any], sid: str) -> dict[str, Any]:
+    """`sid`'s side as Team Preview Only shows it: species, and no item, ability, moves or nature."""
+    out = json.loads(json.dumps(obs))
+    for m in out["sides"][sid]["mons"]:
+        m["item"], m["item_source"] = None, None
+        m["ability"], m["ability_source"] = None, None
+        m["moves"], m["nature"] = [], None
+    out["sides"][sid]["sheet"] = False
+    return out
+
+
+def per_record(recs: list[dict[str, Any]], fz: Featurizer, p: Any) -> list[float]:
+    """One number per record: P(the player wins) for a player record, P(p1 wins) for a spectator
+    one, which featurizes as two rows (one per seat) paired as `symmetrize` pairs them.
+    `symmetrize` keys on battle and point, which every draw of one position shares."""
+    out, at = [], 0
+    for rec in recs:
+        n = len(fz.orientations(rec))
+        out.append(float(p[at]) if n == 1 else (float(p[at]) + 1 - float(p[at + 1])) / 2)
+        at += n
+    return out
+
+
+def preview(reg: Regulation, my_team: str, their_team: str, version: str, context: str = "human",
+            hidden: bool = False) -> dict[str, Any]:
+    """Rank the brings.
+
+    `hidden` is a closed sheet. `their_team` is then only a legal stand-in the simulator needs, and
+    their sets are hidden again before the model sees the position, as Team Preview Only shows it
+    (and a spectator of such a game sees neither side's). On 1,025 held-out closed-sheet games that
+    beat averaging over sets drawn from the belief by 0.013 nats at preview, and guessing one set
+    was worse than either (docs/phase8-findings.md, "which number leads on a closed sheet")."""
     model, fz = _load(reg, version)
     obs = preview_observations(reg, my_team, their_team)
     mine = [m["species"] for m in obs["player"]["sides"]["p1"]["mons"]]
     theirs = [m["species"] for m in obs["player"]["sides"]["p2"]["mons"]]
+    if hidden:
+        obs = {"player": hide(obs["player"], "p2"), "spectator": hide(hide(obs["spectator"], "p2"), "p1")}
     options = []
     for four in itertools.combinations(mine, 4):
         for leads in itertools.combinations(four, 2):
             order = list(leads) + [x for x in four if x not in leads]
             options.append({"bring": list(four), "leads": list(leads), "back": order[2:]})
     recs = [_record(bring_view(obs["player"], "p1", o["leads"] + o["back"]), "bring", context) for o in options]
-    d = featurize(recs, fz)
-    p, _ = model.predict(d)
+    p, _ = model.predict(featurize(recs, fz))
     for o, wp in zip(options, p):
         o["wp"] = float(wp)
     options.sort(key=lambda o: -o["wp"])
-    base = featurize([_record(obs["player"], "preview", context), _record(obs["spectator"], "preview", context)], fz)
+    base_recs = [_record(obs["player"], "preview", context), _record(obs["spectator"], "preview", context)]
+    base = featurize(base_recs, fz)
     bp, bring = model.predict(base)
-    sym = symmetrize(base, bp)["p"]
-    out = {"version": version, "context": context, "mine": mine, "theirs": theirs,
-           "preview_wp_player": float(bp[0]), "preview_wp_spectator": float(sym[1]), "options": options}
+    per = per_record(base_recs, fz, bp)
+    out = {"version": version, "context": context, "mine": mine, "theirs": theirs, "hidden": hidden,
+           "preview_wp_player": per[0], "preview_wp_spectator": per[1], "options": options}
     if bring is not None:
         out["their_bring"] = {s: float(q) for s, q in zip(theirs, bring[0, 6:12])}
     by_bring: dict[tuple, dict] = {}

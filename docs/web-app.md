@@ -157,16 +157,18 @@ A closed sheet shows species and nothing else, but the simulator needs a complet
 each species is filled with **the set most often used with it**, counted across the 15,028 sheets
 in the team pool.
 
-That is a guess, and the app shows how thin a guess: every inferred set is listed with the share
-of that Pokémon's sheets it accounts for. Incineroar's most common set is **15%** of its 4,895
-appearances; Rillaboom's is 38%. Anything under a quarter — or a species with no usage data, which
-falls back to a generic legal set — is counted and flagged.
+That team is only for the simulator. Before the model sees the position, those sets are hidden
+again, so it is shown what a closed sheet shows: species, and nothing about their sets. The Battle
+page does the same all game. Its number is the position as shown, with what the battle has not
+revealed left unknown. On 1,025 held-out closed-sheet games that beat both alternatives: taking
+the most common set as fact, and averaging over sets drawn from other players' sheets
+(phase8-findings, "which number leads on a closed sheet"). The draws are still made on the Battle
+page, and their spread is the band: how much what they are holding could matter here.
 
-The deeper limitation is not the guess but how the model treats it: **one guessed team, evaluated
-with full confidence**, rather than an average over everything the opponent might be holding. A
-Choice Scarf you guessed as an Assault Vest is simply wrong, not uncertain. Phase 5 replaces this
-with a belief over their sets that updates as the battle reveals things, which is what makes
-closed-sheet numbers trustworthy. Until then, prefer an open sheet whenever you have one.
+The most common sets are still listed on the preview with the share of that Pokémon's sheets each
+accounts for, for reference. Incineroar's most common set is **15%** of its 4,895 appearances;
+Rillaboom's is 38%. A Pokémon under a quarter, or with no usage data, is flagged as wide open.
+Closed-sheet answers are still weaker than open ones, so prefer an open sheet when you have one.
 
 ## What it does not do yet, and why
 

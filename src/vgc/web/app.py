@@ -4,10 +4,10 @@ Scope, honestly stated, because the UI has to say the same thing:
 
 * **The models are open-sheet models.** Every WP model is trained with the opponent's items,
   abilities, moves and spreads visible (`info_regime: "ots"`), which is a Bo3 game.
-  `/api/preview` accepts a closed-sheet opponent as six species and fills each with its most
-  common real set (`prior.py`), because the simulator needs *a* team. That is a point estimate
-  over one guess, not an expectation over what they might be holding — Phase 5's belief tracker
-  is what makes it the latter, and until then closed-sheet answers are weaker than open ones.
+  `/api/preview` accepts a closed-sheet opponent as six species. The simulator needs *a* team, so
+  each is built with its most common real set (`prior.py`), and then that set is hidden again: the
+  model is shown the position as a closed sheet shows it. Closed-sheet answers are still weaker
+  than open ones.
 * **Bring recommendations carry their model's gate verdicts.** `vgc wp eval` records which of
   Phase 4's gates a model passed; the preview gate is the one that says whether ranked bring
   options mean anything. Responses include it so the UI can show a guess as a guess.
@@ -283,9 +283,9 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
 
     their_team, inferred = body.their_team, None
     if not their_team:
-        # Closed sheets: we know six species. Fill each with its most common real set so there is
-        # a team to simulate. The result is a point estimate over one guess, not an expectation
-        # over what they might have — Phase 5 is what turns this into the latter.
+        # Closed sheets: we know six species. The simulator needs a legal team, so each is built
+        # with its most common set, and then `hidden` hides those sets again: the model is shown
+        # what a closed sheet shows (docs/phase8-findings.md, "which number leads on a closed sheet").
         if len(body.their_species) != reg.team_size:
             raise HTTPException(422, f"give the opponent's full sheet, or exactly {reg.team_size} species")
         from vgc.web.prior import compose
@@ -297,7 +297,8 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
         their_team, inferred = built["text"], built["sets"]
 
     try:
-        result = run_preview(reg, body.my_team, their_team, version, context=body.context)
+        result = run_preview(reg, body.my_team, their_team, version, context=body.context,
+                             hidden=inferred is not None)
     except (ValueError, RunnerError) as e:
         # Showdown's own validator rejected a sheet. That is the user's input being wrong, not a
         # server fault, and its message names the offending Pokémon — so pass it straight through.
@@ -312,8 +313,9 @@ def preview(body: PreviewRequest) -> dict[str, Any]:
             "preview_wp_spectator": result.get("preview_wp_spectator"),
             "their_likely_bring": result.get("their_bring"),
             "mine": result.get("mine"), "theirs": result.get("theirs"),
-            # Present only for closed sheets: which sets were guessed, and how common each was.
-            "inferred_sets": inferred}
+            # Present only for closed sheets: each Pokémon's most common set and its share, for
+            # reference. The numbers above leave their sets unknown and do not use these.
+            "inferred_sets": inferred, "hidden": result.get("hidden", False)}
 
 
 @app.get("/api/endgames")

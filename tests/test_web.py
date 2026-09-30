@@ -114,9 +114,11 @@ def test_closed_sheet_preview_reports_what_it_guessed(client, teams):
     d = r.json()
     assert len(d["best_by_bring"]) == 3
     assert d["inferred_sets"] and len(d["inferred_sets"]) == 6
+    # The numbers leave their sets unknown; the most common sets are reference, not input.
+    assert d["hidden"] is True
     # An open sheet is not a guess, so it must not claim to be one.
     open_sheet = client.post("/api/preview", json={"my_team": teams[0], "their_team": teams[1], "limit": 1}).json()
-    assert open_sheet["inferred_sets"] is None
+    assert open_sheet["inferred_sets"] is None and open_sheet["hidden"] is False
 
 
 @pytest.mark.showdown
@@ -360,14 +362,13 @@ def test_the_wrong_number_of_species_is_refused(client, teams, battles_dir):
     assert r.status_code == 422
 
 
-def test_wp_is_an_average_over_drawn_opponents_and_says_how_wide(started):
-    """The models are open-sheet models and a Team Preview Only position is not a row any of them
-    has seen. So the number is an expectation over `k` complete opponents drawn from the belief —
-    each of *those* is a row they were trained on — and the 10th-to-90th spread is what their
-    hidden sets are worth here. `wp_open` is the true position, kept as a diagnostic."""
+def test_wp_is_the_position_as_shown_and_says_how_wide(started):
+    """The number is the position with their unrevealed sets left unknown, which beat averaging
+    over drawn sets on held-out closed-sheet games. The draws are still made: the 10th-to-90th
+    spread is what their hidden sets are worth here, and `drawn` is their mean."""
     wp = started["wp"]
-    assert 0 <= wp["lo"] <= wp["wp"] <= wp["hi"] <= 1
-    assert 0 <= wp["wp_open"] <= 1
+    assert 0 <= wp["lo"] <= wp["drawn"] <= wp["hi"] <= 1
+    assert 0 <= wp["wp"] <= 1
     assert wp["k"] >= 8
     assert {b["species"] for b in wp["belief"]} <= set(THEIR_SIX)
     assert all(0 <= b["concentration"] <= 1 for b in wp["belief"])
@@ -445,7 +446,8 @@ def test_the_trajectory_is_one_row_a_turn(client, started):
             {"kind": "turn", "n": 2})
     t = client.get(f"/api/battles/{bid}/trajectory").json()
     assert [row["turn"] for row in t["turns"]] == [1, 2, 2]
-    assert all(0 <= row["lo"] <= row["wp"] <= row["hi"] <= 1 for row in t["turns"])
+    # The number is the position as shown, which need not sit inside the band of drawn sets.
+    assert all(0 <= row["lo"] <= row["hi"] <= 1 and 0 <= row["wp"] <= 1 for row in t["turns"])
     assert t["gates"]["version"] == t["version"]
 
 

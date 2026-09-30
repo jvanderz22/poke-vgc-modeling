@@ -298,12 +298,15 @@ Speed-raising item's 0-SP extreme to 32. It beats today's prior on every cut, mo
 pairs (−0.015 nats a pair). Reading the multiplier into the benchmark classes was *worse*. F1-B
 is now 0.097. [phase8, "the Speed prior reads the item"](phase8-findings.md).
 
-### 6. Remaining belief-to-app work: next
+### 6. Remaining belief-to-app work
 
-1. **`wp` vs `wp_open` on the real closed-sheet shard,** before changing which one the Battle page
-   leads with. On a live position the two were 11–14 points apart.
-2. **The brings preview still guesses one set** (`web/prior.compose`). Replace it with the
-   particle average the Battle page uses.
+Items 1 and 2 are done (2026-09-29; [phase8, "which number leads on a closed sheet"](phase8-findings.md)):
+
+1. ✅ **`wp` vs `wp_open` on the real closed-sheet shard.** On 1,025 held-out closed-sheet games
+   the position as shown beats the average over drawn sets by 0.015 nats, at equal confidence. The
+   page, the per-turn curve and the benchmark now lead with it. The draws remain as the band.
+2. ✅ **The brings preview no longer guesses one set.** Its closed-sheet opponent is hidden again
+   after the simulator builds it, the same finding applied at preview.
 3. **Re-gate damage and bulk under TPO.** Both read the opponent's item and ability off a sheet a
    cartridge doesn't show. The app doesn't run them live until they pass.
 

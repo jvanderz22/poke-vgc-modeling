@@ -142,24 +142,25 @@ export function BattlePanel({
         <p className="small dim" style={{ margin: 0 }}>
           <b>Turn-by-turn move advice</b> needs Phase&nbsp;6 (expected WP and search) plus state
           reconstruction, which needs its own parity tests before anything it suggests is worth
-          showing. Closed-sheet answers will improve in Phase&nbsp;5, when a belief over their sets
-          replaces the single guess used here.
+          showing.
         </p>
       </div>
     </>
   );
 }
 
-/** What was guessed for a closed-sheet opponent, and how thin each guess is. */
+/** A closed-sheet opponent: the numbers leave their sets unknown, and each Pokémon's most common
+ *  set is shown with how often it is the one, for reference. */
 function InferredNote({ sets }: { sets: InferredSet[] }) {
   const weak = sets.filter((s) => s.source === "default" || (s.share ?? 0) < 0.25);
   return (
     <div className="panel">
-      <h2>Their sets were guessed</h2>
+      <h2>Their sets are not known</h2>
       <p className="small dim" style={{ marginTop: 0 }}>
-        A closed sheet shows species only, so each was given the set most often used with it. The
-        model then treats that guess as certain — a Choice Scarf read as an Assault Vest is wrong,
-        not uncertain.
+        A closed sheet shows species only, and every number here is the model's answer with their
+        sets left unknown. On held-out closed-sheet games that beat both guessing their sets and
+        averaging over likely ones. Below is each Pokémon's most common set and how often it is the
+        one, for reference.
       </p>
       {sets.map((s, i) => (
         <div className="opt" key={i}>
@@ -177,8 +178,8 @@ function InferredNote({ sets }: { sets: InferredSet[] }) {
       ))}
       {weak.length > 0 && (
         <p className="tiny dim" style={{ marginBottom: 0 }}>
-          {weak.length} of {sets.length} are weak guesses (under a quarter of that Pokémon's sheets,
-          or no data at all). Switch to an open sheet if you have one.
+          {weak.length} of {sets.length} have no set that is a quarter of their sheets, or no data at
+          all, so what they hold is wide open. Switch to an open sheet if you have one.
         </p>
       )}
     </div>
