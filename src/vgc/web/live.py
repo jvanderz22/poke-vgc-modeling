@@ -318,6 +318,20 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
     return out
 
 
+def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
+    """One number per record, as `vgc.wp.models.symmetrize` gives it: P(the player wins) for a
+    player record, and P(p1 wins) for a spectator one — which featurizes as two rows, one per seat,
+    averaged as the p1 row and one minus the p2 row. `symmetrize` itself keys on battle and point,
+    which every draw of one position shares, so it cannot pair these."""
+    out, at = [], 0
+    for rec in recs:
+        n = len(fz.orientations(rec))
+        rows = p[at:at + n]
+        at += n
+        out.append(float(rows[0]) if n == 1 else (float(rows[0]) + 1 - float(rows[1])) / 2)
+    return out
+
+
 def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
     """P(you win) from here — an average over what they might be holding, not one guess.
 
@@ -366,12 +380,13 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
     recs = [_record(p, kind, "human", evidence=shown) for p in particles] + [_record(obs, kind, "human", evidence=shown)]
     d = featurize(recs, fz)
     p, _ = model.predict(d)
-    draws = sorted(float(x) for x in p[:k])
+    per = _per_record(recs, fz, p)
+    draws = sorted(per[:k])
     mean = sum(draws) / max(len(draws), 1)
     lo = draws[max(0, int(0.1 * len(draws)) - 1)] if draws else 0.0
     hi = draws[min(len(draws) - 1, int(0.9 * len(draws)))] if draws else 0.0
     return {"version": version, "wp": mean, "lo": lo, "hi": hi, "k": k,
-            "wp_open": float(p[-1]), "kind": kind,
+            "wp_open": per[-1], "kind": kind,
             "belief": [{"species": sp} | v for sp, v in sorted(note.items())],
             "regime": ("An average over " + str(k) + " complete opponents drawn from the belief: "
                        "their items, abilities, natures and moves from other players' team "
@@ -419,9 +434,10 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     model, fz = _load(reg, version)
     flat = [r for group in recs for r in group]
     p, _ = model.predict(featurize(flat, fz))
+    per = _per_record(flat, fz, p)
     at = 0
     for row, group in zip(rows, recs):
-        draws = [float(x) for x in p[at:at + len(group)]]
+        draws = per[at:at + len(group)]
         at += len(group)
         row["wp"] = sum(draws) / max(len(draws), 1)
         row["lo"], row["hi"] = min(draws), max(draws)

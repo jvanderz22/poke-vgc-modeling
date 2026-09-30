@@ -184,3 +184,22 @@ def test_a_replay_stops_at_its_first_1v1_and_plans_from_both_sheets(reg):
 
 def test_a_replay_that_never_reaches_a_1v1_gives_none(reg):
     assert endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2684057197")) is None
+
+
+def test_the_model_from_the_stands_is_player_1s_chance(reg):
+    """A spectator record featurizes as two rows, one per seat. The live number pairs them the way
+    `vgc wp eval` scores spectator rows (`models.symmetrize`); read as two draws, every position
+    from the stands averaged to about a half."""
+    from vgc.data.snapshots import evidence
+    from vgc.web.live import wp
+    from vgc.wp.models import OPEN, in_battle_version, predict_records
+    from vgc.wp.tools import _load, _record
+
+    state = endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2682837890")).rp.state
+    version = in_battle_version(reg.id, OPEN)
+    model, fz = _load(reg, version)
+    want = predict_records(model, [_record(state.observation(), "turn", "human", evidence=evidence(reg, state))], fz)[0]
+    got = wp(reg, state, version, k=4)
+    # Both sheets are open, so every draw is the true position.
+    assert got["wp"] == pytest.approx(want) and got["lo"] == pytest.approx(got["hi"])
+    assert got["wp"] < 0.35       # Metagross at 41% against a full-health Arcanine-Hisui
