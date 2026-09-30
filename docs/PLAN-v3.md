@@ -363,12 +363,35 @@ also Phase 9's search. What step 3.6 measured:
   the engine should not be given or a solver bug.
 
 The levers:
-- split one position across workers;
-- reuse results across depths (iterative deepening wants this anyway);
-- prune dominated moves.
+- **reuse results across depths.** The solver's cache is keyed on position *and* depth
+  (`endgame-solver.js`, `key(battle) + '#' + depth`), so a depth-2 search does nothing for depth 3.
+  Iterative deepening wants this anyway;
+- **prune dominated moves.** This carries the most risk to correctness;
+- **split one position across workers.** This makes the live page answer sooner. It does not
+  speed up the check, which already keeps 6 workers busy on different games.
 
-The measure is the step 3.6 run itself: the same 205 games (`scripts/analysis/solver_vs_humans.py`),
-with fewer timeouts and depth 3 in reach. Rerun it at depth 3 once that is affordable.
+Each extra turn multiplies the work by both sides' moves times the chance outcomes, likely tens of
+times. Reuse and pruning may buy a few times that. So depth 3 over all 205 games may stay out of
+reach, and the goal may become depth 3 on the 1v1s with few options, or faster depth 2 for the page.
+
+**How to go at it: a first pass, then a decision.**
+1. **First pass (~½ day):**
+   - fix the crash game;
+   - profile a few slow positions to see where the time goes: copying battle states, listing
+     chance outcomes, or the matrix-game solve. This is a guess until measured.
+   - Report the numbers before building a lever.
+2. **Decide with those numbers:** chase depth 3, or make depth 2 faster for the page. Then build
+   the levers the profile points at, in the order above.
+3. **Every lever must leave the answers unchanged.** Each is checked against the benchmark's
+   stored truth (`vgc wp solve`) and a sample of step 3.6's solved positions at the same depth.
+   Only the time may change.
+4. **Measure with the step 3.6 run itself:** the same 205 games
+   (`scripts/analysis/solver_vs_humans.py`), with fewer timeouts. It is a few hours of compute at
+   depth 2. Rerun at depth 3, likely overnight, once that is affordable, or on the subset it
+   reaches.
+
+Estimate: 1½ to 3 days of working sessions, plus the compute for the runs. The spread is almost
+all in how much the levers buy.
 
 ### 9. Phase 9: policy strength (EWP and search)
 
