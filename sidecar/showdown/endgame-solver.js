@@ -39,6 +39,44 @@ const SD = path.resolve(process.argv[2]);
 const {Battle, Teams} = require(path.join(SD, 'dist/sim'));
 const {State} = require(path.join(SD, 'dist/sim/state'));
 const {PRNG} = require(path.join(SD, 'dist/sim/prng'));
+const {BattleActions} = require(path.join(SD, 'dist/sim/battle-actions'));
+
+/**
+ * Secondary effects and self stat drops, as the simulator has them, but asked of the PRNG as one
+ * chance instead of `random(100) < chance`. The distribution is the same. Under `ScriptedPRNG`
+ * the roll was ten branches, all ten identical when the chance is 100% or absent (a self drop
+ * rolls even then), and the rolls of both moves in a turn multiplied: 68% of the replays in the
+ * slow positions were spawned here, and 95% of those that finished were duplicates. As one chance
+ * it is two branches, or none, and exact for chances that are not a multiple of ten.
+ * Gen 9 only: the gen ≤ 8 overflow of boost chances is not carried over.
+ */
+BattleActions.prototype.selfDrops = function (targets, source, move, moveData, isSecondary) {
+	for (const target of targets) {
+		if (target === false) continue;
+		if (moveData.self && !move.selfDropped) {
+			if (!isSecondary && moveData.self.boosts) {
+				if (moveData.self.chance === undefined || this.battle.randomChance(moveData.self.chance, 100)) {
+					this.moveHit(source, source, move, moveData.self, isSecondary, true);
+				}
+				if (!move.multihit) move.selfDropped = true;
+			} else {
+				this.moveHit(source, source, move, moveData.self, isSecondary, true);
+			}
+		}
+	}
+};
+BattleActions.prototype.secondaries = function (targets, source, move, moveData, isSelf) {
+	if (!moveData.secondaries) return;
+	for (const target of targets) {
+		if (target === false) continue;
+		const secondaries = this.battle.runEvent('ModifySecondaries', target, source, moveData, moveData.secondaries.slice());
+		for (const secondary of secondaries) {
+			if (secondary.chance === undefined || this.battle.randomChance(secondary.chance, 100)) {
+				this.moveHit(target, source, move, secondary, true, isSelf);
+			}
+		}
+	}
+};
 
 const pack = text => Teams.pack(Teams.import(text).map(s => ({...s, level: 50})));
 
@@ -116,7 +154,11 @@ function setUp(pos) {
 	return b;
 }
 
-// The choices one side can make: each usable move of its one active Pokémon, aimed at the one foe.
+// The choices one side can make: each usable move of its one active Pokémon, aimed at the one foe,
+// or at its own empty ally slot for a move that needs an ally (Helping Hand, Coaching), which the
+// cartridge lets you choose and then fails. Without a target the simulator rejects the choice. The
+// target is the request's, not the dex's: a move locked in (the second turn of Phantom Force,
+// Outrage) comes with none, and the simulator rejects one given.
 function options(b, side) {
 	const req = side.activeRequest;
 	if (!req || req.wait || !req.active) return ['pass'];
@@ -126,9 +168,10 @@ function options(b, side) {
 		if (!p || p.fainted) return;
 		req.active[slot].moves.forEach((m, i) => {
 			if (m.disabled) return;
-			const move = b.dex.moves.get(m.id);
-			const aimed = ['normal', 'any', 'adjacentFoe'].includes(move.target) && foe >= 0;
-			const one = `move ${i + 1}${aimed ? ' ' + (foe + 1) : ''}`;
+			const target = ['normal', 'any', 'adjacentFoe'].includes(m.target) && foe >= 0 ? ` ${foe + 1}`
+				: m.target === 'adjacentAlly' ? ` -${2 - slot}`
+				: m.target === 'adjacentAllyOrSelf' ? ` -${slot + 1}` : '';
+			const one = `move ${i + 1}${target}`;
 			out.push(slot === 0 ? `${one}, pass` : `pass, ${one}`);
 		});
 	});
@@ -233,7 +276,15 @@ class ScriptedPRNG {
 		if (p < this.rare) return false;
 		return this.pick([{v: true, p}, {v: false, p: 1 - p}]);
 	}
-	sample(items) { return items[this.random(items.length)]; }
+	sample(items) {
+		// Equal items are one outcome: a 2–5-hit move samples twenty (7× 2, 7× 3, 3× 4, 3× 5), and
+		// as a percentage roll its ten representatives gave 0.40 / 0.30 / 0.10 / 0.20 hits for the
+		// true 0.35 / 0.35 / 0.15 / 0.15. Grouped, it is exact and four branches.
+		const counts = new Map();
+		for (const x of items) counts.set(x, (counts.get(x) || 0) + 1);
+		if (counts.size > 16) return items[this.random(items.length)];
+		return this.pick([...counts].map(([v, n]) => ({v, p: n / items.length})));
+	}
 	shuffle(items, start = 0, end = items.length) {
 		// Only a tie between actions — a Speed tie between the two moves — decides anything. Ties
 		// between event handlers are resolved in the order given rather than branched on.
@@ -291,8 +342,11 @@ function main() {
 			child.prng = new ScriptedPRNG(script, search.rolls, search.rare);
 			nodes++;
 			try {
-				child.choose('p1', a);
-				child.choose('p2', c);
+				// A rejected choice leaves the turn unplayed, and the search would score it as if
+				// it had been: Helping Hand with no target once read as a certain win.
+				if (!child.choose('p1', a) || !child.choose('p2', c)) {
+					throw new Error(`the simulator rejected ${JSON.stringify([a, c])}`);
+				}
 			} catch (e) {
 				if (!(e instanceof Branch)) throw e;
 				e.options.forEach((o, k) => {

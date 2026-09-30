@@ -5,10 +5,9 @@ is stopped there and asked twice, from the stands, which is how a replay sees it
 
   model    the served open-sheet WP (`live.wp`), P(player 1 wins), as the app computes it
   engine   `vgc.wp.endgame` over the replay's own Observer, both spreads integrated, solved by
-           `sidecar/showdown/endgame-solver.js` at depth 2 for every position and then depth 3 for
-           each position that finishes inside `--cap` seconds (`--depths`: depth 3 is out of reach at
-           scale until the solver is faster, PLAN-v3 step 8); a game takes the deepest depth at
-           which all of its positions finished
+           `sidecar/showdown/endgame-solver.js` at each of `--depths` (2,3 is about 20 min and
+           80 min on 6 workers since PLAN-v3 step 8), each position capped at `--cap` seconds; a
+           game takes the deepest depth at which all of its positions finished
 
 and both are scored against who won. The unit is the replay's group (a Bo3 series or a player
 pair), so intervals are cluster bootstraps over groups (principle 5). Played-out games and
@@ -17,7 +16,7 @@ forfeits are reported apart; neither is known at the decision point, so neither 
 The engine assumes best play from both sides, and this corpus is ~1100-rated, so it can come out
 either way. That is the point of running it.
 
-    .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180
+    .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180 --depths 2,3
     .venv/bin/python scripts/analysis/solver_vs_humans.py --score-only
 
 Solved somewhere else (`vgc.wp.offload`, `scripts/cloud/kaggle_solve.sh`): export the positions, solve
@@ -79,7 +78,8 @@ def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
             if not plans[DEPTHS[0]]["eligible"]:
                 counts["not_built"] += 1
                 why = plans[DEPTHS[0]]["reason"] or ""
-                key = "a volatile" if "cannot set up" in why else why.split(" is ")[-1] if " is " in why else why
+                key = ("a volatile" if "cannot set up" in why else "Revival Blessing" if "Revival Blessing" in why
+                       else why.split(" is ")[-1] if " is " in why else why)
                 dropped[key] = dropped.get(key, 0) + 1
                 continue
             counts["games"] += 1

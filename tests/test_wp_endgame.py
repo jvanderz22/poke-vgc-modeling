@@ -195,6 +195,19 @@ def test_a_choice_lock_holds_from_the_first_turn_and_survives_a_copy(reg):
         assert r["value"] == 1
 
 
+def test_every_option_is_one_the_simulator_accepts(reg):
+    """Indeedee at 1% with Helping Hand, Rillaboom with Fake Out, a Speed tie in Psychic Terrain.
+    Helping Hand was offered without a target, which the simulator rejects, and the search scored
+    that unplayed turn as a certain win; Fake Out, disabled after the first turn in Champions, was
+    offered at the root. The solver now throws on a rejected choice rather than scoring it."""
+    battle = endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2682994613"))
+    jobs = {j["class"]: j for j in endgame.plan(reg, battle, {**solver.SEARCH, "depth": 2})["jobs"]}
+    r = solver.run(jobs["tied"]["position"])
+    assert "move 3 -2, pass" in r["moves"]["p1"]
+    assert not any(m.startswith("move 1 ") for m in r["moves"]["p2"])
+    assert r["value"] == 0.5
+
+
 def test_a_replay_that_never_reaches_a_1v1_gives_none(reg):
     assert endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2684057197")) is None
 

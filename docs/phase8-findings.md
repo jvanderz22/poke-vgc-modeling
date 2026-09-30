@@ -1728,3 +1728,70 @@ One caveat for "only the time may change": the cache key has no `reach`, so a su
 one `cutoff` budget is reused under another. A lever that changes the order of visits can move an
 answer within its leaf mass.
 
+## Solver speed, built: depth 3 on real 1v1s, and three bugs the new check found
+
+Plan v3 step 8 (2026-09-30), after the first pass above. The two exact levers are built in
+`endgame-solver.js`:
+- **Secondaries and self drops are one `randomChance`.** Two branches or none, where there were
+  ten.
+- **`sample` groups equal items.** A 2–5-hit move is now four branches at its true odds.
+
+**The answers did not move where nothing else changed.** 295 positions had an answer from before
+the first pass (273 from step 3.6, 22 from the benchmark), and each was solved again. 274 are
+identical. The benchmark's differences are only rounding: those entries were rebuilt from a run log
+at three decimals. Every one of the 20 that changed contains a move aimed at the ally slot (18) or a
+move locked in mid-search (Phantom Force, Electro Shot), which is where the fixes below apply. A
+choice lock or Fake Out alone changed nothing. The human positions ran 3.8× faster (median) with
+4.6× fewer turns simulated.
+
+**The solver now throws when the simulator rejects a choice.** It used to score the unplayed turn
+as if it had happened. That check found three bugs at once:
+- **Helping Hand and Coaching** were offered with no target. The simulator rejects that, and the
+  search read it as a certain win for the side that chose it. On the cartridge the move can be
+  chosen and fails. It is now aimed at the empty ally slot and does exactly that. 18 of the 204 games
+  carry one of the two.
+- **A move locked in** (the second turn of Phantom Force, Electro Shot, Outrage) comes with no target
+  in the request, and the solver gave it one, which was rejected. Targets now come from the request.
+  The crash game's non-winning lines fell from 0.83 to 0 or 0.5 as a result; its answer is still 1.
+- **Revival Blessing** asks for a teammate to revive, and the solver's fainted teammates are
+  stand-ins. `vgc.wp.endgame` does not build such a position (Pawmot, one game), and on a closed
+  sheet it leaves sets with the move unsolved.
+
+**Step 3.6 again, at depths 2 and 3** (`solver_vs_humans.py --depths 2,3`, cap 180 s, 6 workers,
+79 min for depth 3's 320 positions). 204 games qualify, and **192 are solved (174 before), 144 of
+them at depth 3.** 12 still have a position past the cap.
+
+| | games | Brier engine / model | log loss engine / model | engine − model, log loss |
+| --- | --- | --- | --- | --- |
+| all | 192 | **0.095** / 0.206 | **0.364** / 0.601 | −0.237 [−0.369, −0.081], engine better |
+| settled (leaf mass ≤ 0.1) | 134 | **0.076** / 0.187 | **0.334** / 0.558 | −0.225 [−0.412, −0.018], engine better |
+| unsettled | 58 | **0.138** / 0.248 | **0.435** / 0.700 | −0.264, engine better |
+| played out | 171 | **0.099** / 0.207 | **0.386** / 0.603 | engine better |
+| forfeits | 21 | **0.057** / 0.195 | **0.191** / 0.581 | engine better |
+
+- **More of the answers are settled:** 134 games have leaf mass at most 0.1, against 50 before.
+  Mean leaf mass is 0.19.
+- **More confident calls:** the engine says 95% or more on 111 games (50 before), and the called
+  side won 104 of them (93.7%).
+- **So it is slightly overconfident at the ends** (0.985 said, 0.944 seen), as best play against
+  ~1100-rated players should be. Two of the seven misses are known human errors. One is the Raichu
+  game; the other is Incineroar against Milotic, where the old solver's phantom Helping Hand had put
+  the answer at 0.75 with it all resting on HP share.
+
+**Depth 3 against depth 2, on the same 144 games and the same solver:** Brier 0.069 against 0.079
+(−0.009 [−0.020, +0.002]) and log loss 0.310 against 0.336 (−0.026 [−0.077, +0.038]). Better on
+both, and **not distinguishable** on either. Depth 3 moved 65 of the 144 answers by more than 0.05,
+so it changes what the page says, but this corpus cannot show that the change predicts ~1100-rated
+games better. The new solver against the old one at depth 2 is the same kind of result: 11 of 173
+answers moved by more than 0.01, and the difference is within noise.
+
+What this leaves:
+- **The page is unchanged.** It already deepens 1 → 4 in the background and shows the deepest
+  finished answer, so the speed-up reaches it without a change.
+- **The benchmark's stored truth is being re-solved at depth 4**, on Kaggle
+  (`scripts/cloud/kaggle_solve.sh`, its first real job). Until it is back,
+  `test_the_same_positions_give_the_stored_answers` skips.
+- **The overconfidence at the ends** could be taken off with a shrink fitted on held-out games
+  (principle 8). It is not built: the ordering is what matters for leading the page, and 7 misses
+  are too few to fit on.
+

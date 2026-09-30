@@ -172,8 +172,8 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
  *  The model says how positions like this have gone in human games; the engine says what best
  *  play from both sides is worth, searched a few turns deep on the pinned simulator. In decided
  *  1v1s the model barely moves with the position (docs/phase8-findings.md). The engine assumes best
- *  play, which a ~1100-rated game does not have, but on 174 held-out human 1v1s it was still the
- *  better predictor of who won (PLAN-v3 step 3.6), so it leads and the model sits underneath.
+ *   play, which a ~1100-rated game does not have, but on 192 held-out human 1v1s it was still the
+ *   better predictor of who won (PLAN-v3 steps 3.6 and 8), so it leads and the model sits underneath.
  *  When the two disagree the page says so rather than averaging them.
  *
  *  The search deepens in the background, one turn at a time, and this asks again until it is done.

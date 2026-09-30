@@ -44,6 +44,9 @@ from vgc.wp import solver
 SIDE_TURNS = {"tailwind": 4, "reflect": 5, "lightscreen": 5, "auroraveil": 5}
 FIELD_TURNS = 5
 STATUSES = ("brn", "par", "psn")
+# Moves the solver cannot play: Revival Blessing brings back a fainted teammate, and the solver's
+# fainted teammates are stand-ins. A set with one is not solved; its weight is left unsolved.
+UNSOLVABLE_MOVES = {"revivalblessing"}
 # Items that lock their holder into its first move. Not read off the dex, which lists only what the
 # regulation allows: the engine locks a Choice Band whether or not it is legal to bring one.
 CHOICE_ITEMS = {"choiceband", "choicescarf", "choicespecs"}
@@ -333,6 +336,14 @@ def plan(reg: Regulation, battle, search: dict[str, Any], sets: list[dict[str, A
         else:
             cands[sid], u = candidates(reg, battle, sid, notes)
             unsolved = max(unsolved, u)
+        playable = [c for c in cands[sid] if not UNSOLVABLE_MOVES & {to_id(x) for x in c["set"].get("moves") or []}]
+        if len(playable) < len(cands[sid]):
+            if not playable:
+                return {"eligible": False, "reason": f"{_left(state, sid)[0].species} has Revival Blessing, "
+                                                     "which would bring back a Pokémon the solver does not have"}
+            unsolved = max(unsolved, 1 - sum(c["weight"] for c in playable))
+            notes.append(f"{_left(state, sid)[0].species}'s sets with Revival Blessing are not solved")
+            cands[sid] = playable
     jobs = []
     for c1 in cands["p1"]:
         for c2 in cands["p2"]:

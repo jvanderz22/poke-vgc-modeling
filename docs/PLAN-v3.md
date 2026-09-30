@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3 is within reach at scale once the profiled lever is built (step 8) |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ✅ Depth 3 at scale: 192 of 204 held-out 1v1s solved, 144 at depth 3 (step 8) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
@@ -349,7 +349,7 @@ sheets hidden"](phase8-findings.md)):
     them, and their training manifests' shards had been re-extracted, so they could not be rebuilt.
     `scripts/analysis/preview_signal.py` and `selfplay_value.py` read `wp-v1`, and say so.
 
-### 8. Solver speed: first pass done, levers next
+### 8. Solver speed: done
 
 Now that the engine leads the page in a 1v1, how deep it gets is how good that number is. It is
 also Phase 9's search. What step 3.6 measured:
@@ -387,7 +387,14 @@ reach, and the goal may become depth 3 on the 1v1s with few options, or faster d
      The typical leaf mass falls from 0.333 to 0.037.
    - **Also found:** 2–5-hit moves are approximated wrongly (0.40/0.30/0.10/0.20 for
      0.35/0.35/0.15/0.15). Grouping equal items in `sample` is exact and branches 4 ways, not 10.
-2. **Decide with those numbers.** Recommended: chase depth 3. It is now affordable, and it
+2. ✅ **Decided: depth 3** (2026-09-30), and built ([phase8, "solver speed, built"](phase8-findings.md)).
+   The two exact levers are in. The new rejected-choice check found three more bugs: Helping Hand
+   with no target, locked moves given a target, and Revival Blessing. The rerun solved 192 of 204
+   games, 144 at depth 3. The engine still beats the model (Brier 0.095 against 0.206). Depth 3
+   against depth 2 on the same games is better on both scores, but not distinguishable. The
+   benchmark's depth-4 truth is being re-solved on Kaggle.
+
+   What was recommended at the time: chase depth 3. It is now affordable, and it
    settles most of what depth 2 leaves to HP share. The levers, re-ranked by the profile:
    1. secondaries and self-drops as `randomChance` (measured above);
    2. an exact multi-hit `sample` (a correctness fix as well);

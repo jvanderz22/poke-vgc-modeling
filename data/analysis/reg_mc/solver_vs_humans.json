@@ -2,41 +2,43 @@
  "counts": {
   "heldout_ots_human": 1703,
   "no_1v1": 1486,
-  "not_built": 12,
+  "not_built": 13,
   "unfinished": 0,
-  "games": 205,
+  "games": 204,
   "dropped": {
    "not shown": 5,
-   "a volatile": 7
+   "a volatile": 7,
+   "Pawmot has Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 1
   },
   "version": "wp-v1f-idp5",
   "depths": [
-   2
+   2,
+   3
   ],
-  "crashed_positions": 2
+  "crashed_positions": 0
  },
  "result": {
   "all": {
-   "games": 174,
-   "groups": 166,
-   "unsolved": 31,
+   "games": 192,
+   "groups": 178,
+   "unsolved": 12,
    "brier": {
-    "engine": 0.0904,
-    "model": 0.1972,
-    "engine_minus_model": -0.1067,
+    "engine": 0.0948,
+    "model": 0.2056,
+    "engine_minus_model": -0.1108,
     "ci95": [
-     -0.143,
-     -0.0711
+     -0.1485,
+     -0.0721
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.3304,
-    "model": 0.5803,
-    "engine_minus_model": -0.2499,
+    "engine": 0.3642,
+    "model": 0.6008,
+    "engine_minus_model": -0.2366,
     "ci95": [
-     -0.3578,
-     -0.1297
+     -0.3691,
+     -0.0814
     ],
     "verdict": "engine better"
    },
@@ -46,45 +48,45 @@
       0,
       0.05
      ],
-     "n": 22,
+     "n": 57,
      "mean_pred": 0.01,
-     "p1_won": 0.0
+     "p1_won": 0.07
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 57,
-     "mean_pred": 0.169,
-     "p1_won": 0.105
+     "n": 31,
+     "mean_pred": 0.162,
+     "p1_won": 0.161
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 17,
-     "mean_pred": 0.494,
-     "p1_won": 0.412
+     "n": 21,
+     "mean_pred": 0.467,
+     "p1_won": 0.381
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 50,
-     "mean_pred": 0.828,
-     "p1_won": 0.92
+     "n": 29,
+     "mean_pred": 0.856,
+     "p1_won": 0.931
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 28,
-     "mean_pred": 0.989,
-     "p1_won": 0.929
+     "n": 54,
+     "mean_pred": 0.985,
+     "p1_won": 0.944
     }
    ],
    "calibration_model": [
@@ -102,27 +104,27 @@
       0.05,
       0.35
      ],
-     "n": 57,
-     "mean_pred": 0.201,
-     "p1_won": 0.211
+     "n": 60,
+     "mean_pred": 0.204,
+     "p1_won": 0.233
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 58,
-     "mean_pred": 0.489,
-     "p1_won": 0.5
+     "n": 66,
+     "mean_pred": 0.49,
+     "p1_won": 0.485
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 53,
+     "n": 60,
      "mean_pred": 0.781,
-     "p1_won": 0.755
+     "p1_won": 0.75
     },
     {
      "bin": [
@@ -135,157 +137,37 @@
     }
    ],
    "engine_called": {
-    "n": 50,
-    "called_side_won": 0.96,
-    "model_mean_on_called_side": 0.729
+    "n": 111,
+    "called_side_won": 0.937,
+    "model_mean_on_called_side": 0.659
    },
    "depths": {
-    "2": 174,
-    "3": 0
+    "2": 48,
+    "3": 144
    },
-   "mean_leaf_mass": 0.335
+   "mean_leaf_mass": 0.193
   },
   "settled": {
-   "games": 50,
-   "groups": 49,
+   "games": 134,
+   "groups": 129,
    "unsolved": 0,
    "brier": {
-    "engine": 0.0855,
-    "model": 0.1611,
-    "engine_minus_model": -0.0757,
+    "engine": 0.0762,
+    "model": 0.1874,
+    "engine_minus_model": -0.1112,
     "ci95": [
-     -0.149,
-     -0.001
+     -0.1601,
+     -0.0609
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.3551,
-    "model": 0.5071,
-    "engine_minus_model": -0.152,
+    "engine": 0.3336,
+    "model": 0.5581,
+    "engine_minus_model": -0.2246,
     "ci95": [
-     -0.4315,
-     0.1802
-    ],
-    "verdict": "not distinguishable"
-   },
-   "calibration_engine": [
-    {
-     "bin": [
-      0,
-      0.05
-     ],
-     "n": 15,
-     "mean_pred": 0.005,
-     "p1_won": 0.0
-    },
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 5,
-     "mean_pred": 0.165,
-     "p1_won": 0.2
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 2,
-     "mean_pred": 0.482,
-     "p1_won": 0.5
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 6,
-     "mean_pred": 0.88,
-     "p1_won": 0.833
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 22,
-     "mean_pred": 0.993,
-     "p1_won": 0.909
-    }
-   ],
-   "calibration_model": [
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 15,
-     "mean_pred": 0.19,
-     "p1_won": 0.133
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 12,
-     "mean_pred": 0.474,
-     "p1_won": 0.5
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 19,
-     "mean_pred": 0.795,
-     "p1_won": 0.842
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 4,
-     "mean_pred": 0.959,
-     "p1_won": 0.75
-    }
-   ],
-   "engine_called": {
-    "n": 37,
-    "called_side_won": 0.946,
-    "model_mean_on_called_side": 0.711
-   },
-   "depths": {
-    "2": 50,
-    "3": 0
-   },
-   "mean_leaf_mass": 0.0066
-  },
-  "unsettled": {
-   "games": 124,
-   "groups": 120,
-   "unsolved": 0,
-   "brier": {
-    "engine": 0.0924,
-    "model": 0.2117,
-    "engine_minus_model": -0.1193,
-    "ci95": [
-     -0.1573,
-     -0.0807
-    ],
-    "verdict": "engine better"
-   },
-   "logloss": {
-    "engine": 0.3204,
-    "model": 0.6098,
-    "engine_minus_model": -0.2894,
-    "ci95": [
-     -0.3781,
-     -0.1991
+     -0.4118,
+     -0.0183
     ],
     "verdict": "engine better"
    },
@@ -295,267 +177,9 @@
       0,
       0.05
      ],
-     "n": 7,
-     "mean_pred": 0.022,
-     "p1_won": 0.0
-    },
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 52,
-     "mean_pred": 0.169,
-     "p1_won": 0.096
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 15,
-     "mean_pred": 0.495,
-     "p1_won": 0.4
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 44,
-     "mean_pred": 0.821,
-     "p1_won": 0.932
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 6,
-     "mean_pred": 0.975,
-     "p1_won": 1.0
-    }
-   ],
-   "calibration_model": [
-    {
-     "bin": [
-      0,
-      0.05
-     ],
-     "n": 1,
-     "mean_pred": 0.025,
-     "p1_won": 0.0
-    },
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 42,
-     "mean_pred": 0.205,
-     "p1_won": 0.238
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 46,
-     "mean_pred": 0.493,
-     "p1_won": 0.5
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 34,
-     "mean_pred": 0.773,
-     "p1_won": 0.706
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 1,
-     "mean_pred": 0.982,
-     "p1_won": 1.0
-    }
-   ],
-   "engine_called": {
-    "n": 13,
-    "called_side_won": 1.0,
-    "model_mean_on_called_side": 0.778
-   },
-   "depths": {
-    "2": 124,
-    "3": 0
-   },
-   "mean_leaf_mass": 0.4674
-  },
-  "played_out": {
-   "games": 155,
-   "groups": 149,
-   "unsolved": 28,
-   "brier": {
-    "engine": 0.0919,
-    "model": 0.1995,
-    "engine_minus_model": -0.1076,
-    "ci95": [
-     -0.1449,
-     -0.0682
-    ],
-    "verdict": "engine better"
-   },
-   "logloss": {
-    "engine": 0.3371,
-    "model": 0.585,
-    "engine_minus_model": -0.2479,
-    "ci95": [
-     -0.3588,
-     -0.1183
-    ],
-    "verdict": "engine better"
-   },
-   "calibration_engine": [
-    {
-     "bin": [
-      0,
-      0.05
-     ],
-     "n": 20,
+     "n": 55,
      "mean_pred": 0.01,
-     "p1_won": 0.0
-    },
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 47,
-     "mean_pred": 0.172,
-     "p1_won": 0.106
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 15,
-     "mean_pred": 0.481,
-     "p1_won": 0.333
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 49,
-     "mean_pred": 0.828,
-     "p1_won": 0.918
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 24,
-     "mean_pred": 0.989,
-     "p1_won": 0.917
-    }
-   ],
-   "calibration_model": [
-    {
-     "bin": [
-      0,
-      0.05
-     ],
-     "n": 1,
-     "mean_pred": 0.025,
-     "p1_won": 0.0
-    },
-    {
-     "bin": [
-      0.05,
-      0.35
-     ],
-     "n": 48,
-     "mean_pred": 0.202,
-     "p1_won": 0.208
-    },
-    {
-     "bin": [
-      0.35,
-      0.65
-     ],
-     "n": 52,
-     "mean_pred": 0.49,
-     "p1_won": 0.519
-    },
-    {
-     "bin": [
-      0.65,
-      0.95
-     ],
-     "n": 49,
-     "mean_pred": 0.78,
-     "p1_won": 0.735
-    },
-    {
-     "bin": [
-      0.95,
-      1
-     ],
-     "n": 5,
-     "mean_pred": 0.964,
-     "p1_won": 0.8
-    }
-   ],
-   "engine_called": {
-    "n": 44,
-    "called_side_won": 0.955,
-    "model_mean_on_called_side": 0.739
-   },
-   "depths": {
-    "2": 155,
-    "3": 0
-   },
-   "mean_leaf_mass": 0.3252
-  },
-  "forfeit": {
-   "games": 19,
-   "groups": 18,
-   "unsolved": 3,
-   "brier": {
-    "engine": 0.0786,
-    "model": 0.178,
-    "engine_minus_model": -0.0995,
-    "ci95": [
-     -0.1913,
-     -0.0216
-    ],
-    "verdict": "engine better"
-   },
-   "logloss": {
-    "engine": 0.2754,
-    "model": 0.5419,
-    "engine_minus_model": -0.2665,
-    "ci95": [
-     -0.5201,
-     -0.0491
-    ],
-    "verdict": "engine better"
-   },
-   "calibration_engine": [
-    {
-     "bin": [
-      0,
-      0.05
-     ],
-     "n": 2,
-     "mean_pred": 0.018,
-     "p1_won": 0.0
+     "p1_won": 0.073
     },
     {
      "bin": [
@@ -563,8 +187,368 @@
       0.35
      ],
      "n": 10,
-     "mean_pred": 0.153,
-     "p1_won": 0.1
+     "mean_pred": 0.134,
+     "p1_won": 0.2
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 3,
+     "mean_pred": 0.449,
+     "p1_won": 0.333
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 12,
+     "mean_pred": 0.878,
+     "p1_won": 0.917
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 54,
+     "mean_pred": 0.985,
+     "p1_won": 0.944
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 1,
+     "mean_pred": 0.025,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 44,
+     "mean_pred": 0.205,
+     "p1_won": 0.182
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 42,
+     "mean_pred": 0.497,
+     "p1_won": 0.571
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 42,
+     "mean_pred": 0.783,
+     "p1_won": 0.786
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 5,
+     "mean_pred": 0.964,
+     "p1_won": 0.8
+    }
+   ],
+   "engine_called": {
+    "n": 109,
+    "called_side_won": 0.936,
+    "model_mean_on_called_side": 0.658
+   },
+   "depths": {
+    "2": 10,
+    "3": 124
+   },
+   "mean_leaf_mass": 0.0208
+  },
+  "unsettled": {
+   "games": 58,
+   "groups": 57,
+   "unsolved": 0,
+   "brier": {
+    "engine": 0.1378,
+    "model": 0.2477,
+    "engine_minus_model": -0.1099,
+    "ci95": [
+     -0.1684,
+     -0.0524
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.4351,
+    "model": 0.6995,
+    "engine_minus_model": -0.2644,
+    "ci95": [
+     -0.4077,
+     -0.1251
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 2,
+     "mean_pred": 0.024,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 21,
+     "mean_pred": 0.176,
+     "p1_won": 0.143
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 18,
+     "mean_pred": 0.47,
+     "p1_won": 0.389
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 17,
+     "mean_pred": 0.841,
+     "p1_won": 0.941
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 16,
+     "mean_pred": 0.202,
+     "p1_won": 0.375
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 24,
+     "mean_pred": 0.477,
+     "p1_won": 0.333
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 18,
+     "mean_pred": 0.774,
+     "p1_won": 0.667
+    }
+   ],
+   "engine_called": {
+    "n": 2,
+    "called_side_won": 1.0,
+    "model_mean_on_called_side": 0.705
+   },
+   "depths": {
+    "2": 38,
+    "3": 20
+   },
+   "mean_leaf_mass": 0.5908
+  },
+  "played_out": {
+   "games": 171,
+   "groups": 160,
+   "unsolved": 11,
+   "brier": {
+    "engine": 0.0994,
+    "model": 0.2069,
+    "engine_minus_model": -0.1075,
+    "ci95": [
+     -0.1482,
+     -0.0652
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.3855,
+    "model": 0.6033,
+    "engine_minus_model": -0.2178,
+    "ci95": [
+     -0.3618,
+     -0.0556
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 48,
+     "mean_pred": 0.01,
+     "p1_won": 0.083
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 28,
+     "mean_pred": 0.17,
+     "p1_won": 0.143
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 19,
+     "mean_pred": 0.461,
+     "p1_won": 0.368
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 27,
+     "mean_pred": 0.859,
+     "p1_won": 0.926
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 49,
+     "mean_pred": 0.984,
+     "p1_won": 0.939
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 1,
+     "mean_pred": 0.025,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 51,
+     "mean_pred": 0.205,
+     "p1_won": 0.235
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 60,
+     "mean_pred": 0.49,
+     "p1_won": 0.5
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 54,
+     "mean_pred": 0.781,
+     "p1_won": 0.741
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 5,
+     "mean_pred": 0.964,
+     "p1_won": 0.8
+    }
+   ],
+   "engine_called": {
+    "n": 97,
+    "called_side_won": 0.928,
+    "model_mean_on_called_side": 0.657
+   },
+   "depths": {
+    "2": 40,
+    "3": 131
+   },
+   "mean_leaf_mass": 0.1876
+  },
+  "forfeit": {
+   "games": 21,
+   "groups": 20,
+   "unsolved": 1,
+   "brier": {
+    "engine": 0.0571,
+    "model": 0.1948,
+    "engine_minus_model": -0.1377,
+    "ci95": [
+     -0.2282,
+     -0.0613
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.191,
+    "model": 0.5805,
+    "engine_minus_model": -0.3895,
+    "ci95": [
+     -0.623,
+     -0.1839
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 9,
+     "mean_pred": 0.013,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 3,
+     "mean_pred": 0.091,
+     "p1_won": 0.333
     },
     {
      "bin": [
@@ -572,16 +556,16 @@
       0.65
      ],
      "n": 2,
-     "mean_pred": 0.585,
-     "p1_won": 1.0
+     "mean_pred": 0.523,
+     "p1_won": 0.5
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 1,
-     "mean_pred": 0.83,
+     "n": 2,
+     "mean_pred": 0.82,
      "p1_won": 1.0
     },
     {
@@ -589,8 +573,8 @@
       0.95,
       1
      ],
-     "n": 4,
-     "mean_pred": 0.988,
+     "n": 5,
+     "mean_pred": 0.991,
      "p1_won": 1.0
     }
    ],
@@ -618,21 +602,21 @@
       0.65,
       0.95
      ],
-     "n": 4,
-     "mean_pred": 0.796,
-     "p1_won": 1.0
+     "n": 6,
+     "mean_pred": 0.775,
+     "p1_won": 0.833
     }
    ],
    "engine_called": {
-    "n": 6,
+    "n": 14,
     "called_side_won": 1.0,
-    "model_mean_on_called_side": 0.652
+    "model_mean_on_called_side": 0.669
    },
    "depths": {
-    "2": 19,
-    "3": 0
+    "2": 8,
+    "3": 13
    },
-   "mean_leaf_mass": 0.415
+   "mean_leaf_mass": 0.2362
   }
  },
  "cap": 180.0,
@@ -650,9 +634,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -687,6 +678,18 @@
       "weight": 0.0371,
       "value": 0.5109
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9629,
+      "value": 0.9601
+     },
+     {
+      "class": "tied",
+      "weight": 0.0371,
+      "value": null
+     }
     ]
    }
   },
@@ -701,7 +704,25 @@
     "p1": "Sneasler",
     "p2": "Sneasler"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0968,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.4516,
+      "value": 0.5861
+     },
+     {
+      "class": "slower",
+      "weight": 0.4516,
+      "value": 0.2967
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2678487869",
@@ -714,9 +735,9 @@
     "p1": "Floette-Eternal",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.4995,
-   "leaf_mass": 0.7103,
-   "depth": 2,
+   "engine": 0.5371,
+   "leaf_mass": 0.2069,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -734,6 +755,23 @@
       "weight": 0.4026,
       "value": 0.2295
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.5761,
+      "value": 0.8961
+     },
+     {
+      "class": "tied",
+      "weight": 0.0213,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.4026,
+      "value": 0.0255
+     }
     ]
    }
   },
@@ -748,15 +786,22 @@
     "p1": "Charizard",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.0886,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0098,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.0886
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0098
      }
     ]
    }
@@ -772,15 +817,22 @@
     "p1": "Glimmora",
     "p2": "Dragapult"
    },
-   "engine": 0.9869,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9985,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.9869
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9985
      }
     ]
    }
@@ -798,9 +850,16 @@
    },
    "engine": 0.7,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -820,15 +879,22 @@
     "p1": "Basculegion",
     "p2": "Gholdengo"
    },
-   "engine": 0.8211,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9801,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8211
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9801
      }
     ]
    }
@@ -868,15 +934,22 @@
     "p1": "Torkoal",
     "p2": "Kingambit"
    },
-   "engine": 0.8922,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9344,
+   "leaf_mass": 0.2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8922
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9344
      }
     ]
    }
@@ -892,15 +965,22 @@
     "p1": "Salamence",
     "p2": "Gholdengo"
    },
-   "engine": 0.7976,
-   "leaf_mass": 0.4,
-   "depth": 2,
+   "engine": 0.9025,
+   "leaf_mass": 0.005,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7976
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9025
      }
     ]
    }
@@ -916,15 +996,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Salamence"
    },
-   "engine": 0.0073,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0008,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0073
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0008
      }
     ]
    }
@@ -940,15 +1027,22 @@
     "p1": "Sneasler",
     "p2": "Floette-Eternal"
    },
-   "engine": 0.981,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.9982,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.981
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9982
      }
     ]
    }
@@ -964,7 +1058,25 @@
     "p1": "Kingambit",
     "p2": "Kingambit"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1003,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.5494,
+      "value": 0.7866
+     },
+     {
+      "class": "slower",
+      "weight": 0.3502,
+      "value": 1
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2680362028",
@@ -977,15 +1089,22 @@
     "p1": "Camerupt",
     "p2": "Tyranitar"
    },
-   "engine": 0.102,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0113,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.102
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0113
      }
     ]
    }
@@ -1001,17 +1120,20 @@
     "p1": "Farigiraf",
     "p2": "Gholdengo"
    },
+   "engine": 0.1404,
+   "leaf_mass": 0.0855,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9934,
-      "value": 0.5416
+      "value": 0.1398
      },
      {
       "class": "tied",
       "weight": 0.0066,
-      "value": null
+      "value": 0.2238
      }
     ]
    }
@@ -1027,7 +1149,20 @@
     "p1": "Arcanine-Hisui",
     "p2": "Glimmora"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0811,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.9189,
+      "value": 0.1705
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2680456053",
@@ -1040,9 +1175,9 @@
     "p1": "Gardevoir",
     "p2": "Gholdengo"
    },
-   "engine": 0.0916,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.011,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -1054,6 +1189,18 @@
       "class": "tied",
       "weight": 0.006,
       "value": 0.0905
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.994,
+      "value": 0.011
+     },
+     {
+      "class": "tied",
+      "weight": 0.006,
+      "value": 0.0108
      }
     ]
    }
@@ -1069,7 +1216,25 @@
     "p1": "Kingambit",
     "p2": "Kingambit"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.6303,
+      "value": 0.8037
+     },
+     {
+      "class": "tied",
+      "weight": 0.041,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.3287,
+      "value": 0.8037
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2680585895",
@@ -1082,15 +1247,22 @@
     "p1": "Sneasler",
     "p2": "Golisopod"
    },
-   "engine": 0.2776,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0208,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
-      "value": 0.2776
+      "value": 0.0925
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0208
      }
     ]
    }
@@ -1132,9 +1304,26 @@
    },
    "engine": 0.9982,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9538,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0054,
+      "value": 0.9792
+     },
+     {
+      "class": "faster",
+      "weight": 0.0408,
+      "value": 0.9583
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9538,
@@ -1193,15 +1382,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Kingambit"
    },
-   "engine": 0.3483,
-   "leaf_mass": 0.4332,
-   "depth": 2,
+   "engine": 0.3509,
+   "leaf_mass": 0.4061,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.3483
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3509
      }
     ]
    }
@@ -1219,9 +1415,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -1241,15 +1444,22 @@
     "p1": "Basculegion",
     "p2": "Torkoal"
    },
-   "engine": 0.7288,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9699,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7288
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9699
      }
     ]
    }
@@ -1267,9 +1477,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -1289,15 +1506,22 @@
     "p1": "Armarouge",
     "p2": "Golisopod"
    },
-   "engine": 0.5,
+   "engine": 0.4095,
    "leaf_mass": 1.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.4095
      }
     ]
    }
@@ -1313,15 +1537,22 @@
     "p1": "Charizard",
     "p2": "Sylveon"
    },
-   "engine": 0.8993,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9888,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8993
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9888
      }
     ]
    }
@@ -1337,7 +1568,18 @@
     "p1": "Golisopod",
     "p2": "Gholdengo"
    },
-   "positions": {}
+   "engine": 0.4403,
+   "leaf_mass": 0.9744,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.4403
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2681473348",
@@ -1350,15 +1592,22 @@
     "p1": "Archaludon",
     "p2": "Farigiraf"
    },
-   "engine": 0.9173,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9908,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.9173
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9908
      }
     ]
    }
@@ -1376,9 +1625,16 @@
    },
    "engine": 0.9,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -1398,15 +1654,22 @@
     "p1": "Golisopod",
     "p2": "Armarouge"
    },
-   "engine": 0.1512,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0168,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.1512
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0168
      }
     ]
    }
@@ -1422,15 +1685,22 @@
     "p1": "Sneasler",
     "p2": "Gholdengo"
    },
-   "engine": 0.1239,
-   "leaf_mass": 0.3559,
-   "depth": 2,
+   "engine": 0.0338,
+   "leaf_mass": 0.1656,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.1239
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0338
      }
     ]
    }
@@ -1446,12 +1716,15 @@
     "p1": "Floette-Eternal",
     "p2": "Arcanine-Hisui"
    },
+   "engine": 0.4372,
+   "leaf_mass": 0.9538,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "tied",
       "weight": 0.0436,
-      "value": null
+      "value": 0.429
      },
      {
       "class": "faster",
@@ -1472,12 +1745,27 @@
     "p1": "Arcanine-Hisui",
     "p2": "Charizard"
    },
+   "engine": 0.8802,
+   "leaf_mass": 0.6528,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.9498,
-      "value": 0.6655
+      "value": 0.8801
+     },
+     {
+      "class": "tied",
+      "weight": 0.0502,
+      "value": 0.8817
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9498,
+      "value": 0.9594
      },
      {
       "class": "tied",
@@ -1498,15 +1786,22 @@
     "p1": "Raichu",
     "p2": "Salamence"
    },
-   "engine": 0.985,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.9985,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.985
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9985
      }
     ]
    }
@@ -1522,15 +1817,22 @@
     "p1": "Lucario",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.051,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0057,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.051
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0057
      }
     ]
    }
@@ -1559,15 +1861,22 @@
     "p1": "Sneasler",
     "p2": "Aegislash"
    },
-   "engine": 0.8312,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9812,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8312
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9812
      }
     ]
    }
@@ -1583,9 +1892,9 @@
     "p1": "Kingambit",
     "p2": "Pelipper"
    },
-   "engine": 0.8938,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9573,
+   "leaf_mass": 0.0678,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -1597,6 +1906,18 @@
       "class": "tied",
       "weight": 0.0217,
       "value": 0.8941
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9783,
+      "value": 0.957
+     },
+     {
+      "class": "tied",
+      "weight": 0.0217,
+      "value": 0.9731
      }
     ]
    }
@@ -1612,15 +1933,22 @@
     "p1": "Kingambit",
     "p2": "Salamence"
    },
-   "engine": 0.8585,
-   "leaf_mass": 0.636,
-   "depth": 2,
+   "engine": 0.8705,
+   "leaf_mass": 0.528,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8585
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8705
      }
     ]
    }
@@ -1636,9 +1964,9 @@
     "p1": "Salamence",
     "p2": "Rillaboom"
    },
-   "engine": 0.1327,
-   "leaf_mass": 0.0034,
-   "depth": 2,
+   "engine": 0.1326,
+   "leaf_mass": 0.0002,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -1650,6 +1978,18 @@
       "class": "tied",
       "weight": 0.0101,
       "value": 0.0542
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9899,
+      "value": 0.1335
+     },
+     {
+      "class": "tied",
+      "weight": 0.0101,
+      "value": 0.0471
      }
     ]
    }
@@ -1665,7 +2005,18 @@
     "p1": "Salamence",
     "p2": "Incineroar"
    },
-   "positions": {}
+   "engine": 0.5211,
+   "leaf_mass": 0.9632,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5211
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2682249431",
@@ -1678,15 +2029,22 @@
     "p1": "Garchomp",
     "p2": "Rillaboom"
    },
-   "engine": 0.2069,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0225,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.2069
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0225
      }
     ]
    }
@@ -1702,15 +2060,22 @@
     "p1": "Salamence",
     "p2": "Kingambit"
    },
-   "engine": 0.5619,
-   "leaf_mass": 0.3864,
-   "depth": 2,
+   "engine": 0.4782,
+   "leaf_mass": 0.2745,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.5619
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.4782
      }
     ]
    }
@@ -1726,15 +2091,22 @@
     "p1": "Baxcalibur",
     "p2": "Kingambit"
    },
-   "engine": 0.1219,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0144,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.1219
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0144
      }
     ]
    }
@@ -1752,9 +2124,16 @@
    },
    "engine": 0.0506,
    "leaf_mass": 0.3333,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0506
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -1774,15 +2153,27 @@
     "p1": "Incineroar",
     "p2": "Gholdengo"
    },
-   "engine": 0.939,
-   "leaf_mass": 0.3288,
-   "depth": 2,
+   "engine": 0.9576,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9864,
       "value": 0.9416
+     },
+     {
+      "class": "tied",
+      "weight": 0.0136,
+      "value": 0.7526
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9864,
+      "value": 0.9604
      },
      {
       "class": "tied",
@@ -1805,9 +2196,16 @@
    },
    "engine": 0.5208,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5208
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -1827,6 +2225,9 @@
     "p1": "Rillaboom",
     "p2": "Milotic"
    },
+   "engine": 0.7508,
+   "leaf_mass": 0.5792,
+   "depth": 2,
    "positions": {
     "2": [
      {
@@ -1837,12 +2238,29 @@
      {
       "class": "tied",
       "weight": 0.0476,
-      "value": null
+      "value": 0.7239
      },
      {
       "class": "slower",
       "weight": 0.3926,
       "value": 0.6128
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.5598,
+      "value": 0.9832
+     },
+     {
+      "class": "tied",
+      "weight": 0.0476,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.3926,
+      "value": null
      }
     ]
    }
@@ -1882,15 +2300,22 @@
     "p1": "Gholdengo",
     "p2": "Raichu"
    },
-   "engine": 0.1571,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.0153,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.1571
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0153
      }
     ]
    }
@@ -1952,6 +2377,18 @@
       "weight": 0.024,
       "value": 0.0198
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.976,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.024,
+      "value": null
+     }
     ]
    }
   },
@@ -1966,6 +2403,9 @@
     "p1": "Swampert",
     "p2": "Archaludon"
    },
+   "engine": 0.1716,
+   "leaf_mass": 0.3333,
+   "depth": 2,
    "positions": {
     "2": [
      {
@@ -1976,7 +2416,7 @@
      {
       "class": "tied",
       "weight": 0.0168,
-      "value": null
+      "value": 0.1718
      },
      {
       "class": "slower",
@@ -1997,9 +2437,9 @@
     "p1": "Kingambit",
     "p2": "Tyranitar"
    },
-   "engine": 0.0753,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0084,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -2011,6 +2451,18 @@
       "class": "tied",
       "weight": 0.0065,
       "value": 0.0755
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9935,
+      "value": 0.0084
+     },
+     {
+      "class": "tied",
+      "weight": 0.0065,
+      "value": 0.0084
      }
     ]
    }
@@ -2026,7 +2478,18 @@
     "p1": "Sinistcha-Masterpiece",
     "p2": "Salamence"
    },
-   "positions": {}
+   "engine": 0.3306,
+   "leaf_mass": 0.9722,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3306
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2682498343",
@@ -2063,15 +2526,22 @@
     "p1": "Blaziken",
     "p2": "Gholdengo"
    },
-   "engine": 0.9302,
+   "engine": 0.9087,
    "leaf_mass": 0.1,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
-      "value": 0.9302
+      "value": 0.8394
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9087
      }
     ]
    }
@@ -2087,9 +2557,9 @@
     "p1": "Floette-Eternal",
     "p2": "Sneasler"
    },
-   "engine": 0.4425,
-   "leaf_mass": 0.0545,
-   "depth": 2,
+   "engine": 0.4281,
+   "leaf_mass": 0.0053,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -2107,6 +2577,23 @@
       "weight": 0.0022,
       "value": 0.9722
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9973,
+      "value": 0.4268
+     },
+     {
+      "class": "tied",
+      "weight": 0.0005,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.0022,
+      "value": 0.9969
+     }
     ]
    }
   },
@@ -2121,15 +2608,22 @@
     "p1": "Metagross",
     "p2": "Excadrill"
    },
-   "engine": 0.0552,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0083,
+   "leaf_mass": 0.025,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.0552
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0083
      }
     ]
    }
@@ -2165,6 +2659,23 @@
       "weight": 0.1589,
       "value": 0.1634
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.8259,
+      "value": 0.018
+     },
+     {
+      "class": "tied",
+      "weight": 0.0152,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.1589,
+      "value": 0.0417
+     }
     ]
    }
   },
@@ -2179,15 +2690,22 @@
     "p1": "Sneasler",
     "p2": "Gholdengo"
    },
-   "engine": 0.1925,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0206,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.1925
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0206
      }
     ]
    }
@@ -2217,6 +2735,18 @@
       "class": "tied",
       "weight": 0.0012,
       "value": 0.185
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9988,
+      "value": 0.0206
+     },
+     {
+      "class": "tied",
+      "weight": 0.0012,
+      "value": null
      }
     ]
    }
@@ -2258,9 +2788,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -2280,15 +2817,22 @@
     "p1": "Camerupt",
     "p2": "Floette-Eternal"
    },
-   "engine": 0.9264,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9583,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.9264
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9583
      }
     ]
    }
@@ -2304,15 +2848,22 @@
     "p1": "Gholdengo",
     "p2": "Dragapult"
    },
-   "engine": 0.572,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
-      "value": 0.572
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
      }
     ]
    }
@@ -2352,15 +2903,22 @@
     "p1": "Rillaboom",
     "p2": "Raichu"
    },
-   "engine": 0.8051,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.875,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8051
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.875
      }
     ]
    }
@@ -2378,9 +2936,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -2400,15 +2965,22 @@
     "p1": "Salamence",
     "p2": "Archaludon"
    },
-   "engine": 0.2648,
+   "engine": 0.2533,
    "leaf_mass": 0.9722,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.2648
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2533
      }
     ]
    }
@@ -2424,7 +2996,23 @@
     "p1": "Indeedee-F",
     "p2": "Milotic"
    },
-   "positions": {}
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9732,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0268,
+      "value": 0
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2682656133",
@@ -2437,7 +3025,20 @@
     "p1": "Ninetales-Alola",
     "p2": "Arcanine-Hisui"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9734,
+      "value": 0.1315
+     },
+     {
+      "class": "tied",
+      "weight": 0.0266,
+      "value": null
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2682671397",
@@ -2450,15 +3051,22 @@
     "p1": "Primarina",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.2977,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0331,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.2977
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0331
      }
     ]
    }
@@ -2474,15 +3082,22 @@
     "p1": "Vivillon-Modern",
     "p2": "Reuniclus"
    },
-   "engine": 0.91,
-   "leaf_mass": 0.0,
-   "depth": 2,
+   "engine": 0.9724,
+   "leaf_mass": 0.0079,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.91
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9724
      }
     ]
    }
@@ -2559,7 +3174,25 @@
     "p1": "Sneasler",
     "p2": "Sneasler"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0968,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.4516,
+      "value": 0.6099
+     },
+     {
+      "class": "slower",
+      "weight": 0.4516,
+      "value": null
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2682712732",
@@ -2574,9 +3207,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -2596,15 +3236,22 @@
     "p1": "Politoed",
     "p2": "Sneasler"
    },
-   "engine": 0.8959,
-   "leaf_mass": 0.011,
-   "depth": 2,
+   "engine": 0.9382,
+   "leaf_mass": 0.27,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8959
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9382
      }
     ]
    }
@@ -2622,9 +3269,16 @@
    },
    "engine": 0.9583,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9583
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -2644,15 +3298,22 @@
     "p1": "Charizard",
     "p2": "Milotic"
    },
-   "engine": 0.0197,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.0018,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0197
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0018
      }
     ]
    }
@@ -2670,9 +3331,26 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 0.6131,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0218,
+      "value": 0
+     },
+     {
+      "class": "slower",
+      "weight": 0.3651,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 0.6131,
@@ -2702,25 +3380,42 @@
     "p1": "Indeedee",
     "p2": "Archaludon"
    },
-   "engine": 0.4636,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0001,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.8824,
-      "value": 0.4635
+      "value": 0
      },
      {
       "class": "tied",
       "weight": 0.0084,
-      "value": 0.4632
+      "value": 0.0104
      },
      {
       "class": "faster",
       "weight": 0.1091,
-      "value": 0.4643
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.8824,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0084,
+      "value": 0.0104
+     },
+     {
+      "class": "faster",
+      "weight": 0.1091,
+      "value": 0
      }
     ]
    }
@@ -2756,6 +3451,23 @@
       "weight": 0.1541,
       "value": 0.0972
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.836,
+      "value": 0.1057
+     },
+     {
+      "class": "tied",
+      "weight": 0.0099,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.1541,
+      "value": 0.0108
+     }
     ]
    }
   },
@@ -2770,15 +3482,22 @@
     "p1": "Charizard",
     "p2": "Aerodactyl"
    },
-   "engine": 0.2572,
-   "leaf_mass": 0.4,
-   "depth": 2,
+   "engine": 0.092,
+   "leaf_mass": 0.0958,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.2572
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.092
      }
     ]
    }
@@ -2814,6 +3533,23 @@
       "weight": 0.1887,
       "value": 0.8333
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.7988,
+      "value": 0.9667
+     },
+     {
+      "class": "tied",
+      "weight": 0.0125,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.1887,
+      "value": 0.9667
+     }
     ]
    }
   },
@@ -2828,15 +3564,22 @@
     "p1": "Staraptor",
     "p2": "Garchomp"
    },
-   "engine": 0.973,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.997,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.973
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.997
      }
     ]
    }
@@ -2852,6 +3595,9 @@
     "p1": "Blaziken",
     "p2": "Glimmora"
    },
+   "engine": 0.5932,
+   "leaf_mass": 0.9395,
+   "depth": 2,
    "positions": {
     "2": [
      {
@@ -2862,7 +3608,7 @@
      {
       "class": "tied",
       "weight": 0.0088,
-      "value": null
+      "value": 0.6266
      },
      {
       "class": "faster",
@@ -2903,6 +3649,23 @@
       "weight": 0.2758,
       "value": 0.4792
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.6915,
+      "value": 0.024
+     },
+     {
+      "class": "tied",
+      "weight": 0.0326,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.2758,
+      "value": 0.5867
+     }
     ]
    }
   },
@@ -2917,15 +3680,22 @@
     "p1": "Indeedee",
     "p2": "Absol"
    },
-   "engine": 0.1528,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.017,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.1528
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.017
      }
     ]
    }
@@ -2941,15 +3711,22 @@
     "p1": "Archaludon",
     "p2": "Golisopod"
    },
-   "engine": 0.9103,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.99,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.9103
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.99
      }
     ]
    }
@@ -2965,20 +3742,32 @@
     "p1": "Incineroar",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.2838,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9998,
-      "value": 0.2838
+      "value": 0.0013
      },
      {
       "class": "tied",
       "weight": 0.0002,
-      "value": 0.2825
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9998,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0002,
+      "value": 0
      }
     ]
    }
@@ -2996,9 +3785,26 @@
    },
    "engine": 0.9875,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "tied",
+      "weight": 0.0903,
+      "value": 0.9792
+     },
+     {
+      "class": "faster",
+      "weight": 0.5094,
+      "value": 0.9792
+     },
+     {
+      "class": "slower",
+      "weight": 0.4003,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "tied",
       "weight": 0.0903,
@@ -3028,9 +3834,9 @@
     "p1": "Garchomp",
     "p2": "Tyranitar"
    },
-   "engine": 0.2654,
-   "leaf_mass": 0.0998,
-   "depth": 2,
+   "engine": 0.3026,
+   "leaf_mass": 0.011,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -3048,6 +3854,23 @@
       "weight": 0.1147,
       "value": 0.0031
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.8529,
+      "value": 0.348
+     },
+     {
+      "class": "tied",
+      "weight": 0.0324,
+      "value": 0.176
+     },
+     {
+      "class": "faster",
+      "weight": 0.1147,
+      "value": 0.0003
+     }
     ]
    }
   },
@@ -3062,9 +3885,9 @@
     "p1": "Indeedee",
     "p2": "Rillaboom"
    },
-   "engine": 1.0,
+   "engine": 0.9935,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -3075,7 +3898,19 @@
      {
       "class": "tied",
       "weight": 0.0129,
+      "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9871,
       "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0129,
+      "value": 0.5
      }
     ]
    }
@@ -3091,7 +3926,18 @@
     "p1": "Salamence",
     "p2": "Incineroar"
    },
-   "positions": {}
+   "engine": 0.3806,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.3806
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2683015822",
@@ -3119,6 +3965,18 @@
       "weight": 0.8312,
       "value": 0.5592
      }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1688,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.8312,
+      "value": 0.5592
+     }
     ]
    }
   },
@@ -3133,12 +3991,15 @@
     "p1": "Kingambit",
     "p2": "Sneasler"
    },
+   "engine": 0.014,
+   "leaf_mass": 0.0048,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.481,
-      "value": null
+      "value": 0.0291
      },
      {
       "class": "tied",
@@ -3148,7 +4009,7 @@
      {
       "class": "slower",
       "weight": 0.501,
-      "value": null
+      "value": 0
      }
     ]
    }
@@ -3164,15 +4025,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Kingambit"
    },
-   "engine": 0.2276,
-   "leaf_mass": 0.592,
-   "depth": 2,
+   "engine": 0.2278,
+   "leaf_mass": 0.6069,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.2276
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2278
      }
     ]
    }
@@ -3188,6 +4056,9 @@
     "p1": "Sneasler",
     "p2": "Gengar"
    },
+   "engine": 0.7139,
+   "leaf_mass": 0.912,
+   "depth": 2,
    "positions": {
     "2": [
      {
@@ -3198,7 +4069,7 @@
      {
       "class": "tied",
       "weight": 0.0222,
-      "value": null
+      "value": 0.72
      },
      {
       "class": "slower",
@@ -3219,9 +4090,9 @@
     "p1": "Sneasler",
     "p2": "Gengar"
    },
-   "engine": 0.1998,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.1196,
+   "leaf_mass": 0.038,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -3239,6 +4110,23 @@
       "weight": 0.2486,
       "value": 0.2001
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.7314,
+      "value": 0.1282
+     },
+     {
+      "class": "tied",
+      "weight": 0.0199,
+      "value": 0.0963
+     },
+     {
+      "class": "slower",
+      "weight": 0.2486,
+      "value": 0.0961
+     }
     ]
    }
   },
@@ -3255,9 +4143,16 @@
    },
    "engine": 0.2,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -3292,6 +4187,18 @@
       "weight": 0.9886,
       "value": 0.125
      }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.0114,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.9886,
+      "value": 0.125
+     }
     ]
    }
   },
@@ -3306,19 +4213,35 @@
     "p1": "Raichu",
     "p2": "Annihilape"
    },
-   "errors": [
-    {
-     "depth": 2,
-     "class": "tied",
-     "error": "pokemon-showdown/dist/data/mods/champions/scripts.js:438:49)\n    at BattleActions.trySpreadMoveHit (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:504:31)\n    at BattleActions.useMoveInner (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:438:25)\n    at BattleActions.useMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:320:29)\n    at BattleActions.runMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:271:35)\n\nNode.js v24.20.0"
-    },
-    {
-     "depth": 2,
-     "class": "faster",
-     "error": "pokemon-showdown/dist/data/mods/champions/scripts.js:438:49)\n    at BattleActions.trySpreadMoveHit (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:504:31)\n    at BattleActions.useMoveInner (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:438:25)\n    at BattleActions.useMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:320:29)\n    at BattleActions.runMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:271:35)\n\nNode.js v24.20.0"
-    }
-   ],
-   "positions": {}
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 3,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0118,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.9882,
+      "value": 1
+     }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.0118,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.9882,
+      "value": 1
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2683106199",
@@ -3365,9 +4288,9 @@
     "p1": "Garchomp",
     "p2": "Absol"
    },
-   "engine": 0.7386,
-   "leaf_mass": 0.283,
-   "depth": 2,
+   "engine": 0.904,
+   "leaf_mass": 0.0314,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -3379,6 +4302,18 @@
       "class": "slower",
       "weight": 0.8492,
       "value": 0.781
+     }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1508,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.8492,
+      "value": 0.9757
      }
     ]
    }
@@ -3394,15 +4329,22 @@
     "p1": "Salamence",
     "p2": "Charizard"
    },
-   "engine": 0.8656,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9851,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8656
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9851
      }
     ]
    }
@@ -3418,15 +4360,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Raichu"
    },
-   "engine": 0.0127,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0014,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0127
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0014
      }
     ]
    }
@@ -3476,15 +4425,27 @@
     "p1": "Archaludon",
     "p2": "Rotom-Heat"
    },
-   "engine": 0.3692,
-   "leaf_mass": 0.3688,
-   "depth": 2,
+   "engine": 0.3979,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9219,
       "value": 0.3539
+     },
+     {
+      "class": "tied",
+      "weight": 0.0781,
+      "value": 0.55
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9219,
+      "value": 0.385
      },
      {
       "class": "tied",
@@ -3507,9 +4468,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -3544,6 +4512,18 @@
       "weight": 0.8624,
       "value": 0.7529
      }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1376,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.8624,
+      "value": 0.9583
+     }
     ]
    }
   },
@@ -3558,15 +4538,22 @@
     "p1": "Kingambit",
     "p2": "Rillaboom"
    },
-   "engine": 0.0875,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.014,
+   "leaf_mass": 0.179,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0875
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.014
      }
     ]
    }
@@ -3582,15 +4569,27 @@
     "p1": "Golisopod",
     "p2": "Golisopod"
    },
-   "engine": 0.2742,
-   "leaf_mass": 0.302,
-   "depth": 2,
+   "engine": 0.0723,
+   "leaf_mass": 0.0335,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9059,
       "value": 0.2508
+     },
+     {
+      "class": "tied",
+      "weight": 0.0941,
+      "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9059,
+      "value": 0.0279
      },
      {
       "class": "tied",
@@ -3611,15 +4610,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Kingambit"
    },
-   "engine": 0.957,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9952,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.957
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9952
      }
     ]
    }
@@ -3664,15 +4670,22 @@
     "p1": "Excadrill",
     "p2": "Floette-Eternal"
    },
-   "engine": 0.7957,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9583,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7957
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9583
      }
     ]
    }
@@ -3688,15 +4701,22 @@
     "p1": "Incineroar",
     "p2": "Milotic"
    },
-   "engine": 0.75,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
-      "value": 0.75
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
      }
     ]
    }
@@ -3736,20 +4756,32 @@
     "p1": "Indeedee-F",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.3405,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 0.9942,
-      "value": 0.3405
+      "value": 0
      },
      {
       "class": "tied",
       "weight": 0.0058,
-      "value": 0.3405
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9942,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0058,
+      "value": 0
      }
     ]
    }
@@ -3767,9 +4799,21 @@
    },
    "engine": 0.0198,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9772,
+      "value": 0.0198
+     },
+     {
+      "class": "tied",
+      "weight": 0.0228,
+      "value": 0.0198
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9772,
@@ -3794,15 +4838,22 @@
     "p1": "Gholdengo",
     "p2": "Kingambit"
    },
-   "engine": 0.0628,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.007,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.0628
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.007
      }
     ]
    }
@@ -3818,15 +4869,22 @@
     "p1": "Staraptor",
     "p2": "Kingambit"
    },
-   "engine": 0.7388,
-   "leaf_mass": 0.3431,
-   "depth": 2,
+   "engine": 0.8677,
+   "leaf_mass": 0.1694,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7388
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8677
      }
     ]
    }
@@ -3842,15 +4900,22 @@
     "p1": "Archaludon",
     "p2": "Salamence"
    },
-   "engine": 0.8751,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9861,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8751
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9861
      }
     ]
    }
@@ -3866,15 +4931,22 @@
     "p1": "Metagross",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.1195,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.0116,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.1195
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0116
      }
     ]
    }
@@ -3892,9 +4964,16 @@
    },
    "engine": 0.0144,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0144
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -3914,15 +4993,22 @@
     "p1": "Sneasler",
     "p2": "Raichu"
    },
-   "engine": 0.8558,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.984,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8558
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.984
      }
     ]
    }
@@ -3938,9 +5024,9 @@
     "p1": "Arcanine-Hisui",
     "p2": "Basculegion"
    },
-   "engine": 0.1841,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0205,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -3952,6 +5038,18 @@
       "class": "tied",
       "weight": 0.0264,
       "value": 0.1837
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9736,
+      "value": 0.0205
+     },
+     {
+      "class": "tied",
+      "weight": 0.0264,
+      "value": 0.0204
      }
     ]
    }
@@ -3967,15 +5065,22 @@
     "p1": "Camerupt",
     "p2": "Gholdengo"
    },
-   "engine": 0.8603,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9792,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8603
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9792
      }
     ]
    }
@@ -3993,9 +5098,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -4015,9 +5127,9 @@
     "p1": "Gardevoir",
     "p2": "Tyranitar"
    },
-   "engine": 0.6878,
-   "leaf_mass": 0.3293,
-   "depth": 2,
+   "engine": 0.898,
+   "leaf_mass": 0.0366,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -4035,6 +5147,23 @@
       "weight": 0.0698,
       "value": 0.0723
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9182,
+      "value": 0.9708
+     },
+     {
+      "class": "tied",
+      "weight": 0.012,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.0698,
+      "value": 0.008
+     }
     ]
    }
   },
@@ -4049,15 +5178,22 @@
     "p1": "Sinistcha-Masterpiece",
     "p2": "Sneasler"
    },
-   "engine": 0.9677,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.9929,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
-      "value": 0.9677
+      "value": 0.9929
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9929
      }
     ]
    }
@@ -4073,15 +5209,22 @@
     "p1": "Farigiraf",
     "p2": "Archaludon"
    },
-   "engine": 0.0954,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0106,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0954
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0106
      }
     ]
    }
@@ -4099,9 +5242,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -4121,15 +5271,27 @@
     "p1": "Farigiraf",
     "p2": "Primarina"
    },
-   "engine": 0.8419,
-   "leaf_mass": 0.3103,
-   "depth": 2,
+   "engine": 0.9518,
+   "leaf_mass": 0.0344,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.931,
       "value": 0.8673
+     },
+     {
+      "class": "tied",
+      "weight": 0.069,
+      "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.931,
+      "value": 0.9853
      },
      {
       "class": "tied",
@@ -4150,15 +5312,22 @@
     "p1": "Gholdengo",
     "p2": "Sneasler"
    },
-   "engine": 0.8281,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.8519,
+   "leaf_mass": 0.27,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.8281
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8519
      }
     ]
    }
@@ -4174,15 +5343,22 @@
     "p1": "Pelipper",
     "p2": "Indeedee"
    },
-   "engine": 0.2176,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0242,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.2176
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0242
      }
     ]
    }
@@ -4198,7 +5374,18 @@
     "p1": "Volcarona",
     "p2": "Grapploct"
    },
-   "positions": {}
+   "engine": 0.5853,
+   "leaf_mass": 0.975,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5853
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2683538716",
@@ -4211,15 +5398,22 @@
     "p1": "Lycanroc-Dusk",
     "p2": "Garchomp"
    },
-   "engine": 0.9032,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.928,
+   "leaf_mass": 0.0388,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.9032
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.928
      }
     ]
    }
@@ -4235,15 +5429,22 @@
     "p1": "Gholdengo",
     "p2": "Milotic"
    },
-   "engine": 0.041,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0046,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.041
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0046
      }
     ]
    }
@@ -4261,9 +5462,21 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9416,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0584,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9416,
@@ -4338,9 +5551,21 @@
    },
    "engine": 0.9998,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9919,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0081,
+      "value": 0.9792
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9919,
@@ -4367,9 +5592,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -4389,15 +5621,22 @@
     "p1": "Kingambit",
     "p2": "Rillaboom"
    },
-   "engine": 0.0344,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0038,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0344
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0038
      }
     ]
    }
@@ -4415,9 +5654,16 @@
    },
    "engine": 0.1,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -4439,9 +5685,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -4463,9 +5716,21 @@
    },
    "engine": 0.9799,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9736,
+      "value": 0.98
+     },
+     {
+      "class": "tied",
+      "weight": 0.0264,
+      "value": 0.975
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9736,
@@ -4492,9 +5757,21 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "tied",
+      "weight": 0.2007,
+      "value": 1
+     },
+     {
+      "class": "slower",
+      "weight": 0.7993,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "tied",
       "weight": 0.2007,
@@ -4519,9 +5796,9 @@
     "p1": "Gholdengo",
     "p2": "Indeedee"
    },
-   "engine": 0.0614,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0136,
+   "leaf_mass": 0.0289,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -4539,6 +5816,23 @@
       "weight": 0.1965,
       "value": 0.0616
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.78,
+      "value": 0.0068
+     },
+     {
+      "class": "tied",
+      "weight": 0.0235,
+      "value": 0.0198
+     },
+     {
+      "class": "slower",
+      "weight": 0.1965,
+      "value": 0.0396
+     }
     ]
    }
   },
@@ -4555,9 +5849,21 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 0.9915,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0085,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 0.9915,
@@ -4582,12 +5888,15 @@
     "p1": "Politoed",
     "p2": "Milotic"
    },
+   "engine": 0.4175,
+   "leaf_mass": 1.0,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "tied",
       "weight": 0.0556,
-      "value": null
+      "value": 0.4085
      },
      {
       "class": "faster",
@@ -4608,15 +5917,22 @@
     "p1": "Salamence",
     "p2": "Garchomp"
    },
-   "engine": 0.8161,
-   "leaf_mass": 0.4,
-   "depth": 2,
+   "engine": 0.9236,
+   "leaf_mass": 0.0962,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8161
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9236
      }
     ]
    }
@@ -4632,15 +5948,22 @@
     "p1": "Tyranitar",
     "p2": "Raichu"
    },
-   "engine": 0.0986,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.011,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0986
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.011
      }
     ]
    }
@@ -4658,9 +5981,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -4680,7 +6010,7 @@
     "p1": "Archaludon",
     "p2": "Rillaboom"
    },
-   "engine": 0.995,
+   "engine": 0.9993,
    "leaf_mass": 0.0,
    "depth": 2,
    "positions": {
@@ -4693,7 +6023,19 @@
      {
       "class": "faster",
       "weight": 0.8628,
-      "value": 0.995
+      "value": 1
+     }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1372,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.8628,
+      "value": 1
      }
     ]
    }
@@ -4724,6 +6066,18 @@
       "weight": 0.8554,
       "value": 0.9686
      }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1446,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.8554,
+      "value": 0.9975
+     }
     ]
    }
   },
@@ -4738,15 +6092,22 @@
     "p1": "Arcanine-Hisui",
     "p2": "Gholdengo"
    },
-   "engine": 0.7045,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9672,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7045
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9672
      }
     ]
    }
@@ -4762,15 +6123,27 @@
     "p1": "Gardevoir",
     "p2": "Archaludon"
    },
-   "engine": 0.907,
-   "leaf_mass": 0.3243,
-   "depth": 2,
+   "engine": 0.9822,
+   "leaf_mass": 0.036,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.9729,
       "value": 0.9117
+     },
+     {
+      "class": "tied",
+      "weight": 0.0271,
+      "value": 0.7396
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9729,
+      "value": 0.989
      },
      {
       "class": "tied",
@@ -4791,15 +6164,22 @@
     "p1": "Incineroar",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.1971,
-   "leaf_mass": 0.52,
-   "depth": 2,
+   "engine": 0.1162,
+   "leaf_mass": 0.3067,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.1971
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1162
      }
     ]
    }
@@ -4830,6 +6210,18 @@
       "weight": 0.0213,
       "value": 0.1204
      }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 0.9787,
+      "value": 0.015
+     },
+     {
+      "class": "tied",
+      "weight": 0.0213,
+      "value": null
+     }
     ]
    }
   },
@@ -4844,15 +6236,22 @@
     "p1": "Venusaur",
     "p2": "Garchomp"
    },
-   "engine": 0.9583,
+   "engine": 0.9599,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.9583
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9599
      }
     ]
    }
@@ -4868,15 +6267,22 @@
     "p1": "Basculegion",
     "p2": "Sinistcha"
    },
-   "engine": 0.8333,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9815,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.8333
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9815
      }
     ]
    }
@@ -4892,15 +6298,22 @@
     "p1": "Pyroar",
     "p2": "Milotic"
    },
-   "engine": 0.1529,
-   "leaf_mass": 0.8756,
-   "depth": 2,
+   "engine": 0.0615,
+   "leaf_mass": 0.3053,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.1529
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0615
      }
     ]
    }
@@ -4916,6 +6329,9 @@
     "p1": "Incineroar",
     "p2": "Mawile"
    },
+   "engine": 0.0235,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -4926,7 +6342,19 @@
      {
       "class": "tied",
       "weight": 0.0471,
-      "value": null
+      "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9529,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0471,
+      "value": 0.5
      }
     ]
    }
@@ -4968,9 +6396,9 @@
     "p1": "Raichu",
     "p2": "Charizard"
    },
-   "engine": 0.7709,
-   "leaf_mass": 0.3452,
-   "depth": 2,
+   "engine": 0.9572,
+   "leaf_mass": 0.0427,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -4988,6 +6416,23 @@
       "weight": 0.0195,
       "value": 0.3421
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9771,
+      "value": 0.9756
+     },
+     {
+      "class": "tied",
+      "weight": 0.0034,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.0195,
+      "value": 0.114
+     }
     ]
    }
   },
@@ -5004,9 +6449,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -5026,7 +6478,25 @@
     "p1": "Sneasler",
     "p2": "Sneasler"
    },
-   "positions": {}
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0968,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.4516,
+      "value": 0.8482
+     },
+     {
+      "class": "slower",
+      "weight": 0.4516,
+      "value": 0.5551
+     }
+    ]
+   }
   },
   {
    "id": "gen9championsvgc2026regmcbo3-2683994895",
@@ -5041,9 +6511,26 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.9673,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0074,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.0253,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.9673,
@@ -5073,15 +6560,22 @@
     "p1": "Camerupt",
     "p2": "Primarina"
    },
-   "engine": 0.3007,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0334,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.3007
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0334
      }
     ]
    }
@@ -5097,15 +6591,22 @@
     "p1": "Corviknight",
     "p2": "Metagross"
    },
-   "engine": 0.5405,
-   "leaf_mass": 0.9786,
-   "depth": 2,
+   "engine": 0.6288,
+   "leaf_mass": 0.9833,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.5405
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.6288
      }
     ]
    }
@@ -5147,15 +6648,27 @@
     "p1": "Floette-Eternal",
     "p2": "Archaludon"
    },
-   "engine": 0.7192,
-   "leaf_mass": 0.3268,
-   "depth": 2,
+   "engine": 0.9592,
+   "leaf_mass": 0.0363,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.9806,
       "value": 0.7235
+     },
+     {
+      "class": "tied",
+      "weight": 0.0194,
+      "value": 0.5
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9806,
+      "value": 0.9683
      },
      {
       "class": "tied",
@@ -5176,15 +6689,22 @@
     "p1": "Sneasler",
     "p2": "Rillaboom"
    },
-   "engine": 1.0,
+   "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
-      "value": 1
+      "value": 0
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
      }
     ]
    }
@@ -5200,12 +6720,32 @@
     "p1": "Arcanine-Hisui",
     "p2": "Gholdengo"
    },
+   "engine": 0.7641,
+   "leaf_mass": 0.2482,
+   "depth": 2,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.7448,
       "value": 0.8437
+     },
+     {
+      "class": "tied",
+      "weight": 0.0274,
+      "value": 0.7526
+     },
+     {
+      "class": "faster",
+      "weight": 0.2278,
+      "value": 0.5052
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.7448,
+      "value": null
      },
      {
       "class": "tied",
@@ -5260,15 +6800,22 @@
     "p1": "Golisopod",
     "p2": "Gardevoir"
    },
-   "engine": 0.7825,
-   "leaf_mass": 0.8454,
-   "depth": 2,
+   "engine": 0.919,
+   "leaf_mass": 0.8589,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.7825
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.919
      }
     ]
    }
@@ -5284,9 +6831,9 @@
     "p1": "Arcanine-Hisui",
     "p2": "Kommo-o"
    },
-   "engine": 0.8928,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9881,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -5304,6 +6851,23 @@
       "weight": 0.0769,
       "value": 0.8902
      }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9146,
+      "value": 0.9881
+     },
+     {
+      "class": "tied",
+      "weight": 0.0085,
+      "value": 0.988
+     },
+     {
+      "class": "faster",
+      "weight": 0.0769,
+      "value": 0.9878
+     }
     ]
    }
   },
@@ -5318,15 +6882,22 @@
     "p1": "Archaludon",
     "p2": "Farigiraf"
    },
-   "engine": 0.7455,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.973,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.7455
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.973
      }
     ]
    }
@@ -5342,9 +6913,9 @@
     "p1": "Gholdengo",
     "p2": "Glimmora"
    },
-   "engine": 0.7741,
-   "leaf_mass": 0.2996,
-   "depth": 2,
+   "engine": 0.9299,
+   "leaf_mass": 0.0333,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -5356,6 +6927,18 @@
       "class": "slower",
       "weight": 0.8988,
       "value": 0.805
+     }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1012,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.8988,
+      "value": 0.9783
      }
     ]
    }
@@ -5373,9 +6956,26 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 0.8028,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0315,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.1656,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 0.8028,
@@ -5405,15 +7005,22 @@
     "p1": "Pelipper",
     "p2": "Sneasler"
    },
-   "engine": 0.766,
-   "leaf_mass": 0.2588,
-   "depth": 2,
+   "engine": 0.7245,
+   "leaf_mass": 0.0862,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.766
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.7245
      }
     ]
    }
@@ -5429,6 +7036,9 @@
     "p1": "Archaludon",
     "p2": "Incineroar"
    },
+   "engine": 0.8102,
+   "leaf_mass": 0.9184,
+   "depth": 2,
    "positions": {
     "2": [
      {
@@ -5439,7 +7049,7 @@
      {
       "class": "tied",
       "weight": 0.0158,
-      "value": null
+      "value": 0.6011
      }
     ]
    }
@@ -5455,15 +7065,22 @@
     "p1": "Excadrill",
     "p2": "Farigiraf"
    },
-   "engine": 0.6294,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.9863,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
-      "value": 0.6294
+      "value": 0.8765
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9863
      }
     ]
    }
@@ -5479,15 +7096,22 @@
     "p1": "Hatterene",
     "p2": "Arcanine-Hisui"
    },
-   "engine": 0.0502,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0056,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0502
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0056
      }
     ]
    }
@@ -5505,9 +7129,16 @@
    },
    "engine": 0.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ],
+    "3": [
      {
       "class": "faster",
       "weight": 1.0,
@@ -5527,9 +7158,9 @@
     "p1": "Rillaboom",
     "p2": "Gholdengo"
    },
-   "engine": 0.7284,
-   "leaf_mass": 0.9864,
-   "depth": 2,
+   "engine": 0.2607,
+   "leaf_mass": 0.355,
+   "depth": 3,
    "positions": {
     "2": [
      {
@@ -5547,6 +7178,23 @@
       "weight": 0.0574,
       "value": 0.7332
      }
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.0136,
+      "value": 0.2645
+     },
+     {
+      "class": "faster",
+      "weight": 0.9289,
+      "value": 0.2617
+     },
+     {
+      "class": "slower",
+      "weight": 0.0574,
+      "value": 0.2444
+     }
     ]
    }
   },
@@ -5563,9 +7211,16 @@
    },
    "engine": 0.0545,
    "leaf_mass": 0.285,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0545
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -5585,15 +7240,22 @@
     "p1": "Blastoise",
     "p2": "Torkoal"
    },
-   "engine": 0.749,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.9721,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.749
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9721
      }
     ]
    }
@@ -5609,20 +7271,32 @@
     "p1": "Blastoise",
     "p2": "Farigiraf"
    },
-   "engine": 0.6072,
-   "leaf_mass": 1.0,
-   "depth": 2,
+   "engine": 0.9855,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 0.9977,
-      "value": 0.6072
+      "value": 0.8691
      },
      {
       "class": "tied",
       "weight": 0.0023,
-      "value": 0.6074
+      "value": 0.8691
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 0.9977,
+      "value": 0.9855
+     },
+     {
+      "class": "tied",
+      "weight": 0.0023,
+      "value": 0.9855
      }
     ]
    }
@@ -5638,15 +7312,22 @@
     "p1": "Froslass",
     "p2": "Pelipper"
    },
-   "engine": 0.0734,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0525,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.0734
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0525
      }
     ]
    }
@@ -5662,15 +7343,22 @@
     "p1": "Floette-Eternal",
     "p2": "Raichu"
    },
-   "engine": 0.0221,
-   "leaf_mass": 0.2552,
-   "depth": 2,
+   "engine": 0.0021,
+   "leaf_mass": 0.0248,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.0221
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0021
      }
     ]
    }
@@ -5701,29 +7389,17 @@
       "weight": 0.8429,
       "value": 0.0396
      }
-    ]
-   }
-  },
-  {
-   "id": "gen9championsvgc2026regmcbo3-2684852649",
-   "group": "3038e71195eb",
-   "turn": 8,
-   "winner": "p2",
-   "ended_by": "normal",
-   "model": 0.1629,
-   "mons": {
-    "p1": "Pawmot",
-    "p2": "Torkoal"
-   },
-   "engine": 0.0,
-   "leaf_mass": 0.0,
-   "depth": 2,
-   "positions": {
-    "2": [
+    ],
+    "3": [
+     {
+      "class": "tied",
+      "weight": 0.1571,
+      "value": null
+     },
      {
       "class": "slower",
-      "weight": 1.0,
-      "value": 0
+      "weight": 0.8429,
+      "value": 0.0396
      }
     ]
    }
@@ -5739,15 +7415,22 @@
     "p1": "Glimmora",
     "p2": "Kingambit"
    },
-   "engine": 0.1588,
-   "leaf_mass": 0.3312,
-   "depth": 2,
+   "engine": 0.0195,
+   "leaf_mass": 0.0368,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.1588
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0195
      }
     ]
    }
@@ -5787,15 +7470,22 @@
     "p1": "Salamence",
     "p2": "Tyranitar"
    },
-   "engine": 0.0199,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0181,
+   "leaf_mass": 0.0,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "slower",
       "weight": 1.0,
       "value": 0.0199
+     }
+    ],
+    "3": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0181
      }
     ]
    }
@@ -5813,9 +7503,16 @@
    },
    "engine": 1.0,
    "leaf_mass": 0.0,
-   "depth": 2,
+   "depth": 3,
    "positions": {
     "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ],
+    "3": [
      {
       "class": "slower",
       "weight": 1.0,
@@ -5835,15 +7532,22 @@
     "p1": "Gholdengo",
     "p2": "Salamence"
    },
-   "engine": 0.3126,
-   "leaf_mass": 0.3333,
-   "depth": 2,
+   "engine": 0.0347,
+   "leaf_mass": 0.037,
+   "depth": 3,
    "positions": {
     "2": [
      {
       "class": "faster",
       "weight": 1.0,
       "value": 0.3126
+     }
+    ],
+    "3": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0347
      }
     ]
    }
