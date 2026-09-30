@@ -11,8 +11,20 @@ strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats 
 - **The 1v1 engine beats the model on real games.** On held-out human 1v1s its Brier score was
   0.090, against the model's 0.197, and the side it called won 48 of 50 confident calls
   ([phase8](phase8-findings.md)). The model does not follow what decides an endgame; the engine does.
-- **But few games reach a 1v1.** Only 217 of 1,703 held-out open-sheet games do. Many more pass
-  through a 2v2 or a 2v1 first, and many are decided there. How many is the first thing stage 3 counts.
+- **But few games reach a 1v1, and three and a half times as many reach two or fewer a side**
+  (counted 2026-09-30 over held-out human games that finished, by the first turn mark in each state):
+
+  | | open sheets (1,703) | closed sheets (1,025) |
+  | --- | --- | --- |
+  | two or fewer each | **764 (45%)** | **429 (42%)** |
+  | a 2v2 | 456 (27%) | 260 (25%) |
+  | a 2v1 or 1v2 | 508 (30%) | 297 (29%) |
+  | a 1v1 | 217 (13%) | 118 (12%) |
+  | the side ahead at 2v1 wins | 88% | 85% |
+
+  A 2v1 is mostly decided by the Pokémon count, so the engine's worth there is in finding the
+  12–15% that are not. The 2v2 is where games are still open, and a quarter of all games pass
+  through one.
 - **Phase 9 needs the same machinery at doubles scale**: joint choices with targets, chance
   enumerated, and a matrix game solved at a size the 1v1 never reaches. Building it here, on
   positions with a checkable answer, is cheaper than building it inside a full-battle search.

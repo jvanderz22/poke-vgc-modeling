@@ -1788,9 +1788,12 @@ answers moved by more than 0.01, and the difference is within noise.
 What this leaves:
 - **The page is unchanged.** It already deepens 1 → 4 in the background and shows the deepest
   finished answer, so the speed-up reaches it without a change.
-- **The benchmark's stored truth is being re-solved at depth 4**, on Kaggle
-  (`scripts/cloud/kaggle_solve.sh`, its first real job). Until it is back,
-  `test_the_same_positions_give_the_stored_answers` skips.
+- **The benchmark's stored truth, re-solved at depth 4, is unchanged.** 22 positions were already
+  cached. The other 14, the heaviest, went to Kaggle (`scripts/cloud/kaggle_solve.sh`, its first
+  real job) and came back in 1 h 46 min on 4 workers. The merge re-solved three of them locally
+  (78k–129k turns each) to the same answer. All 39 variants match the old `solved.json`. The one
+  difference is F1/B, 0.0969 → 0.0967, where the old entry was rebuilt from a run log at three
+  decimals.
 - **The overconfidence at the ends** could be taken off with a shrink fitted on held-out games
   (principle 8). It is not built: the ordering is what matters for leading the page, and 7 misses
   are too few to fit on.

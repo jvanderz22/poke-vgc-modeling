@@ -392,7 +392,7 @@ reach, and the goal may become depth 3 on the 1v1s with few options, or faster d
    with no target, locked moves given a target, and Revival Blessing. The rerun solved 192 of 204
    games, 144 at depth 3. The engine still beats the model (Brier 0.095 against 0.206). Depth 3
    against depth 2 on the same games is better on both scores, but not distinguishable. The
-   benchmark's depth-4 truth is being re-solved on Kaggle.
+   benchmark's depth-4 truth, re-solved on Kaggle, is unchanged on all 39 variants.
 
    What was recommended at the time: chase depth 3. It is now affordable, and it
    settles most of what depth 2 leaves to HP share. The levers, re-ranked by the profile:

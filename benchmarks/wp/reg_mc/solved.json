@@ -8,11 +8,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 152.0,
+     "speed": 98,
+     "ours": 152,
      "value": 0.9995,
      "leaf_mass": 0.0014,
-     "nodes": 54426
+     "nodes": 28218
     }
    },
    "search": {
@@ -20,26 +20,26 @@
    }
   },
   "F1/B": {
-   "value": 0.0969,
-   "leaf_mass": 0.001,
+   "value": 0.0967,
+   "leaf_mass": 0.0014,
    "classes": {
     "slower": {
      "weight": 0.096,
      "spe": 3,
      "speed": 151,
      "ours": 152,
-     "value": 1.0,
-     "leaf_mass": 0.001,
-     "nodes": 0
+     "value": 0.9995,
+     "leaf_mass": 0.0014,
+     "nodes": 16902
     },
     "faster": {
      "weight": 0.904,
      "spe": 32,
      "speed": 195,
      "ours": 152,
-     "value": 0.001,
-     "leaf_mass": 0.001,
-     "nodes": 0
+     "value": 0.0009,
+     "leaf_mass": 0.0014,
+     "nodes": 14622
     }
    },
    "search": {
@@ -57,7 +57,7 @@
      "ours": 152,
      "value": 1,
      "leaf_mass": 0,
-     "nodes": 2768
+     "nodes": 320
     },
     "faster": {
      "weight": 0.9399,
@@ -66,7 +66,7 @@
      "ours": 152,
      "value": 0.0009,
      "leaf_mass": 0.0014,
-     "nodes": 736
+     "nodes": 112
     }
    },
    "search": {
@@ -80,11 +80,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 152.0,
+     "speed": 98,
+     "ours": 152,
      "value": 0.9995,
      "leaf_mass": 0.0014,
-     "nodes": 54426
+     "nodes": 28218
     }
    },
    "search": {
@@ -98,11 +98,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 152.0,
+     "speed": 98,
+     "ours": 152,
      "value": 0.9995,
      "leaf_mass": 0.0014,
-     "nodes": 54426
+     "nodes": 28218
     }
    },
    "search": {
@@ -120,7 +120,7 @@
      "ours": 149,
      "value": 0.0003,
      "leaf_mass": 0.0014,
-     "nodes": 734
+     "nodes": 112
     }
    },
    "search": {
@@ -138,7 +138,7 @@
      "ours": 149,
      "value": 1,
      "leaf_mass": 0,
-     "nodes": 4250
+     "nodes": 1076
     }
    },
    "search": {
@@ -156,7 +156,7 @@
      "ours": 149,
      "value": 0.0003,
      "leaf_mass": 0.0014,
-     "nodes": 155182
+     "nodes": 18774
     }
    },
    "search": {
@@ -170,11 +170,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 152.0,
+     "speed": 98,
+     "ours": 152,
      "value": 0.9995,
      "leaf_mass": 0.0014,
-     "nodes": 54426
+     "nodes": 28218
     }
    },
    "search": {
@@ -188,11 +188,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 152.0,
+     "speed": 98,
+     "ours": 152,
      "value": 0.0232,
      "leaf_mass": 0.037,
-     "nodes": 66002
+     "nodes": 32790
     }
    },
    "search": {
@@ -206,11 +206,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 120.0,
-     "ours": 81.0,
+     "speed": 120,
+     "ours": 81,
      "value": 0.9,
      "leaf_mass": 0,
-     "nodes": 404408
+     "nodes": 164152
     }
    },
    "search": {
@@ -224,11 +224,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 120.0,
-     "ours": 81.0,
+     "speed": 120,
+     "ours": 81,
      "value": 0.0132,
      "leaf_mass": 0.037,
-     "nodes": 374092
+     "nodes": 129100
     }
    },
    "search": {
@@ -242,11 +242,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 120.0,
-     "ours": 81.0,
+     "speed": 120,
+     "ours": 81,
      "value": 0.914,
      "leaf_mass": 0.1333,
-     "nodes": 1999782
+     "nodes": 600804
     }
    },
    "search": {
@@ -260,11 +260,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 120.0,
-     "ours": 81.0,
+     "speed": 120,
+     "ours": 81,
      "value": 0.0005,
      "leaf_mass": 0.0014,
-     "nodes": 376736
+     "nodes": 129952
     }
    },
    "search": {
@@ -278,11 +278,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 110.0,
-     "ours": 189.0,
+     "speed": 110,
+     "ours": 189,
      "value": 0.0006,
      "leaf_mass": 0.0014,
-     "nodes": 82008
+     "nodes": 15466
     }
    },
    "search": {
@@ -296,11 +296,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 110.0,
-     "ours": 189.0,
+     "speed": 110,
+     "ours": 189,
      "value": 0.9992,
      "leaf_mass": 0.0014,
-     "nodes": 163919
+     "nodes": 23849
     }
    },
    "search": {
@@ -318,7 +318,7 @@
      "ours": 189,
      "value": 0.0006,
      "leaf_mass": 0.0014,
-     "nodes": 5003
+     "nodes": 84
     }
    },
    "search": {
@@ -332,11 +332,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 110.0,
-     "ours": 189.0,
+     "speed": 110,
+     "ours": 189,
      "value": 0.1109,
      "leaf_mass": 0.0036,
-     "nodes": 4199716
+     "nodes": 506936
     }
    },
    "search": {
@@ -350,11 +350,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 110.0,
-     "ours": 189.0,
+     "speed": 110,
+     "ours": 189,
      "value": 0.9993,
      "leaf_mass": 0.0014,
-     "nodes": 4007020
+     "nodes": 493880
     }
    },
    "search": {
@@ -368,11 +368,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 154.0,
-     "ours": 137.0,
+     "speed": 154,
+     "ours": 137,
      "value": 0.6804,
      "leaf_mass": 0,
-     "nodes": 12831
+     "nodes": 1982
     }
    },
    "search": {
@@ -386,11 +386,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 154.0,
-     "ours": 137.0,
+     "speed": 154,
+     "ours": 137,
      "value": 0,
      "leaf_mass": 0,
-     "nodes": 12556
+     "nodes": 2167
     }
    },
    "search": {
@@ -404,11 +404,11 @@
     "faster": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 154.0,
-     "ours": 137.0,
+     "speed": 154,
+     "ours": 137,
      "value": 0,
      "leaf_mass": 0,
-     "nodes": 7884
+     "nodes": 1170
     }
    },
    "search": {
@@ -422,8 +422,8 @@
     "tied": {
      "weight": 0.0617,
      "spe": 16,
-     "speed": 86.0,
-     "ours": 86.0,
+     "speed": 86,
+     "ours": 86,
      "value": 0.5,
      "leaf_mass": 0,
      "nodes": 1051076
@@ -431,8 +431,8 @@
     "faster": {
      "weight": 0.9383,
      "spe": 32,
-     "speed": 102.0,
-     "ours": 86.0,
+     "speed": 102,
+     "ours": 86,
      "value": 0.0007,
      "leaf_mass": 0.0014,
      "nodes": 365666
@@ -449,8 +449,8 @@
     "slower": {
      "weight": 0.9478,
      "spe": 0,
-     "speed": 70.0,
-     "ours": 86.0,
+     "speed": 70,
+     "ours": 86,
      "value": 0.9993,
      "leaf_mass": 0.0014,
      "nodes": 403840
@@ -458,8 +458,8 @@
     "tied": {
      "weight": 0.0522,
      "spe": 16,
-     "speed": 86.0,
-     "ours": 86.0,
+     "speed": 86,
+     "ours": 86,
      "value": 0.5,
      "leaf_mass": 0,
      "nodes": 1051076
@@ -476,8 +476,8 @@
     "slower": {
      "weight": 0.5283,
      "spe": 0,
-     "speed": 70.0,
-     "ours": 86.0,
+     "speed": 70,
+     "ours": 86,
      "value": 0.9993,
      "leaf_mass": 0.0014,
      "nodes": 403840
@@ -485,8 +485,8 @@
     "tied": {
      "weight": 0.0291,
      "spe": 16,
-     "speed": 86.0,
-     "ours": 86.0,
+     "speed": 86,
+     "ours": 86,
      "value": 0.5,
      "leaf_mass": 0,
      "nodes": 1051076
@@ -494,8 +494,8 @@
     "faster": {
      "weight": 0.4426,
      "spe": 32,
-     "speed": 102.0,
-     "ours": 86.0,
+     "speed": 102,
+     "ours": 86,
      "value": 0.0007,
      "leaf_mass": 0.0014,
      "nodes": 365666
@@ -512,8 +512,8 @@
     "slower": {
      "weight": 0.9478,
      "spe": 0,
-     "speed": 70.0,
-     "ours": 86.0,
+     "speed": 70,
+     "ours": 86,
      "value": 0.0417,
      "leaf_mass": 0,
      "nodes": 426850
@@ -521,8 +521,8 @@
     "tied": {
      "weight": 0.0522,
      "spe": 16,
-     "speed": 86.0,
-     "ours": 86.0,
+     "speed": 86,
+     "ours": 86,
      "value": 0.0208,
      "leaf_mass": 0,
      "nodes": 1108628
@@ -539,11 +539,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 98.0,
-     "ours": 136.0,
+     "speed": 98,
+     "ours": 136,
      "value": 0.9994,
      "leaf_mass": 0.0014,
-     "nodes": 249696
+     "nodes": 78408
     }
    },
    "search": {
@@ -557,20 +557,20 @@
     "tied": {
      "weight": 0.0159,
      "spe": 26,
-     "speed": 136.0,
-     "ours": 136.0,
+     "speed": 136,
+     "ours": 136,
      "value": 0.5,
      "leaf_mass": 0,
-     "nodes": 380772
+     "nodes": 157284
     },
     "faster": {
      "weight": 0.9841,
      "spe": 32,
-     "speed": 143.0,
-     "ours": 136.0,
+     "speed": 143,
+     "ours": 136,
      "value": 0.0008,
      "leaf_mass": 0.0014,
-     "nodes": 125728
+     "nodes": 56608
     }
    },
    "search": {
@@ -584,20 +584,20 @@
     "slower": {
      "weight": 0.9926,
      "spe": 0,
-     "speed": 107.0,
-     "ours": 136.0,
+     "speed": 107,
+     "ours": 136,
      "value": 0.9994,
      "leaf_mass": 0.0014,
-     "nodes": 295314
+     "nodes": 92922
     },
     "tied": {
      "weight": 0.0074,
      "spe": 26,
-     "speed": 136.0,
-     "ours": 136.0,
+     "speed": 136,
+     "ours": 136,
      "value": 0.5,
      "leaf_mass": 0,
-     "nodes": 380772
+     "nodes": 157284
     }
    },
    "search": {
@@ -611,29 +611,29 @@
     "slower": {
      "weight": 0.6818,
      "spe": 0,
-     "speed": 107.0,
-     "ours": 136.0,
+     "speed": 107,
+     "ours": 136,
      "value": 0.9994,
      "leaf_mass": 0.0014,
-     "nodes": 295314
+     "nodes": 92922
     },
     "tied": {
      "weight": 0.0051,
      "spe": 26,
-     "speed": 136.0,
-     "ours": 136.0,
+     "speed": 136,
+     "ours": 136,
      "value": 0.5,
      "leaf_mass": 0,
-     "nodes": 380772
+     "nodes": 157284
     },
     "faster": {
      "weight": 0.3131,
      "spe": 32,
-     "speed": 143.0,
-     "ours": 136.0,
+     "speed": 143,
+     "ours": 136,
      "value": 0.0008,
      "leaf_mass": 0.0014,
-     "nodes": 125728
+     "nodes": 56608
     }
    },
    "search": {
@@ -647,11 +647,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 80.0,
-     "ours": 169.0,
+     "speed": 80,
+     "ours": 169,
      "value": 0.0417,
      "leaf_mass": 0,
-     "nodes": 150690
+     "nodes": 33658
     }
    },
    "search": {
@@ -665,11 +665,11 @@
     "slower": {
      "weight": 1.0,
      "spe": 0,
-     "speed": 80.0,
-     "ours": 169.0,
+     "speed": 80,
+     "ours": 169,
      "value": 0.125,
      "leaf_mass": 0,
-     "nodes": 150690
+     "nodes": 33658
     }
    },
    "search": {
