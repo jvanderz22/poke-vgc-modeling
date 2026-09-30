@@ -13,7 +13,8 @@ as each finishes:
   {key, error}           the solver failed on it
 A position cut off by the deadline gets no line, so a rerun with the same --out picks it up again,
 and so does the next export. `summary.json` beside --out records the sha256 of the solver that
-ran, which `vgc wp merge-solves` insists matches its own before it caches anything.
+ran and the version it declares, one of which `vgc wp merge-solves` insists matches its own
+before it caches anything.
 
 The deadline is the point: Kaggle ends a session at 12 hours and keeps its output only if the
 session ends normally, so the run has to stop itself first, with everything it finished written.
@@ -28,6 +29,7 @@ import json
 import os
 import platform
 import queue
+import re
 import shutil
 import stat
 import subprocess
@@ -104,7 +106,12 @@ def main() -> int:
             ap.error("missing " + ", ".join("--" + k for k in missing))
     t0 = time.time()
     deadline = t0 + cfg["max_minutes"] * 60 - GRACE
-    sha = hashlib.sha256(open(cfg["solver"], "rb").read()).hexdigest()
+    source = open(cfg["solver"], "rb").read()
+    sha = hashlib.sha256(source).hexdigest()
+    # The behaviour version the solver declares (`const VERSION = n;`), which is what the merge
+    # compares when the source itself differs; None when it declares none.
+    declared = re.search(rb"^const VERSION = (\d+);", source, re.M)
+    version = int(declared.group(1)) if declared else None
     node_version = subprocess.run([cfg["node"], "--version"], capture_output=True, text=True).stdout.strip()
 
     jobs = [json.loads(x) for x in open(cfg["jobs"]) if x.strip()]
@@ -165,7 +172,7 @@ def main() -> int:
         t.join()
     out.close()
     counts["not_started"] = todo.qsize()
-    summary = {"solver_sha256": sha, "node": node_version, "where": cfg["where"], "workers": cfg["workers"],
+    summary = {"solver_sha256": sha, "solver_version": version, "node": node_version, "where": cfg["where"], "workers": cfg["workers"],
                "cap": cfg["cap"], "max_minutes": cfg["max_minutes"], "elapsed_s": round(time.time() - t0),
                "jobs": len(jobs), "answered_before": len(done), **counts, "run": cfg["run"]}
     with open(os.path.join(os.path.dirname(os.path.abspath(cfg["out"])), "summary.json"), "w") as fh:

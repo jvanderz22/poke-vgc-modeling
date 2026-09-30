@@ -28,9 +28,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -209,9 +211,13 @@ def _ability(reg: Regulation, species: str) -> str:
     return next(iter((reg.dex.get_species(species) or {}).get("abilities", {}).values()), "")
 
 
-# One line per solved position, keyed on the position and the solver's own source, so a long
-# solve that is stopped keeps what it finished — F6 alone ran for hours, and the whole run used to
-# be written only at the end — and a change to the solver invalidates everything it produced.
+# One line per solved position, so a long solve that is stopped keeps what it finished (F6 alone
+# ran for hours, and the whole run used to be written only at the end). An answer is keyed on the
+# position and on the solver's behaviour: the version it declares (`const VERSION = n;` in
+# endgame-solver.js), bumped whenever a change could move any answer, or, where it declares none,
+# its whole source. Keyed on the source, an edit that changes nothing (pruning that is switched
+# off, a comment) threw away hours of answers. Keyed on a version, a forgotten bump would keep
+# wrong ones, so each line keeps its position and `check_cache` re-solves a sample of them.
 CACHE = paths.ROOT / ".vgc" / "endgame-solver.jsonl"
 # Positions that ran past a cap, so a rerun at the same or a lower cap does not spend it again. The
 # cache holds answers only; a timeout is a fact about a run's budget (and, from `offload`, where).
@@ -231,10 +237,49 @@ def timed_out() -> dict[str, float]:
     return out
 
 
+_VERSION = re.compile(rb"^const VERSION = (\d+);", re.M)
+
+
+def solver_version(source: Path | None = None) -> int | None:
+    """The behaviour version the solver declares, or None where it declares none."""
+    m = _VERSION.search((source or SOLVER).read_bytes())
+    return int(m.group(1)) if m else None
+
+
 def position_key(pos: dict[str, Any]) -> str:
-    h = hashlib.sha256(SOLVER.read_bytes())
+    v = solver_version()
+    h = hashlib.sha256(f"endgame-solver v{v}\n".encode() if v is not None else SOLVER.read_bytes())
     h.update(json.dumps(pos, sort_keys=True).encode())
     return h.hexdigest()
+
+
+def cache_rows() -> list[dict[str, Any]]:
+    """Every line of the cache: `{key, result}`, and `position` where it was kept."""
+    if not CACHE.exists():
+        return []
+    return [json.loads(x) for x in CACHE.read_text().splitlines() if x.strip()]
+
+
+def check_cache(sample: int = 20, cheapest: bool = False, seed: int | None = None) -> list[dict[str, Any]]:
+    """Cached answers under the current key, solved again without the cache. A difference means
+    the solver's behaviour changed without its VERSION being bumped. `cheapest` takes the ones
+    that simulated the fewest turns, which is what a test can afford; otherwise a random sample."""
+    import random
+
+    rows = [r for r in cache_rows() if r.get("position") and position_key(r["position"]) == r["key"]]
+    rows = list({r["key"]: r for r in rows}.values())
+    if cheapest:
+        rows = sorted(rows, key=lambda r: r["result"]["nodes"])[:sample]
+    else:
+        rows = random.Random(seed).sample(rows, min(sample, len(rows)))
+    out = []
+    for r in rows:
+        again = solve_uncached(r["position"])
+        same = all(again[k] == r["result"][k] for k in ("value", "leaf_mass", "nodes"))
+        out.append({"key": r["key"][:12], "nodes": r["result"]["nodes"], "same": same,
+                    **({} if same else {"cached": {k: r["result"][k] for k in ("value", "leaf_mass", "nodes")},
+                                        "now": {k: again[k] for k in ("value", "leaf_mass", "nodes")}})})
+    return out
 
 
 def _cached() -> dict[str, dict[str, Any]]:
@@ -252,7 +297,7 @@ def remember(pos: dict[str, Any], result: dict[str, Any]) -> None:
     with _cache_lock:
         CACHE.parent.mkdir(parents=True, exist_ok=True)
         with CACHE.open("a") as fh:
-            fh.write(json.dumps({"key": position_key(pos), "result": result}) + "\n")
+            fh.write(json.dumps({"key": position_key(pos), "result": result, "position": pos}) + "\n")
 
 
 def solve_uncached(pos: dict[str, Any]) -> dict[str, Any]:

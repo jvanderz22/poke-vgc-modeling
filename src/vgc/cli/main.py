@@ -859,6 +859,21 @@ def cmd_wp_merge_solves(args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
+def cmd_wp_cache_check(args: argparse.Namespace) -> int:
+    """Solve a sample of cached solver answers again, uncached: a difference means the solver's
+    behaviour changed without its VERSION being bumped (`vgc.wp.solver.check_cache`)."""
+    from vgc.wp import solver
+
+    out = solver.check_cache(args.sample, cheapest=args.cheapest)
+    bad = [r for r in out if not r["same"]]
+    for r in out:
+        print(f"  {r['key']}  {r['nodes']:>7} turns  {'same' if r['same'] else 'DIFFERENT ' + json.dumps(r)}")
+    print(f"{len(out) - len(bad)} of {len(out)} the same (solver version {solver.solver_version()})")
+    if not out:
+        print("no cached answer under the current key has its position kept yet", file=sys.stderr)
+    return 1 if bad else 0
+
+
 def showdown_sha() -> str:
     from vgc.engine.showdown import head_sha
 
@@ -1380,6 +1395,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--jobs", required=True, help="the jobs.jsonl that was sent")
     p.add_argument("--verify", type=int, default=3, help="re-solve this many of the smallest here first")
     p.set_defaults(func=cmd_wp_merge_solves)
+    p = with_reg(wp.add_parser("cache-check", help="re-solve cached solver answers without the cache"))
+    p.add_argument("--sample", type=int, default=20)
+    p.add_argument("--cheapest", action="store_true", help="the cheapest ones rather than a random sample")
+    p.set_defaults(func=cmd_wp_cache_check)
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")

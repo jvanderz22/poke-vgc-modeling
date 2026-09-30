@@ -146,10 +146,17 @@ bash scripts/cloud/kaggle_solve.sh --collect
   of the laptop's version (checksum-verified from nodejs.org, cached in `.vgc/cache/`) and the
   12 MB slice of the pinned Showdown build that the solver loads. The engine is pushed again only
   when Node or the Showdown pin changes.
-- **What the merge checks.** It merges nothing unless all of these hold: the run's solver sha256
-  is the local one, every result is for a job that was sent, the kernel's output is the run
-  launched from here, and the smallest three results re-solve locally to the same value, leaf
-  mass and node count.
+- **What the merge checks.** It merges nothing unless all of these hold: the run's solver
+  declares the same `VERSION` as the local one (or, where neither declares one, has the same
+  sha256), every result is for a job that was sent, the kernel's output is the run launched from
+  here, and the smallest three results re-solve locally to the same value, leaf mass and node
+  count. Results are keyed by the positions sent, so a run exported under older keys lands under
+  the current ones.
+- **The version, and the guard on it.** Answers are cached under the solver's declared behaviour
+  version, bumped with any change that could move an answer. An edit that cannot (pruning
+  switched off, a comment) keeps every cached answer. A forgotten bump is caught by
+  `vgc wp cache-check`, which solves a sample of cached answers again without the cache; the test
+  suite runs it on the three cheapest.
 - **The 12-hour limit.** Kaggle keeps output only when a session ends normally, so
   `solve_batch.py` stops itself by `--max-minutes` (690) with every answer written. A position
   cut off is simply exported again next time. A position that runs past `--cap` is recorded as a

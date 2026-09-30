@@ -84,3 +84,62 @@ def test_a_position_past_its_cap_is_a_timeout_and_is_exported_again(cache, reg):
     out = offload.merge(cache / "results.jsonl", path)
     assert out["timeouts"] == 1 and out["merged"] == 0
     assert offload.export([jobs[0][2]], cache / "again.jsonl")["timed_out_before"] == 1
+
+
+ORIGINAL = solver.SOLVER          # read before any test puts a copy in its place
+
+
+def _versioned(tmp_path, name, version, extra=""):
+    """A copy of the solver declaring `version`, with `extra` appended (a change of source only)."""
+    src = ORIGINAL.read_text()
+    if version is not None:
+        src = src.replace("'use strict';\n", f"'use strict';\nconst VERSION = {version};\n", 1)
+    p = tmp_path / name
+    p.write_text(src + extra)
+    return p
+
+
+def test_a_declared_version_keys_the_cache_so_an_edit_that_changes_nothing_keeps_it(tmp_path, monkeypatch, positions):
+    pos = positions[0]
+    keys = {}
+    for name, version, extra in (("a.js", 7, ""), ("b.js", 7, "// a comment\n"), ("c.js", 8, ""),
+                                 ("d.js", None, ""), ("e.js", None, "// a comment\n")):
+        monkeypatch.setattr(solver, "SOLVER", _versioned(tmp_path, name, version, extra))
+        keys[name] = solver.position_key(pos)
+    assert keys["a.js"] == keys["b.js"]            # same version, different source: the same answers
+    assert keys["a.js"] != keys["c.js"]            # a bump: new answers
+    assert keys["d.js"] != keys["e.js"]            # no version declared: keyed on the source, as before
+    assert solver.solver_version(tmp_path / "a.js") == 7 and solver.solver_version(tmp_path / "d.js") is None
+
+
+def test_the_cache_check_catches_an_answer_the_solver_would_not_give(cache, monkeypatch, positions):
+    monkeypatch.setattr(solver, "SOLVER", _versioned(cache, "v.js", 7))
+    solver.run(positions[0])
+    assert [r["same"] for r in solver.check_cache(5, cheapest=True)] == [True]
+    rows = solver.cache_rows()
+    rows[0]["result"]["value"] = 1 - rows[0]["result"]["value"]
+    solver.CACHE.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    assert [r["same"] for r in solver.check_cache(5, cheapest=True)] == [False]
+
+
+def test_a_merge_takes_the_same_version_from_another_source_and_refuses_another_version(cache, monkeypatch, positions):
+    monkeypatch.setattr(solver, "SOLVER", _versioned(cache, "ran.js", 7))
+    jobs = cache / "jobs.jsonl"
+    offload.export(positions[:1], jobs)
+    _run(cache, jobs)
+    monkeypatch.setattr(solver, "SOLVER", _versioned(cache, "bumped.js", 8))
+    with pytest.raises(ValueError, match="version"):
+        offload.merge(cache / "results.jsonl", jobs, verify=0)
+    monkeypatch.setattr(solver, "SOLVER", _versioned(cache, "here.js", 7, "// edited, same behaviour\n"))
+    out = offload.merge(cache / "results.jsonl", jobs, verify=1)
+    assert out["merged"] == 1 and out["verified"][0]["same"]
+    assert solver.run(positions[0]).get("cached")
+
+
+def test_the_real_cache_still_gives_its_cheapest_answers():
+    """The guard against a forgotten VERSION bump, on this machine's cache: its three cheapest
+    answers under the current key, solved again without it."""
+    out = solver.check_cache(3, cheapest=True)
+    if not out:
+        pytest.skip("no cached answer under the current key keeps its position yet")
+    assert all(r["same"] for r in out), out
