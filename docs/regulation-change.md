@@ -34,6 +34,28 @@ built from the regulation's dex, so a new pool shifts every embedding id. An M-C
 give wrong answers on M-D inputs. Until the "Regulation-portable models" TODO in PLAN.md is done,
 always retrain.
 
+**But train on the old regulation's games too.** Measured 2026-09-29 on M-B → M-C
+(`scripts/analysis/regulation_transfer.py`, `data/analysis/reg_mc/regulation_transfer.json`), for
+the two families that read no identity ids (logistic and GBT), scored on M-C's held-out human games
+from the stands, with a paired bootstrap over battles:
+
+| GBT trained on | Open sheets | Closed |
+| --- | --- | --- |
+| all of M-C (10,195 battles) | 0.547 | 0.561 |
+| M-B only (8,874) | 0.556 | 0.573 |
+| 3% of M-C (306) | 0.605 | 0.619 |
+| 3% of M-C + M-B | **0.554** (−0.052, better) | **0.568** (−0.050, better) |
+| 10% of M-C (1,020) | 0.563 | 0.573 |
+| 10% of M-C + M-B | **0.551** (−0.012, better) | 0.567 (−0.006, not distinguishable) |
+
+(Log loss; the bracket is the difference to the same fraction without M-B.) A model trained on the
+old regulation alone is within 0.01 of the new one's ceiling and ahead of one trained on its first
+tenth. So on the day a regulation opens, train on the old one's games plus whatever the new one has,
+and drop the old ones once the new one's own data catches up. The logistic model is too simple to
+tell the regulations apart, and every one of its conditions is within 0.003. The set encoder, which
+is what is served, needs the shared vocabulary before it can be measured the same way. This result
+makes that measurement worth doing, but it has not been done yet.
+
 ---
 
 ## 0. Before you start (the day the rules are announced)

@@ -1,0 +1,346 @@
+{
+ "train_rows": {
+  "mc_full": 410208,
+  "mb": 386243,
+  "mc_0.03": 12592,
+  "mc_0.03+mb": 398835,
+  "mc_0.1": 41876,
+  "mc_0.1+mb": 428119
+ },
+ "train_battles": {
+  "mc_full": 10195,
+  "mb": 8874,
+  "mc_0.03": 306,
+  "mc_0.03+mb": 9180,
+  "mc_0.1": 1020,
+  "mc_0.1+mb": 9894
+ },
+ "eval_human_ots": {
+  "rows": 24306,
+  "battles": 1176,
+  "logistic": {
+   "logloss": {
+    "mc_full": 0.58015,
+    "mb": 0.58002,
+    "mc_0.03": 0.58261,
+    "mc_0.03+mb": 0.58,
+    "mc_0.1": 0.58125,
+    "mc_0.1+mb": 0.57987
+   },
+   "ece": {
+    "mc_full": 0.0258,
+    "mb": 0.0178,
+    "mc_0.03": 0.0339,
+    "mc_0.03+mb": 0.018,
+    "mc_0.1": 0.0266,
+    "mc_0.1+mb": 0.019
+   },
+   "vs_mc_full": {
+    "mb": {
+     "minus_mc_full": -0.00013,
+     "ci95": [
+      -0.00153,
+      0.00129
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.03": {
+     "minus_mc_full": 0.00245,
+     "ci95": [
+      0.00091,
+      0.00396
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.03+mb": {
+     "minus_mc_full": -0.00015,
+     "ci95": [
+      -0.00146,
+      0.00117
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.1": {
+     "minus_mc_full": 0.0011,
+     "ci95": [
+      -0.00041,
+      0.00261
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.1+mb": {
+     "minus_mc_full": -0.00028,
+     "ci95": [
+      -0.00141,
+      0.00085
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "vs_mc_0.03": {
+    "mc_0.03+mb": {
+     "minus_mc_0.03": -0.00261,
+     "ci95": [
+      -0.00543,
+      0.00023
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "vs_mc_0.1": {
+    "mc_0.1+mb": {
+     "minus_mc_0.1": -0.00138,
+     "ci95": [
+      -0.00396,
+      0.00128
+     ],
+     "verdict": "not distinguishable"
+    }
+   }
+  },
+  "gbt": {
+   "logloss": {
+    "mc_full": 0.54698,
+    "mb": 0.55626,
+    "mc_0.03": 0.60531,
+    "mc_0.03+mb": 0.55362,
+    "mc_0.1": 0.56346,
+    "mc_0.1+mb": 0.55116
+   },
+   "ece": {
+    "mc_full": 0.0137,
+    "mb": 0.0056,
+    "mc_0.03": 0.0539,
+    "mc_0.03+mb": 0.0086,
+    "mc_0.1": 0.0067,
+    "mc_0.1+mb": 0.0088
+   },
+   "vs_mc_full": {
+    "mb": {
+     "minus_mc_full": 0.00928,
+     "ci95": [
+      0.00442,
+      0.01419
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.03": {
+     "minus_mc_full": 0.05833,
+     "ci95": [
+      0.04656,
+      0.07015
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.03+mb": {
+     "minus_mc_full": 0.00664,
+     "ci95": [
+      0.00248,
+      0.01075
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.1": {
+     "minus_mc_full": 0.01648,
+     "ci95": [
+      0.01058,
+      0.02236
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.1+mb": {
+     "minus_mc_full": 0.00418,
+     "ci95": [
+      0.00016,
+      0.00785
+     ],
+     "verdict": "worse"
+    }
+   },
+   "vs_mc_0.03": {
+    "mc_0.03+mb": {
+     "minus_mc_0.03": -0.05169,
+     "ci95": [
+      -0.06266,
+      -0.04029
+     ],
+     "verdict": "better"
+    }
+   },
+   "vs_mc_0.1": {
+    "mc_0.1+mb": {
+     "minus_mc_0.1": -0.0123,
+     "ci95": [
+      -0.01788,
+      -0.00669
+     ],
+     "verdict": "better"
+    }
+   }
+  }
+ },
+ "eval_human_closed": {
+  "rows": 22370,
+  "battles": 1085,
+  "logistic": {
+   "logloss": {
+    "mc_full": 0.60093,
+    "mb": 0.60233,
+    "mc_0.03": 0.60116,
+    "mc_0.03+mb": 0.60219,
+    "mc_0.1": 0.60132,
+    "mc_0.1+mb": 0.60197
+   },
+   "ece": {
+    "mc_full": 0.0166,
+    "mb": 0.0234,
+    "mc_0.03": 0.015,
+    "mc_0.03+mb": 0.0231,
+    "mc_0.1": 0.0161,
+    "mc_0.1+mb": 0.0217
+   },
+   "vs_mc_full": {
+    "mb": {
+     "minus_mc_full": 0.00141,
+     "ci95": [
+      -0.00026,
+      0.00301
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.03": {
+     "minus_mc_full": 0.00023,
+     "ci95": [
+      -0.00157,
+      0.0021
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.03+mb": {
+     "minus_mc_full": 0.00127,
+     "ci95": [
+      -0.00028,
+      0.00276
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.1": {
+     "minus_mc_full": 0.00039,
+     "ci95": [
+      -0.00132,
+      0.00215
+     ],
+     "verdict": "not distinguishable"
+    },
+    "mc_0.1+mb": {
+     "minus_mc_full": 0.00104,
+     "ci95": [
+      -0.00031,
+      0.00235
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "vs_mc_0.03": {
+    "mc_0.03+mb": {
+     "minus_mc_0.03": 0.00104,
+     "ci95": [
+      -0.00238,
+      0.00434
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "vs_mc_0.1": {
+    "mc_0.1+mb": {
+     "minus_mc_0.1": 0.00065,
+     "ci95": [
+      -0.00239,
+      0.00359
+     ],
+     "verdict": "not distinguishable"
+    }
+   }
+  },
+  "gbt": {
+   "logloss": {
+    "mc_full": 0.56092,
+    "mb": 0.57343,
+    "mc_0.03": 0.6187,
+    "mc_0.03+mb": 0.56825,
+    "mc_0.1": 0.57299,
+    "mc_0.1+mb": 0.56701
+   },
+   "ece": {
+    "mc_full": 0.0066,
+    "mb": 0.0133,
+    "mc_0.03": 0.0598,
+    "mc_0.03+mb": 0.0086,
+    "mc_0.1": 0.0218,
+    "mc_0.1+mb": 0.007
+   },
+   "vs_mc_full": {
+    "mb": {
+     "minus_mc_full": 0.01251,
+     "ci95": [
+      0.0066,
+      0.01849
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.03": {
+     "minus_mc_full": 0.05777,
+     "ci95": [
+      0.04442,
+      0.07019
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.03+mb": {
+     "minus_mc_full": 0.00732,
+     "ci95": [
+      0.002,
+      0.01274
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.1": {
+     "minus_mc_full": 0.01207,
+     "ci95": [
+      0.00219,
+      0.02056
+     ],
+     "verdict": "worse"
+    },
+    "mc_0.1+mb": {
+     "minus_mc_full": 0.00609,
+     "ci95": [
+      0.00123,
+      0.01119
+     ],
+     "verdict": "worse"
+    }
+   },
+   "vs_mc_0.03": {
+    "mc_0.03+mb": {
+     "minus_mc_0.03": -0.05045,
+     "ci95": [
+      -0.06456,
+      -0.03531
+     ],
+     "verdict": "better"
+    }
+   },
+   "vs_mc_0.1": {
+    "mc_0.1+mb": {
+     "minus_mc_0.1": -0.00598,
+     "ci95": [
+      -0.01524,
+      0.00658
+     ],
+     "verdict": "not distinguishable"
+    }
+   }
+  }
+ }
+}

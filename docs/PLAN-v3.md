@@ -365,7 +365,7 @@ The gates:
 | Hyperparameter sweeps on the set encoder | Closed. Every config selected epoch 1–2; the limit is coverage |
 | A GBT calibration path | Only if a GBT is ever served again (it is set-blind) |
 | The belief's own P(faster) as a model input | Training rows where a spread is known (self-play only) |
-| Regulation-portable models | A model worth porting. The M-B transfer measurement is worth having before the 2026-12-02 rotation |
+| Regulation-portable models | A model worth porting. The M-B → M-C measurement is done (2026-09-29, `docs/regulation-change.md`): for GBT, the old regulation's games are worth nearly a whole new regulation's, and warm-starting with them beats the new regulation's first 3–10% alone. The set encoder (shared vocabulary) is the remaining piece before the 2026-12-02 rotation |
 | PPO fine-tuning, the precomputed matchup matrix | Cancelled |
 
 ---
