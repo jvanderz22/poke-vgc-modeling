@@ -123,6 +123,59 @@ stages 2 and 3 need.
 - **Check, after:** hand-read debug logs for one position of each kind; every listed choice
   accepted over a round of self-play turns.
 
+**Measured so far (2026-09-30, on the `solver-pruning` branch).**
+- **Pruning on the 1v1s, `k = 3`, three passes.** Against 543 exact answers: 500 identical, mean
+  gap 0.004, 13 off by more than 0.05, and the exact root play kept on both sides in 477 of 518
+  (92%), at 2.6× less time.
+  - The damage score alone dropped Fake Out, priority attacks, and setup or recovery. The rules
+    above now keep a usable Fake Out and the best priority attack.
+  - Setup and healing score high only when the foe's best attack takes under half this
+    Pokémon's HP.
+  - What is left is mostly second attacks whose value is a side effect (Iron Head's flinch).
+- **The solver plays doubles positions.** One or two actives a side, per-Pokémon fields as lists,
+  the Protect counter, choices per slot with targets, per-slot pruning with the overkill rule, the
+  KO extension and `stats`. With pruning off it reproduces the cached 1v1 answers bit for bit (60
+  of 60: value, leaf mass, nodes, choices).
+- **A 2v2 at depth 1 is not affordable as the 1v1 is.** Four 2v2 positions built from real sets,
+  each with `k = 3`:
+
+  | position | KO extension | chance | seconds | leaf mass |
+  | --- | --- | --- | --- | --- |
+  | 0 | on | exact | 339 | 0.63 |
+  | 0 | off | exact | 19 | 0.99 |
+  | 0 | on | `cutoff` 1e-2 | 344 | 0.63 |
+  | 0 | on | `min_prob` 1e-3, one damage roll | 58 | 0.65 |
+  | 3 | either | any | over 900, or no answer | |
+
+  - Without the extension one turn is cheap but settles nothing (leaf mass 0.99).
+  - With it, most of the time goes on the 1v1s that a second KO opens.
+  - Position 3's spread moves put up to eight hits in a turn, each branching on accuracy, crit,
+    roll and secondary effect. No single outcome is then as likely as 1e-3, so a floor on branch
+    probability either keeps everything or drops every branch of a cell. Dropping them all left
+    the cell with no weight and the answer empty; the likeliest branch of each chance point is now
+    always kept.
+- **So enumerating chance exactly does not scale to doubles.** It is exponential in the hits a
+  turn, and doubles doubles them. The next step is chance handled differently in positions with
+  more than two Pokémon: a turn's chance events sampled, fresh each turn and many times per cell,
+  with the value's sampling error reported beside leaf mass. Sampling each turn is not the
+  determinization that failed in the 1v1: a player still chooses before that turn's dice, and
+  sees them only after, as in a real game. It is checked against exact enumeration on the 2v1
+  positions small enough to enumerate. The 1v1 keeps exact enumeration.
+- **Sampled chance, built (`search.sample = N`), partly checked.**
+  - Drawing with the simulator's own PRNG drew all sixteen damage rolls, so no two sampled turns
+    merged. Draws now come from the representatives the enumeration branches on.
+  - Sixteen draws of a 1v1 turn cost more than all its outcomes, and one position ran past 15
+    minutes. A turn is now enumerated while that takes at most N replays, and sampled only past it.
+  - Against the exact 1v1 answers, `N = 16`, 67 of a random 180 so far: the favoured side agrees
+    in 65 of 65 positions at least 0.1 from even; all 27 near-certain answers (≥ 0.95 or ≤ 0.05)
+    come back within 0.05; none comes back near-certain wrongly; mean gap 0.019, none over 0.2;
+    0.62× the exact time. That is the bar asked of it: advantages and near-certain results, not
+    the digits.
+  - The reported error is too small: 47 of 67 within twice it. A Speed tie sampled sixteen times
+    independently is not eight and eight (one tie, 0.55 exact, came back 0.75). Next: stratified
+    draws, each of the N given its own N-th of each chance event, then the rest of the 180, then
+    the cost of the 2v2 positions with sampling and pruning.
+
 ### 2. The adapter, for open sheets, closed sheets and Watching mode (2 days)
 
 - **`vgc.wp.endgame`.** Accept at most two Pokémon left a side. Per Pokémon: Fake Out
