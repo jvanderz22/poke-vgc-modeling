@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3+ is out of reach at scale (step 7) |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3+ is out of reach at scale (step 8) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
@@ -87,6 +87,9 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
   - Watching mode's number is fixed. It had averaged each position with its mirror.
 - **Regulation transfer measured** (M-B → M-C, [regulation-change](regulation-change.md)): train
   on the old regulation's games as well as the new one's.
+- **On a closed sheet the number is the position as shown** (step 6). It beat the average over
+  drawn sets by 0.015 nats on 1,025 held-out closed-sheet games, and it now leads the page and the
+  brings preview. The damage and bulk channels fail soundness with sheets hidden and stay off.
 
 ---
 
@@ -298,19 +301,34 @@ Speed-raising item's 0-SP extreme to 32. It beats today's prior on every cut, mo
 pairs (−0.015 nats a pair). Reading the multiplier into the benchmark classes was *worse*. F1-B
 is now 0.097. [phase8, "the Speed prior reads the item"](phase8-findings.md).
 
-### 6. Remaining belief-to-app work
+### 6. Remaining belief-to-app work: done
 
-Items 1 and 2 are done (2026-09-29; [phase8, "which number leads on a closed sheet"](phase8-findings.md)):
+Done (2026-09-29; [phase8, "which number leads on a closed sheet" and "damage and bulk with
+sheets hidden"](phase8-findings.md)):
 
 1. ✅ **`wp` vs `wp_open` on the real closed-sheet shard.** On 1,025 held-out closed-sheet games
    the position as shown beats the average over drawn sets by 0.015 nats, at equal confidence. The
    page, the per-turn curve and the benchmark now lead with it. The draws remain as the band.
 2. ✅ **The brings preview no longer guesses one set.** Its closed-sheet opponent is hidden again
    after the simulator builds it, the same finding applied at preview.
-3. **Re-gate damage and bulk under TPO.** Both read the opponent's item and ability off a sheet a
-   cartridge doesn't show. The app doesn't run them live until they pass.
+3. ✅ **Re-gate damage and bulk under TPO: both fail.** Damage is 6.6% silently wrong with sheets
+   hidden (0% open) and bulk 2.2% (0.18%), because an unrevealed damage modifier is read as
+   investment. Neither runs live, so nothing changes. Making them sound would mean bounding over
+   the items and abilities the set belief still allows, and that is deferred.
 
-### 7. Solver speed
+### 7. Housekeeping that pays on every retrain: next
+
+- **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
+  Self-play eval sets already come from the training manifest's runs, so this is the durable
+  version of that.
+- **`vgc wp valcheck`** scores a model's uncalibrated reliability on human validation. Use it to
+  compare recipes without reading the held-out gate.
+- **Caches that go stale:**
+  - the stored decided-endgames list must be regenerated whenever the served model or its
+    calibration changes (`tests/test_endgames.py` catches it);
+  - the `wp-v1`/`wp-v1c` feature datasets (~586 MB, untracked) can be deleted.
+
+### 8. Solver speed
 
 Now that the engine leads the page in a 1v1, how deep it gets is how good that number is. It is
 also Phase 9's search. What step 3.6 measured:
@@ -330,18 +348,6 @@ The levers:
 
 The measure is the step 3.6 run itself: the same 205 games (`scripts/analysis/solver_vs_humans.py`),
 with fewer timeouts and depth 3 in reach. Rerun it at depth 3 once that is affordable.
-
-### 8. Housekeeping that pays on every retrain
-
-- **An eval manifest, then an eval-set cache** keyed on shard sha256 and featurizer version.
-  Self-play eval sets already come from the training manifest's runs, so this is the durable
-  version of that.
-- **`vgc wp valcheck`** scores a model's uncalibrated reliability on human validation. Use it to
-  compare recipes without reading the held-out gate.
-- **Caches that go stale:**
-  - the stored decided-endgames list must be regenerated whenever the served model or its
-    calibration changes (`tests/test_endgames.py` catches it);
-  - the `wp-v1`/`wp-v1c` feature datasets (~586 MB, untracked) can be deleted.
 
 ### 9. Phase 9: policy strength (EWP and search)
 
@@ -403,6 +409,7 @@ The gates:
 | Hyperparameter sweeps on the set encoder | Closed. Every config selected epoch 1–2; the limit is coverage |
 | A GBT calibration path | Only if a GBT is ever served again (it is set-blind) |
 | The belief's own P(faster) as a model input | Training rows where a spread is known (self-play only) |
+| Damage and bulk channels on closed sheets | Bounding an unrevealed item or ability over what the set belief allows. Both fail soundness with sheets hidden (6.6%, 2.2%) and neither runs live |
 | Regulation-portable models | A model worth porting. The M-B → M-C measurement is done (2026-09-29, `docs/regulation-change.md`): for GBT, the old regulation's games are worth nearly a whole new regulation's, and warm-starting with them beats the new regulation's first 3–10% alone. The set encoder (shared vocabulary) is the remaining piece before the 2026-12-02 rotation |
 | PPO fine-tuning, the precomputed matchup matrix | Cancelled |
 

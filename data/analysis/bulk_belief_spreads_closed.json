@@ -1,0 +1,179 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "regime": "closed",
+ "battles": 1000,
+ "pokemon_checked": 3377,
+ "soundness": {
+  "silently_wrong": 74,
+  "rate": 0.021912940479715724,
+  "contradicted": 50,
+  "contradicted_rate": 0.014806040864672786,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-1",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 18,
+     "atk": 1,
+     "def": 17,
+     "spa": 0,
+     "spd": 1,
+     "spe": 29
+    },
+    "bounds": {
+     "hp": [
+      0,
+      32
+     ],
+     "spd": [
+      2,
+      32
+     ],
+     "def": [
+      0,
+      32
+     ]
+    },
+    "used": 2
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-36",
+    "mon": [
+     "p2",
+     "Gardevoir"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 3,
+     "atk": 0,
+     "def": 0,
+     "spa": 7,
+     "spd": 32,
+     "spe": 24
+    },
+    "bounds": {
+     "hp": [
+      10,
+      32
+     ],
+     "spd": [
+      10,
+      32
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   }
+  ]
+ },
+ "power": {
+  "grid_ruled_out": 0.27242493676235197,
+  "axis_ruled_out": {
+   "hp": 0.029089088177721125,
+   "def": 0.06897431764453041,
+   "spd": 0.09380339645011682
+  },
+  "observations_per_pokemon": 1.7204619484749777,
+  "censored_share": 0.49466437177280553,
+  "hit_both_ways": 0.2140953509031685
+ },
+ "events_by_reason": {
+  "usable": 5819,
+  "move_power_hidden": 457,
+  "not_a_damaging_move": 1
+ }
+}

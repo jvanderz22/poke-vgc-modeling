@@ -37,6 +37,8 @@ def main() -> None:
     ap.add_argument("--run", required=True)
     ap.add_argument("--regulation", default="reg_mc")
     ap.add_argument("--battles", type=int, default=1000)
+    ap.add_argument("--regime", choices=("open", "closed"), default="open",
+                    help="closed: the team-sheet lines removed, as a spectator sees a cartridge game")
     args = ap.parse_args()
 
     reg = load_regulation(args.regulation)
@@ -55,7 +57,10 @@ def main() -> None:
         for rec in battles(path, args.battles):
             n += 1
             obs = Observer("spectator", reg.dex)
-            obs.feed_many(rec["log"] if isinstance(rec["log"], list) else rec["log"].split("\n"))
+            log = rec["log"] if isinstance(rec["log"], list) else rec["log"].split("\n")
+            # A channel sound with sheets open has to be re-earned with them hidden (gate rule 7):
+            # the opponent's item and ability are then only what the battle reveals.
+            obs.feed_many(log if args.regime == "open" else [x for x in log if not x.startswith("|showteam|")])
             sets = sets_from_log(rec, reg)
             truth = true_spreads(rec, reg)
             known = {k: v for k, v in sets.items() if k[0] == "p1"}
@@ -94,7 +99,7 @@ def main() -> None:
 
     mean = lambda xs: sum(xs) / max(len(xs), 1)  # noqa: E731
     print(json.dumps({
-        "run": str(path.parent),
+        "run": str(path.parent), "regime": args.regime,
         "battles": n,
         "pokemon_checked": checked,
         "soundness": {"silently_wrong": wrong, "rate": wrong / max(checked, 1),

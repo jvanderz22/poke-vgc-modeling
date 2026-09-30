@@ -7,7 +7,7 @@ is stopped there and asked twice, from the stands, which is how a replay sees it
   engine   `vgc.wp.endgame` over the replay's own Observer, both spreads integrated, solved by
            `sidecar/showdown/endgame-solver.js` at depth 2 for every position and then depth 3 for
            each position that finishes inside `--cap` seconds (`--depths`: depth 3 is out of reach at
-           scale until the solver is faster, PLAN-v3 step 7); a game takes the deepest depth at
+           scale until the solver is faster, PLAN-v3 step 8); a game takes the deepest depth at
            which all of its positions finished
 
 and both are scored against who won. The unit is the replay's group (a Bo3 series or a player

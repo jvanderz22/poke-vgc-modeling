@@ -1577,7 +1577,7 @@ player 1 10% of the time, and positions at 0.83 were won 92% of the time. The mo
 benchmark, now on real games: the model does not follow what decides a 1v1, and the engine does.
 
 What it does not say:
-- **Depth 2 only.** Deeper search is out of reach at scale until the solver is faster (PLAN-v3 step 7).
+- **Depth 2 only.** Deeper search is out of reach at scale until the solver is faster (PLAN-v3 step 8).
   Even the unsettled answers, which rest ~47% on HP share, beat the model. So the search's
   first turns, not the HP heuristic, are where the gain is.
 - **The hard positions are missing.** The 31 excluded games are the ones the solver could not
@@ -1631,3 +1631,27 @@ unknowns in it is one they know. A drawn set, by contrast, is a guess presented 
 The preview's evidence is the preview bucket above, which is the closed-sheet in-battle model from
 the stands. The bring ranking uses the default model from the player's seat, which was not measured
 separately.
+
+## Damage and bulk with sheets hidden: not sound, and not run
+
+Plan v3 step 6, item 3 (2026-09-29). Both channels were gated with open sheets. With the sheet
+lines stripped from the same 1,000 sampled-spread battles, as a spectator sees a cartridge game
+(`--regime closed` on `damage_belief.py` and `bulk_belief.py`, the way `speed_orderings.py`
+re-earned the Speed orderings), they fail:
+
+| channel | silently wrong, sheets open | silently wrong, sheets hidden | contradicted, hidden |
+| --- | --- | --- | --- |
+| damage (offensive SP) | 0 of 2,866 | **189 of 2,867 (6.6%)** | 430 |
+| bulk (HP × defensive SP) | 6 of 3,373 (0.18%) | **74 of 3,377 (2.2%)** | 50 |
+
+(`data/analysis/damage_belief_spreads_closed.json`, `bulk_belief_spreads_closed.json`.) The misses
+are unrevealed damage modifiers read as investment. A Rillaboom's hidden Miracle Seed makes 14
+Attack SP look like at least 16, and Kingambit's Defiant and Baxcalibur's Mega show the same
+pattern. With the sheet, the channel knows the item. Without it, "no item" is an assumption, and
+it is wrong often enough to matter. This is soundness per regime again: 0% wrong under open sheets
+is 6.6% under Team Preview Only.
+
+Nothing in the app changes, because neither channel runs live: the SP belief behind the Speed read
+is combined from the Speed channel alone. To make them sound with sheets hidden, an unrevealed item
+or ability would have to be bounded over everything the set belief still allows, taking the union
+of the feasible sets. That costs power, and nothing waits on it.

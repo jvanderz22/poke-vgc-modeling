@@ -1,0 +1,137 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "regime": "closed",
+ "battles": 1000,
+ "damage_events": 12409,
+ "pokemon_checked": 2867,
+ "soundness": {
+  "silently_wrong": 189,
+  "rate": 0.06592256714335543,
+  "contradicted": 430,
+  "contradicted_rate": 0.1499825601674224,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-0",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": "atk",
+    "true": 19,
+    "bounds": [
+     26,
+     32
+    ],
+    "used": 1,
+    "censored": 0
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-9",
+    "mon": [
+     "p2",
+     "Kingambit"
+    ],
+    "stat": "atk",
+    "true": 30,
+    "bounds": [
+     31,
+     32
+    ],
+    "used": 3,
+    "censored": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-20",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "stat": "atk",
+    "true": 14,
+    "bounds": [
+     16,
+     32
+    ],
+    "used": 3,
+    "censored": 0
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-22",
+    "mon": [
+     "p2",
+     "Sneasler"
+    ],
+    "stat": "atk",
+    "true": 24,
+    "bounds": [
+     27,
+     32
+    ],
+    "used": 1,
+    "censored": 0
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-22",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "stat": "atk",
+    "true": 14,
+    "bounds": [
+     16,
+     32
+    ],
+    "used": 3,
+    "censored": 0
+   }
+  ]
+ },
+ "power": {
+  "narrowed_mean": 0.1318239950957077,
+  "any_narrowing": 0.3498430415068015,
+  "observations_per_pokemon": 1.9769794209975584,
+  "narrowed_mean_uncensored": 0.244798212540148,
+  "narrowed_mean_with_a_ko": 0.08276865705580062
+ },
+ "events_by_reason": {
+  "usable": 11535,
+  "move_power_hidden": 871,
+  "not_a_damaging_move": 3
+ },
+ "truth_distribution": {
+  "0": 210,
+  "1": 83,
+  "2": 80,
+  "3": 81,
+  "4": 78,
+  "5": 54,
+  "6": 84,
+  "7": 97,
+  "8": 71,
+  "9": 81,
+  "10": 50,
+  "11": 80,
+  "12": 80,
+  "13": 73,
+  "14": 84,
+  "15": 89,
+  "16": 97,
+  "17": 69,
+  "18": 92,
+  "19": 112,
+  "20": 80,
+  "21": 77,
+  "22": 88,
+  "23": 64,
+  "24": 104,
+  "25": 71,
+  "26": 99,
+  "27": 79,
+  "28": 73,
+  "29": 102,
+  "30": 110,
+  "31": 84,
+  "32": 91
+ }
+}
