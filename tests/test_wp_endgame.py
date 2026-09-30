@@ -161,3 +161,26 @@ def test_an_ordering_between_the_two_rules_out_pairs(reg, spec):
         for j, b in enumerate(js.values[1]):
             if js.mass[i][j] > 0:
                 assert stat("p2", b) >= stat("p1", a)
+
+
+# --- a replay, from the stands (PLAN-v3 step 3.6) --------------------------------------------------
+
+def _replay(name):
+    return json.loads((paths.ROOT / "tests" / "fixtures" / "replays" / f"{name}.json").read_text())
+
+
+def test_a_replay_stops_at_its_first_1v1_and_plans_from_both_sheets(reg):
+    """A held-out open-sheet game, fed from its log: stopped at the turn mark where each side first
+    has one Pokémon left, with both sheets as the log showed them and both spreads integrated."""
+    battle = endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2682837890"))
+    state = battle.rp.state
+    assert state.perspective == "spectator" and endgame.reason(reg, state) is None
+    assert all(len(endgame._left(state, sid)) == 1 for sid in ("p1", "p2"))
+    assert all(len(battle.setup[sid]) == len(state.sides[sid].mons) for sid in ("p1", "p2"))
+    got = endgame.plan(reg, battle, {**solver.SEARCH, "depth": 2})
+    assert got["eligible"] and len(got["jobs"]) >= 2
+    assert abs(sum(j["weight"] for j in got["jobs"]) - 1) < 1e-9 and got["unsolved"] == 0
+
+
+def test_a_replay_that_never_reaches_a_1v1_gives_none(reg):
+    assert endgame.from_replay(reg, _replay("gen9championsvgc2026regmcbo3-2684057197")) is None

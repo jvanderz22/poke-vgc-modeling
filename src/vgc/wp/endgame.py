@@ -418,3 +418,60 @@ def check(reg: Regulation, search: dict[str, Any] | None = None) -> list[dict[st
                      "leaf_mass": stored.get("leaf_mass"), "reason": got.get("reason"),
                      "weights": weights, "want_weights": {n: round(w, 4) for n, w in want_w.items()}})
     return rows
+
+
+# --- a replay, from the stands (PLAN-v3 step 3.6) -------------------------------------------------
+
+class LogBattle:
+    """A public replay stopped at its first 1v1, in the shape `plan` reads: the state (the log's own
+    `Observer`), the two open sheets as a spectator's setup, and a journal of just what `arrivals`
+    needs — turn marks, arrivals and moves — written as the log is fed."""
+
+    def __init__(self, reg: Regulation, state, setup: dict[str, Any], journal: list[dict[str, Any]]):
+        self.reg, self.setup, self.journal = reg, setup, journal
+        self.rp = type("Replayed", (), {"state": state})()
+
+
+def _one_left(state) -> bool:
+    return all(sum(m.state == "fainted" for m in state.sides[sid].mons) == 3 and len(_left(state, sid)) == 1
+               for sid in ("p1", "p2"))
+
+
+def from_replay(reg: Regulation, replay: dict[str, Any]) -> LogBattle | None:
+    """The replay at the turn mark where each side first has one Pokémon left, or None if it never
+    gets there. The position is the one about to be played, as the app's is."""
+    from vgc.data.observe import Observer
+
+    o = Observer("spectator", reg.dex)
+    journal: list[dict[str, Any]] = []
+    for line in replay["log"].split("\n"):
+        o.feed(line)
+        parts = line.split("|")
+        kind = parts[1] if len(parts) > 1 else ""
+        if kind in ("switch", "drag") and len(parts) > 2:
+            m = o._mon(parts[2])
+            if m is not None:
+                journal.append({"kind": "switch", "side": parts[2][:2], "species": m.species})
+        elif kind == "move" and len(parts) > 2:
+            journal.append({"kind": "move", "side": parts[2][:2]})
+        elif kind == "turn":
+            journal.append({"kind": "turn", "n": int(parts[2])})
+            if _one_left(o):
+                break
+    else:
+        return None
+    if not _one_left(o):
+        return None
+
+    def sheet(m: Any) -> dict[str, Any]:
+        return {"species": m.species,
+                "item": (reg.dex.get_item(m.item) or {}).get("name", m.item) if m.item else (m.item if m.item == "" else None),
+                "ability": m.ability, "nature": m.nature,
+                "moves": [(reg.dex.get_move(x) or {}).get("name", x) for x in m.moves]}
+
+    # The sheet as shown: an item consumed since is still the one it brought.
+    setup = {"perspective": "spectator",
+             **{sid: [sheet(m) | ({"item": (reg.dex.get_item(m.lost_item) or {}).get("name", m.lost_item)}
+                                  if m.lost_item and not m.item else {})
+                      for m in o.sides[sid].mons] for sid in ("p1", "p2")}}
+    return LogBattle(reg, o, setup, journal)
