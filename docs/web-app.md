@@ -232,17 +232,18 @@ engine's answer in a 1v1 average over both players' hidden spreads.
 
 ### The engine's answer in a 1v1
 
-When each side has one Pokémon left, the Battle page puts a second number under the model's: the
-value of the position under best play on both sides, from a search over the pinned simulator
-(`vgc.wp.endgame`, `vgc.web.solving`). The two are labelled **Model** and **Engine**, and neither
-replaces the other. The model says how positions like this have gone in human games. The engine
-says what best play is worth. On 174 held-out human 1v1s it predicted the winner better than the model:
-when it said 95% or more, that side won 48 times in 50 (phase8-findings, "the engine against how
-human 1v1s end").
+When each side has one Pokémon left, the Battle page leads with the engine's number: the value of
+the position under best play on both sides, from a search over the pinned simulator
+(`vgc.wp.endgame`, `vgc.web.solving`). The model's number sits underneath as the second opinion.
+The two are labelled **Engine** and **Model**. The model says how positions like this have gone in
+human games. The engine says what best play is worth. On 174 held-out human 1v1s the engine
+predicted the winner better than the model: when it said 95% or more, that side won 48 times in 50
+(phase8-findings, "the engine against how human 1v1s end").
 
-The search deepens one turn at a time and the page shows the deepest finished answer. A shallow
-one is mostly "whoever has more HP left", so it is faded while more than half of it rests on
-that. When the two numbers are more than 20 points apart, the page says so. On a closed sheet the
+The search deepens one turn at a time and the page shows the deepest finished answer, with how
+much of it still rests on "whoever has more HP left". A shallow answer is not faded, because in
+the same check the answers resting about half on HP share still beat the model. When the two
+numbers are more than 20 points apart, the page says so. On a closed sheet the
 engine solves their three likeliest sets, weighted by what the battle's turn order allows, and
 says how much of the belief was left unsolved. Positions it cannot set up (Substitute, Encore,
 sleep, bad poison) say so instead.

@@ -333,9 +333,10 @@ a.btn-link:hover { background: var(--panel-2); }
 }
 .wp-fill { display: block; height: 100%; background: var(--accent); opacity: .95; }
 .wp-num { color: var(--text); font-size: 15px; }
-/* The engine's answer, under the model's and set apart from it: a second opinion, not a refinement. */
-.engine { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
-.engine .faded { opacity: .45; }
+/* In a 1v1 the engine's answer leads and the model's sits under it, set apart as the second
+   opinion rather than a refinement of the first. */
+.engine { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.wp.second { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); opacity: .8; }
 .engine-apart { color: var(--warn); }
 .engine summary { cursor: pointer; }
 

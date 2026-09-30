@@ -92,8 +92,10 @@ export function BattleSession({ reg, route, navigate, teams }: {
             <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
           </div>
         </div>
-        <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
+        {/* In a 1v1 the engine leads: on held-out human 1v1s it predicted the winner better than the
+            model (PLAN-v3 step 3.6), which stays underneath as the second opinion. */}
         {step === null && view.endgame?.eligible && <EngineRow id={id} reg={reg} view={view} />}
+        <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
       </div>
       <BattleGateBanner gates={view.gates} verdict={view.verdict} />
 
@@ -145,12 +147,13 @@ export function BattleSession({ reg, route, navigate, teams }: {
  *  two numbers.
  */
 function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean }) {
+  // `labelled` is a 1v1, where this is the second number under the engine's.
   const wp = view.wp;
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
   const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
   const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
   return (
-    <div className="wp">
+    <div className={`wp${labelled ? " second" : ""}`}>
       <div className="wp-bar">
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
@@ -170,17 +173,18 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
   );
 }
 
-/** The engine's answer to a 1v1, beside the model's, and labelled as a different claim.
+/** The engine's answer to a 1v1, above the model's, and labelled as a different claim.
  *
  *  The model says how positions like this have gone in human games; the engine says what best
  *  play from both sides is worth, searched a few turns deep on the pinned simulator. In decided
- *  1v1s the model barely moves with the position (docs/phase8-findings.md), which is why this is
- *  here. The engine assumes best play, which a ~1100-rated game does not have, but on 174 held-out
- *  human 1v1s it was still the better predictor of who won (PLAN-v3 step 3.6). When the two
- *  disagree the page says so rather than averaging them.
+ *  1v1s the model barely moves with the position (docs/phase8-findings.md). The engine assumes best
+ *  play, which a ~1100-rated game does not have, but on 174 held-out human 1v1s it was still the
+ *  better predictor of who won (PLAN-v3 step 3.6), so it leads and the model sits underneath.
+ *  When the two disagree the page says so rather than averaging them.
  *
  *  The search deepens in the background, one turn at a time, and this asks again until it is done.
- *  A shallow answer is mostly HP share, so it is shown faded, with how much of it rests on that. */
+ *  A shallow answer rests partly on HP share, and the page says how much, but it is not faded: in
+ *  the same check the answers resting ~half on HP share still beat the model. */
 function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView }) {
   const [ans, setAns] = useState<EngineAnswer | null>(null);
   useEffect(() => {
@@ -196,24 +200,29 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
     return () => { live = false; clearTimeout(timer); };
   }, [id, reg, view]);
 
-  if (!ans) return <div className="engine tiny dim">Engine: starting a search…</div>;
-  if (!ans.eligible) return ans.reason ? <div className="engine tiny dim">Engine: {ans.reason}.</div> : null;
+  if (!ans) return <div className="engine lead tiny dim">Engine: starting a search…</div>;
+  if (!ans.eligible) return ans.reason ? <div className="engine lead tiny dim">Engine: {ans.reason}.</div> : null;
   const pct = (x: number) => Math.round(x * 100);
   const leaf = ans.leaf_mass ?? 1;
-  const shallow = leaf > 0.5;
   const model = view.wp?.wp;
-  const apart = !shallow && ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
+  const apart = ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
   const hidden = view.perspective === "spectator" ? (["p1", "p2"] as const) : (["p2"] as const);
   const names = sideNames(view.perspective);
   const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
   const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
   return (
-    <div className="engine tiny dim">
+    <div className="engine lead tiny dim">
+      {ans.value != null && (
+        <div className="wp-bar">
+          <span className="wp-mark" style={{ left: `${pct(ans.value)}%` }} />
+        </div>
+      )}
       <div className="row" style={{ justifyContent: "space-between" }}>
         <span>
           Engine:{" "}
           {ans.value != null
-            ? <><b className={`wp-num${shallow ? " faded" : ""}`}>{pct(ans.value)}%</b> with best play from both sides</>
+            ? <><b className="wp-num">{pct(ans.value)}%</b>{" "}
+                {view.perspective === "spectator" ? "P1 wins" : "you win"} with best play from both sides</>
             : <>searching…</>}
         </span>
         <span>

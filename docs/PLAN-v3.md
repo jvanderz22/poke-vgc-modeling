@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ On the Battle page beside the model, deepening in the background. ✅ Checked against 174 held-out human 1v1s (step 3.6): better than the model on Brier and log loss, 48 of 50 confident calls right |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ Checked against 174 held-out human 1v1s: it predicts the winner better than the model (Brier 0.090 vs 0.197; 48 of 50 confident calls right). ✅ Leads the Battle page in a 1v1, deepening in the background, with the model underneath. ⏳ Depth 3+ is out of reach at scale (step 7) |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
@@ -78,6 +78,15 @@ Short summaries. For detail, see [PLAN-v2.md](PLAN-v2.md) and the findings docs.
   encoders move the right way on 41–69% of pairs, but only **2–3% of the distance**. The truth
   now comes from **a solver over the engine** (crits included). Against it, no model separates a
   lost 1v1 from a won one: 0.07–0.15, against ≈ 0.95.
+- **The engine in the app, checked on real games** (2026-09-29, steps 3–5 below;
+  [phase8](phase8-findings.md)). In a 1v1 the Battle page solves the live position in the
+  background. A **Watching** mode takes two open sheets with both spreads hidden, which is also how
+  held-out replays are asked. On 174 held-out human 1v1s the engine predicts the winner better than
+  the model, so it leads the page there. Along the way:
+  - the Speed prior reads the item;
+  - Watching mode's number is fixed. It had averaged each position with its mirror.
+- **Regulation transfer measured** (M-B → M-C, [regulation-change](regulation-change.md)): train
+  on the old regulation's games as well as the new one's.
 
 ---
 
@@ -183,9 +192,10 @@ Details: [phase8, "decided-endgame benchmark" and "endgame solver"](phase8-findi
 - **2v2 families wait for Phase 9's search.** A second active Pokémon a side multiplies the
   branching by about 16.
 
-### 3. The solver's answer beside the model's in the app, for 1v1 endgames
+### 3. The solver's answer in the app, for 1v1 endgames: done
 
-Items 1–5 are done (2026-09-29; [phase8, "the solver in the app"](phase8-findings.md)):
+All six items are done (2026-09-29; [phase8, "the solver in the app" and "the engine against how
+human 1v1s end"](phase8-findings.md)):
 - `vgc.wp.endgame` is the adapter. It writes positions through the same `solver.compose` as the
   benchmark, and a closed sheet's sets are reweighted by the turn order under each set's item.
 - `endgame.check` reproduces all 32 solved variants from their journals: same positions, same
@@ -196,13 +206,14 @@ Items 1–5 are done (2026-09-29; [phase8, "the solver in the app"](phase8-findi
   journal.
 - It also found three items illegal in Reg M-C in the benchmark (F5's Choice Band, F11's Assault
   Vest, a filler's Choice Specs). Not fixed: replacing them is a redesign of those families.
-
-Item 6 waits for step 4: a replay is watched from outside, with both spreads hidden.
+- Item 6, the check against human 1v1s, came out for the engine. The page now leads with it
+  (decided 2026-09-29).
 
 In decided 1v1s the model's WP barely depends on the position. The solver gives the engine's
-answer under best play, which is a different claim from what a human game will do. Until the
-solver has been checked against human outcomes (principle 1), the Battle page shows **both**,
-labelled, and neither is presented as *the* number.
+answer under best play, which is a different claim from what a human game will do. Principle 1
+said to show both, labelled, until the solver had been checked against human outcomes. It has
+been, and it is the better predictor, so it leads in a 1v1 and the model stays underneath as
+the second opinion.
 
 1. **When:** both sides have exactly one Pokémon left. The model's number stays on screen
    throughout; the solver's appears beside it.
@@ -236,10 +247,13 @@ labelled, and neither is presented as *the* number.
    174 games at depth 2, the engine beats the model: Brier 0.090 against 0.197, log loss 0.33
    against 0.58, and the called side won 48 of 50 confident calls. It is, if anything,
    underconfident. The run also found that Watching mode averaged each position with its mirror,
-   which is now fixed. The page and its caveat now say the engine was checked. Whether the engine
-   should lead in a 1v1, and whether a shallow answer still needs fading, are open.
+   which is now fixed.
 
-### 4. Observer mode: a battle watched with both sheets open
+   **What it changed:** the engine's number leads the page in a 1v1, and the model's sits under it.
+   A shallow answer is no longer faded, because the answers resting about half on HP share also
+   beat the model. The page still says how much of each answer rests on HP share.
+
+### 4. Observer mode: a battle watched with both sheets open: done
 
 A third way to run the Battle page, beside open and closed: watching someone else's open-sheet
 game (on stream, at an event, a replay). Both sheets are known and **neither side's Stat Points
@@ -247,7 +261,8 @@ are**. It is also the view every public replay gives, so it is what step 3.6 is 
 
 Items 1–4 are done (2026-09-29; [phase8, "observer mode"](phase8-findings.md)): the Watching mode,
 `belief.speed.joint`, `solver.partition_joint`, and the page. The player view goes through the same
-joint path and still reproduces all 32 benchmark variants. Item 5 is done: step 3.6 ran through it.
+joint path and still reproduces all 32 benchmark variants. Item 5 is done too: step 3.6 ran
+through it, 174 replays stopped at their first 1v1.
 
 It is a *perspective* on open sheets, not a third information regime. The model and gate are the
 open-sheet ones (`wp-v1f-idp5`, `in_battle_pass`), and `in_battle_ece` is already scored on
@@ -283,15 +298,7 @@ Speed-raising item's 0-SP extreme to 32. It beats today's prior on every cut, mo
 pairs (−0.015 nats a pair). Reading the multiplier into the benchmark classes was *worse*. F1-B
 is now 0.097. [phase8, "the Speed prior reads the item"](phase8-findings.md).
 
-### 6. Solver speed
-
-F6 alone took 2 h 50 min, and step 3's latency depends on this. It is also Phase 9's search. The
-levers:
-- split one position across workers;
-- reuse results across depths (iterative deepening wants this anyway);
-- prune dominated moves.
-
-### 7. Remaining belief-to-app work
+### 6. Remaining belief-to-app work: next
 
 1. **`wp` vs `wp_open` on the real closed-sheet shard,** before changing which one the Battle page
    leads with. On a live position the two were 11–14 points apart.
@@ -299,6 +306,27 @@ levers:
    particle average the Battle page uses.
 3. **Re-gate damage and bulk under TPO.** Both read the opponent's item and ability off a sheet a
    cartridge doesn't show. The app doesn't run them live until they pass.
+
+### 7. Solver speed
+
+Now that the engine leads the page in a 1v1, how deep it gets is how good that number is. It is
+also Phase 9's search. What step 3.6 measured:
+- **Depth 2 is what's affordable at scale.** Real 1v1s average about 35 s of wall time a position
+  at depth 2, with 6 workers. Depth 3 was out of reach for the check.
+- **The hard positions drop out.** 30 of 205 games had a position that did not finish in 180 s,
+  so the check scores the engine on the 1v1s it can solve. F6 alone took 2 h 50 min.
+- **One game crashes the simulator**, inside `BattleActions.useMove`
+  (`gen9championsvgc2026regmcbo3-2683090653`, error kept in
+  `data/analysis/reg_mc/solver_vs_humans.json`). Fix it first. It is either an adapter position
+  the engine should not be given or a solver bug.
+
+The levers:
+- split one position across workers;
+- reuse results across depths (iterative deepening wants this anyway);
+- prune dominated moves.
+
+The measure is the step 3.6 run itself: the same 205 games (`scripts/analysis/solver_vs_humans.py`),
+with fewer timeouts and depth 3 in reach. Rerun it at depth 3 once that is affordable.
 
 ### 8. Housekeeping that pays on every retrain
 
@@ -400,7 +428,7 @@ The gates:
 | --- | --- |
 | Calibration can't be fixed without more human data | The closed-sheet corpus grew 10× from cached replays. Scrape more Bo1/Bo3 before generating self-play |
 | Phase 9's policy is stronger but still fails Phase 6 | The deterministic stack is the floor, and the check is already built |
-| Reg M-C rotates 2026-12-02 | L0 spine and [regulation-change](regulation-change.md). Phase 7 tools port with the dex |
+| Reg M-C rotates 2026-12-02 | L0 spine and [regulation-change](regulation-change.md). Phase 7 tools port with the dex. Warm-start on the old regulation's games (measured on M-B → M-C); the set encoder's shared vocabulary is still to do |
 | Disk (19 GB free) | Retired models are deleted; stale feature datasets are next |
 
 ---
@@ -412,7 +440,7 @@ The gates:
 | W1 library, validation, bring/lead ranking | ✅ partial. Missing: pokepast.es import, calc panel |
 | W2 in-battle WP with gate banner | ✅. Missing: per-turn WP timeline |
 | W2b weakness and usage reports in the library | ⏳ |
-| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed toggle, the engine's answer in 1v1s) | ✅. Missing: damage snapped to calc buckets |
+| W3 live battle (journal, belief pop-ups, Speed read, WP band, open/closed/watching modes, the engine's answer leading in 1v1s) | ✅. Missing: damage snapped to calc buckets |
 | W4 EWP action table, on-demand bring/lead simulation | Behind Phases 9–10 |
 | W5 complete-my-team, moveset/SP suggestions | Behind Phase 11 |
 

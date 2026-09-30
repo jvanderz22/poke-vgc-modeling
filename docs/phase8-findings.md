@@ -1577,7 +1577,7 @@ player 1 10% of the time, and positions at 0.83 were won 92% of the time. The mo
 benchmark, now on real games: the model does not follow what decides a 1v1, and the engine does.
 
 What it does not say:
-- **Depth 2 only.** Deeper search is out of reach at scale until the solver is faster (step 6).
+- **Depth 2 only.** Deeper search is out of reach at scale until the solver is faster (PLAN-v3 step 7).
   Even the unsettled answers, which rest ~47% on HP share, beat the model. So the search's
   first turns, not the HP heuristic, are where the gain is.
 - **The hard positions are missing.** The 31 excluded games are the ones the solver could not
