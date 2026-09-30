@@ -55,6 +55,11 @@ the benchmark's stored truth, and a sample of step 3.6's positions.
 
 ### 0. The 1v1 on closed sheets, checked (½ day, plus a night on Kaggle)
 
+**Built 2026-09-30; the run is on Kaggle.** `endgame.pair_candidates` and `solver_vs_humans.py
+--sheets closed`. 95 held-out closed-sheet games reach a 1v1, which makes 1,905 positions at
+depth 2 (depth 3 was not distinguishable from depth 2 on open sheets). Pairs are kept heaviest
+first to 90% of the belief, at most 16 a game.
+
 The Battle page already leads with the engine's 1v1 number on a closed sheet, but the check
 behind that (step 3.6) ran on open-sheet games only. Principle 4 says a number belongs to the
 regime it was measured in, so this comes first. It is also the closed-sheet machinery that

@@ -74,8 +74,9 @@ def _spectator_wp(reg: Regulation, records: list[dict[str, Any]], model, fz) -> 
     return [float(x) for x in symmetrize(d, p)["p"]]
 
 
-def _eligible(reg: Regulation, replay: dict[str, Any], rules) -> list[dict[str, Any]] | None:
+def _eligible(reg: Regulation, replay: dict[str, Any], rules, ots: bool = True) -> list[dict[str, Any]] | None:
     """The spectator records of a replay that belongs in the set, or None with the reason dropped.
+    `ots` picks the regime: open team sheets (the default), or team preview only.
 
     Order matters for the counters the CLI prints, but the checks are independent.
     """
@@ -87,7 +88,7 @@ def _eligible(reg: Regulation, replay: dict[str, Any], rules) -> list[dict[str, 
         return None
     records = [r for r in human_snapshots(replay, reg)
                if r["obs"]["perspective"] == "spectator" and not r["meta"]["approx"]]
-    if not records or not records[0]["meta"]["ots"]:
+    if not records or bool(records[0]["meta"]["ots"]) != ots:
         return None
     return records
 

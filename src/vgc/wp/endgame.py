@@ -26,6 +26,11 @@ at 143, and the weight says so. That is why each candidate replays the journal w
 sheet rather than reading the Speed bound off the closed-sheet state, where an unseen Scarf is
 invisible to the channel.
 
+Two closed sheets, as a closed-sheet replay is seen from the stands, are answered over pairs of
+likely sets (`pair_candidates`): the replay is read again with each pair shown on the sheets, so
+the turn order weighs the pair jointly. A hand-entered battle cannot be read again that way, and
+with both sheets closed it is not built.
+
 Some positions are not built, and `plan` says why instead: a volatile the solver cannot set up
 (Substitute, Encore, ...), sleep or bad poison (their counters are not shown), or a side that does
 not have exactly one Pokémon left.
@@ -60,8 +65,10 @@ def _left(state, sid: str) -> list[Any]:
     return [m for m in state.sides[sid].mons if m.state == "active"]
 
 
-def reason(reg: Regulation, state) -> str | None:
-    """Why this position is not a 1v1 the solver can be asked about, or None when it is."""
+def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
+    """Why this position is not a 1v1 the solver can be asked about, or None when it is.
+    `both_closed` says two closed sheets can be answered: a replay can be read again with each
+    candidate pair of sets shown (`LogBattle.with_sets`), a hand-entered battle cannot."""
     if not state.started or state.ended:
         return "the battle is not in progress"
     for sid in ("p1", "p2"):
@@ -74,7 +81,7 @@ def reason(reg: Regulation, state) -> str | None:
             return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
         if m.status and m.status not in STATUSES:
             return f"{m.species} is {m.status}, whose turn counter is not shown"
-    if not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
+    if not both_closed and not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
         return "neither side's set is known"
     return None
 
@@ -223,6 +230,59 @@ def candidates(reg: Regulation, battle, sid: str, notes: list[str], top: int = T
     return kept, max(0.0, 1.0 - sum(c["weight"] for c in kept))
 
 
+def pair_candidates(reg: Regulation, battle, notes: list[str], top: int = 16, cover: float = 0.9
+                    ) -> tuple[list[dict[str, Any]], float]:
+    """Both sides' sets, for a closed-sheet game seen from the stands, where neither is known.
+
+    `candidates` weighs one side's sets against the other's known one. Here neither is known, so
+    the weight belongs to the pair: how often each set is brought, times how likely this battle's
+    turn order is with both of them shown (the joint Speed weight's total). The replay is read
+    again with each pair on the sheets (`LogBattle.with_sets`), because an item acts on the turn
+    order as the log is read. The heaviest `top` pairs are kept, each with the battle read with
+    exactly its two sets shown, heaviest first until `cover` of the weight is in or `top` pairs are,
+    and the weight left over is unsolved."""
+    from vgc.belief import sets as set_belief
+
+    state = battle.rp.state
+    beliefs = {}
+    for sid in ("p1", "p2"):
+        m = _left(state, sid)[0]
+        b = set_belief.given(reg, m)
+        if not b.sheets:
+            notes.append(f"no set anybody has brought fits {m.species}")
+            return [], 1.0
+        beliefs[sid] = [(_named(reg, sh, m.species), sh.count, (sh.item, sh.ability, sh.nature)) for sh in b.sheets]
+    views: dict[tuple, Any] = {}
+    likes: dict[tuple, float] = {}
+    scored = []
+    for s1, n1, g1 in beliefs["p1"]:
+        for s2, n2, g2 in beliefs["p2"]:
+            # As in `candidates`: the likelihood depends on a set through its item, ability and
+            # nature (the reading of the log) and its Speed prior.
+            g = (g1, g2)
+            if g not in views:
+                views[g] = battle.with_sets({"p1": s1, "p2": s2})
+            lk = g + (tuple(_prior(reg, s1)), tuple(_prior(reg, s2)))
+            if lk not in likes:
+                js = speed_joint(reg, views[g].rp.state, {"p1": s1, "p2": s2})
+                likes[lk] = 0.0 if js.contradicted else js.total
+            scored.append({"sets": (s1, s2), "weight": n1 * n2 * likes[lk], "count": n1 * n2})
+    total = sum(c["weight"] for c in scored)
+    if total <= 0:
+        notes.append("no pair of sets fits the turn order logged; weighted by use alone")
+        for c in scored:
+            c["weight"] = float(c["count"])
+        total = sum(c["weight"] for c in scored)
+    scored.sort(key=lambda c: -c["weight"])
+    kept: list[dict[str, Any]] = []
+    for c in scored[:top]:
+        if c["weight"] <= 0 or sum(k["weight"] for k in kept) >= cover:
+            break
+        kept.append({"sets": c["sets"], "weight": c["weight"] / total,
+                     "battle": battle.with_sets({"p1": c["sets"][0], "p2": c["sets"][1]})})
+    return kept, max(0.0, 1.0 - sum(c["weight"] for c in kept))
+
+
 # --- the state --------------------------------------------------------------------------------
 
 def _js_round(x: float) -> int:
@@ -324,53 +384,91 @@ def plan(reg: Regulation, battle, search: dict[str, Any], sets: list[dict[str, A
     from vgc.wp.solver import compose, partition_joint
 
     state = battle.rp.state
-    why = reason(reg, state)
+    closed_both = sets is None and not any(state.sides[sid].sheet or sid == state.perspective
+                                           for sid in ("p1", "p2"))
+    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"))
     if why:
         return {"eligible": False, "reason": why}
     notes: list[str] = []
-    cands: dict[str, list[dict[str, Any]]] = {}
     unsolved = 0.0
-    for sid in ("p1", "p2"):
-        if sets is not None and sid != state.perspective:
-            cands[sid] = [dict(c) for c in sets]
-        else:
-            cands[sid], u = candidates(reg, battle, sid, notes)
-            unsolved = max(unsolved, u)
-        playable = [c for c in cands[sid] if not UNSOLVABLE_MOVES & {to_id(x) for x in c["set"].get("moves") or []}]
-        if len(playable) < len(cands[sid]):
-            if not playable:
-                return {"eligible": False, "reason": f"{_left(state, sid)[0].species} has Revival Blessing, "
-                                                     "which would bring back a Pokémon the solver does not have"}
-            unsolved = max(unsolved, 1 - sum(c["weight"] for c in playable))
-            notes.append(f"{_left(state, sid)[0].species}'s sets with Revival Blessing are not solved")
-            cands[sid] = playable
+
+    def unplayable(s: dict[str, Any]) -> bool:
+        return bool(UNSOLVABLE_MOVES & {to_id(x) for x in s.get("moves") or []})
+
+    # What to solve: pairs of sets, each with its weight, and the battle as it reads with those
+    # sets shown when that differs from `battle` (two closed sheets from the stands).
+    combos: list[dict[str, Any]] = []
+    if closed_both:
+        pairs, unsolved = pair_candidates(reg, battle, notes)
+        playable = [c for c in pairs if not any(unplayable(x) for x in c["sets"])]
+        if pairs and not playable:
+            return {"eligible": False, "reason": "every likely pair of sets has Revival Blessing, which would "
+                                                 "bring back a Pokémon the solver does not have"}
+        if len(playable) < len(pairs):
+            unsolved += sum(c["weight"] for c in pairs) - sum(c["weight"] for c in playable)
+            notes.append("pairs of sets with Revival Blessing are not solved")
+        combos = [{"sets": ({"set": c["sets"][0]}, {"set": c["sets"][1]}), "weight": c["weight"],
+                   "battle": c["battle"]} for c in playable]
+    else:
+        cands: dict[str, list[dict[str, Any]]] = {}
+        for sid in ("p1", "p2"):
+            if sets is not None and sid != state.perspective:
+                cands[sid] = [dict(c) for c in sets]
+            else:
+                cands[sid], u = candidates(reg, battle, sid, notes)
+                unsolved = max(unsolved, u)
+            playable = [c for c in cands[sid] if not unplayable(c["set"])]
+            if len(playable) < len(cands[sid]):
+                if not playable:
+                    return {"eligible": False, "reason": f"{_left(state, sid)[0].species} has Revival Blessing, "
+                                                         "which would bring back a Pokémon the solver does not have"}
+                unsolved = max(unsolved, 1 - sum(c["weight"] for c in playable))
+                notes.append(f"{_left(state, sid)[0].species}'s sets with Revival Blessing are not solved")
+                cands[sid] = playable
+        combos = [{"sets": (c1, c2), "weight": c1["weight"] * c2["weight"], "battle": None}
+                  for c1 in cands["p1"] for c2 in cands["p2"]]
+
+    # Each side's distinct sets, for the summary and for the jobs' indices into it. A side's own
+    # candidates keep their weights; from pairs, a set's weight is its share of the pairs kept.
+    listed: dict[str, list[dict[str, Any]]] = {"p1": [], "p2": []}
+    shares: dict[str, list[float]] = {"p1": [], "p2": []}
+    for combo in combos:
+        for sid, c in zip(("p1", "p2"), combo["sets"]):
+            if c["set"] not in listed[sid]:
+                listed[sid].append(c["set"])
+                shares[sid].append(0.0 if closed_both else c["weight"])
+            if closed_both:
+                shares[sid][listed[sid].index(c["set"])] += combo["weight"]
+
     jobs = []
-    for c1 in cands["p1"]:
-        for c2 in cands["p2"]:
-            pair = {"p1": dict(c1["set"]), "p2": dict(c2["set"])}
-            view = state
-            for sid, c in (("p1", c1), ("p2", c2)):
-                m = _left(state, sid)[0]
-                pair[sid]["mega"] = pair[sid].get("mega") or _mega(reg, state, sid, m, pair[sid].get("item"), notes)
-                if not c.get("known") and not state.sides[sid].sheet:
-                    # A set from the belief, or pinned: the turn order is read with it on the sheet,
-                    # where an unseen Scarf is invisible to the Speed channel.
-                    view = _with_sheet(battle, sid, m.species, pair[sid]).state
-            js = speed_joint(reg, view, pair)
-            if js.contradicted:
-                notes.append("no pair of Speed investments fits the turn order logged, so all of them "
-                             "are counted")
-            f = facts(reg, battle, pair)
-            fixed = tuple(pair[sid]["sp"] if c.get("known") else None for sid, c in (("p1", c1), ("p2", c2)))
-            for name, k in partition_joint(reg, (pair["p1"], pair["p2"]), js, f, fixed).items():
-                sides = {sid: {**pair[sid], "sp": sp} for sid, sp in zip(("p1", "p2"), k["sp"])}
-                jobs.append({"sets": (cands["p1"].index(c1), cands["p2"].index(c2)), "class": name,
-                             "weight": c1["weight"] * c2["weight"] * k["weight"], "spe": k["spe"],
-                             "position": compose(reg, sides["p1"], sides["p2"], f, search)})
+    for combo in combos:
+        c1, c2 = combo["sets"]
+        pair = {"p1": dict(c1["set"]), "p2": dict(c2["set"])}
+        seen = combo["battle"] or battle
+        view = seen.rp.state
+        for sid, c in (("p1", c1), ("p2", c2)):
+            m = _left(state, sid)[0]
+            pair[sid]["mega"] = pair[sid].get("mega") or _mega(reg, state, sid, m, pair[sid].get("item"), notes)
+            if combo["battle"] is None and not c.get("known") and not state.sides[sid].sheet:
+                # A set from the belief, or pinned: the turn order is read with it on the sheet,
+                # where an unseen Scarf is invisible to the Speed channel.
+                view = _with_sheet(battle, sid, m.species, pair[sid]).state
+        js = speed_joint(reg, view, pair)
+        if js.contradicted:
+            notes.append("no pair of Speed investments fits the turn order logged, so all of them "
+                         "are counted")
+        f = facts(reg, seen, pair)
+        fixed = tuple(pair[sid]["sp"] if c.get("known") else None for sid, c in (("p1", c1), ("p2", c2)))
+        for name, k in partition_joint(reg, (pair["p1"], pair["p2"]), js, f, fixed).items():
+            sides = {sid: {**pair[sid], "sp": sp} for sid, sp in zip(("p1", "p2"), k["sp"])}
+            jobs.append({"sets": (listed["p1"].index(c1["set"]), listed["p2"].index(c2["set"])), "class": name,
+                         "weight": combo["weight"] * k["weight"], "spe": k["spe"],
+                         "position": compose(reg, sides["p1"], sides["p2"], f, search)})
     return {"eligible": bool(jobs), "reason": None if jobs else "no set to solve",
-            "sets": {sid: [{"set": {k: v for k, v in c["set"].items() if k not in ("sp", "mega")},
-                            "weight": round(c["weight"], 4)} for c in cs] for sid, cs in cands.items()},
-            "unsolved": round(unsolved, 4), "jobs": jobs, "notes": list(dict.fromkeys(notes))}
+            "sets": {sid: [{"set": {k: v for k, v in x.items() if k not in ("sp", "mega")},
+                            "weight": round(w, 4)} for x, w in zip(listed[sid], shares[sid])]
+                     for sid in ("p1", "p2")},
+            "unsolved": round(min(unsolved, 1.0), 4), "jobs": jobs, "notes": list(dict.fromkeys(notes))}
 
 
 def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) -> dict[str, Any] | None:
@@ -438,9 +536,17 @@ class LogBattle:
     `Observer`), the two open sheets as a spectator's setup, and a journal of just what `arrivals`
     needs — turn marks, arrivals and moves — written as the log is fed."""
 
-    def __init__(self, reg: Regulation, state, setup: dict[str, Any], journal: list[dict[str, Any]]):
-        self.reg, self.setup, self.journal = reg, setup, journal
+    def __init__(self, reg: Regulation, state, setup: dict[str, Any], journal: list[dict[str, Any]],
+                 replay: dict[str, Any] | None = None):
+        self.reg, self.setup, self.journal, self.replay = reg, setup, journal, replay
         self.rp = type("Replayed", (), {"state": state})()
+
+    def with_sets(self, sets: dict[str, dict[str, Any]]) -> LogBattle:
+        """The same replay read again as if each side's sheet had shown `sets[sid]` for the
+        Pokémon it has left: what a closed sheet's candidate sets are weighed and solved with."""
+        out = from_replay(self.reg, self.replay, reveal=sets)
+        assert out is not None, "a replay that reached a 1v1 reaches it again"
+        return out
 
 
 def _one_left(state) -> bool:
@@ -448,14 +554,31 @@ def _one_left(state) -> bool:
                for sid in ("p1", "p2"))
 
 
-def from_replay(reg: Regulation, replay: dict[str, Any]) -> LogBattle | None:
+def _showteam(reg: Regulation, sid: str, s: dict[str, Any]) -> str:
+    """A `|showteam|` line naming one set, in Showdown's packed form, as an open sheet logs it."""
+    item = to_id(s.get("item") or "")
+    moves = ",".join(to_id(x) for x in s.get("moves") or [])
+    return f"|showteam|{sid}|{s['species']}||{item}|{to_id(s.get('ability') or '')}|{moves}|{s.get('nature') or ''}||||||50|"
+
+
+def from_replay(reg: Regulation, replay: dict[str, Any],
+                reveal: dict[str, dict[str, Any]] | None = None) -> LogBattle | None:
     """The replay at the turn mark where each side first has one Pokémon left, or None if it never
-    gets there. The position is the one about to be played, as the app's is."""
+    gets there. The position is the one about to be played, as the app's is.
+
+    `reveal` reads it as if each side's sheet had shown that set for that species, from the
+    first line: a `|showteam|` line is put in after the team is announced, the way an open-sheet
+    log carries one. A closed sheet's candidate sets are weighed this way (`pair_candidates`)."""
     from vgc.data.observe import Observer
 
     o = Observer("spectator", reg.dex)
     journal: list[dict[str, Any]] = []
-    for line in replay["log"].split("\n"):
+    lines = replay["log"].split("\n")
+    if reveal:
+        at = next((i for i, x in enumerate(lines) if x.startswith(("|teampreview", "|start"))), None)
+        assert at is not None, "a log announces its teams before it starts"
+        lines = lines[:at] + [_showteam(reg, sid, s) for sid, s in reveal.items()] + lines[at:]
+    for line in lines:
         o.feed(line)
         parts = line.split("|")
         kind = parts[1] if len(parts) > 1 else ""
@@ -485,4 +608,4 @@ def from_replay(reg: Regulation, replay: dict[str, Any]) -> LogBattle | None:
              **{sid: [sheet(m) | ({"item": (reg.dex.get_item(m.lost_item) or {}).get("name", m.lost_item)}
                                   if m.lost_item and not m.item else {})
                       for m in o.sides[sid].mons] for sid in ("p1", "p2")}}
-    return LogBattle(reg, o, setup, journal)
+    return LogBattle(reg, o, setup, journal, replay)

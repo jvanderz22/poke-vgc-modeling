@@ -229,3 +229,24 @@ def test_the_model_from_the_stands_is_player_1s_chance(reg):
     # Both sheets are open, so every draw is the true position.
     assert got["wp"] == pytest.approx(want) and got["lo"] == pytest.approx(got["hi"])
     assert got["wp"] < 0.35       # Metagross at 41% against a full-health Arcanine-Hisui
+
+
+def test_a_closed_sheet_from_the_stands_is_solved_over_pairs_of_likely_sets(reg):
+    """Neither side's set is known, so the weight belongs to the pair: use times how likely the
+    turn order is with both shown, the replay read again with each pair on the sheets."""
+    battle = endgame.from_replay(reg, _replay("gen9championsvgc2026regmc-2678724403"))
+    state = battle.rp.state
+    assert not any(state.sides[sid].sheet for sid in ("p1", "p2"))
+    assert endgame.reason(reg, state) == "neither side's set is known"
+    got = endgame.plan(reg, battle, {**solver.SEARCH, "depth": 2})
+    assert got["eligible"] and got["jobs"]
+    solved = sum(j["weight"] for j in got["jobs"])
+    assert solved + got["unsolved"] == pytest.approx(1.0, abs=1e-3)
+    assert sum(w["weight"] for w in got["sets"]["p1"]) == pytest.approx(solved, abs=1e-3)
+    # A pair read again with its sets shown: the sheet carries them, from the first line.
+    s1, s2 = got["sets"]["p1"][0]["set"], got["sets"]["p2"][0]["set"]
+    shown = battle.with_sets({"p1": s1, "p2": s2}).rp.state
+    for sid, s in (("p1", s1), ("p2", s2)):
+        m = endgame._left(shown, sid)[0]
+        assert shown.sides[sid].sheet and m.nature == s["nature"]
+        assert set(m.moves) == {endgame.to_id(x) for x in s["moves"]}

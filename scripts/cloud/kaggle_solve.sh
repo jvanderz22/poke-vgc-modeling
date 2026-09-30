@@ -3,8 +3,11 @@
 # cache (`vgc.wp.offload`). The commands that read the answers then run unchanged and find them
 # cached, so the laptop stays free for the long part.
 #
-#   scripts/cloud/kaggle_solve.sh JOBS.jsonl [--cap 180] [--max-minutes 690] [--no-wait]
-#   scripts/cloud/kaggle_solve.sh --collect          # fetch and merge the last run's output
+#   scripts/cloud/kaggle_solve.sh JOBS.jsonl [--cap 180] [--max-minutes 690] [--no-wait] [--name N]
+#   scripts/cloud/kaggle_solve.sh --collect [--name N]   # fetch and merge that run's output
+#
+# --name runs side by side: each name has its own kernel, jobs dataset and work directory, so a
+# second launch does not overwrite what the first one's merge needs. No name is the original run.
 #
 # JOBS.jsonl comes from an export, which writes only positions not already cached:
 #   .venv/bin/python scripts/analysis/solver_vs_humans.py --depths 2,3 --export .vgc/jobs/humans.jsonl
@@ -24,13 +27,14 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-JOBS=""; CAP=180; MAX_MINUTES=690; WAIT=1; COLLECT_ONLY=""
+JOBS=""; CAP=180; MAX_MINUTES=690; WAIT=1; COLLECT_ONLY=""; NAME=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --cap) CAP="$2"; shift 2 ;;
     --max-minutes) MAX_MINUTES="$2"; shift 2 ;;
     --no-wait) WAIT=""; shift ;;
     --collect) COLLECT_ONLY=1; shift ;;
+    --name) NAME="$2"; shift 2 ;;
     -*) echo "unknown option $1" >&2; exit 2 ;;
     *) JOBS="$1"; shift ;;
   esac
@@ -38,9 +42,11 @@ done
 [ -n "$COLLECT_ONLY" ] || [ -f "$JOBS" ] || { echo "usage: $0 JOBS.jsonl [--cap S] [--max-minutes M] [--no-wait] | --collect" >&2; exit 2; }
 
 # Kept across reboots: an overnight run is collected the next day, and the merge needs the jobs sent.
-WORK="${WORK:-.vgc/kaggle-solve}"
+SUFFIX="${NAME:+-$NAME}"
+WORK="${WORK:-.vgc/kaggle-solve$SUFFIX}"
 POLL_SECONDS="${POLL_SECONDS:-120}"
-KERNEL="vgc-endgame-solve"
+KERNEL="vgc-endgame-solve$SUFFIX"
+JOBS_SLUG="vgc-solver-jobs$SUFFIX"
 KAGGLE="${KAGGLE:-.venv/bin/kaggle}"
 VGC="${VGC:-.venv/bin/vgc}"
 command -v "$KAGGLE" >/dev/null || { echo "kaggle CLI not found — pip install -e '.[cloud]'" >&2; exit 1; }
@@ -96,7 +102,7 @@ if [ -z "$COLLECT_ONLY" ]; then
 NODE_V=$(node --version)                  # the laptop's, so both ends run the same engine
 SD_SHA=$(git -C vendor/pokemon-showdown rev-parse HEAD)
 STAMP="engine-${NODE_V}-${SD_SHA:0:12}"
-if [ "$(cat "$WORK/engine-pushed" 2>/dev/null)" != "$STAMP" ]; then
+if [ "$(cat .vgc/kaggle-engine-pushed 2>/dev/null)" != "$STAMP" ]; then
   rm -rf "$WORK/engine"; mkdir -p "$WORK/engine" .vgc/cache
   TARBALL="node-$NODE_V-linux-x64.tar.xz"
   if [ ! -f ".vgc/cache/$TARBALL" ]; then
@@ -115,7 +121,7 @@ if [ "$(cat "$WORK/engine-pushed" 2>/dev/null)" != "$STAMP" ]; then
   du -sh "$WORK/engine" | cut -f1
   push_dataset "$WORK/engine" vgc-solver-engine "VGC solver engine"
   wait_for vgc-solver-engine "$STAMP.json"
-  echo "$STAMP" > "$WORK/engine-pushed"
+  echo "$STAMP" > .vgc/kaggle-engine-pushed
 else
   echo "==> engine $STAMP already on Kaggle"
 fi
@@ -134,22 +140,22 @@ JSON
 cp "$WORK/run/run.json" "$WORK/run/$RUN_ID.json"
 cp "$WORK/run/run.json" "$WORK/launched.json"
 echo "==> $RUN_ID: $(grep -c . "$JOBS") positions, cap ${CAP}s, stop by ${MAX_MINUTES} min"
-push_dataset "$WORK/run" vgc-solver-jobs "VGC solver jobs"
-wait_for vgc-solver-jobs "$RUN_ID.json"
+push_dataset "$WORK/run" "$JOBS_SLUG" "VGC solver jobs$SUFFIX"
+wait_for "$JOBS_SLUG" "$RUN_ID.json"
 
 # --- 3. the kernel: the runner itself, on CPU, no internet ---------------------------------------
 cp scripts/cloud/solve_batch.py "$WORK/nb/"
 cat > "$WORK/nb/kernel-metadata.json" <<JSON
 {
   "id": "$KUSER/$KERNEL",
-  "title": "VGC endgame solve",
+  "title": "VGC endgame solve$SUFFIX",
   "code_file": "solve_batch.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": true,
   "enable_gpu": false,
   "enable_internet": false,
-  "dataset_sources": ["$KUSER/vgc-solver-engine", "$KUSER/vgc-solver-jobs"],
+  "dataset_sources": ["$KUSER/vgc-solver-engine", "$KUSER/$JOBS_SLUG"],
   "competition_sources": [],
   "kernel_sources": []
 }
@@ -159,7 +165,7 @@ echo "==> launching on CPU"
 
 if [ -z "$WAIT" ]; then
   echo "==> launched. Watch https://kaggle.com/code/$KUSER/$KERNEL, and collect with:"
-  echo "  bash scripts/cloud/kaggle_solve.sh --collect"
+  echo "  bash scripts/cloud/kaggle_solve.sh --collect${NAME:+ --name $NAME}"
   exit 0
 fi
 fi  # end of the launch phase

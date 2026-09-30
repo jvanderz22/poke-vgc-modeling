@@ -18,6 +18,7 @@ either way. That is the point of running it.
 
     .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180 --depths 2,3
     .venv/bin/python scripts/analysis/solver_vs_humans.py --score-only
+    .venv/bin/python scripts/analysis/solver_vs_humans.py --sheets closed ...   # the same, on closed sheets
 
 Solved somewhere else (`vgc.wp.offload`, `scripts/cloud/kaggle_solve.sh`): export the positions, solve
 them remotely, merge, and the run above then finds them cached.
@@ -40,7 +41,11 @@ from vgc import paths
 from vgc.regulation import load_regulation
 from vgc.wp import endgame, solver
 
-OUT = paths.DATA / "analysis" / "reg_mc" / "solver_vs_humans.json"
+OUT = {"open": paths.DATA / "analysis" / "reg_mc" / "solver_vs_humans.json",
+       "closed": paths.DATA / "analysis" / "reg_mc" / "solver_vs_humans_closed.json"}
+# On a closed sheet the answer covers only the set pairs solved; under this much left unsolved
+# it covers most of the belief (PLAN-endgame-doubles, stage 0).
+COVERED = 0.2
 DEPTHS = (2, 3)
 # Under this much of the answer resting on HP share, the engine has settled the position rather
 # than guessed it; that subset is the test of best play (PLAN-v3 step 3.6).
@@ -48,8 +53,10 @@ SETTLED = 0.1
 EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses scores ~6.9, not inf
 
 
-def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
-    """Each qualifying game at its first 1v1: the positions per depth, the model's number, the label."""
+def collect(reg, version: str, sheets: str = "open") -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Each qualifying game at its first 1v1: the positions per depth, the model's number, the label.
+    `sheets` picks the regime; a closed-sheet game is solved over pairs of likely sets
+    (`endgame.pair_candidates`), and what those leave out is the row's `unsolved`."""
     from vgc.data.snapshots import replay_group
     from vgc.data.splits import load_rules
     from vgc.meta import pool, replays
@@ -57,15 +64,15 @@ def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
     from vgc.web.live import wp
 
     rules = load_rules(reg)
-    counts = {"heldout_ots_human": 0, "no_1v1": 0, "not_built": 0, "unfinished": 0, "games": 0}
+    counts = {"heldout_human": 0, "sheets": sheets, "no_1v1": 0, "not_built": 0, "unfinished": 0, "games": 0}
     dropped: dict[str, int] = {}
     rows = []
     for fmt in pool.formats_for(reg):
         for replay in replays.cached(fmt):
-            records = _eligible(reg, replay, rules)
+            records = _eligible(reg, replay, rules, ots=sheets == "open")
             if records is None:
                 continue
-            counts["heldout_ots_human"] += 1
+            counts["heldout_human"] += 1
             label = records[0]["label"]
             if label["winner"] not in ("p1", "p2"):
                 counts["unfinished"] += 1
@@ -74,10 +81,12 @@ def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
             if battle is None:
                 counts["no_1v1"] += 1
                 continue
-            plans = {d: endgame.plan(reg, battle, {**solver.SEARCH, "depth": d}) for d in DEPTHS}
-            if not plans[DEPTHS[0]]["eligible"]:
+            # Planned once: only the search depth differs between depths, and weighing a closed
+            # sheet's set pairs is the slow part.
+            plan = endgame.plan(reg, battle, {**solver.SEARCH, "depth": DEPTHS[0]})
+            if not plan["eligible"]:
                 counts["not_built"] += 1
-                why = plans[DEPTHS[0]]["reason"] or ""
+                why = plan["reason"] or ""
                 key = ("a volatile" if "cannot set up" in why else "Revival Blessing" if "Revival Blessing" in why
                        else why.split(" is ")[-1] if " is " in why else why)
                 dropped[key] = dropped.get(key, 0) + 1
@@ -89,8 +98,10 @@ def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
                 "winner": label["winner"], "ended_by": label.get("ended_by"),
                 "model": round(wp(reg, state, version, k=4)["wp"], 4),
                 "mons": {sid: endgame._left(state, sid)[0].species for sid in ("p1", "p2")},
-                "jobs": {d: [{"class": j["class"], "weight": j["weight"], "position": j["position"]}
-                             for j in plans[d]["jobs"]] for d in DEPTHS},
+                "unsolved": plan["unsolved"],
+                "jobs": {d: [{"class": j["class"], "weight": j["weight"],
+                              "position": {**j["position"], "search": {**j["position"]["search"], "depth": d}}}
+                             for j in plan["jobs"]] for d in DEPTHS},
             })
     return rows, counts | {"dropped": dropped}
 
@@ -223,6 +234,8 @@ def main() -> None:
     ap.add_argument("--depths", default="2", help="depths to solve, comma-separated (of 2,3)")
     ap.add_argument("--score-only", action="store_true", help="re-score the saved rows")
     ap.add_argument("--export", metavar="JOBS", help="write the uncached positions to solve elsewhere, and stop")
+    ap.add_argument("--sheets", choices=("open", "closed"), default="open",
+                    help="the regime: open-sheet games, or closed-sheet games with both sides' sets from the belief")
     args = ap.parse_args()
     reg = load_regulation("reg_mc")
 
@@ -230,9 +243,9 @@ def main() -> None:
         from pathlib import Path
 
         from vgc.wp import offload
-        from vgc.wp.models import OPEN, in_battle_version
+        from vgc.wp.models import in_battle_version
 
-        rows, counts = collect(reg, in_battle_version(reg.id, OPEN))
+        rows, counts = collect(reg, in_battle_version(reg.id, args.sheets), args.sheets)
         depths = tuple(int(x) for x in args.depths.split(","))
         # Shallow first, so a remote run that hits its deadline has finished what the deeper
         # search needs least and the scoring needs most.
@@ -240,13 +253,13 @@ def main() -> None:
         print(json.dumps({"games": counts["games"], **offload.export(positions, Path(args.export))}))
         return
     if args.score_only:
-        blob = json.loads(OUT.read_text())
+        blob = json.loads(OUT[args.sheets].read_text())
         rows, counts = blob["rows"], blob["counts"]
     else:
-        from vgc.wp.models import OPEN, in_battle_version
+        from vgc.wp.models import in_battle_version
 
-        version = in_battle_version(reg.id, OPEN)
-        rows, counts = collect(reg, version)
+        version = in_battle_version(reg.id, args.sheets)
+        rows, counts = collect(reg, version, args.sheets)
         print(f"{counts['games']} games to solve", counts, flush=True)
         depths = tuple(int(x) for x in args.depths.split(","))
         solve(rows, args.workers, args.cap, depths)
@@ -257,8 +270,11 @@ def main() -> None:
               "unsettled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] > SETTLED]),
               "played_out": score([r for r in rows if r["ended_by"] == "normal"]),
               "forfeit": score([r for r in rows if r["ended_by"] != "normal"])}
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"counts": counts, "result": result, "cap": args.cap,
+    if args.sheets == "closed":
+        result["covered"] = score([r for r in rows if r.get("unsolved", 0) <= COVERED])
+        result["partly_covered"] = score([r for r in rows if r.get("unsolved", 0) > COVERED])
+    OUT[args.sheets].parent.mkdir(parents=True, exist_ok=True)
+    OUT[args.sheets].write_text(json.dumps({"counts": counts, "result": result, "cap": args.cap,
                                "rows": [{k: v for k, v in r.items() if k != "jobs"} |
                                         {"positions": {str(d): [{"class": j["class"], "weight": round(j["weight"], 4),
                                                                  "value": (j.get("result") or {}).get("value")}
