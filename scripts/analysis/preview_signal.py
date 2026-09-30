@@ -9,6 +9,8 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.linear_model import LogisticRegression
 
+# Run on wp-v1, deleted 2026-09-30 (PLAN-v3 step 7). Its manifest's shards have been re-extracted
+# since, so it cannot be rebuilt: the result stands in docs/, and a rerun points D at a current dataset.
 D = "data/features/reg_mc/wp-v1"
 vocab = json.load(open(f"{D}/vocab.json"))
 NSP = len(vocab["species"]) + 3

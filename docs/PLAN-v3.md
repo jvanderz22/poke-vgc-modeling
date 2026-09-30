@@ -345,10 +345,9 @@ sheets hidden"](phase8-findings.md)):
 - **Stale caches:**
   - the decided-endgames list is regenerated whenever the served model or its calibration
     changes. `tests/test_endgames.py` catches a stale one;
-  - the `wp-v1`/`wp-v1c` feature datasets (~586 MB) are deletable: no model card names them.
-    Their training manifests' shards have been re-extracted since, so they cannot be rebuilt;
-    `scripts/analysis/preview_signal.py` and `selfplay_value.py` read `wp-v1`. **Not deleted
-    yet: waiting on a yes.**
+  - the `wp-v1`/`wp-v1c` feature datasets (586 MB) are deleted (2026-09-30). No model card named
+    them, and their training manifests' shards had been re-extracted, so they could not be rebuilt.
+    `scripts/analysis/preview_signal.py` and `selfplay_value.py` read `wp-v1`, and say so.
 
 ### 8. Solver speed: next
 

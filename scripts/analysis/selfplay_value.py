@@ -9,6 +9,8 @@ sys.path.insert(0, "src")
 from vgc.wp.models import GBTModel, symmetrize
 from vgc.wp.evaluate import metrics
 
+# Run on wp-v1, deleted 2026-09-30 (PLAN-v3 step 7). Its manifest's shards have been re-extracted
+# since, so it cannot be rebuilt: the result stands in docs/, and a rerun points D at a current dataset.
 D = "data/features/reg_mc/wp-v1"
 KEYS = ("cat", "num", "glob", "y", "source", "kind", "battle", "perspective", "orient", "turn", "forfeit", "bring", "point")
 
