@@ -236,7 +236,9 @@ When each side has one Pokémon left, the Battle page puts a second number under
 value of the position under best play on both sides, from a search over the pinned simulator
 (`vgc.wp.endgame`, `vgc.web.solving`). The two are labelled **Model** and **Engine**, and neither
 replaces the other. The model says how positions like this have gone in human games. The engine
-says what best play is worth, and it has not yet been checked against how human 1v1s end.
+says what best play is worth. On 174 held-out human 1v1s it predicted the winner better than the model:
+when it said 95% or more, that side won 48 times in 50 (phase8-findings, "the engine against how
+human 1v1s end").
 
 The search deepens one turn at a time and the page shows the deepest finished answer. A shallow
 one is mostly "whoever has more HP left", so it is faded while more than half of it rests on

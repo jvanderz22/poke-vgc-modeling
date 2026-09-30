@@ -175,9 +175,9 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
  *  The model says how positions like this have gone in human games; the engine says what best
  *  play from both sides is worth, searched a few turns deep on the pinned simulator. In decided
  *  1v1s the model barely moves with the position (docs/phase8-findings.md), which is why this is
- *  here. But the engine assumes play a ~1100-rated game does not have, and it has not yet been
- *  checked against how human 1v1s end, so neither number is *the* answer. When they disagree the
- *  page says so rather than averaging them.
+ *  here. The engine assumes best play, which a ~1100-rated game does not have, but on 174 held-out
+ *  human 1v1s it was still the better predictor of who won (PLAN-v3 step 3.6). When the two
+ *  disagree the page says so rather than averaging them.
  *
  *  The search deepens in the background, one turn at a time, and this asks again until it is done.
  *  A shallow answer is mostly HP share, so it is shown faded, with how much of it rests on that. */
@@ -231,8 +231,8 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       {apart && (
         <div className="engine-apart">
           The model and the engine are {Math.abs(pct(ans.value!) - pct(model!))} points apart. They answer
-          different questions (how games like this have gone, and best play from here), and neither has
-          been checked against how human 1v1s end yet.
+          different questions (how games like this have gone, and best play from here). On held-out
+          human 1v1s, the engine was the closer of the two.
         </div>
       )}
       {ans.error && <div className="engine-apart">The search failed: {ans.error}</div>}

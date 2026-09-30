@@ -1,0 +1,5852 @@
+{
+ "counts": {
+  "heldout_ots_human": 1703,
+  "no_1v1": 1486,
+  "not_built": 12,
+  "unfinished": 0,
+  "games": 205,
+  "dropped": {
+   "not shown": 5,
+   "a volatile": 7
+  },
+  "version": "wp-v1f-idp5",
+  "depths": [
+   2
+  ],
+  "crashed_positions": 2
+ },
+ "result": {
+  "all": {
+   "games": 174,
+   "groups": 166,
+   "unsolved": 31,
+   "brier": {
+    "engine": 0.0904,
+    "model": 0.1972,
+    "engine_minus_model": -0.1067,
+    "ci95": [
+     -0.143,
+     -0.0711
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.3304,
+    "model": 0.5803,
+    "engine_minus_model": -0.2499,
+    "ci95": [
+     -0.3578,
+     -0.1297
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 22,
+     "mean_pred": 0.01,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 57,
+     "mean_pred": 0.169,
+     "p1_won": 0.105
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 17,
+     "mean_pred": 0.494,
+     "p1_won": 0.412
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 50,
+     "mean_pred": 0.828,
+     "p1_won": 0.92
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 28,
+     "mean_pred": 0.989,
+     "p1_won": 0.929
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 1,
+     "mean_pred": 0.025,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 57,
+     "mean_pred": 0.201,
+     "p1_won": 0.211
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 58,
+     "mean_pred": 0.489,
+     "p1_won": 0.5
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 53,
+     "mean_pred": 0.781,
+     "p1_won": 0.755
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 5,
+     "mean_pred": 0.964,
+     "p1_won": 0.8
+    }
+   ],
+   "engine_called": {
+    "n": 50,
+    "called_side_won": 0.96,
+    "model_mean_on_called_side": 0.729
+   },
+   "depths": {
+    "2": 174,
+    "3": 0
+   },
+   "mean_leaf_mass": 0.335
+  },
+  "settled": {
+   "games": 50,
+   "groups": 49,
+   "unsolved": 0,
+   "brier": {
+    "engine": 0.0855,
+    "model": 0.1611,
+    "engine_minus_model": -0.0757,
+    "ci95": [
+     -0.149,
+     -0.001
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.3551,
+    "model": 0.5071,
+    "engine_minus_model": -0.152,
+    "ci95": [
+     -0.4315,
+     0.1802
+    ],
+    "verdict": "not distinguishable"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 15,
+     "mean_pred": 0.005,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 5,
+     "mean_pred": 0.165,
+     "p1_won": 0.2
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 2,
+     "mean_pred": 0.482,
+     "p1_won": 0.5
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 6,
+     "mean_pred": 0.88,
+     "p1_won": 0.833
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 22,
+     "mean_pred": 0.993,
+     "p1_won": 0.909
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 15,
+     "mean_pred": 0.19,
+     "p1_won": 0.133
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 12,
+     "mean_pred": 0.474,
+     "p1_won": 0.5
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 19,
+     "mean_pred": 0.795,
+     "p1_won": 0.842
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 4,
+     "mean_pred": 0.959,
+     "p1_won": 0.75
+    }
+   ],
+   "engine_called": {
+    "n": 37,
+    "called_side_won": 0.946,
+    "model_mean_on_called_side": 0.711
+   },
+   "depths": {
+    "2": 50,
+    "3": 0
+   },
+   "mean_leaf_mass": 0.0066
+  },
+  "unsettled": {
+   "games": 124,
+   "groups": 120,
+   "unsolved": 0,
+   "brier": {
+    "engine": 0.0924,
+    "model": 0.2117,
+    "engine_minus_model": -0.1193,
+    "ci95": [
+     -0.1573,
+     -0.0807
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.3204,
+    "model": 0.6098,
+    "engine_minus_model": -0.2894,
+    "ci95": [
+     -0.3781,
+     -0.1991
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 7,
+     "mean_pred": 0.022,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 52,
+     "mean_pred": 0.169,
+     "p1_won": 0.096
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 15,
+     "mean_pred": 0.495,
+     "p1_won": 0.4
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 44,
+     "mean_pred": 0.821,
+     "p1_won": 0.932
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 6,
+     "mean_pred": 0.975,
+     "p1_won": 1.0
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 1,
+     "mean_pred": 0.025,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 42,
+     "mean_pred": 0.205,
+     "p1_won": 0.238
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 46,
+     "mean_pred": 0.493,
+     "p1_won": 0.5
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 34,
+     "mean_pred": 0.773,
+     "p1_won": 0.706
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 1,
+     "mean_pred": 0.982,
+     "p1_won": 1.0
+    }
+   ],
+   "engine_called": {
+    "n": 13,
+    "called_side_won": 1.0,
+    "model_mean_on_called_side": 0.778
+   },
+   "depths": {
+    "2": 124,
+    "3": 0
+   },
+   "mean_leaf_mass": 0.4674
+  },
+  "played_out": {
+   "games": 155,
+   "groups": 149,
+   "unsolved": 28,
+   "brier": {
+    "engine": 0.0919,
+    "model": 0.1995,
+    "engine_minus_model": -0.1076,
+    "ci95": [
+     -0.1449,
+     -0.0682
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.3371,
+    "model": 0.585,
+    "engine_minus_model": -0.2479,
+    "ci95": [
+     -0.3588,
+     -0.1183
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 20,
+     "mean_pred": 0.01,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 47,
+     "mean_pred": 0.172,
+     "p1_won": 0.106
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 15,
+     "mean_pred": 0.481,
+     "p1_won": 0.333
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 49,
+     "mean_pred": 0.828,
+     "p1_won": 0.918
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 24,
+     "mean_pred": 0.989,
+     "p1_won": 0.917
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 1,
+     "mean_pred": 0.025,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 48,
+     "mean_pred": 0.202,
+     "p1_won": 0.208
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 52,
+     "mean_pred": 0.49,
+     "p1_won": 0.519
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 49,
+     "mean_pred": 0.78,
+     "p1_won": 0.735
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 5,
+     "mean_pred": 0.964,
+     "p1_won": 0.8
+    }
+   ],
+   "engine_called": {
+    "n": 44,
+    "called_side_won": 0.955,
+    "model_mean_on_called_side": 0.739
+   },
+   "depths": {
+    "2": 155,
+    "3": 0
+   },
+   "mean_leaf_mass": 0.3252
+  },
+  "forfeit": {
+   "games": 19,
+   "groups": 18,
+   "unsolved": 3,
+   "brier": {
+    "engine": 0.0786,
+    "model": 0.178,
+    "engine_minus_model": -0.0995,
+    "ci95": [
+     -0.1913,
+     -0.0216
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.2754,
+    "model": 0.5419,
+    "engine_minus_model": -0.2665,
+    "ci95": [
+     -0.5201,
+     -0.0491
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 2,
+     "mean_pred": 0.018,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 10,
+     "mean_pred": 0.153,
+     "p1_won": 0.1
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 2,
+     "mean_pred": 0.585,
+     "p1_won": 1.0
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 1,
+     "mean_pred": 0.83,
+     "p1_won": 1.0
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 4,
+     "mean_pred": 0.988,
+     "p1_won": 1.0
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 9,
+     "mean_pred": 0.196,
+     "p1_won": 0.222
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 6,
+     "mean_pred": 0.483,
+     "p1_won": 0.333
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 4,
+     "mean_pred": 0.796,
+     "p1_won": 1.0
+    }
+   ],
+   "engine_called": {
+    "n": 6,
+    "called_side_won": 1.0,
+    "model_mean_on_called_side": 0.652
+   },
+   "depths": {
+    "2": 19,
+    "3": 0
+   },
+   "mean_leaf_mass": 0.415
+  }
+ },
+ "cap": 180.0,
+ "rows": [
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678060692",
+   "group": "f32ec68f01ee",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8158,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Incineroar"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678194975",
+   "group": "9183f1cb4034",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4658,
+   "mons": {
+    "p1": "Primarina",
+    "p2": "Incineroar"
+   },
+   "engine": 0.9434,
+   "leaf_mass": 0.0085,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9629,
+      "value": 0.9601
+     },
+     {
+      "class": "tied",
+      "weight": 0.0371,
+      "value": 0.5109
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678412503",
+   "group": "80eef18eb5ff",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3704,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Sneasler"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678487869",
+   "group": "0f59a1e74d61",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.8728,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.4995,
+   "leaf_mass": 0.7103,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.5761,
+      "value": 0.6882
+     },
+     {
+      "class": "tied",
+      "weight": 0.0213,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.4026,
+      "value": 0.2295
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678679793",
+   "group": "837fc06ee450",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1783,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.0886,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0886
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678898189",
+   "group": "f9886712a360",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.9155,
+   "mons": {
+    "p1": "Glimmora",
+    "p2": "Dragapult"
+   },
+   "engine": 0.9869,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9869
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678905458",
+   "group": "dda2a96b88b7",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5927,
+   "mons": {
+    "p1": "Ninetales-Alola",
+    "p2": "Incineroar"
+   },
+   "engine": 0.7,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678913130",
+   "group": "00cafee58fe9",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4489,
+   "mons": {
+    "p1": "Basculegion",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.8211,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8211
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678987674",
+   "group": "8a9b9e7c3caf",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5779,
+   "mons": {
+    "p1": "Ceruledge",
+    "p2": "Ampharos"
+   },
+   "engine": 0.3614,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.3614
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2678989623",
+   "group": "6b73fad3cd03",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8118,
+   "mons": {
+    "p1": "Torkoal",
+    "p2": "Kingambit"
+   },
+   "engine": 0.8922,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8922
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2679129542",
+   "group": "035ae1772da2",
+   "turn": 13,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4116,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.7976,
+   "leaf_mass": 0.4,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7976
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2679716971",
+   "group": "f6f8a483cfc4",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1041,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Salamence"
+   },
+   "engine": 0.0073,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0073
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2679989172",
+   "group": "84fdd08d3d74",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7361,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Floette-Eternal"
+   },
+   "engine": 0.981,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.981
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680337065",
+   "group": "07779bea1076",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3331,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Kingambit"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680362028",
+   "group": "658ef01ba49d",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5664,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Tyranitar"
+   },
+   "engine": 0.102,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.102
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680406929",
+   "group": "65af368127a8",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5002,
+   "mons": {
+    "p1": "Farigiraf",
+    "p2": "Gholdengo"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9934,
+      "value": 0.5416
+     },
+     {
+      "class": "tied",
+      "weight": 0.0066,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680409479",
+   "group": "65af368127a8",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4576,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Glimmora"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680456053",
+   "group": "91bb5f4cf796",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.2897,
+   "mons": {
+    "p1": "Gardevoir",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.0916,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.994,
+      "value": 0.0916
+     },
+     {
+      "class": "tied",
+      "weight": 0.006,
+      "value": 0.0905
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680514007",
+   "group": "bdf343295c81",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.2417,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Kingambit"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680585895",
+   "group": "1003eb6c61fd",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1554,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Golisopod"
+   },
+   "engine": 0.2776,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2776
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680590195",
+   "group": "1003eb6c61fd",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2094,
+   "mons": {
+    "p1": "Corviknight",
+    "p2": "Salamence"
+   },
+   "engine": 0.3746,
+   "leaf_mass": 0.9184,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3746
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680757037",
+   "group": "5ac539f30b29",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7691,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.9982,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9538,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0054,
+      "value": 0.9792
+     },
+     {
+      "class": "faster",
+      "weight": 0.0408,
+      "value": 0.9583
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2680764950",
+   "group": "00f5f59d3fa5",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4345,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Salamence"
+   },
+   "engine": 0.4205,
+   "leaf_mass": 0.9994,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9994,
+      "value": 0.4205
+     },
+     {
+      "class": "tied",
+      "weight": 0.0006,
+      "value": 0.4
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681005823",
+   "group": "ff8b4da83435",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5415,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Kingambit"
+   },
+   "engine": 0.3483,
+   "leaf_mass": 0.4332,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3483
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681023540",
+   "group": "cec9f9430644",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6625,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Annihilape"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681215034",
+   "group": "ba9854ffec47",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.1645,
+   "mons": {
+    "p1": "Basculegion",
+    "p2": "Torkoal"
+   },
+   "engine": 0.7288,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7288
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681282628",
+   "group": "b7352660f0b7",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2791,
+   "mons": {
+    "p1": "Basculegion",
+    "p2": "Ceruledge"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681385249",
+   "group": "3597b87bd2cb",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5239,
+   "mons": {
+    "p1": "Armarouge",
+    "p2": "Golisopod"
+   },
+   "engine": 0.5,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681399699",
+   "group": "d54bc50a35f9",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8985,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Sylveon"
+   },
+   "engine": 0.8993,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8993
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681438475",
+   "group": "f5dfe10cb759",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4688,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Gholdengo"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681473348",
+   "group": "5aa4b3836335",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5919,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.9173,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9173
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681596319",
+   "group": "d36da1be316a",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9576,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Lycanroc-Dusk"
+   },
+   "engine": 0.9,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681645449",
+   "group": "1d7eda833bd6",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.7086,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Armarouge"
+   },
+   "engine": 0.1512,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1512
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681719035",
+   "group": "9c966ca09fab",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.4399,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.1239,
+   "leaf_mass": 0.3559,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1239
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681747179",
+   "group": "4f96b3dad92b",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4214,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Arcanine-Hisui"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0436,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.9564,
+      "value": 0.4376
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681890470",
+   "group": "bea2078b2f20",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8251,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Charizard"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9498,
+      "value": 0.6655
+     },
+     {
+      "class": "tied",
+      "weight": 0.0502,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681893752",
+   "group": "093bda22b33b",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9194,
+   "mons": {
+    "p1": "Raichu",
+    "p2": "Salamence"
+   },
+   "engine": 0.985,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.985
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681950922",
+   "group": "3c894826807f",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.332,
+   "mons": {
+    "p1": "Lucario",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.051,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.051
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2681962693",
+   "group": "47c9ff168988",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9027,
+   "mons": {
+    "p1": "Greninja",
+    "p2": "Froslass"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682060302",
+   "group": "ae5022be797c",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4492,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Aegislash"
+   },
+   "engine": 0.8312,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8312
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682072187",
+   "group": "f1cc4cb24a0a",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.527,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Pelipper"
+   },
+   "engine": 0.8938,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9783,
+      "value": 0.8938
+     },
+     {
+      "class": "tied",
+      "weight": 0.0217,
+      "value": 0.8941
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682074625",
+   "group": "f1cc4cb24a0a",
+   "turn": 14,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4151,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Salamence"
+   },
+   "engine": 0.8585,
+   "leaf_mass": 0.636,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8585
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682115947",
+   "group": "4db13d9df3b8",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1921,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.1327,
+   "leaf_mass": 0.0034,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9899,
+      "value": 0.1335
+     },
+     {
+      "class": "tied",
+      "weight": 0.0101,
+      "value": 0.0542
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682117807",
+   "group": "4db13d9df3b8",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5006,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Incineroar"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682249431",
+   "group": "b488b7531b1a",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5901,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.2069,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2069
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682262747",
+   "group": "c6ddc20d068f",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4391,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Kingambit"
+   },
+   "engine": 0.5619,
+   "leaf_mass": 0.3864,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5619
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682314041",
+   "group": "286176930eb3",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1665,
+   "mons": {
+    "p1": "Baxcalibur",
+    "p2": "Kingambit"
+   },
+   "engine": 0.1219,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1219
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682320054",
+   "group": "2a99561a8c88",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1899,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.0506,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0506
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682330554",
+   "group": "495f03f1df42",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7637,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.939,
+   "leaf_mass": 0.3288,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9864,
+      "value": 0.9416
+     },
+     {
+      "class": "tied",
+      "weight": 0.0136,
+      "value": 0.7526
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682409445",
+   "group": "907a7a1072d7",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5151,
+   "mons": {
+    "p1": "Delphox",
+    "p2": "Sylveon"
+   },
+   "engine": 0.5208,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.5208
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682424673",
+   "group": "754de5285ad5",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7818,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Milotic"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.5598,
+      "value": 0.8499
+     },
+     {
+      "class": "tied",
+      "weight": 0.0476,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.3926,
+      "value": 0.6128
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682429865",
+   "group": "754de5285ad5",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.669,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Volcarona"
+   },
+   "engine": 0.8548,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8548
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682434987",
+   "group": "b151047df2f1",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3595,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Raichu"
+   },
+   "engine": 0.1571,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1571
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682442577",
+   "group": "bbc8a1654a52",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6242,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Rillaboom"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0925,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.3088,
+      "value": 0.032
+     },
+     {
+      "class": "slower",
+      "weight": 0.5987,
+      "value": 0.001
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682444024",
+   "group": "d1b38a74d57c",
+   "turn": 12,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.104,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.0005,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.976,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.024,
+      "value": 0.0198
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682468362",
+   "group": "a82f6e9a8cb4",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3924,
+   "mons": {
+    "p1": "Swampert",
+    "p2": "Archaludon"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.7801,
+      "value": 0.1716
+     },
+     {
+      "class": "tied",
+      "weight": 0.0168,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.2032,
+      "value": 0.1717
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682468953",
+   "group": "a9548146a4aa",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1255,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Tyranitar"
+   },
+   "engine": 0.0753,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9935,
+      "value": 0.0753
+     },
+     {
+      "class": "tied",
+      "weight": 0.0065,
+      "value": 0.0755
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682485815",
+   "group": "7c007a75ca8a",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2784,
+   "mons": {
+    "p1": "Sinistcha-Masterpiece",
+    "p2": "Salamence"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682498343",
+   "group": "0af2a3c8d152",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.1584,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Kommo-o"
+   },
+   "engine": 0.3857,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3857
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682501223",
+   "group": "a9ccdcf77fb2",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6983,
+   "mons": {
+    "p1": "Blaziken",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.9302,
+   "leaf_mass": 0.1,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9302
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682501566",
+   "group": "55c09ca678d8",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9333,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Sneasler"
+   },
+   "engine": 0.4425,
+   "leaf_mass": 0.0545,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9973,
+      "value": 0.4413
+     },
+     {
+      "class": "tied",
+      "weight": 0.0005,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.0022,
+      "value": 0.9722
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682503913",
+   "group": "a9ccdcf77fb2",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2618,
+   "mons": {
+    "p1": "Metagross",
+    "p2": "Excadrill"
+   },
+   "engine": 0.0552,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0552
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682507779",
+   "group": "c808e3751bde",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2925,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.1626,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.8259,
+      "value": 0.1624
+     },
+     {
+      "class": "tied",
+      "weight": 0.0152,
+      "value": 0.1628
+     },
+     {
+      "class": "slower",
+      "weight": 0.1589,
+      "value": 0.1634
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682508291",
+   "group": "5e0580b4f6cc",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.5772,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.1925,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1925
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682509413",
+   "group": "945045091d00",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3515,
+   "mons": {
+    "p1": "Scovillain",
+    "p2": "Basculegion"
+   },
+   "engine": 0.185,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9988,
+      "value": 0.185
+     },
+     {
+      "class": "tied",
+      "weight": 0.0012,
+      "value": 0.185
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682543946",
+   "group": "b74b17514655",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.2106,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.309,
+   "leaf_mass": 0.9283,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.309
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682552809",
+   "group": "48b0c0e4198d",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4325,
+   "mons": {
+    "p1": "Excadrill",
+    "p2": "Annihilape"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682558250",
+   "group": "4fa8e1759f11",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5871,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Floette-Eternal"
+   },
+   "engine": 0.9264,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9264
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682567665",
+   "group": "669d8016f274",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5639,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Dragapult"
+   },
+   "engine": 0.572,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.572
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682608346",
+   "group": "a6041d1ccec8",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5609,
+   "mons": {
+    "p1": "Lucario",
+    "p2": "Golisopod"
+   },
+   "engine": 0.8225,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8225
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682610059",
+   "group": "7d42c1c61465",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.2198,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Raichu"
+   },
+   "engine": 0.8051,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8051
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682610817",
+   "group": "b64feae863b1",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8761,
+   "mons": {
+    "p1": "Hydreigon",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682611552",
+   "group": "f3d9d975c1d1",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5424,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Archaludon"
+   },
+   "engine": 0.2648,
+   "leaf_mass": 0.9722,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2648
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682652692",
+   "group": "1f00041b8ac5",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3278,
+   "mons": {
+    "p1": "Indeedee-F",
+    "p2": "Milotic"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682656133",
+   "group": "90cfc8eb0efc",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0968,
+   "mons": {
+    "p1": "Ninetales-Alola",
+    "p2": "Arcanine-Hisui"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682671397",
+   "group": "a6b5c51f145b",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5398,
+   "mons": {
+    "p1": "Primarina",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.2977,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2977
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682679211",
+   "group": "9d706e7b2da6",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5573,
+   "mons": {
+    "p1": "Vivillon-Modern",
+    "p2": "Reuniclus"
+   },
+   "engine": 0.91,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.91
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682694766",
+   "group": "c3fa54957c3a",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.8892,
+   "mons": {
+    "p1": "Metagross",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.8298,
+   "leaf_mass": 0.9722,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8298
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682698214",
+   "group": "e9a1840840dd",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1306,
+   "mons": {
+    "p1": "Sylveon",
+    "p2": "Lucario"
+   },
+   "engine": 0.1274,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1274
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682707542",
+   "group": "0b8c45200e11",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.1468,
+   "mons": {
+    "p1": "Tyranitar",
+    "p2": "Aerodactyl"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682710865",
+   "group": "77aa75f52d67",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2049,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Sneasler"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682712732",
+   "group": "4f59f59d099b",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.054,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Blaziken"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682735579",
+   "group": "b75a536c15d9",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8908,
+   "mons": {
+    "p1": "Politoed",
+    "p2": "Sneasler"
+   },
+   "engine": 0.8959,
+   "leaf_mass": 0.011,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8959
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682742854",
+   "group": "82d00db7a53d",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9054,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Kingambit"
+   },
+   "engine": 0.9583,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9583
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682744342",
+   "group": "042431ffecf0",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3626,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Milotic"
+   },
+   "engine": 0.0197,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0197
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682799077",
+   "group": "41efa80461a7",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2759,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Excadrill"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.6131,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0218,
+      "value": 0
+     },
+     {
+      "class": "slower",
+      "weight": 0.3651,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682831230",
+   "group": "974960f7e2eb",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2857,
+   "mons": {
+    "p1": "Indeedee",
+    "p2": "Archaludon"
+   },
+   "engine": 0.4636,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.8824,
+      "value": 0.4635
+     },
+     {
+      "class": "tied",
+      "weight": 0.0084,
+      "value": 0.4632
+     },
+     {
+      "class": "faster",
+      "weight": 0.1091,
+      "value": 0.4643
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682837890",
+   "group": "bce5d05f81a9",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.2026,
+   "mons": {
+    "p1": "Metagross",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.1043,
+   "leaf_mass": 0.2219,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.836,
+      "value": 0.1057
+     },
+     {
+      "class": "tied",
+      "weight": 0.0099,
+      "value": 0.0973
+     },
+     {
+      "class": "faster",
+      "weight": 0.1541,
+      "value": 0.0972
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682841741",
+   "group": "be0c2646663f",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6114,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Aerodactyl"
+   },
+   "engine": 0.2572,
+   "leaf_mass": 0.4,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2572
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682850408",
+   "group": "f8ec86021e60",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3211,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.8333,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.7988,
+      "value": 0.8333
+     },
+     {
+      "class": "tied",
+      "weight": 0.0125,
+      "value": 0.8333
+     },
+     {
+      "class": "faster",
+      "weight": 0.1887,
+      "value": 0.8333
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682900453",
+   "group": "0523eae1e4a5",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9815,
+   "mons": {
+    "p1": "Staraptor",
+    "p2": "Garchomp"
+   },
+   "engine": 0.973,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.973
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682917257",
+   "group": "889d21ba32bb",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8425,
+   "mons": {
+    "p1": "Blaziken",
+    "p2": "Glimmora"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9299,
+      "value": 0.5899
+     },
+     {
+      "class": "tied",
+      "weight": 0.0088,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.0613,
+      "value": 0.6382
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682925012",
+   "group": "737e71c25ec0",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6831,
+   "mons": {
+    "p1": "Milotic",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.2969,
+   "leaf_mass": 0.2305,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.6915,
+      "value": 0.2156
+     },
+     {
+      "class": "tied",
+      "weight": 0.0326,
+      "value": 0.4792
+     },
+     {
+      "class": "slower",
+      "weight": 0.2758,
+      "value": 0.4792
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682927749",
+   "group": "e53967e86e3b",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3854,
+   "mons": {
+    "p1": "Indeedee",
+    "p2": "Absol"
+   },
+   "engine": 0.1528,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1528
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682931019",
+   "group": "b9735f668297",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7197,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Golisopod"
+   },
+   "engine": 0.9103,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.9103
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682942492",
+   "group": "4f4190ffdccb",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.143,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.2838,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9998,
+      "value": 0.2838
+     },
+     {
+      "class": "tied",
+      "weight": 0.0002,
+      "value": 0.2825
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682947538",
+   "group": "6a86dd32f13b",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3143,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Grimmsnarl"
+   },
+   "engine": 0.9875,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0903,
+      "value": 0.9792
+     },
+     {
+      "class": "faster",
+      "weight": 0.5094,
+      "value": 0.9792
+     },
+     {
+      "class": "slower",
+      "weight": 0.4003,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682969155",
+   "group": "b8831eef1bb6",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1865,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Tyranitar"
+   },
+   "engine": 0.2654,
+   "leaf_mass": 0.0998,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.8529,
+      "value": 0.3041
+     },
+     {
+      "class": "tied",
+      "weight": 0.0324,
+      "value": 0.1761
+     },
+     {
+      "class": "faster",
+      "weight": 0.1147,
+      "value": 0.0031
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682994613",
+   "group": "c3995ab683cd",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3921,
+   "mons": {
+    "p1": "Indeedee",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9871,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0129,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2682997068",
+   "group": "779956aaf525",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.1358,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Incineroar"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683015822",
+   "group": "ecf4923d91bd",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6507,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.6021,
+   "leaf_mass": 0.9606,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1688,
+      "value": 0.8134
+     },
+     {
+      "class": "slower",
+      "weight": 0.8312,
+      "value": 0.5592
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683019519",
+   "group": "ecf4923d91bd",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5506,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Sneasler"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.481,
+      "value": null
+     },
+     {
+      "class": "tied",
+      "weight": 0.018,
+      "value": 0
+     },
+     {
+      "class": "slower",
+      "weight": 0.501,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683043077",
+   "group": "2f821f73b4bf",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4161,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Kingambit"
+   },
+   "engine": 0.2276,
+   "leaf_mass": 0.592,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2276
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683050691",
+   "group": "61083cbd3d54",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5559,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Gengar"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.7124,
+      "value": 0.7345
+     },
+     {
+      "class": "tied",
+      "weight": 0.0222,
+      "value": null
+     },
+     {
+      "class": "slower",
+      "weight": 0.2653,
+      "value": 0.6579
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683057267",
+   "group": "61083cbd3d54",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1276,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Gengar"
+   },
+   "engine": 0.1998,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.7314,
+      "value": 0.1996
+     },
+     {
+      "class": "tied",
+      "weight": 0.0199,
+      "value": 0.2013
+     },
+     {
+      "class": "slower",
+      "weight": 0.2486,
+      "value": 0.2001
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683060909",
+   "group": "b7d512a1c643",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6756,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.2,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683067317",
+   "group": "59454aaa1ade",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5284,
+   "mons": {
+    "p1": "Kleavor",
+    "p2": "Annihilape"
+   },
+   "engine": 0.1247,
+   "leaf_mass": 0.0038,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0114,
+      "value": 0.0946
+     },
+     {
+      "class": "slower",
+      "weight": 0.9886,
+      "value": 0.125
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683090653",
+   "group": "bf6df13daa11",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.8219,
+   "mons": {
+    "p1": "Raichu",
+    "p2": "Annihilape"
+   },
+   "errors": [
+    {
+     "depth": 2,
+     "class": "tied",
+     "error": "pokemon-showdown/dist/data/mods/champions/scripts.js:438:49)\n    at BattleActions.trySpreadMoveHit (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:504:31)\n    at BattleActions.useMoveInner (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:438:25)\n    at BattleActions.useMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:320:29)\n    at BattleActions.runMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:271:35)\n\nNode.js v24.20.0"
+    },
+    {
+     "depth": 2,
+     "class": "faster",
+     "error": "pokemon-showdown/dist/data/mods/champions/scripts.js:438:49)\n    at BattleActions.trySpreadMoveHit (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:504:31)\n    at BattleActions.useMoveInner (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:438:25)\n    at BattleActions.useMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:320:29)\n    at BattleActions.runMove (/Users/jvanderzwaag/dev/pokemon-model/vendor/pokemon-showdown/dist/sim/battle-actions.js:271:35)\n\nNode.js v24.20.0"
+    }
+   ],
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683106199",
+   "group": "b3c28e9d7950",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.369,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Steelix"
+   },
+   "engine": 0.2616,
+   "leaf_mass": 0.9736,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.8172,
+      "value": 0.2616
+     },
+     {
+      "class": "tied",
+      "weight": 0.033,
+      "value": 0.2623
+     },
+     {
+      "class": "faster",
+      "weight": 0.1498,
+      "value": 0.2614
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683109697",
+   "group": "f172bff5f45f",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4694,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Absol"
+   },
+   "engine": 0.7386,
+   "leaf_mass": 0.283,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1508,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.8492,
+      "value": 0.781
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683110030",
+   "group": "5ffd2acf1da7",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7513,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Charizard"
+   },
+   "engine": 0.8656,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8656
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683111629",
+   "group": "3f673f5d1838",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0251,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Raichu"
+   },
+   "engine": 0.0127,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0127
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683122584",
+   "group": "417543c9efd2",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7783,
+   "mons": {
+    "p1": "Volcarona",
+    "p2": "Milotic"
+   },
+   "engine": 0.8995,
+   "leaf_mass": 0.3284,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.8862,
+      "value": 0.9019
+     },
+     {
+      "class": "tied",
+      "weight": 0.0147,
+      "value": 0.7396
+     },
+     {
+      "class": "faster",
+      "weight": 0.0992,
+      "value": 0.9018
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683124338",
+   "group": "2bc97032c180",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.7817,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Rotom-Heat"
+   },
+   "engine": 0.3692,
+   "leaf_mass": 0.3688,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9219,
+      "value": 0.3539
+     },
+     {
+      "class": "tied",
+      "weight": 0.0781,
+      "value": 0.55
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683127566",
+   "group": "e784a2e1fc8b",
+   "turn": 12,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.141,
+   "mons": {
+    "p1": "Kangaskhan",
+    "p2": "Whimsicott"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683139918",
+   "group": "0c1fa9e57003",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2748,
+   "mons": {
+    "p1": "Tyranitar",
+    "p2": "Kingambit"
+   },
+   "engine": 0.7529,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1376,
+      "value": 0.7529
+     },
+     {
+      "class": "faster",
+      "weight": 0.8624,
+      "value": 0.7529
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683151810",
+   "group": "4677809af460",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1501,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.0875,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0875
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683152495",
+   "group": "16a277ac5e7e",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.711,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Golisopod"
+   },
+   "engine": 0.2742,
+   "leaf_mass": 0.302,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9059,
+      "value": 0.2508
+     },
+     {
+      "class": "tied",
+      "weight": 0.0941,
+      "value": 0.5
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683154458",
+   "group": "698fb78c2094",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7965,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Kingambit"
+   },
+   "engine": 0.957,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.957
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683157005",
+   "group": "4e142e7f485c",
+   "turn": 27,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.519,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Archaludon"
+   },
+   "engine": 0.5387,
+   "leaf_mass": 0.9155,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.2884,
+      "value": 0.5382
+     },
+     {
+      "class": "slower",
+      "weight": 0.7116,
+      "value": 0.5389
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683168921",
+   "group": "24545834b366",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3214,
+   "mons": {
+    "p1": "Excadrill",
+    "p2": "Floette-Eternal"
+   },
+   "engine": 0.7957,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7957
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683179165",
+   "group": "da79bf37b71d",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6997,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Milotic"
+   },
+   "engine": 0.75,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.75
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683203740",
+   "group": "0ba81489fb31",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.7082,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.2127,
+   "leaf_mass": 0.6701,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.2127
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683205838",
+   "group": "1649b3521bcb",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.2679,
+   "mons": {
+    "p1": "Indeedee-F",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.3405,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9942,
+      "value": 0.3405
+     },
+     {
+      "class": "tied",
+      "weight": 0.0058,
+      "value": 0.3405
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683228564",
+   "group": "ffce2a6d807b",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2847,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Archaludon"
+   },
+   "engine": 0.0198,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9772,
+      "value": 0.0198
+     },
+     {
+      "class": "tied",
+      "weight": 0.0228,
+      "value": 0.0198
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683236815",
+   "group": "b88ba53b0dfc",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0663,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Kingambit"
+   },
+   "engine": 0.0628,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0628
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683246344",
+   "group": "082682c05956",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.211,
+   "mons": {
+    "p1": "Staraptor",
+    "p2": "Kingambit"
+   },
+   "engine": 0.7388,
+   "leaf_mass": 0.3431,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7388
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683248937",
+   "group": "0e40a1753a67",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8817,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Salamence"
+   },
+   "engine": 0.8751,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8751
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683250086",
+   "group": "1ca08e5ec6e5",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2867,
+   "mons": {
+    "p1": "Metagross",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.1195,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1195
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683268834",
+   "group": "f003501fb1a0",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.279,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Incineroar"
+   },
+   "engine": 0.0144,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0144
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683273273",
+   "group": "4666af50261f",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8865,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Raichu"
+   },
+   "engine": 0.8558,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8558
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683273516",
+   "group": "f003501fb1a0",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7824,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Basculegion"
+   },
+   "engine": 0.1841,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9736,
+      "value": 0.1841
+     },
+     {
+      "class": "tied",
+      "weight": 0.0264,
+      "value": 0.1837
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683278888",
+   "group": "75e5a9d32699",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7573,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.8603,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8603
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683282385",
+   "group": "c04dc8cfeae6",
+   "turn": 14,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.1231,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683286325",
+   "group": "6103e6f4e1a5",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4294,
+   "mons": {
+    "p1": "Gardevoir",
+    "p2": "Tyranitar"
+   },
+   "engine": 0.6878,
+   "leaf_mass": 0.3293,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9182,
+      "value": 0.737
+     },
+     {
+      "class": "tied",
+      "weight": 0.012,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.0698,
+      "value": 0.0723
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683306837",
+   "group": "d43c00da4f4a",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5014,
+   "mons": {
+    "p1": "Sinistcha-Masterpiece",
+    "p2": "Sneasler"
+   },
+   "engine": 0.9677,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9677
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683313233",
+   "group": "bf92f9fe085e",
+   "turn": 12,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.1815,
+   "mons": {
+    "p1": "Farigiraf",
+    "p2": "Archaludon"
+   },
+   "engine": 0.0954,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0954
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683328603",
+   "group": "a1fb15193d25",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4273,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Golisopod"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683335105",
+   "group": "c7846612285b",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6988,
+   "mons": {
+    "p1": "Farigiraf",
+    "p2": "Primarina"
+   },
+   "engine": 0.8419,
+   "leaf_mass": 0.3103,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.931,
+      "value": 0.8673
+     },
+     {
+      "class": "tied",
+      "weight": 0.069,
+      "value": 0.5
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683384224",
+   "group": "3a98dcf040be",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7339,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Sneasler"
+   },
+   "engine": 0.8281,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.8281
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683511021",
+   "group": "d42e1e6295b1",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5257,
+   "mons": {
+    "p1": "Pelipper",
+    "p2": "Indeedee"
+   },
+   "engine": 0.2176,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.2176
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683531051",
+   "group": "590d27908b38",
+   "turn": 4,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5679,
+   "mons": {
+    "p1": "Volcarona",
+    "p2": "Grapploct"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683538716",
+   "group": "40e1dd3c2dac",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6231,
+   "mons": {
+    "p1": "Lycanroc-Dusk",
+    "p2": "Garchomp"
+   },
+   "engine": 0.9032,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9032
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683546705",
+   "group": "8b511528a9fc",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1968,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Milotic"
+   },
+   "engine": 0.041,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.041
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683556176",
+   "group": "eed975e988af",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9732,
+   "mons": {
+    "p1": "Garchomp",
+    "p2": "Kleavor"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9416,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0584,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683588340",
+   "group": "13818d66ce0f",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.7978,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Golisopod"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683598944",
+   "group": "a8ffa2619b69",
+   "turn": 13,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.5094,
+   "mons": {
+    "p1": "Grimmsnarl",
+    "p2": "Volcarona"
+   },
+   "engine": 0.0524,
+   "leaf_mass": 0.1202,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0524
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683647132",
+   "group": "11ce04eaca19",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8147,
+   "mons": {
+    "p1": "Pelipper",
+    "p2": "Incineroar"
+   },
+   "engine": 0.9998,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9919,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0081,
+      "value": 0.9792
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683649849",
+   "group": "7c4db0ddd263",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.084,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Salamence"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683666235",
+   "group": "7aa558cd89d2",
+   "turn": 13,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2728,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.0344,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0344
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683669627",
+   "group": "f33321525418",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.9551,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Pyroar"
+   },
+   "engine": 0.1,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683711428",
+   "group": "c23b6559fc0b",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9517,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Kingambit"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683724455",
+   "group": "ff62001ca178",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4403,
+   "mons": {
+    "p1": "Feraligatr",
+    "p2": "Incineroar"
+   },
+   "engine": 0.9799,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9736,
+      "value": 0.98
+     },
+     {
+      "class": "tied",
+      "weight": 0.0264,
+      "value": 0.975
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683736541",
+   "group": "cdceda710d1d",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7115,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.2007,
+      "value": 1
+     },
+     {
+      "class": "slower",
+      "weight": 0.7993,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683745667",
+   "group": "ab30ab8d1118",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1392,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Indeedee"
+   },
+   "engine": 0.0614,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.78,
+      "value": 0.0614
+     },
+     {
+      "class": "tied",
+      "weight": 0.0235,
+      "value": 0.0611
+     },
+     {
+      "class": "slower",
+      "weight": 0.1965,
+      "value": 0.0616
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683745895",
+   "group": "d28bce2ec76c",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3838,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Volcarona"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9915,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0085,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683753891",
+   "group": "25c068516e42",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.7797,
+   "mons": {
+    "p1": "Politoed",
+    "p2": "Milotic"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0556,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.9444,
+      "value": 0.418
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683764169",
+   "group": "bf3a916c3e7b",
+   "turn": 12,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7311,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Garchomp"
+   },
+   "engine": 0.8161,
+   "leaf_mass": 0.4,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8161
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683773160",
+   "group": "43c22326b4ab",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0889,
+   "mons": {
+    "p1": "Tyranitar",
+    "p2": "Raichu"
+   },
+   "engine": 0.0986,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0986
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683786440",
+   "group": "6b16f688e903",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.879,
+   "mons": {
+    "p1": "Froslass",
+    "p2": "Milotic"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683795060",
+   "group": "6597192d8a28",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.5948,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.995,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1372,
+      "value": 0.995
+     },
+     {
+      "class": "faster",
+      "weight": 0.8628,
+      "value": 0.995
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683797387",
+   "group": "6597192d8a28",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.7257,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Rillaboom"
+   },
+   "engine": 0.9686,
+   "leaf_mass": 0.05,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1446,
+      "value": 0.9686
+     },
+     {
+      "class": "faster",
+      "weight": 0.8554,
+      "value": 0.9686
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683798919",
+   "group": "868f195eb1c2",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.7045,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7045
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683806179",
+   "group": "264701706c1e",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6431,
+   "mons": {
+    "p1": "Gardevoir",
+    "p2": "Archaludon"
+   },
+   "engine": 0.907,
+   "leaf_mass": 0.3243,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9729,
+      "value": 0.9117
+     },
+     {
+      "class": "tied",
+      "weight": 0.0271,
+      "value": 0.7396
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683816543",
+   "group": "c7e20579c778",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.1788,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.1971,
+   "leaf_mass": 0.52,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.1971
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683849687",
+   "group": "138564b71e1d",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5284,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.1209,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9787,
+      "value": 0.1209
+     },
+     {
+      "class": "tied",
+      "weight": 0.0213,
+      "value": 0.1204
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683871804",
+   "group": "c134f09cc7ca",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.7372,
+   "mons": {
+    "p1": "Venusaur",
+    "p2": "Garchomp"
+   },
+   "engine": 0.9583,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.9583
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683892030",
+   "group": "3ccefde0829c",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8133,
+   "mons": {
+    "p1": "Basculegion",
+    "p2": "Sinistcha"
+   },
+   "engine": 0.8333,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.8333
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683894913",
+   "group": "8e6b6f93faa1",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.8102,
+   "mons": {
+    "p1": "Pyroar",
+    "p2": "Milotic"
+   },
+   "engine": 0.1529,
+   "leaf_mass": 0.8756,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1529
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683896360",
+   "group": "cf4cbea0c0c8",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.1896,
+   "mons": {
+    "p1": "Incineroar",
+    "p2": "Mawile"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9529,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0471,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683897251",
+   "group": "8e6b6f93faa1",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5607,
+   "mons": {
+    "p1": "Kingambit",
+    "p2": "Milotic"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 0.9663,
+      "value": 0
+     },
+     {
+      "class": "tied",
+      "weight": 0.0337,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683900052",
+   "group": "33bc3e58534c",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4752,
+   "mons": {
+    "p1": "Raichu",
+    "p2": "Charizard"
+   },
+   "engine": 0.7709,
+   "leaf_mass": 0.3452,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9771,
+      "value": 0.7804
+     },
+     {
+      "class": "tied",
+      "weight": 0.0034,
+      "value": 0.5
+     },
+     {
+      "class": "faster",
+      "weight": 0.0195,
+      "value": 0.3421
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683969943",
+   "group": "0874f68fdde8",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1906,
+   "mons": {
+    "p1": "Basculegion",
+    "p2": "Salamence"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683970698",
+   "group": "0874f68fdde8",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.634,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Sneasler"
+   },
+   "positions": {}
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2683994895",
+   "group": "202d363eaee8",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9096,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9673,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0074,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.0253,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684007175",
+   "group": "7718cc535dcd",
+   "turn": 13,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.8831,
+   "mons": {
+    "p1": "Camerupt",
+    "p2": "Primarina"
+   },
+   "engine": 0.3007,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3007
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684050118",
+   "group": "a3460cb40617",
+   "turn": 13,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.4113,
+   "mons": {
+    "p1": "Corviknight",
+    "p2": "Metagross"
+   },
+   "engine": 0.5405,
+   "leaf_mass": 0.9786,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.5405
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684149849",
+   "group": "f4fdb862217e",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.818,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Venusaur"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9921,
+      "value": 0.5951
+     },
+     {
+      "class": "tied",
+      "weight": 0.0079,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684154905",
+   "group": "f4fdb862217e",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5979,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Archaludon"
+   },
+   "engine": 0.7192,
+   "leaf_mass": 0.3268,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9806,
+      "value": 0.7235
+     },
+     {
+      "class": "tied",
+      "weight": 0.0194,
+      "value": 0.5
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684195560",
+   "group": "896c66950984",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.8129,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684197395",
+   "group": "896c66950984",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7015,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Gholdengo"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.7448,
+      "value": 0.8437
+     },
+     {
+      "class": "tied",
+      "weight": 0.0274,
+      "value": null
+     },
+     {
+      "class": "faster",
+      "weight": 0.2278,
+      "value": 0.5052
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684242599",
+   "group": "889d53d515fc",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4799,
+   "mons": {
+    "p1": "Klefki",
+    "p2": "Sylveon"
+   },
+   "engine": 0.1666,
+   "leaf_mass": 0.928,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.948,
+      "value": 0.1666
+     },
+     {
+      "class": "tied",
+      "weight": 0.052,
+      "value": 0.1675
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684248658",
+   "group": "e40f86c9eb75",
+   "turn": 4,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4841,
+   "mons": {
+    "p1": "Golisopod",
+    "p2": "Gardevoir"
+   },
+   "engine": 0.7825,
+   "leaf_mass": 0.8454,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.7825
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684250058",
+   "group": "e40f86c9eb75",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.463,
+   "mons": {
+    "p1": "Arcanine-Hisui",
+    "p2": "Kommo-o"
+   },
+   "engine": 0.8928,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9146,
+      "value": 0.893
+     },
+     {
+      "class": "tied",
+      "weight": 0.0085,
+      "value": 0.8922
+     },
+     {
+      "class": "faster",
+      "weight": 0.0769,
+      "value": 0.8902
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684258116",
+   "group": "489a7aae4f78",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3378,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.7455,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.7455
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684310477",
+   "group": "460c170cf146",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3289,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Glimmora"
+   },
+   "engine": 0.7741,
+   "leaf_mass": 0.2996,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1012,
+      "value": 0.5
+     },
+     {
+      "class": "slower",
+      "weight": 0.8988,
+      "value": 0.805
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684314076",
+   "group": "77d7701d7bd7",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7357,
+   "mons": {
+    "p1": "Sneasler",
+    "p2": "Rillaboom"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.8028,
+      "value": 1
+     },
+     {
+      "class": "tied",
+      "weight": 0.0315,
+      "value": 1
+     },
+     {
+      "class": "faster",
+      "weight": 0.1656,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684340813",
+   "group": "a3f49d2da9bc",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4166,
+   "mons": {
+    "p1": "Pelipper",
+    "p2": "Sneasler"
+   },
+   "engine": 0.766,
+   "leaf_mass": 0.2588,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.766
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684342241",
+   "group": "a3f49d2da9bc",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.683,
+   "mons": {
+    "p1": "Archaludon",
+    "p2": "Incineroar"
+   },
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9842,
+      "value": 0.8136
+     },
+     {
+      "class": "tied",
+      "weight": 0.0158,
+      "value": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684342243",
+   "group": "b9e166c274ce",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.6544,
+   "mons": {
+    "p1": "Excadrill",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.6294,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.6294
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684344635",
+   "group": "af125dfa25bb",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.2953,
+   "mons": {
+    "p1": "Hatterene",
+    "p2": "Arcanine-Hisui"
+   },
+   "engine": 0.0502,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0502
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684344880",
+   "group": "b9e166c274ce",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1826,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Garchomp"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684350887",
+   "group": "4b92f4a76c19",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.814,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Gholdengo"
+   },
+   "engine": 0.7284,
+   "leaf_mass": 0.9864,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.0136,
+      "value": 0.5208
+     },
+     {
+      "class": "faster",
+      "weight": 0.9289,
+      "value": 0.7312
+     },
+     {
+      "class": "slower",
+      "weight": 0.0574,
+      "value": 0.7332
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684493836",
+   "group": "8dec76b81a6b",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.053,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.0545,
+   "leaf_mass": 0.285,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0545
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684522280",
+   "group": "23f83fde7db1",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.1498,
+   "mons": {
+    "p1": "Blastoise",
+    "p2": "Torkoal"
+   },
+   "engine": 0.749,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.749
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684523645",
+   "group": "23f83fde7db1",
+   "turn": 10,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5039,
+   "mons": {
+    "p1": "Blastoise",
+    "p2": "Farigiraf"
+   },
+   "engine": 0.6072,
+   "leaf_mass": 1.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 0.9977,
+      "value": 0.6072
+     },
+     {
+      "class": "tied",
+      "weight": 0.0023,
+      "value": 0.6074
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684627765",
+   "group": "0dc7d1ad38f6",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.209,
+   "mons": {
+    "p1": "Froslass",
+    "p2": "Pelipper"
+   },
+   "engine": 0.0734,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0734
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684703537",
+   "group": "7863febf902e",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1013,
+   "mons": {
+    "p1": "Floette-Eternal",
+    "p2": "Raichu"
+   },
+   "engine": 0.0221,
+   "leaf_mass": 0.2552,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.0221
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684714988",
+   "group": "17c8884ac6ba",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.3629,
+   "mons": {
+    "p1": "Rillaboom",
+    "p2": "Archaludon"
+   },
+   "engine": 0.0365,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "tied",
+      "weight": 0.1571,
+      "value": 0.0198
+     },
+     {
+      "class": "slower",
+      "weight": 0.8429,
+      "value": 0.0396
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmcbo3-2684852649",
+   "group": "3038e71195eb",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1629,
+   "mons": {
+    "p1": "Pawmot",
+    "p2": "Torkoal"
+   },
+   "engine": 0.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2679100352",
+   "group": "ced0a78bb2f6",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.3852,
+   "mons": {
+    "p1": "Glimmora",
+    "p2": "Kingambit"
+   },
+   "engine": 0.1588,
+   "leaf_mass": 0.3312,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1588
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2681767924",
+   "group": "442e0712a718",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2292,
+   "mons": {
+    "p1": "Gyarados",
+    "p2": "Slowbro"
+   },
+   "engine": 0.1667,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.1667
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2683836552",
+   "group": "8f767a8b8d66",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6777,
+   "mons": {
+    "p1": "Salamence",
+    "p2": "Tyranitar"
+   },
+   "engine": 0.0199,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 0.0199
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684319335",
+   "group": "0663e88010d8",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7546,
+   "mons": {
+    "p1": "Charizard",
+    "p2": "Pelipper"
+   },
+   "engine": 1.0,
+   "leaf_mass": 0.0,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "slower",
+      "weight": 1.0,
+      "value": 1
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684319409",
+   "group": "637ecc327d0a",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5078,
+   "mons": {
+    "p1": "Gholdengo",
+    "p2": "Salamence"
+   },
+   "engine": 0.3126,
+   "leaf_mass": 0.3333,
+   "depth": 2,
+   "positions": {
+    "2": [
+     {
+      "class": "faster",
+      "weight": 1.0,
+      "value": 0.3126
+     }
+    ]
+   }
+  }
+ ]
+}

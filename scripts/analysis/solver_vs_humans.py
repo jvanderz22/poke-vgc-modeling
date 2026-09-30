@@ -6,7 +6,8 @@ is stopped there and asked twice, from the stands, which is how a replay sees it
   model    the served open-sheet WP (`live.wp`), P(player 1 wins), as the app computes it
   engine   `vgc.wp.endgame` over the replay's own Observer, both spreads integrated, solved by
            `sidecar/showdown/endgame-solver.js` at depth 2 for every position and then depth 3 for
-           each position that finishes inside `--cap` seconds (depth 2 gets twice that); a game takes the deepest depth at
+           each position that finishes inside `--cap` seconds (`--depths`: depth 3 is out of reach at
+           scale until the solver is faster, PLAN-v3 step 6); a game takes the deepest depth at
            which all of its positions finished
 
 and both are scored against who won. The unit is the replay's group (a Bo3 series or a player
@@ -16,7 +17,7 @@ forfeits are reported apart; neither is known at the decision point, so neither 
 The engine assumes best play from both sides, and this corpus is ~1100-rated, so it can come out
 either way. That is the point of running it.
 
-    .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 600
+    .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180
     .venv/bin/python scripts/analysis/solver_vs_humans.py --score-only
 """
 
@@ -37,7 +38,24 @@ from vgc.wp import endgame, solver
 
 OUT = paths.DATA / "analysis" / "reg_mc" / "solver_vs_humans.json"
 DEPTHS = (2, 3)
+# Under this much of the answer resting on HP share, the engine has settled the position rather
+# than guessed it; that subset is the test of best play (PLAN-v3 step 3.6).
+SETTLED = 0.1
 EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses scores ~6.9, not inf
+# Positions that ran past a cap, so a rerun at the same or a lower cap does not spend it again.
+# The solver cache holds answers only; a timeout is a fact about this script's budget.
+TIMEOUTS = paths.ROOT / ".vgc" / "endgame-timeouts.jsonl"
+
+
+def _timed_out() -> dict[str, float]:
+    if not TIMEOUTS.exists():
+        return {}
+    out: dict[str, float] = {}
+    for line in TIMEOUTS.read_text().splitlines():
+        if line.strip():
+            row = json.loads(line)
+            out[row["key"]] = max(out.get(row["key"], 0.0), row["cap"])
+    return out
 
 
 def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
@@ -88,9 +106,12 @@ def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
 
 def run_capped(pos: dict[str, Any], cap: float) -> dict[str, Any] | None:
     """One solve through the cache, or None if it runs past `cap` seconds."""
-    hit = solver._cached().get(solver.position_key(pos))
+    key = solver.position_key(pos)
+    hit = solver._cached().get(key)
     if hit is not None:
         return hit
+    if _timed_out().get(key, 0.0) >= cap:
+        return None
     p = subprocess.Popen(["node", str(solver.SOLVER), str(paths.SHOWDOWN)], stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
@@ -98,30 +119,40 @@ def run_capped(pos: dict[str, Any], cap: float) -> dict[str, Any] | None:
     except subprocess.TimeoutExpired:
         p.kill()
         p.communicate()
+        with solver._cache_lock:
+            with TIMEOUTS.open("a") as fh:
+                fh.write(json.dumps({"key": key, "cap": cap}) + "\n")
         return None
     if p.returncode:
-        raise RuntimeError(f"solver failed: {err.strip()[-300:]}")
+        raise RuntimeError(f"solver failed: {err.strip()[-1500:]}")
     result = json.loads(out)
     solver.remember(pos, result)
     return result
 
 
-def solve(rows: list[dict[str, Any]], workers: int, cap: float) -> None:
+def solve(rows: list[dict[str, Any]], workers: int, cap: float, depths: tuple[int, ...]) -> None:
     """Every game's engine answer at the deepest depth all its positions finished at."""
-    for d in DEPTHS:
+    for d in depths:
         todo = [(r, i, j["position"]) for r in rows for i, j in enumerate(r["jobs"][d])]
         t0, done = time.time(), 0
         with ThreadPoolExecutor(workers) as pool:
-            futures = {pool.submit(run_capped, pos, 2 * cap if d == DEPTHS[0] else cap): (r, i)
+            futures = {pool.submit(run_capped, pos, cap): (r, i)
                        for r, i, pos in todo}
             for f in as_completed(futures):
                 r, i = futures[f]
-                r["jobs"][d][i]["result"] = f.result()
+                try:
+                    r["jobs"][d][i]["result"] = f.result()
+                except RuntimeError as e:
+                    # One simulator crash is one unsolved position, not the run; the error is kept
+                    # so the position can be reproduced and the adapter or solver fixed.
+                    r["jobs"][d][i]["result"] = None
+                    r.setdefault("errors", []).append({"depth": d, "class": r["jobs"][d][i]["class"],
+                                                       "error": str(e)[-600:]})
                 done += 1
                 if done % 25 == 0 or done == len(todo):
                     print(f"  depth {d}: {done}/{len(todo)} positions, {time.time() - t0:.0f}s", flush=True)
     for r in rows:
-        for d in sorted(DEPTHS, reverse=True):
+        for d in sorted(depths, reverse=True):
             jobs = r["jobs"][d]
             if all(j.get("result") for j in jobs):
                 total = sum(j["weight"] for j in jobs)
@@ -137,6 +168,8 @@ def score(rows: list[dict[str, Any]], boots: int = 4000, seed: int = 11) -> dict
     rng = np.random.default_rng(seed)
     unsolved = sum(r.get("engine") is None for r in rows)
     rows = [r for r in rows if r.get("engine") is not None]
+    if not rows:
+        return {"games": 0, "unsolved": unsolved}
     groups = sorted({r["group"] for r in rows})
     gi = {g: i for i, g in enumerate(groups)}
 
@@ -188,10 +221,15 @@ def score(rows: list[dict[str, Any]], boots: int = 4000, seed: int = 11) -> dict
     return out
 
 
+def j_ok(r: dict[str, Any], d: int) -> bool:
+    return any(j.get("result") is not None for j in r["jobs"][d])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=6)
-    ap.add_argument("--cap", type=float, default=600, help="seconds a depth-3 position may take")
+    ap.add_argument("--cap", type=float, default=180, help="seconds a position may take")
+    ap.add_argument("--depths", default="2", help="depths to solve, comma-separated (of 2,3)")
     ap.add_argument("--score-only", action="store_true", help="re-score the saved rows")
     args = ap.parse_args()
     reg = load_regulation("reg_mc")
@@ -205,9 +243,13 @@ def main() -> None:
         version = in_battle_version(reg.id, OPEN)
         rows, counts = collect(reg, version)
         print(f"{counts['games']} games to solve", counts, flush=True)
-        solve(rows, args.workers, args.cap)
-        counts["version"] = version
+        depths = tuple(int(x) for x in args.depths.split(","))
+        solve(rows, args.workers, args.cap, depths)
+        counts["version"], counts["depths"] = version, list(depths)
+        counts["crashed_positions"] = sum(len(r.get("errors", [])) for r in rows)
     result = {"all": score(rows),
+              "settled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] <= SETTLED]),
+              "unsettled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] > SETTLED]),
               "played_out": score([r for r in rows if r["ended_by"] == "normal"]),
               "forfeit": score([r for r in rows if r["ended_by"] != "normal"])}
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -215,7 +257,7 @@ def main() -> None:
                                "rows": [{k: v for k, v in r.items() if k != "jobs"} |
                                         {"positions": {str(d): [{"class": j["class"], "weight": round(j["weight"], 4),
                                                                  "value": (j.get("result") or {}).get("value")}
-                                                                for j in r["jobs"][d]] for d in DEPTHS}}
+                                                                for j in r["jobs"][d]] for d in DEPTHS if j_ok(r, d)}}
                                         if "jobs" in r else r for r in rows]}, indent=1) + "\n")
     print(json.dumps({"counts": counts, "result": result}, indent=1))
 

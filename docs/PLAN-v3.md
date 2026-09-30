@@ -16,7 +16,7 @@ needed to decide what to do next. Detail lives in the findings docs, linked wher
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed, switch-in order, damage, bulk, SP budget, set prior. All gated for soundness |
 | In-battle win probability | ✅ Served and pinned per regime: `wp-v1f-idp5` on open sheets, `wp-v1d-sw-split-small` on closed sheets. Both pass the powered calibration test |
-| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ On the Battle page beside the model, deepening in the background. ⏳ Not yet checked against human 1v1s (step 3.6) |
+| Endgame solver (1v1) | ✅ `vgc wp solve`: minimax over the pinned engine, with chance enumerated and crits included. ✅ On the Battle page beside the model, deepening in the background. ✅ Checked against 174 held-out human 1v1s (step 3.6): better than the model on Brier and log loss, 48 of 50 confident calls right |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus (finding 1). Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page with belief panels and WP, for your games and for watching someone else's open-sheet game |
@@ -229,8 +229,15 @@ labelled, and neither is presented as *the* number.
    When the two disagree by more than ~20 points, say so rather than averaging.
 6. **The check that decides what the numbers become.** Held-out human 1v1 endgames from replays:
    log loss and calibration of the solver against the model, clustered by battle. The solver
-   assumes best play, and the corpus is ~1100-rated, so this can come out either way. Until it
-   is run, both numbers stay second opinions of each other. It runs on step 4's observer adapter.
+   assumes best play, and the corpus is ~1100-rated, so this can come out either way. It runs on
+   step 4's observer adapter.
+
+   **Done (2026-09-29; [phase8, "the engine against how human 1v1s end"](phase8-findings.md)).** On
+   174 games at depth 2, the engine beats the model: Brier 0.090 against 0.197, log loss 0.33
+   against 0.58, and the called side won 48 of 50 confident calls. It is, if anything,
+   underconfident. The run also found that Watching mode averaged each position with its mirror,
+   which is now fixed. The page and its caveat now say the engine was checked. Whether the engine
+   should lead in a 1v1, and whether a shallow answer still needs fading, are open.
 
 ### 4. Observer mode: a battle watched with both sheets open
 
@@ -240,7 +247,7 @@ are**. It is also the view every public replay gives, so it is what step 3.6 is 
 
 Items 1–4 are done (2026-09-29; [phase8, "observer mode"](phase8-findings.md)): the Watching mode,
 `belief.speed.joint`, `solver.partition_joint`, and the page. The player view goes through the same
-joint path and still reproduces all 32 benchmark variants. Item 5 is next.
+joint path and still reproduces all 32 benchmark variants. Item 5 is done: step 3.6 ran through it.
 
 It is a *perspective* on open sheets, not a third information regime. The model and gate are the
 open-sheet ones (`wp-v1f-idp5`, `in_battle_pass`), and `in_battle_ece` is already scored on

@@ -1545,3 +1545,50 @@ extreme's weight to 32. Scarf Basculegion below 4 SP goes from 27% to 10%, and a
 In the benchmark, F1-B (open sheet, Scarf) goes from 0.27 to **0.097**, F1-D 0.074 → 0.061, and
 F1-C's mix 0.70 → 0.63. F2's representative Annihilape moves to 32 Speed and its answers are
 unchanged. The served model's separation of lost from won 1v1s is 0.087 (was 0.09).
+
+## The engine against how human 1v1s end
+
+Plan v3 step 3.6 (2026-09-29). Every held-out, human, open-sheet replay that reaches a 1v1 is
+stopped at its first turn mark with one Pokémon a side and asked twice, from the stands: the
+served open-sheet model (`live.wp`), and the engine (`vgc.wp.endgame` through the Observer, both
+spreads integrated, two turns deep). Both are scored against who won. Of 1,703 held-out games, 217
+reach a 1v1. 12 cannot be set up (7 volatiles, 5 with a Pokémon never shown), and 31 have a
+position that did not finish in 180 s (30) or crashed the simulator (one game). That leaves **174
+games in 166 groups** (`scripts/analysis/solver_vs_humans.py`,
+`data/analysis/reg_mc/solver_vs_humans.json`). Intervals are cluster bootstraps over groups:
+
+| | games | Brier engine / model | log loss engine / model | engine − model, log loss |
+|---|---|---|---|---|
+| all | 174 | **0.090** / 0.197 | **0.330** / 0.580 | −0.250 [−0.358, −0.130], engine better |
+| settled (leaf mass ≤ 0.1) | 50 | **0.086** / 0.161 | 0.355 / 0.507 | −0.152 [−0.43, +0.18], not distinguishable |
+| unsettled | 124 | **0.092** / 0.212 | **0.320** / 0.610 | −0.289 [−0.378, −0.199], engine better |
+| played out | 155 | **0.092** / 0.200 | **0.337** / 0.585 | engine better |
+| forfeits | 19 | **0.079** / 0.178 | **0.275** / 0.542 | engine better |
+
+**When the engine calls it (95%+ either way), the called side won 48 of 50.** The model, on the
+same 50 games, gave that side 0.73 on average. The two it lost are both fully settled (leaf mass 0):
+Venusaur against Garchomp (engine 0.96) and Sneasler against Rillaboom (1.00). Either a player
+missed the line or the assumed spreads are wrong there. On settled positions the Brier difference
+is clear, and log loss is not only because those two confident misses cost ~3 nats each.
+
+The engine is, if anything, **underconfident** in the middle. Positions it put at 0.17 were won by
+player 1 10% of the time, and positions at 0.83 were won 92% of the time. The model is calibrated
+(0.20 → 0.21, 0.78 → 0.76) but rarely leaves 0.2–0.8. This is the finding from the decided-endgame
+benchmark, now on real games: the model does not follow what decides a 1v1, and the engine does.
+
+What it does not say:
+- **Depth 2 only.** Deeper search is out of reach at scale until the solver is faster (step 6).
+  Even the unsettled answers, which rest ~47% on HP share, beat the model. So the search's
+  first turns, not the HP heuristic, are where the gain is.
+- **The hard positions are missing.** The 31 excluded games are the ones the solver could not
+  finish, so this is the engine on the 1v1s it can solve in three minutes.
+- **~1100-rated players.** The engine assumes best play. Here that is still the better predictor,
+  and a stronger field would presumably only help it.
+
+**A bug the check found.** The first run scored the model at ~0.50 on 173 of 174 games. A
+spectator record featurizes as two rows, one per seat, and `live.wp` read them as two draws, so
+every position from the stands averaged with its mirror. The Watching page showed the same
+number. It now pairs them as `vgc wp eval` does (`c2744f8`). The table above is the fixed model.
+
+Open: one game (`gen9championsvgc2026regmcbo3-2683090653`) crashes the simulator inside
+`BattleActions.useMove` for both of its positions. Its error is kept in the results file.

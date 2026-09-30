@@ -595,8 +595,8 @@ def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
 
     The first call for a position starts the search in the background and returns at once; the
     page asks again to see it deepen. Beside the model's number, never instead of it: the engine
-    assumes best play on both sides, and until that has been checked against how human 1v1s end,
-    neither number is the answer (PLAN-v3, step 3).
+    assumes best play on both sides. On 174 held-out human 1v1s it predicted who won better than the
+    model did (PLAN-v3, step 3.6).
     """
     from vgc.web import solving
 
