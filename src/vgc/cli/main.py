@@ -833,12 +833,30 @@ def cmd_wp_solve(args: argparse.Namespace) -> int:
 
     reg = _reg(args)
     search = {"depth": args.depth} if args.depth else None
+    if args.export:
+        from vgc.wp import offload
+
+        jobs, _ = solver.plan(reg, benchmark.load(reg), {**solver.SEARCH, **(search or {})}, args.only)
+        print(json.dumps(offload.export([j[2] for j in jobs], Path(args.export))))
+        return 0
     truth = solver.solve(reg, workers=args.workers, search=search, only=args.only)
     out = benchmark.solved_path(reg)
     old = json.loads(out.read_text())["truth"] if out.exists() and args.only else {}
     out.write_text(json.dumps({"engine": showdown_sha(), "truth": old | truth}, indent=1) + "\n")
     print(f"→ {out.relative_to(paths.ROOT)}")
     return 0
+
+
+def cmd_wp_merge_solves(args: argparse.Namespace) -> int:
+    """Merge solver results computed elsewhere into the local solver cache (`vgc.wp.offload`)."""
+    from vgc.wp import offload
+
+    out = offload.merge(Path(args.results), Path(args.jobs), verify=args.verify)
+    errors = out.pop("errors")
+    print(json.dumps(out, indent=1))
+    for e in errors[:5]:
+        print(f"  error {e['key'][:12]}: {e['error'][-300:]}", file=sys.stderr)
+    return 1 if errors else 0
 
 
 def showdown_sha() -> str:
@@ -1354,7 +1372,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--workers", type=int, default=6)
     p.add_argument("--depth", type=int, help="turns searched before HP share decides (default 4)")
     p.add_argument("--only", nargs="*", help="families or family/variant keys (merged into the stored truth)")
+    p.add_argument("--export", metavar="JOBS", help="write the uncached positions to solve elsewhere "
+                   "(scripts/cloud/kaggle_solve.sh), and stop")
     p.set_defaults(func=cmd_wp_solve)
+    p = with_reg(wp.add_parser("merge-solves", help="solver results from elsewhere into the solver cache"))
+    p.add_argument("results", help="results.jsonl from scripts/cloud/solve_batch.py (summary.json beside it)")
+    p.add_argument("--jobs", required=True, help="the jobs.jsonl that was sent")
+    p.add_argument("--verify", type=int, default=3, help="re-solve this many of the smallest here first")
+    p.set_defaults(func=cmd_wp_merge_solves)
     p = with_reg(wp.add_parser("preview", help="team preview (open sheets): WP for every bring + lead choice"))
     p.add_argument("--team", required=True, help="your team (Showdown text)")
     p.add_argument("--opponent", required=True, help="their open team sheet (Showdown text)")

@@ -29,6 +29,7 @@ Every script prints its elapsed time, and its cost when given `RATE` (dollars pe
 | Train one WP model | ~45 min | 2–3 min | **yes when sweeping**, not for a single run |
 | Tuning sweep (8 configs) | ~6 h | ~20 min | **yes** — this is the real gain |
 | Evaluation, preview checks | minutes | same | no |
+| Endgame solver, a batch of positions (section C) | hours | ~2.7× longer on free Kaggle CPU | **yes, to keep the laptop free**: a night on Kaggle is ~4–5 laptop-hours |
 
 Rules of thumb: **rent CPU** for simulation (Phases 3, 6, 7), **rent GPU** for a sweep of training
 runs (Phases 4–6), and **don't rent** for anything measured in minutes locally.
@@ -121,6 +122,47 @@ zero invalid choices, stop and fix it locally before paying for a long run.
 cloud-generated run is identical to one generated locally with the same seed, at any worker count.
 Use a **different `--seed` from local runs** or you will regenerate the same battles. Run ids record
 the seed; `summary.json` carries the outcome digest to confirm a rerun matches.
+
+## C. CPU: endgame-solver positions on Kaggle
+
+The solver (`sidecar/showdown/endgame-solver.js`) is a pure function of a position and its own source,
+and chance is enumerated rather than sampled, so a position solved anywhere gives the answer the
+laptop would. Offloading only fills the local solver cache ahead of time (`vgc.wp.offload`). The
+commands that read the answers then run unchanged and find every position cached.
+
+```bash
+# 1. export what is not cached yet (either source, or both)
+.venv/bin/python scripts/analysis/solver_vs_humans.py --depths 2,3 --export .vgc/jobs/humans.jsonl
+.venv/bin/vgc wp solve --export .vgc/jobs/benchmark.jsonl
+# 2. launch on a free Kaggle CPU session and walk away (or omit --no-wait to poll until done)
+bash scripts/cloud/kaggle_solve.sh .vgc/jobs/humans.jsonl --cap 180 --no-wait
+# 3. next morning: download, check, merge into .vgc/endgame-solver.jsonl
+bash scripts/cloud/kaggle_solve.sh --collect
+# 4. the real command, now all cache hits
+.venv/bin/python scripts/analysis/solver_vs_humans.py --depths 2,3
+```
+
+- **What goes up.** The positions, the solver, and an engine dataset holding a Linux Node binary
+  of the laptop's version (checksum-verified from nodejs.org, cached in `.vgc/cache/`) and the
+  12 MB slice of the pinned Showdown build that the solver loads. The engine is pushed again only
+  when Node or the Showdown pin changes.
+- **What the merge checks.** It merges nothing unless all of these hold: the run's solver sha256
+  is the local one, every result is for a job that was sent, the kernel's output is the run
+  launched from here, and the smallest three results re-solve locally to the same value, leaf
+  mass and node count.
+- **The 12-hour limit.** Kaggle keeps output only when a session ends normally, so
+  `solve_batch.py` stops itself by `--max-minutes` (690) with every answer written. A position
+  cut off is simply exported again next time. A position that runs past `--cap` is recorded as a
+  timeout in `.vgc/endgame-timeouts.jsonl`, with `where: kaggle`.
+- **Speed.** Measured 2026-09-30: a position takes 1.7–2.6× as long as on the laptop, on 4 workers
+  against the laptop's 6. One 12-hour session does about 4–5 hours of the laptop's work. Choose
+  by that: a job under an hour or two runs here; one that fits a night on Kaggle goes there to
+  keep the laptop free; one bigger than that runs here overnight, or on a prepaid box through
+  `solve_batch.py`, which runs anywhere with Python 3 and Node.
+- **Held-out data.** The human positions come from held-out replays. They are public replays'
+  teams and HP at a 1v1, uploaded to a private dataset. They are inputs to a deterministic
+  function, and scoring stays here, so nothing on Kaggle can move a verdict. The first smoke test
+  used benchmark positions only.
 
 ## What never leaves the laptop
 

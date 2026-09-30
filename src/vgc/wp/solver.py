@@ -213,7 +213,22 @@ def _ability(reg: Regulation, species: str) -> str:
 # solve that is stopped keeps what it finished — F6 alone ran for hours, and the whole run used to
 # be written only at the end — and a change to the solver invalidates everything it produced.
 CACHE = paths.ROOT / ".vgc" / "endgame-solver.jsonl"
+# Positions that ran past a cap, so a rerun at the same or a lower cap does not spend it again. The
+# cache holds answers only; a timeout is a fact about a run's budget (and, from `offload`, where).
+TIMEOUTS = paths.ROOT / ".vgc" / "endgame-timeouts.jsonl"
 _cache_lock = threading.Lock()
+
+
+def timed_out() -> dict[str, float]:
+    """The longest cap each position has run past, by key."""
+    if not TIMEOUTS.exists():
+        return {}
+    out: dict[str, float] = {}
+    for line in TIMEOUTS.read_text().splitlines():
+        if line.strip():
+            row = json.loads(line)
+            out[row["key"]] = max(out.get(row["key"], 0.0), row["cap"])
+    return out
 
 
 def position_key(pos: dict[str, Any]) -> str:
@@ -240,15 +255,19 @@ def remember(pos: dict[str, Any], result: dict[str, Any]) -> None:
             fh.write(json.dumps({"key": position_key(pos), "result": result}) + "\n")
 
 
-def run(pos: dict[str, Any]) -> dict[str, Any]:
-    hit = _cached().get(position_key(pos))
-    if hit is not None:
-        return hit | {"cached": True}
+def solve_uncached(pos: dict[str, Any]) -> dict[str, Any]:
     r = subprocess.run(["node", str(SOLVER), str(paths.SHOWDOWN)], input=json.dumps(pos),
                        capture_output=True, text=True, check=False)
     if r.returncode:
         raise RuntimeError(f"endgame solver failed: {r.stderr.strip()[-500:]}")
-    result = json.loads(r.stdout)
+    return json.loads(r.stdout)
+
+
+def run(pos: dict[str, Any]) -> dict[str, Any]:
+    hit = _cached().get(position_key(pos))
+    if hit is not None:
+        return hit | {"cached": True}
+    result = solve_uncached(pos)
     remember(pos, result)
     return result
 

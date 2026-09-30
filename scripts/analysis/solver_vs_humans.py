@@ -19,6 +19,11 @@ either way. That is the point of running it.
 
     .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180
     .venv/bin/python scripts/analysis/solver_vs_humans.py --score-only
+
+Solved somewhere else (`vgc.wp.offload`, `scripts/cloud/kaggle_solve.sh`): export the positions, solve
+them remotely, merge, and the run above then finds them cached.
+
+    .venv/bin/python scripts/analysis/solver_vs_humans.py --depths 2,3 --export .vgc/jobs/humans.jsonl
 """
 
 from __future__ import annotations
@@ -42,20 +47,6 @@ DEPTHS = (2, 3)
 # than guessed it; that subset is the test of best play (PLAN-v3 step 3.6).
 SETTLED = 0.1
 EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses scores ~6.9, not inf
-# Positions that ran past a cap, so a rerun at the same or a lower cap does not spend it again.
-# The solver cache holds answers only; a timeout is a fact about this script's budget.
-TIMEOUTS = paths.ROOT / ".vgc" / "endgame-timeouts.jsonl"
-
-
-def _timed_out() -> dict[str, float]:
-    if not TIMEOUTS.exists():
-        return {}
-    out: dict[str, float] = {}
-    for line in TIMEOUTS.read_text().splitlines():
-        if line.strip():
-            row = json.loads(line)
-            out[row["key"]] = max(out.get(row["key"], 0.0), row["cap"])
-    return out
 
 
 def collect(reg, version: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
@@ -110,7 +101,7 @@ def run_capped(pos: dict[str, Any], cap: float) -> dict[str, Any] | None:
     hit = solver._cached().get(key)
     if hit is not None:
         return hit
-    if _timed_out().get(key, 0.0) >= cap:
+    if solver.timed_out().get(key, 0.0) >= cap:
         return None
     p = subprocess.Popen(["node", str(solver.SOLVER), str(paths.SHOWDOWN)], stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -120,7 +111,7 @@ def run_capped(pos: dict[str, Any], cap: float) -> dict[str, Any] | None:
         p.kill()
         p.communicate()
         with solver._cache_lock:
-            with TIMEOUTS.open("a") as fh:
+            with solver.TIMEOUTS.open("a") as fh:
                 fh.write(json.dumps({"key": key, "cap": cap}) + "\n")
         return None
     if p.returncode:
@@ -231,9 +222,23 @@ def main() -> None:
     ap.add_argument("--cap", type=float, default=180, help="seconds a position may take")
     ap.add_argument("--depths", default="2", help="depths to solve, comma-separated (of 2,3)")
     ap.add_argument("--score-only", action="store_true", help="re-score the saved rows")
+    ap.add_argument("--export", metavar="JOBS", help="write the uncached positions to solve elsewhere, and stop")
     args = ap.parse_args()
     reg = load_regulation("reg_mc")
 
+    if args.export:
+        from pathlib import Path
+
+        from vgc.wp import offload
+        from vgc.wp.models import OPEN, in_battle_version
+
+        rows, counts = collect(reg, in_battle_version(reg.id, OPEN))
+        depths = tuple(int(x) for x in args.depths.split(","))
+        # Shallow first, so a remote run that hits its deadline has finished what the deeper
+        # search needs least and the scoring needs most.
+        positions = [j["position"] for d in depths for r in rows for j in r["jobs"][d]]
+        print(json.dumps({"games": counts["games"], **offload.export(positions, Path(args.export))}))
+        return
     if args.score_only:
         blob = json.loads(OUT.read_text())
         rows, counts = blob["rows"], blob["counts"]
