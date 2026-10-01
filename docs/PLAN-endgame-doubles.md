@@ -198,6 +198,35 @@ stages 2 and 3 need.
     the horizon. Most of the time goes on the 1v1s a second KO opens (300–600 small matrices).
   - So the next question is what settles it affordably: depth 2 on the cheaper 2v1 and 1v2
     positions first, a smaller N, and memoizing the 1v1 subgames across the search.
+- **Memoizing the 1v1 subgames would not pay.** In position 1's search, 337 1v1 searches are 263
+  distinct states; rounding HP to 5% still leaves 172. They are different positions, not repeats.
+- **The damage race (`search.race`, `search.race_1v1`) values a 1v1 without searching it.** Each
+  side's attacks, from the simulator's damage on the move as it is used, raced turn by turn over
+  both HP totals (accuracy, rolls, crits, priority, Speed, Sash, recoil, drain, Sitrus, residual
+  damage), and the pairs solved as a matrix game. Against the exact 1v1 answers:
+
+  | | favoured side right | near-certain within 0.05 | time against exact |
+  | --- | --- | --- | --- |
+  | HP share, no search | 344 / 498 | 23 / 277 | 1% |
+  | race, no search | 464 / 498 | 254 / 277 | 2% |
+  | HP share at the horizon, depth 1 | 127 / 169 | 43 / 88 | 4% |
+  | race at the horizon, depth 1 | 162 / 169 | 83 / 88 | 4% |
+
+  - Building it found that pruning's damage had ignored type-changing abilities: an Aerilate
+    Double-Edge was read as Normal and doing nothing to a Ghost. Both now use the move as the
+    simulator prepares it.
+  - What the race leaves out is what a race does: Protect, status moves, boosts, two-turn moves
+    beyond their charge turn. The search's own turn covers those near the root.
+- **2v2 at depth 1 with the 1v1s raced:** 93–180 s, about half the time. Positions 0–2 moved from
+  0.61–0.70 to 0.86–0.88; those answers had rested on one-turn 1v1 searches scored by HP share,
+  which pick the favoured side 75% of the time. Which is right is stage 3's question.
+- **2v1 and 1v2** (each 2v2 with one Pokémon fewer on a side; N = 16, k = 3, raced 1v1s; eight run
+  side by side): about 6 s at depth 1, 3–8 minutes at depth 2. The 2v1s here are decided at depth
+  1 (value 1 or 0.92–0.98, leaf mass under 0.2). The 1v2s rest wholly on the horizon at depth 1
+  (0.33, leaf mass 1) and mostly not at depth 2 (0.10–0.24, leaf mass 0.30–0.62).
+  - Depth 3 passed the 10-minute cap on all eight.
+  - So depth 1 with the race is the default for the page and for stage 3's check, which it makes
+    cheap enough to run locally. Depth 2 is for Kaggle, and for the 1v2 side of a check.
 
 ### 2. The adapter, for open sheets, closed sheets and Watching mode (2 days)
 
