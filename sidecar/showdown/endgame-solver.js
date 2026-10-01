@@ -994,17 +994,23 @@ function main() {
 
 	/**
 	 * `search.win_check = tol`: before anything else, does either side have a choice that wins this
-	 * very turn against every reply, in all but `tol` of the turn's chance? Each pair of choices is
+	 * very turn against every reply, in all but `tol` of the turn's chance? A reply that Protects (or
+	 * Endures) while that still works more than `tol` of the time only has to cost the side nothing:
+	 * Protect's odds fall to a third each turn running, so the same sweep waits for it and the win
+	 * is inevitable. The answer is then the worst reply's chance of the sweep (a crit or a flinch the
+	 * other side needs shows there), and what is left over is valued by the race at the root. Each
+	 * pair of choices is
 	 * played out likeliest chance first and dropped the moment more than `tol` of it is not a win,
 	 * so a choice that does not force the win usually costs a turn or two to rule out. Bounded by
-	 * `search.win_budget` turns simulated (default 2,000); past it, no win is claimed. A forced win
+	 * `search.win_budget` turns simulated (default 500, about a second); past it, no win is claimed. A forced win
 	 * is the answer: the rest of the search, and the race at its horizon, cannot improve on it.
 	 */
-	function settles(snap, a, c, winner, tol, budget) {
+	function settles(snap, a, c, ok, tol, budget) {
 		const frontier = [{script: [], p: 1}];
 		let won = 0, lost = 0;
 		while (frontier.length) {
-			if (budget.left-- <= 0) return null;
+			// Out of turns: what is known so far stands only if it already clears the bar.
+			if (budget.left-- <= 0) return won >= 1 - tol ? won : null;
 			let bi = 0;
 			for (let i = 1; i < frontier.length; i++) if (frontier[i].p > frontier[bi].p) bi = i;
 			const {script, p} = frontier[bi];
@@ -1021,14 +1027,17 @@ function main() {
 				e.options.forEach((o, k) => frontier.push({script: script.concat([{k, p: o.p}]), p: p * o.p}));
 				continue;
 			}
-			if (child.ended && child.winner === winner) won += p; else lost += p;
+			if (ok(child)) won += p; else lost += p;
 			if (lost > tol) return null;
-			if (won >= 1 - tol) return won;
+			// Played on until all but `WIN_EXACT` of the turn is known, so a crit or a flinch that lets
+			// the other side through shows in the number rather than only passing the bar.
+			if (won + lost >= 1 - WIN_EXACT) return won;
 		}
 		return won >= 1 - tol ? won : null;
 	}
 	// Whether `choice` could KO every foe this turn at all: each foe's HP within the damage aimed at
-	// it at the highest roll, without crits (a win that needs one is not forced), and two hits for a
+	// it at the lowest roll (the lowest roll alone is one turn in sixteen, far past any tolerance),
+	// without crits (a win that needs one is not forced), and two hits for a
 	// foe at full HP behind a Focus Sash or Sturdy. Ruling a choice out here costs a damage
 	// calculation; ruling it out by playing it costs a turn simulated per chance event.
 	function couldSweep(copy, side, choice) {
@@ -1049,7 +1058,7 @@ function main() {
 			for (const i of aimed) {
 				if (!dealt.has(i)) continue;
 				const x = dealt.get(i);
-				x.d += damage(copy, mon, foes[i], id) * hits * (spread ? 0.75 : 1) * 100 / 92;
+				x.d += damage(copy, mon, foes[i], id) * hits * (spread ? 0.75 : 1) * 85 / 92;
 				x.hits += hits;
 			}
 		});
@@ -1059,42 +1068,49 @@ function main() {
 			return x.d >= f.hp && (!guarded || x.hits >= 2);
 		});
 	}
-	// Whether a foe of `side` can Protect, Endure or the like this turn with more than `tol` chance of
-	// it working (one time in 3^n after n in a row): one that does survives the turn, so nothing
-	// `side` chooses forces a win, unless `side` has a way through (Unseen Fist, Feint and its kin).
-	function guarded(b, side, tol) {
+	// Whether `reply` (a choice of `side`'s) Protects, Endures or the like with more than `tol`
+	// chance of it working (one time in 3^n after n in a row), and `against` has no way through it
+	// (Unseen Fist, Feint and its kin).
+	function stalls(b, side, reply, tol) {
 		const me = b.sides[side], them = b.sides[1 - side];
-		const through = me.active.some(p => p && !p.fainted && (p.hasAbility('unseenfist')
-			|| p.moveSlots.some(m => b.dex.moves.get(m.id).breaksProtect)));
-		if (through) return false;
-		return them.active.some((f, slot) => {
-			if (!f || f.fainted) return false;
-			const req = them.activeRequest;
-			const moves = req && req.active && req.active[slot] ? req.active[slot].moves : f.moveSlots;
+		if (them.active.some(p => p && !p.fainted && (p.hasAbility('unseenfist')
+			|| p.moveSlots.some(m => b.dex.moves.get(m.id).breaksProtect)))) return false;
+		return reply.split(',').some((part, slot) => {
+			const c = parse(part), f = me.active[slot];
+			if (!c || !f || f.fainted) return false;
+			const req = me.activeRequest;
+			const id = req && req.active && req.active[slot] ? req.active[slot].moves[c.move - 1].id : f.moveSlots[c.move - 1].id;
+			const mv = b.dex.moves.get(id);
 			const odds = f.volatiles.stall ? 1 / f.volatiles.stall.counter : 1;
-			return odds > tol && moves.some(m => {
-				const mv = b.dex.moves.get(m.id);
-				return !m.disabled && mv.stallingMove && !['wideguard', 'quickguard'].includes(mv.id);
-			});
+			return mv.stallingMove && !['wideguard', 'quickguard'].includes(mv.id) && odds > tol;
 		});
 	}
+	const WIN_EXACT = 0.005;
 	function forcedWin(tol) {
 		const snap = State.serializeBattle(root);
 		const o = [options(root, root.sides[0]), options(root, root.sides[1])];
-		const budget = {left: search.win_budget || 2000};
+		const budget = {left: search.win_budget || 500};
 		const copy = scorer(snap);
+		const here = alive(root);
 		for (const side of [0, 1]) {
-			if (guarded(root, side, tol)) continue;
+			const who = side === 0 ? 'p1' : 'p2';
+			const wins = b => b.ended && b.winner === who;
+			// Through a Protect: nothing of this side's falls, and the sweep is still there next turn.
+			const holds = b => (b.ended ? b.winner === who : alive(b)[side] === here[side]);
 			for (const mine of o[side]) {
 				if (!couldSweep(copy, side, mine)) continue;
-				let worst = 1;
-				for (const theirs of o[1 - side]) {
-					const w = side === 0 ? settles(snap, mine, theirs, 'p1', tol, budget)
-						: settles(snap, theirs, mine, 'p2', tol, budget);
+				let worst = 1, protect = false;
+				// Replies that do not Protect first: those are the ones a sweep usually fails against.
+				const replies = [...o[1 - side]].sort((x, y) => stalls(root, 1 - side, x, tol) - stalls(root, 1 - side, y, tol));
+				for (const theirs of replies) {
+					const stalled = stalls(root, 1 - side, theirs, tol);
+					const ok = stalled ? holds : wins;
+					const w = side === 0 ? settles(snap, mine, theirs, ok, tol, budget)
+						: settles(snap, theirs, mine, ok, tol, budget);
 					if (w === null) { worst = null; break; }
-					worst = Math.min(worst, w);
+					if (stalled) protect = true; else worst = Math.min(worst, w);
 				}
-				if (worst !== null) return {side: side === 0 ? 'p1' : 'p2', choice: mine, won: worst};
+				if (worst !== null) return {side: who, choice: mine, won: worst, protect};
 				if (budget.left <= 0) return null;
 			}
 		}
@@ -1103,9 +1119,15 @@ function main() {
 	if (search.win_check) {
 		const f = forcedWin(search.win_check);
 		if (f) {
+			// Where the sweep fails, the race at the root stands for the rest of the game.
+			const snap = State.serializeBattle(root);
+			let rest = race(snap);
+			if (rest === null) rest = search.race_doubles === 'calibrated' ? calibrated(melee(snap, key(root)) ?? 0.5) : leaf(root);
+			const mine = f.side === 'p1' ? rest : 1 - rest;
+			const v = f.won + (1 - f.won) * mine;
 			process.stdout.write(JSON.stringify({
-				value: round(f.side === 'p1' ? f.won : 1 - f.won), leaf_mass: 0, nodes, dropped_mass: 0,
-				ms: Date.now() - t0, forced: {side: f.side, choice: f.choice},
+				value: round(f.side === 'p1' ? v : 1 - v), leaf_mass: round(1 - f.won), nodes, dropped_mass: 0,
+				ms: Date.now() - t0, forced: {side: f.side, choice: f.choice, sweep: round(f.won), through_protect: f.protect},
 				moves: {[f.side]: [f.choice]},
 			}) + '\n');
 			return;
