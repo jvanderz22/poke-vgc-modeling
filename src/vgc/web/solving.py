@@ -11,6 +11,15 @@ One solve at a time. The app is local and has one person at it, and a battle tha
 an undo) makes the old position worthless, so it is cancelled and its processes are killed rather
 than left to finish. Every finished position lands in the solver's cache (`solver.CACHE`), so going
 back to a position, or undoing a tap and making it again, answers at once.
+
+With two or fewer Pokémon a side and more than one on a side (2v2, 2v1, 1v2: `vgc.wp.doubles`),
+the answer has `DEADLINE` seconds, planning included (PLAN-endgame-doubles, stage 4). It comes in
+two steps over warm solver processes (`vgc.wp.pool`): at once, each position's forced-win check
+and the calibrated damage race (`QUICK`); then the one-turn search (`LIVE`), each position's value
+replacing its quick one if it finishes before the deadline. Only the heaviest `TOP_ORDERS` move
+orders are solved, and the weight of the rest is reported as unsolved. Open sheets only: on 674
+held-out open-sheet games the search predicted who won better than the model did (log loss 0.428
+against 0.513); closed sheets have not been checked with it.
 """
 
 from __future__ import annotations
@@ -26,10 +35,44 @@ from typing import Any
 
 from vgc import paths
 from vgc.regulation import Regulation
-from vgc.wp import endgame, solver
+from vgc.wp import doubles, endgame, solver
 
 DEPTHS = (1, 2, 3, 4)
 WORKERS = max(1, min(6, (os.cpu_count() or 2) // 2))
+
+# Doubles: the live search (checked on held-out games), its quick first answer, the budget.
+LIVE = {**doubles.SEARCH, "ko_extend": False, "prune": 2, "sample": 8, "fast_race": True, "sample_only": True,
+        "win_check": 0.1}
+QUICK = {**LIVE, "depth": 0}
+DEADLINE = 5.0
+TOP_ORDERS = 3
+DOUBLES_ASSUMPTIONS = [
+    "Both sides play their best for one turn, from the two or three choices a Pokémon has that a "
+    "player would consider; chance in that turn is sampled.",
+    "After it, what is left is valued by a damage race between the Pokémon still standing, "
+    "calibrated on past games: a sure race counts as about 88%.",
+    "A win either side can force on this turn, against every reply and through Protect, is found "
+    "first and is the answer when there is one.",
+    "A hidden spread's Speed is averaged over how people build it, narrowed by this battle's turn "
+    "order; the likeliest move orders are solved. Its other Stat Points are assumed: the main "
+    "attacking stat maxed, then HP, then the defences.",
+]
+_pool = None
+
+
+def pool():
+    """The warm solver processes, started on first use."""
+    global _pool
+    if _pool is None:
+        from vgc.wp.pool import Pool
+        _pool = Pool(WORKERS)
+        _pool.warm()
+    return _pool
+
+
+def warm() -> None:
+    """Start the solver processes ahead of the first doubles answer (in the background)."""
+    threading.Thread(target=pool, daemon=True).start()
 
 # What every engine answer assumes, beside what `endgame.plan` notes for this position.
 ASSUMPTIONS = [
@@ -128,7 +171,106 @@ class Solve:
                 "assumptions": ASSUMPTIONS + self.plan["notes"], "error": self.error}
 
 
-_current: Solve | None = None
+class DoublesSolve:
+    """A 2v2, 2v1 or 1v2 answered within `DEADLINE`: quick, then searched (module docstring)."""
+
+    def __init__(self, reg: Regulation, battle_id: str, battle):
+        self.battle_id, self.key = battle_id, fingerprint(battle)
+        self.started = time.time()
+        self.plan = doubles.plan(reg, battle, LIVE)
+        self.answer: dict[str, Any] | None = None
+        self.depth: int | None = None
+        self.searching: int | None = None
+        self.error: str | None = None
+        self.cancelled = False
+        if self.plan.get("eligible"):
+            jobs = self.plan["jobs"][:TOP_ORDERS]                # 2 x TOP_ORDERS processes at once
+            kept = sum(j["weight"] for j in jobs)
+            self.dropped = sum(j["weight"] for j in self.plan["jobs"]) - kept
+            self.jobs = [{**j, "weight": j["weight"] / kept} for j in jobs]
+            self.searching = 0
+            threading.Thread(target=self._run, daemon=True).start()
+
+    def _set(self, results: list[dict[str, Any] | None], depth: int) -> None:
+        combined = doubles.combine(self.jobs, results)
+        if combined is None:
+            return
+        self.answer = combined | {"positions": [
+            {"sets": [0, 0], "class": j["order"], "weight": round(j["weight"], 4), "value": r["value"],
+             "leaf_mass": r["leaf_mass"], "forced": r.get("forced")} for j, r in zip(self.jobs, results)]}
+        self.depth = depth
+
+    def _run(self) -> None:
+        deadline = self.started + DEADLINE
+        try:
+            at = lambda search: [{**j["position"], "search": search} for j in self.jobs]
+            # Side by side: the quick pass would otherwise spend a second or more of the search's
+            # budget. A forced win in the quick pass is found by the search's own check too.
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(2) as two:
+                later = two.submit(pool().solve_all, at(LIVE), deadline)
+                quick = pool().solve_all(at(QUICK), deadline)
+                if self.cancelled:
+                    return
+                self._set(quick, 0)
+                self.searching = 1
+                searched = later.result()
+            if self.cancelled:
+                return
+            best = [s if s is not None else q for s, q in zip(searched, quick)]
+            if any(s is not None for s in searched) and all(b is not None for b in best):
+                self._set(best, 1)
+                self.answer["searched"] = sum(s is not None for s in searched)
+        except Exception as e:                      # shown on the page, not raised into a thread
+            self.error = str(e)
+        finally:
+            self.searching = None
+
+    def cancel(self) -> None:
+        self.cancelled = True
+        if _pool is not None:
+            _pool.cancel()
+
+    def status(self) -> dict[str, Any]:
+        if not self.plan.get("eligible"):
+            return {"eligible": False, "reason": self.plan.get("reason")}
+        a = self.answer
+        return {"eligible": True, "reason": None, "kind": self.plan["kind"],
+                "depth": self.depth, "max_depth": 1, "searching": self.searching,
+                "value": round(a["value"], 4) if a else None,
+                "leaf_mass": round(a["leaf_mass"], 4) if a else None,
+                "positions": a["positions"] if a else [], "searched": (a or {}).get("searched"),
+                "elapsed": round(time.time() - self.started, 1),
+                "unsolved": round(min(1.0, self.plan["unsolved"] + self.dropped), 4),
+                "assumptions": DOUBLES_ASSUMPTIONS + self.plan["notes"], "error": self.error}
+
+
+def reason(reg: Regulation, battle) -> tuple[str | None, type]:
+    """Why the engine is not asked about this position (None when it is), and which solve answers
+    it: a 1v1's deepening one, or a doubles position's within the deadline."""
+    why = endgame.reason(reg, battle.rp.state)
+    if why is None:
+        return None, Solve
+    dwhy = doubles_reason(reg, battle)
+    if dwhy is None:
+        return None, DoublesSolve
+    if "more than two" in dwhy or "in the back" in dwhy:
+        return "the engine answers once neither side has more than two Pokémon left", Solve
+    return (why if dwhy.startswith("a 1v1") else dwhy), Solve
+
+
+def doubles_reason(reg: Regulation, battle) -> str | None:
+    """Why a battle's position is not one the doubles answer is shown for, or None."""
+    state = battle.rp.state
+    why = doubles.reason(reg, state)
+    if why:
+        return why
+    if not all(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
+        return "with a closed sheet the doubles engine is not checked yet"
+    return None
+
+
+_current: Solve | DoublesSolve | None = None
 _guard = threading.Lock()
 
 
@@ -136,7 +278,7 @@ def request(reg: Regulation, battle_id: str, battle) -> dict[str, Any]:
     """The engine's answer so far for this battle as it now stands, starting a solve if there is
     none for it. Any solve for another position is cancelled first."""
     global _current
-    why = endgame.reason(reg, battle.rp.state)
+    why, kind = reason(reg, battle)
     with _guard:
         if why:
             if _current is not None and _current.battle_id == battle_id:
@@ -144,10 +286,10 @@ def request(reg: Regulation, battle_id: str, battle) -> dict[str, Any]:
                 _current = None
             return {"eligible": False, "reason": why}
         key = fingerprint(battle)
-        if _current is None or (_current.battle_id, _current.key) != (battle_id, key):
+        if _current is None or (_current.battle_id, _current.key) != (battle_id, key) or not isinstance(_current, kind):
             if _current is not None:
                 _current.cancel()
-            _current = Solve(reg, battle_id, battle)
+            _current = kind(reg, battle_id, battle)
         return _current.status()
 
 
@@ -159,3 +301,5 @@ def cancel(battle_id: str | None = None) -> None:
         if _current is not None and (battle_id is None or _current.battle_id == battle_id):
             _current.cancel()
             _current = None
+        if battle_id is None and _pool is not None:
+            _pool.close()

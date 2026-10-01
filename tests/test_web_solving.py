@@ -19,7 +19,7 @@ def _battle(reg, fid, vid, upto=None):
 
 def test_a_position_that_is_not_a_1v1_starts_nothing(reg):
     got = solving.request(reg, "early", _battle(reg, "F2", "B", upto=8))
-    assert got == {"eligible": False, "reason": "each side needs exactly one Pokémon left"}
+    assert got == {"eligible": False, "reason": "the engine answers once neither side has more than two Pokémon left"}
 
 
 @pytest.mark.showdown
@@ -63,3 +63,30 @@ def test_cancelling_kills_the_search(reg):
     while running._procs and time.time() < deadline:
         time.sleep(0.2)
     assert not running._procs
+
+
+@pytest.mark.showdown
+def test_a_doubles_endgame_is_answered_within_the_deadline(reg):
+    """A held-out 2v2 from the stands, open sheets: a quick answer, then the searched one, and both
+    inside `DEADLINE` (PLAN-endgame-doubles, stage 4)."""
+    import json
+
+    from vgc import paths
+    from vgc.wp import doubles
+
+    replay = json.loads((paths.ROOT / "tests" / "fixtures" / "replays" /
+                         "gen9championsvgc2026regmcbo3-2683090653.json").read_text())
+    battle = doubles.from_replay(reg, replay)
+    solving.warm()
+    time.sleep(1.5)                     # the processes start with the app, not with the question
+    try:
+        got = solving.request(reg, "d2v2", battle)
+        assert got["eligible"] and got["kind"] == "2v2" and got["max_depth"] == 1
+        while got["searching"] is not None:
+            time.sleep(0.2)
+            got = solving.request(reg, "d2v2", battle)
+        assert got["elapsed"] <= solving.DEADLINE + 1.0
+        assert got["depth"] in (0, 1) and 0 <= got["value"] <= 1
+        assert 1 <= len(got["positions"]) <= solving.TOP_ORDERS
+    finally:
+        solving.cancel()

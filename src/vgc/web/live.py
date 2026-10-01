@@ -423,6 +423,12 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     return rows
 
 
+def _engine_reason(reg: Regulation, battle) -> str | None:
+    from vgc.web import solving
+
+    return solving.reason(reg, battle)[0]
+
+
 def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
          version: str | None = None, with_wp: bool = True) -> dict[str, Any]:
     """Everything one screen needs: the field, what you can tap, what is still being asked, what
@@ -451,7 +457,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] != mine],
         "contradictions": contradictions,
         # Whether the engine can be asked about this position (`/solve`), and if not, why.
-        "endgame": {"eligible": (why := endgame.reason(reg, state)) is None, "reason": why},
+        # A 1v1, or two or fewer a side on open sheets (`solving.reason`).
+        "endgame": {"eligible": (why := _engine_reason(reg, battle)) is None, "reason": why},
     }
     if with_wp and version:
         try:

@@ -359,7 +359,13 @@ export type EngineAnswer = {
   eligible: boolean; reason: string | null;
   depth?: number | null; max_depth?: number; searching?: number | null;
   value?: number | null; leaf_mass?: number | null;
-  positions?: { sets: [number, number]; class: string; weight: number; value: number; leaf_mass: number }[];
+  positions?: { sets: [number, number]; class: string; weight: number; value: number; leaf_mass: number;
+                /** A win one side forces this turn (doubles): the answer for that move order. */
+                forced?: { side: "p1" | "p2"; choice: string; sweep: number; through_protect: boolean } | null }[];
+  /** Two or fewer a side: "2v2", "2v1" or "1v2", answered within a deadline rather than deepened. */
+  kind?: string;
+  /** Of the move orders solved, how many the one-turn search finished in time. */
+  searched?: number | null;
   elapsed?: number;
   /** Each side's sets solved: yours, a sheet, or the likeliest few from the belief. */
   sets?: Record<"p1" | "p2", { set: SolvedSet; weight: number }[]>;

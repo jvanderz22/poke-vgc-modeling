@@ -187,7 +187,8 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
     const tick = () => api.solve(id, reg).then((a) => {
       if (!live) return;
       setAns(a);
-      if (a.eligible && a.searching != null) timer = setTimeout(tick, 2000);
+      // A doubles answer has seconds, not minutes: ask again often enough to show it as it lands.
+      if (a.eligible && a.searching != null) timer = setTimeout(tick, a.kind ? 500 : 2000);
     }).catch(() => { if (live) timer = setTimeout(tick, 5000); });
     setAns(null);
     tick();
@@ -204,6 +205,10 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const names = sideNames(view.perspective);
   const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
   const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
+  // Two or fewer a side: answered within seconds, one turn deep, a damage race past it.
+  const doubles = !!ans.kind;
+  const forced = (ans.positions ?? []).find((p) => p.forced)?.forced;
+  const horizon = doubles ? "the damage race" : "HP share";
   return (
     <div className="engine lead tiny dim">
       {ans.value != null && (
@@ -220,11 +225,24 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
             : <>searching…</>}
         </span>
         <span>
-          {ans.depth != null && <>searched {ans.depth} of {ans.max_depth} turns</>}
-          {ans.depth != null && leaf >= 0.005 && <> · {pct(leaf)}% of it still decided by HP share</>}
-          {ans.searching != null && <> · looking {ans.searching} deep ({Math.round(ans.elapsed ?? 0)}s)</>}
+          {!doubles && ans.depth != null && <>searched {ans.depth} of {ans.max_depth} turns</>}
+          {doubles && ans.depth === 0 && <>quick read</>}
+          {doubles && ans.depth === 1 && <>searched one turn
+            {ans.searched != null && ans.searched < (ans.positions?.length ?? 0) &&
+              <> ({ans.searched} of {ans.positions?.length} move orders in time)</>}</>}
+          {ans.depth != null && leaf >= 0.005 && <> · {pct(leaf)}% of it still decided by {horizon}</>}
+          {ans.searching != null && (doubles
+            ? <> · searching ({Math.round(ans.elapsed ?? 0)}s)</>
+            : <> · looking {ans.searching} deep ({Math.round(ans.elapsed ?? 0)}s)</>)}
         </span>
       </div>
+      {forced && (
+        <div>
+          {names[forced.side] === "Them" ? "They" : names[forced.side]} can force the win this turn
+          {forced.through_protect ? ", once Protect runs out" : ""}
+          {forced.sweep < 0.995 && <> ({pct(forced.sweep)}%: a crit or a flinch is the way out)</>}.
+        </div>
+      )}
       {guessed && (
         <div>
           Over their {ans.sets?.[guessed]?.length} likeliest sets
@@ -235,7 +253,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
         <div className="engine-apart">
           The model and the engine are {Math.abs(pct(ans.value!) - pct(model!))} points apart. They answer
           different questions (how games like this have gone, and best play from here). On held-out
-          human 1v1s, the engine was the closer of the two.
+          human {doubles ? "endgames with two or fewer a side" : "1v1s"}, the engine was the closer of the two.
         </div>
       )}
       {ans.error && <div className="engine-apart">The search failed: {ans.error}</div>}
@@ -243,7 +261,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
         <summary>What the engine assumes</summary>
         <ul className="derived">
           {(ans.assumptions ?? []).map((a, i) => <li key={i}>{a}</li>)}
-          {ans.depth != null && <li>Past {ans.depth} turns, whoever has more HP left is counted as winning.</li>}
+          {!doubles && ans.depth != null && <li>Past {ans.depth} turns, whoever has more HP left is counted as winning.</li>}
           {sets.map((s, i) => (
             <li key={`s${i}`}>
               {hidden.length > 1 && <>{names[s.side]}: </>}{s.weight < 1 && <>{pct(s.weight)}%: </>}

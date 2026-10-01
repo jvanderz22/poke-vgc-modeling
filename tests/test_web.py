@@ -579,6 +579,6 @@ def test_a_watched_turn_narrows_both_sides(client, watched):
     view = entries(client, bid, *leads, {"kind": "turn", "n": 1})
     assert view["started"] and view["wp"].get("error") is None and 0 <= view["wp"]["wp"] <= 1
     assert {b["side"] for b in view["beliefs"]} == {"p1", "p2"}
-    assert view["endgame"] == {"eligible": False, "reason": "each side needs exactly one Pokémon left"}
+    assert view["endgame"] == {"eligible": False, "reason": "the engine answers once neither side has more than two Pokémon left"}
     listed = client.get("/api/battles").json()["battles"]
     assert listed[0]["perspective"] == "spectator"

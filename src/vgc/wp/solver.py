@@ -282,15 +282,32 @@ def check_cache(sample: int = 20, cheapest: bool = False, seed: int | None = Non
     return out
 
 
+# The cache read once and then followed: it is only ever appended to, so a later call reads what
+# was added since. Reading all 23 MB of it again was 0.4 s a lookup, which a live answer with a
+# 5 s budget looks up once a position. Starts over when the file is a different one or shorter.
+_seen: dict[str, Any] = {"path": None, "at": 0, "rows": {}}
+_seen_lock = threading.Lock()
+
+
 def _cached() -> dict[str, dict[str, Any]]:
     if not CACHE.exists():
         return {}
-    out = {}
-    for line in CACHE.read_text().splitlines():
-        if line.strip():
-            row = json.loads(line)
-            out[row["key"]] = row["result"]
-    return out
+    with _seen_lock:
+        size = CACHE.stat().st_size
+        if _seen["path"] != str(CACHE) or size < _seen["at"]:
+            _seen.update(path=str(CACHE), at=0, rows={})
+        if size > _seen["at"]:
+            with CACHE.open("rb") as fh:
+                fh.seek(_seen["at"])
+                chunk = fh.read()
+            # Only whole lines: a line being written now is read on the next call.
+            end = chunk.rfind(b"\n") + 1
+            for line in chunk[:end].splitlines():
+                if line.strip():
+                    row = json.loads(line)
+                    _seen["rows"][row["key"]] = row["result"]
+            _seen["at"] += end
+        return dict(_seen["rows"])
 
 
 def remember(pos: dict[str, Any], result: dict[str, Any]) -> None:

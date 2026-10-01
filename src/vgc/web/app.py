@@ -103,6 +103,10 @@ def gate_summary(version: str) -> dict[str, Any]:
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI):
+    # The solver processes a doubles endgame is answered with: warm before the first one is asked.
+    from vgc.web import solving
+
+    solving.warm()
     yield
     # A 1v1 search runs in node processes the server started; they do not end with it.
     from vgc.web import solving

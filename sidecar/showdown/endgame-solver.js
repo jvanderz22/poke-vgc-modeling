@@ -848,8 +848,9 @@ function seedFor(pathKey) {
 	return 'sodium,' + crypto.createHash('sha256').update(pathKey).digest('hex');
 }
 
-function main() {
-	const pos = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+function solvePosition(pos) {
+	// The race's tables are for one search: another position's Pokémon share a key, not a spread.
+	DAMAGE.clear(); PRIORITY.clear();
 	const search = {depth: 4, rolls: 2, rare: 0, cutoff: 1e-3, min_prob: 1e-7, ...(pos.search || {})};
 	const t0 = Date.now();
 	const root = setUp(pos);
@@ -861,15 +862,14 @@ function main() {
 		root.prng = new PRNG(seedFor(`debug|${d.seed || 0}`));
 		root.choose('p1', d.p1 || options(root, root.sides[0])[0]);
 		root.choose('p2', d.p2 || options(root, root.sides[1])[0]);
-		process.stdout.write(JSON.stringify({
+		return ({
 			log: root.log, ended: root.ended, winner: root.winner, trickroom: root.field.pseudoWeather.trickroom || null,
 			weather: [root.field.weather, root.field.weatherState.duration],
 			sides: root.sides.map(s => Object.fromEntries(Object.entries(s.sideConditions).map(([k, v]) => [k, v.duration]))),
 			active: root.sides.map(s => s.active.filter(p => p && !p.fainted).map(p => ({
 				species: p.species.name, hp: p.hp, maxhp: p.maxhp, spe: p.getStat('spe'), item: p.item,
 				status: p.status}))),
-		}) + '\n');
-		return;
+		});
 	}
 	const cache = new Map();
 	let nodes = 0, dropped = 0, pruned = 0;
@@ -1173,18 +1173,17 @@ function main() {
 			if (rest === null) rest = search.race_doubles === 'calibrated' ? calibrated(melee(snap, key(root)) ?? 0.5) : leaf(root);
 			const mine = f.side === 'p1' ? rest : 1 - rest;
 			const v = f.won + (1 - f.won) * mine;
-			process.stdout.write(JSON.stringify({
+			return ({
 				value: round(f.side === 'p1' ? v : 1 - v), leaf_mass: round(1 - f.won), nodes, dropped_mass: 0,
 				ms: Date.now() - t0, forced: {side: f.side, choice: f.choice, sweep: round(f.won), through_protect: f.protect},
 				moves: {[f.side]: [f.choice]},
-			}) + '\n');
-			return;
+			});
 		}
 	}
 
 	const rootAlive = alive(root).reduce((a, b) => a + b, 0);
 	const r = value(State.serializeBattle(root), root, 0, 1);
-	process.stdout.write(JSON.stringify({
+	return ({
 		value: round(r.v), leaf_mass: round(r.leaf), nodes, dropped_mass: round(dropped), ms: Date.now() - t0,
 		...(search.prune ? {pruned} : {}),
 		...(search.stats ? {stats} : {}),
@@ -1194,7 +1193,26 @@ function main() {
 			acc + row.reduce((b2, v, j) => b2 + r.g.p1[i] * v * r.g.p2[j], 0), 0) / search.sample))} : {}),
 		moves: {p1: r.o1, p2: r.o2}, matrix: r.M && r.M.map(row => row.map(round)),
 		strategy: r.g && {p1: r.g.p1.map(round), p2: r.g.p2.map(round)},
-	}) + '\n');
+	});
 }
 
-main();
+/**
+ * `--serve`: one process for many positions, so Showdown is loaded once rather than per position
+ * (about 0.4 s each, which a live answer cannot spare). A line `{id, position}` in, a line `{id,
+ * result}` or `{id, error}` out, one at a time, in order. Nothing is carried from one position to
+ * the next: the race's tables are cleared, and every other state is the search's own.
+ */
+function serve() {
+	const rl = require('readline').createInterface({input: process.stdin});
+	rl.on('line', line => {
+		if (!line.trim()) return;
+		let req;
+		try { req = JSON.parse(line); } catch (e) { return; }
+		let out;
+		try { out = {id: req.id, result: solvePosition(req.position)}; } catch (e) { out = {id: req.id, error: String(e && e.stack || e)}; }
+		process.stdout.write(JSON.stringify(out) + '\n');
+	});
+}
+
+if (process.argv.includes('--serve')) serve();
+else process.stdout.write(JSON.stringify(solvePosition(JSON.parse(require('fs').readFileSync(0, 'utf8')))) + '\n');
