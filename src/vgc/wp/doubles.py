@@ -14,8 +14,14 @@ What differs from the 1v1:
                    weight is in. The 1v1's joint over two (`belief.speed.joint`) is the same weighing
                    with two keys, done exactly
 
-Open sheets only so far, from a player's seat or the stands. A closed sheet multiplies the
-positions by its set candidates, per Pokémon, and comes next.
+  closed sheets    each hidden Pokémon's likeliest sets from the belief (`belief.sets.given`). A
+                   combination of them is weighed by how often each is brought times how likely the
+                   battle's turn order is with them shown: the log is read again with the
+                   combination on the sheets, where an unseen Scarf is invisible otherwise, as
+                   `endgame.pair_candidates` does for two. Every (combination, move order) is one
+                   position, and the heaviest are solved until `COVER` of the weight or
+                   `MAX_JOBS`; the rest is the answer's unsolved mass. A hand-entered battle with
+                   both sheets closed cannot be read again that way and is not built
 """
 
 from __future__ import annotations
@@ -32,6 +38,12 @@ SEARCH = {"depth": 1, "prune": 3, "sample": 16, "race": True, "race_1v1": True}
 DRAWS = 4000
 COVER = 0.9
 MAX_ORDERS = 6
+# Closed sheets: sets kept per hidden Pokémon (two when four are hidden, so at most 27 combinations),
+# and positions solved per answer. The weight is spread thin: on 20 closed-sheet games the heaviest
+# 6 positions carry a median 59% of it and 12 carry 76%, and a closed 1v1 partly covered scored as
+# well as one covered (stage 0), so 6.
+TOP_SETS = 3
+MAX_JOBS = 6
 
 
 # --- when ---------------------------------------------------------------------------------
@@ -41,9 +53,10 @@ def actives(state, sid: str) -> list[Any]:
     return sorted(endgame._left(state, sid), key=lambda m: m.position if m.position is not None else 9)
 
 
-def reason(reg: Regulation, state) -> str | None:
+def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
     """Why this is not a position with at most two Pokémon a side that this module builds, or
-    None when it is."""
+    None when it is. `both_closed` says two closed sheets can be read again with candidate sets
+    shown (a replay can, a hand-entered battle cannot)."""
     if not state.started or state.ended:
         return "the battle is not in progress"
     left = {}
@@ -62,41 +75,92 @@ def reason(reg: Regulation, state) -> str | None:
                 return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
             if m.status and m.status not in endgame.STATUSES:
                 return f"{m.species} is {m.status}, whose turn counter is not shown"
-    for sid in ("p1", "p2"):
-        if not (state.sides[sid].sheet or sid == state.perspective):
-            return "a closed sheet, which is not built yet"
+    if not both_closed and not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
+        return "neither side's sets are known"
     return None
 
 
 # --- the sets ---------------------------------------------------------------------------------
 
-def sets(reg: Regulation, battle, notes: list[str]) -> dict[str, list[dict[str, Any]]]:
+def known(reg: Regulation, battle) -> dict[str, list[dict[str, Any] | None]]:
     """Each side's Pokémon on the field as sets, in slot order: yours as you built them (Stat
-    Points included), an open sheet's as shown. A side that has not Mega Evolved is assumed to do
-    so with its first stone holder only: one Mega a side."""
+    Points included), an open sheet's as shown, and None where the sheet is closed."""
     from vgc.battle.entry import side_entries
 
     state = battle.rp.state
-    out: dict[str, list[dict[str, Any]]] = {}
+    out: dict[str, list[dict[str, Any] | None]] = {}
     for sid in ("p1", "p2"):
+        if not (state.sides[sid].sheet or sid == state.perspective):
+            out[sid] = [None for _ in actives(state, sid)]
+            continue
         entries = side_entries(battle.setup, sid)
-        side_sets, mega_taken = [], any(x.mega for x in state.sides[sid].mons)
+        out[sid] = []
         for m in actives(state, sid):
             e = next(x for x in entries if x["species"] == m.species)
             s = {"species": e["species"], **{k: e.get(k) for k in ("item", "ability", "nature")},
                  "moves": list(e.get("moves") or [])}
             if sid == state.perspective:
                 s["sp"] = {k: v for k, v in (e.get("sp") or {}).items() if v}
+            out[sid].append(s)
+    return out
+
+
+def with_megas(reg: Regulation, state, side_sets: dict[str, list[dict[str, Any]]], notes: list[str]
+               ) -> dict[str, list[dict[str, Any]]]:
+    """The sets with the forme each is in or will take. A side that has not Mega Evolved is assumed
+    to do so with its first stone holder only: one Mega a side."""
+    out = {}
+    for sid, ss in side_sets.items():
+        taken = any(x.mega for x in state.sides[sid].mons)
+        out[sid] = []
+        for m, s in zip(actives(state, sid), ss):
+            s = dict(s)
             if m.mega:
                 s["mega"] = m.forme
-            elif not mega_taken:
+            elif not taken:
                 s["mega"] = endgame._mega(reg, state, sid, m, s.get("item"), notes)
-                mega_taken = bool(s["mega"])
+                taken = bool(s["mega"])
             else:
                 s["mega"] = None
-            side_sets.append(s)
-        out[sid] = side_sets
+            out[sid].append(s)
     return out
+
+
+def sets(reg: Regulation, battle, notes: list[str]) -> dict[str, list[dict[str, Any]]]:
+    """`known` with its formes, for a battle whose every set is known."""
+    return with_megas(reg, battle.rp.state, known(reg, battle), notes)
+
+
+def candidates(reg: Regulation, m: Any, top: int) -> tuple[list[tuple[dict[str, Any], float]], float]:
+    """A hidden Pokémon's likeliest sets as `(set, share of those brought)`, and the share left out."""
+    from vgc.belief import sets as set_belief
+
+    b = set_belief.given(reg, m)
+    total = sum(sh.count for sh in b.sheets)
+    if not total:
+        return [], 1.0
+    ranked = sorted(b.sheets, key=lambda sh: -sh.count)[:top]
+    return [(endgame._named(reg, sh, m.species), sh.count / total) for sh in ranked], \
+        1 - sum(sh.count for sh in ranked) / total
+
+
+def view_with(battle, reveal: dict[str, dict[str, dict[str, Any]]]):
+    """The battle read again as if each sheet had shown `reveal[sid][species]`: a replay is re-read
+    from its log; a hand-entered battle is replayed with its sheet entries changed."""
+    if hasattr(battle, "with_sets"):
+        return battle.with_sets(reveal)
+    from vgc.battle.entry import replay, side_entries
+    import copy
+
+    setup = copy.deepcopy(battle.setup)
+    for sid, by_species in reveal.items():
+        entries = side_entries(setup, sid)
+        for i, e in enumerate(entries):
+            if e["species"] in by_species:
+                s = by_species[e["species"]]
+                entries[i] = {"species": e["species"], **{k: s.get(k) for k in ("item", "ability", "moves", "nature")}}
+    return type("Viewed", (), {"rp": replay(battle.reg, setup, battle.journal), "journal": battle.journal,
+                               "setup": setup, "reg": battle.reg})()
 
 
 # --- the state --------------------------------------------------------------------------------
@@ -184,9 +248,11 @@ def _one(f: dict[str, Any], sid: str, i: int) -> dict[str, Any]:
 
 def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]], f: dict[str, Any],
                   draws: int = DRAWS, cover: float = COVER, top: int = MAX_ORDERS, seed: int = 0
-                  ) -> tuple[list[dict[str, Any]], float, bool]:
+                  ) -> tuple[list[dict[str, Any]], float, bool, float]:
     """Move orders on this turn, each `{weight, sp: {sid: [sp, ...]}, order}`, the weight left
-    unsolved, and whether the log contradicted every draw (then the priors alone are used).
+    unsolved, whether the log contradicted every draw (then the priors alone are used), and how
+    likely the log's turn orders are under these sets (0 when contradicted): what weighs one
+    closed-sheet combination of sets against another, as `JointSpeed.total` does for two.
 
     Each Pokémon's Speed investment is drawn from its prior (`endgame._prior`), times what every
     ordering with a Pokémon outside these showed (as `belief.speed.joint` weighs one); an ordering
@@ -245,6 +311,9 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
 
     rng = random.Random(seed)
     weights = {k: [p * fa for p, fa in zip(vals[k][1], factor[k])] for k in keys}
+    likelihood = 1.0
+    for k in keys:
+        likelihood *= sum(weights[k]) / (sum(vals[k][1]) or 1.0)
     contradicted = any(not sum(w) for w in weights.values())
     if contradicted:
         weights = {k: list(vals[k][1]) for k in keys}
@@ -282,6 +351,7 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
         return groups, kept
 
     groups, kept = sample(bool(within) and not contradicted)
+    likelihood *= kept / draws
     if not kept:
         # The orderings between these Pokémon rule out every draw: the priors alone, said so.
         contradicted = True
@@ -306,7 +376,7 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
         name = "".join(f"{k[0]}{'ab'[k[1]]}" + ("=" if t else ">") for k, t in zip(order, ties + (False,)))[:-1]
         out.append({"weight": w, "sp": sp, "order": name})
         covered += w
-    return out, max(0.0, 1.0 - covered), contradicted
+    return out, max(0.0, 1.0 - covered), contradicted, 0.0 if contradicted else likelihood
 
 
 # --- the positions ------------------------------------------------------------------------
@@ -324,31 +394,106 @@ def compose(reg: Regulation, side_sets: dict[str, list[dict[str, Any]]], f: dict
             "setup": solver._pruned({k: v for k, v in f.items() if k != "active"}), "search": search}
 
 
+def _unplayable(side_sets: dict[str, list[dict[str, Any]]]) -> str | None:
+    for ss in side_sets.values():
+        for s in ss:
+            if endgame.UNSOLVABLE_MOVES & {to_id(x) for x in s.get("moves") or []}:
+                return s["species"]
+    return None
+
+
 def plan(reg: Regulation, battle, search: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Every position one answer needs — one a move order — with its weight, or why there is none."""
+    """Every position one answer needs — one per move order, and on a closed sheet one per
+    combination of likely sets as well — with its weight, or why there is none."""
     search = {**SEARCH, **(search or {})}
     state = battle.rp.state
-    why = reason(reg, state)
+    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"))
     if why:
         return {"eligible": False, "reason": why}
     notes: list[str] = []
-    side_sets = sets(reg, battle, notes)
-    for sid, ss in side_sets.items():
-        for s in ss:
-            if endgame.UNSOLVABLE_MOVES & {to_id(x) for x in s.get("moves") or []}:
-                return {"eligible": False, "reason": f"{s['species']} has Revival Blessing, which would bring "
-                                                     "back a Pokémon the solver does not have"}
-    f = facts(reg, battle, side_sets)
-    orders, unsolved, contradicted = speed_classes(reg, battle, side_sets, f)
-    if contradicted:
-        notes.append("no set of Speed investments fits the turn order logged, so all of them are counted")
-    jobs = []
-    for o in orders:
-        sides = {sid: [{**s, "sp": sp} for s, sp in zip(side_sets[sid], o["sp"][sid])] for sid in ("p1", "p2")}
-        jobs.append({"order": o["order"], "weight": o["weight"], "position": compose(reg, sides, f, search)})
-    return {"eligible": bool(jobs), "reason": None if jobs else "no Speed order to solve",
-            "kind": f"{f['active']['p1']}v{f['active']['p2']}", "unsolved": round(unsolved, 4),
-            "jobs": jobs, "notes": list(dict.fromkeys(notes))}
+    base = known(reg, battle)
+    hidden = [(sid, i) for sid in ("p1", "p2") for i, x in enumerate(base[sid]) if x is None]
+    if not hidden:
+        side_sets = with_megas(reg, state, base, notes)
+        who = _unplayable(side_sets)
+        if who:
+            return {"eligible": False, "reason": f"{who} has Revival Blessing, which would bring "
+                                                 "back a Pokémon the solver does not have"}
+        f = facts(reg, battle, side_sets)
+        orders, unsolved, contradicted, _ = speed_classes(reg, battle, side_sets, f)
+        if contradicted:
+            notes.append("no set of Speed investments fits the turn order logged, so all of them are counted")
+        jobs = []
+        for o in orders:
+            sides = {sid: [{**s, "sp": sp} for s, sp in zip(side_sets[sid], o["sp"][sid])] for sid in ("p1", "p2")}
+            jobs.append({"order": o["order"], "weight": o["weight"], "position": compose(reg, sides, f, search)})
+        return {"eligible": bool(jobs), "reason": None if jobs else "no Speed order to solve",
+                "kind": f"{f['active']['p1']}v{f['active']['p2']}", "unsolved": round(unsolved, 4),
+                "jobs": jobs, "notes": list(dict.fromkeys(notes))}
+    return _plan_closed(reg, battle, search, base, hidden, notes)
+
+
+def _plan_closed(reg: Regulation, battle, search: dict[str, Any], base: dict[str, list[dict[str, Any] | None]],
+                 hidden: list[tuple[str, int]], notes: list[str]) -> dict[str, Any]:
+    """`plan` with hidden sets: every combination of their likeliest sets, weighed by how often
+    they are brought times how likely the logged turn orders are with them shown, each with its
+    move orders; the heaviest (combination, order) positions solved."""
+    import itertools
+
+    state = battle.rp.state
+    top = TOP_SETS if len(hidden) <= 3 else 2
+    cands, left_out = {}, []
+    for sid, i in hidden:
+        m = actives(state, sid)[i]
+        c, out = candidates(reg, m, top)
+        if not c:
+            return {"eligible": False, "reason": f"no set anybody has brought fits {m.species}"}
+        cands[(sid, i)], _ = c, left_out.append(out)
+    considered = 1.0
+    for x in left_out:
+        considered *= 1 - x
+    views: dict[tuple, Any] = {}
+    scored, total = [], 0.0
+    for combo in itertools.product(*(cands[k] for k in hidden)):
+        filled = {sid: list(ss) for sid, ss in base.items()}
+        reveal: dict[str, dict[str, dict[str, Any]]] = {}
+        prior = 1.0
+        for (sid, i), (s, share) in zip(hidden, combo):
+            filled[sid][i] = s
+            reveal.setdefault(sid, {})[s["species"]] = s
+            prior *= share
+        side_sets = with_megas(reg, state, filled, notes)
+        if _unplayable(side_sets):
+            continue
+        # The log reads differently only through items, abilities and natures.
+        sig = tuple((sid, sp, s.get("item"), s.get("ability"), s.get("nature"))
+                    for sid, by in sorted(reveal.items()) for sp, s in sorted(by.items()))
+        if sig not in views:
+            views[sig] = view_with(battle, reveal)
+        view = views[sig]
+        f = facts(reg, view, side_sets)
+        orders, _, _, like = speed_classes(reg, view, side_sets, f)
+        weight = prior * like
+        total += weight
+        for o in orders:
+            sides = {sid: [{**s, "sp": sp} for s, sp in zip(side_sets[sid], o["sp"][sid])] for sid in ("p1", "p2")}
+            scored.append({"order": o["order"], "weight": weight * o["weight"], "sets": sig,
+                           "position": compose(reg, sides, f, search), "kind": f"{f['active']['p1']}v{f['active']['p2']}"})
+    if not scored or total <= 0:
+        return {"eligible": False, "reason": "no combination of likely sets fits the turn order logged"}
+    scored.sort(key=lambda j: -j["weight"])
+    jobs, covered = [], 0.0
+    for j in scored:
+        if covered >= COVER or len(jobs) >= MAX_JOBS:
+            break
+        j = {**j, "weight": j["weight"] / total}
+        jobs.append(j)
+        covered += j["weight"]
+    notes.append(f"{len(scored)} positions over {len(views)} readings of the log; the heaviest {len(jobs)} solved")
+    return {"eligible": True, "reason": None, "kind": jobs[0]["kind"],
+            "unsolved": round(1 - covered * considered, 4), "jobs": [{k: v for k, v in j.items() if k != "kind"}
+                                                                   for j in jobs],
+            "notes": list(dict.fromkeys(notes))}
 
 
 def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) -> dict[str, Any] | None:
@@ -362,15 +507,37 @@ def _two_or_fewer(reg: Regulation, state) -> bool:
     return max(left) <= 2 and left != [1, 1]
 
 
-def from_replay(reg: Regulation, replay: dict[str, Any]):
+def _showteam(sid: str, sets_: dict[str, dict[str, Any]]) -> str:
+    """One `|showteam|` line naming these sets, in Showdown's packed form, as an open sheet logs it."""
+    packed = [f"{s['species']}||{to_id(s.get('item') or '')}|{to_id(s.get('ability') or '')}|"
+              f"{','.join(to_id(x) for x in s.get('moves') or [])}|{s.get('nature') or ''}||||||50|"
+              for s in sets_.values()]
+    return f"|showteam|{sid}|" + "]".join(packed)
+
+
+class LogBattle(endgame.LogBattle):
+    def with_sets(self, reveal: dict[str, dict[str, dict[str, Any]]]) -> "LogBattle":
+        out = from_replay(self.reg, self.replay, reveal=reveal)
+        assert out is not None, "a replay that reached the position reaches it again"
+        return out
+
+
+def from_replay(reg: Regulation, replay: dict[str, Any],
+                reveal: dict[str, dict[str, dict[str, Any]]] | None = None):
     """The replay at the first turn mark where neither side has more than two Pokémon left (and it
     is not a 1v1), or None if it never gets there. The journal records each move's Pokémon and
-    move, which the Protect counter needs."""
+    move, which the Protect counter needs. `reveal[sid][species]` reads it as if that side's sheet
+    had shown that set, from the first line, as `endgame.from_replay` does for a 1v1."""
     from vgc.data.observe import Observer
 
+    lines = replay["log"].split("\n")
+    if reveal:
+        at = next((i for i, x in enumerate(lines) if x.startswith(("|teampreview", "|start"))), None)
+        assert at is not None, "a log announces its teams before it starts"
+        lines = lines[:at] + [_showteam(sid, by) for sid, by in reveal.items()] + lines[at:]
     o = Observer("spectator", reg.dex)
     journal: list[dict[str, Any]] = []
-    for line in replay["log"].split("\n"):
+    for line in lines:
         o.feed(line)
         parts = line.split("|")
         kind = parts[1] if len(parts) > 1 else ""
@@ -397,4 +564,4 @@ def from_replay(reg: Regulation, replay: dict[str, Any]):
                        "ability": m.ability, "nature": m.nature,
                        "moves": [(reg.dex.get_move(x) or {}).get("name", x) for x in m.moves]}
                       for m in o.sides[sid].mons] for sid in ("p1", "p2")}}
-    return endgame.LogBattle(reg, o, setup, journal, replay)
+    return LogBattle(reg, o, setup, journal, replay)

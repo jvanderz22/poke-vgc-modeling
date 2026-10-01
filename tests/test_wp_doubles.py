@@ -72,6 +72,28 @@ def test_the_protect_counter_counts_consecutive_turns_ending_with_the_last():
     assert doubles.stall_counts(journal, 3, doubles.STALLING) == {("p1", "A"): 2, ("p2", "B"): 1}
 
 
-def test_a_closed_sheet_is_not_built_yet(reg):
-    closed = doubles.from_replay(reg, _replay("gen9championsvgc2026regmc-2678724403"))
-    assert "closed sheet" in doubles.reason(reg, closed.rp.state)
+CLOSED = "gen9championsvgc2026regmc-2678724403"
+
+
+def test_two_closed_sheets_are_solved_over_combinations_of_likely_sets(reg):
+    """From the stands neither side's sets are known: each hidden Pokémon's likeliest sets, every
+    combination weighed by the turn order with it shown, the heaviest positions solved."""
+    battle = doubles.from_replay(reg, _replay(CLOSED))
+    assert doubles.reason(reg, battle.rp.state, both_closed=True) is None
+    got = doubles.plan(reg, battle, {"depth": 0})
+    assert got["eligible"] and 1 <= len(got["jobs"]) <= doubles.MAX_JOBS
+    assert all(j["weight"] > 0 for j in got["jobs"]) and 0 <= got["unsolved"] < 1
+    assert got["jobs"] == sorted(got["jobs"], key=lambda j: -j["weight"])
+    # Each position is a set combination: a hidden Pokémon's set is one of its candidates.
+    for j in got["jobs"][:2]:
+        assert 0 <= solver.solve_uncached(j["position"])["value"] <= 1
+
+
+def test_the_log_read_again_shows_the_sets_it_was_given(reg):
+    battle = doubles.from_replay(reg, _replay(CLOSED))
+    state = battle.rp.state
+    m = doubles.actives(state, "p1")[0]
+    (s, _), *_ = doubles.candidates(reg, m, 1)[0]
+    seen = battle.with_sets({"p1": {m.species: s}}).rp.state
+    shown = next(x for x in seen.sides["p1"].mons if x.species == m.species)
+    assert seen.sides["p1"].sheet and shown.nature == s["nature"]
