@@ -574,6 +574,23 @@ function calibrated(v) {
 	const q = Math.min(1 - eps, Math.max(eps, v));
 	return 1 / (1 + Math.exp(-(a * Math.log(q / (1 - q)) + b)));
 }
+// `race_doubles: 'blend'`: the race read together with what it underweights, P = sigmoid(a *
+// logit(race) + b * logit(HP share) + c * (p1's Pokémon standing − p2's) + d), fitted on 3,542
+// training-split open-sheet games at their first turn with two or fewer a side (never the held-out
+// ones). Out of fold there it beat 'calibrated' on log loss by 0.026 in 2v2s and 0.049 in 2v1s and
+// 1v2s: the race alone is too sure, and a count lead is worth more than the extra attacker it gives
+// the race. The same rule: a change of answers takes a new name.
+const MELEE_BLEND = {a: 0.2894, b: 0.8177, c: 0.7973, d: 0.0185, eps: 1 / 128};
+function blended(v, battle) {
+	const {a, b, c, d, eps} = MELEE_BLEND;
+	const lg = x => { const q = Math.min(1 - eps, Math.max(eps, x)); return Math.log(q / (1 - q)); };
+	const standing = s => battle.sides[s].active.filter(p => p && !p.fainted).length;
+	return 1 / (1 + Math.exp(-(a * lg(v) + b * lg(leaf(battle)) + c * (standing(0) - standing(1)) + d)));
+}
+// The race as the horizon's value under `search.race_doubles`: raw (true), 'calibrated' or 'blend'.
+function horizon(mode, v, battle) {
+	return mode === 'calibrated' ? calibrated(v) : mode === 'blend' ? blended(v, battle) : v;
+}
 function melee(snap, seedKey, live = null) {
 	// `live`: the leaf's own battle, read but not changed, with damage from the tables (fast_race).
 	let copy = live ? null : scorer(snap);
@@ -982,7 +999,7 @@ function solvePosition(pos) {
 			let r = search.race ? race(snap) : null;
 			if (r === null && search.race_doubles) {
 				r = melee(snap, key(battle), search.fast_race ? battle : null);
-				if (r !== null && search.race_doubles === 'calibrated') r = calibrated(r);
+				if (r !== null) r = horizon(search.race_doubles, r, battle);
 			}
 			return {v: r === null ? leaf(battle) : r, leaf: 1};
 		}
@@ -1170,7 +1187,8 @@ function solvePosition(pos) {
 			// Where the sweep fails, the race at the root stands for the rest of the game.
 			const snap = State.serializeBattle(root);
 			let rest = race(snap);
-			if (rest === null) rest = search.race_doubles === 'calibrated' ? calibrated(melee(snap, key(root)) ?? 0.5) : leaf(root);
+			if (rest === null) rest = ['calibrated', 'blend'].includes(search.race_doubles)
+				? horizon(search.race_doubles, melee(snap, key(root)) ?? 0.5, root) : leaf(root);
 			const mine = f.side === 'p1' ? rest : 1 - rest;
 			const v = f.won + (1 - f.won) * mine;
 			return ({

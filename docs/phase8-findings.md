@@ -1970,3 +1970,44 @@ member. Planned only (no solving) on 36 held-out closed-sheet games, then an equ
 - So closed-sheet doubles stay with the model. The check from the stands hides all four Pokémon,
   where the page hides two, so it is harsher than what the page faces.
 
+## The race blended with HP share and the count
+
+PLAN-endgame-doubles stage 3 (2026-10-01). At the horizon a doubles answer is about 95% the race
+(mean leaf mass 0.95 in 2v2s), so the race's accuracy is most of a 2v2's.
+`scripts/analysis/race_calibration.py` values the raw race on 3,542 training-split open-sheet games
+at their first turn with two or fewer a side (2,109 of them 2v2s), never the held-out ones, and
+compares maps out of fold (grouped 5-fold):
+
+| map (training games, out of fold) | 2v2 log loss / Brier | 2v1 and 1v2 log loss / Brier |
+| --- | --- | --- |
+| `calibrated`, the live map: sigmoid(0.403 · logit(race) − 0.024) | 0.572 / 0.192 | 0.315 / 0.088 |
+| refit by kind | 0.563 / 0.189 | 0.298 / 0.085 |
+| HP share and count, no race | 0.640 / 0.224 | 0.318 / 0.094 |
+| **`blend`: race, HP share and count** | **0.547 / 0.183** | **0.266 / 0.077** |
+| `blend` plus 11 mechanics (Protect, support, speed control, drops, boosts, ...) | 0.542 / 0.181 | 0.259 / 0.076 |
+
+- **`blend`** is sigmoid(0.289 · logit(race) + 0.818 · logit(HP share) + 0.797 · count lead +
+  0.018): the race alone is too sure, and a count lead is worth more than the extra attacker it
+  gives the race. By kind it adds nothing once HP share and the count are in.
+- **What the race misses, by the residuals in 2v2s:** stat boosts (a side +4 stages ahead wins 13
+  points more than predicted), its own drops never applied (Draco Meteor, Close Combat: a side
+  carrying them is overrated by a few points), speed control and foe drops a little. Protect,
+  redirection, Helping Hand, choice items, healing and status moves show nothing. Modelling all of
+  them adds 0.004 in 2v2s.
+
+**Held out, at the live configuration** (674 games, `--tag live_blend`, the same games as the live
+run with `calibrated`; paired, grouped bootstrap):
+
+| | log loss blend / calibrated / model | blend − calibrated | Brier blend / calibrated / model | blend − calibrated |
+| --- | --- | --- | --- | --- |
+| all | **0.407** / 0.421 / 0.513 | −0.014 [−0.030, +0.003] | **0.125** / 0.130 / 0.172 | −0.005 [−0.010, −0.000] |
+| 2v2 (410) | **0.503** / 0.527 / 0.621 | −0.024 [−0.044, −0.004] | **0.162** / 0.169 / 0.217 | −0.007 [−0.014, −0.001] |
+| 2v1 and 1v2 (264) | 0.258 / 0.257 / 0.347 | +0.001 [−0.025, +0.031] | 0.067 / 0.069 / 0.102 | −0.003 [−0.010, +0.005] |
+
+- **2v2s improve on both scores; 2v1s and 1v2s are level.** Out of fold on training games 2v1s
+  and 1v2s gained 0.049 at the position itself; one turn of search already takes most of what the
+  count adds there. The engine beats the model in every kind.
+- 2v2 calls at 95% or more are still too sure: 26 games at 0.976 won 0.885.
+- **The page's live search uses `blend` from here** (`vgc.web.solving.LIVE`); `doubles.SEARCH`
+  and the Kaggle reference runs keep `calibrated`.
+

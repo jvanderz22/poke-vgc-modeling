@@ -18,7 +18,7 @@ two steps over warm solver processes (`vgc.wp.pool`): at once, each position's f
 and the calibrated damage race (`QUICK`); then the one-turn search (`LIVE`), each position's value
 replacing its quick one if it finishes before the deadline. Only the heaviest `TOP_ORDERS` move
 orders are solved, and the weight of the rest is reported as unsolved. Open sheets only: on 674
-held-out open-sheet games the search predicted who won better than the model did (log loss 0.421
+held-out open-sheet games the search predicted who won better than the model did (log loss 0.407
 against 0.513); on 349 closed-sheet games it was not distinguishable in any state kind, so there
 the model leads (PLAN-endgame-doubles, stage 3).
 """
@@ -41,17 +41,19 @@ from vgc.wp import doubles, endgame, solver
 DEPTHS = (1, 2, 3, 4)
 WORKERS = max(1, min(6, (os.cpu_count() or 2) // 2))
 
-# Doubles: the live search (checked on held-out games), its quick first answer, the budget.
+# Doubles: the live search (checked on held-out games), its quick first answer, the budget. The
+# horizon is the race blended with HP share and the count ('blend'): on the 674 held-out games it
+# beat the race alone ('calibrated') in 2v2s on both scores and was level in 2v1s and 1v2s.
 LIVE = {**doubles.SEARCH, "ko_extend": False, "prune": 2, "sample": 8, "fast_race": True, "sample_only": True,
-        "win_check": 0.1}
+        "win_check": 0.1, "race_doubles": "blend"}
 QUICK = {**LIVE, "depth": 0}
 DEADLINE = 5.0
 TOP_ORDERS = 3
 DOUBLES_ASSUMPTIONS = [
     "Both sides play their best for one turn, from the two or three choices a Pokémon has that a "
     "player would consider; chance in that turn is sampled.",
-    "After it, what is left is valued by a damage race between the Pokémon still standing, "
-    "calibrated on past games: a sure race counts as about 88%.",
+    "After it, what is left is valued by a damage race between the Pokémon still standing, read "
+    "together with the HP each side has left and how many Pokémon stand, weighed on past games.",
     "A win either side can force on this turn, against every reply and through Protect, is found "
     "first and is the answer when there is one.",
     "A hidden spread's Speed is averaged over how people build it, narrowed by this battle's turn "
