@@ -7,6 +7,7 @@ Deploy the battle-companion web app to Fly.io (Dockerfile, fly.toml, deploy/READ
 
 Usage:
   ./deploy_fly.sh --secret VGC_WEB_PASSWORD=...     # first deploy: the password is required
+  ./deploy_fly.sh                                   # ...or with VGC_WEB_PASSWORD in .env
   ./deploy_fly.sh                                   # later deploys
 
 Environment variables also work, from a gitignored .env beside this script (flags win):
@@ -90,6 +91,12 @@ if [[ "${EXISTING_VOLUMES:-0}" -eq 0 ]]; then
   "$FLY_CMD" volumes create "$VOLUME_NAME" --app "$APP_NAME" --size "$VOLUME_SIZE" --region "$REGION" --yes
 else
   echo "    volume '$VOLUME_NAME' already exists ($EXISTING_VOLUMES); skipping create"
+fi
+
+# The password from the environment or .env, if the app does not have one yet.
+if [[ -n "${VGC_WEB_PASSWORD:-}" ]] && ! printf '%s\n' "${SECRETS[@]:-}" | grep -q '^VGC_WEB_PASSWORD=' &&
+   ! "$FLY_CMD" secrets list --app "$APP_NAME" 2>/dev/null | grep -qw VGC_WEB_PASSWORD; then
+  SECRETS+=("VGC_WEB_PASSWORD=$VGC_WEB_PASSWORD")
 fi
 
 if [[ ${#SECRETS[@]} -gt 0 ]]; then
