@@ -428,6 +428,11 @@ reaches two or fewer a side, on open and closed sheets. About 5½ days plus over
 It starts by checking the 1v1 on closed sheets. The page leads with the engine there, but step
 3.6's check ran on open-sheet games only (principle 4).
 
+**Progress, 2026-09-30.** The closed-sheet 1v1 check passed: log loss 0.345 against the model's
+0.649. The solver plays 2v1, 1v2 and 2v2 with pruning, sampled chance and a damage race for the 1v1s
+it reaches, and `vgc.wp.doubles` builds those positions from open-sheet games. The human check on
+674 open-sheet games is running on Kaggle; closed sheets in the adapter are next.
+
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
 - exact transitions from a serialized Showdown state (the endgame solver already does this);
 - chance enumerated, not sampled. The solver found sampling biased: with few seeds a node, each

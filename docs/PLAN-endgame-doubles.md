@@ -1,6 +1,8 @@
 # The endgame solver beyond 1v1: 2v1, 1v2 and 2v2
 
-_Written 2026-09-30. A proposal, not started._ It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
+_Written 2026-09-30. **Progress (2026-09-30, night):** stages 0 and 1 done; stage 2 built for open
+sheets, closed sheets in progress; stage 3's open-sheet run on Kaggle (674 games, 1,791 positions)._
+It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
 
@@ -94,6 +96,10 @@ stages 2 and 3 need.
   step 3.6.
 
 ### 1. The solver plays doubles positions, with realistic-play pruning (1½ days)
+
+**Done 2026-09-30**, merged into main. The default search for a doubles position is depth 1,
+`prune` 3, `sample` 16 (stratified), the KO extension, and the damage race for every 1v1 it
+reaches (`vgc.wp.doubles.SEARCH`). What each lever measured is under "Measured so far" below.
 
 - **Position format.** A side lists one or two active Pokémon, each with its own HP, stat stages,
   status, item consumed, choice lock, "just arrived" (Fake Out) and Protect counter. `setUp`
@@ -230,6 +236,26 @@ stages 2 and 3 need.
 
 ### 2. The adapter, for open sheets, closed sheets and Watching mode (2 days)
 
+**Open sheets built 2026-09-30** (`vgc.wp.doubles`, its own module beside `vgc.wp.endgame`):
+- **Which positions.** Neither side has more than two left, every one left is on the field, and it
+  is not a 1v1. Volatiles, sleep and bad poison are refused, as in the 1v1.
+- **Per Pokémon, in field-slot order.** HP, stages, status, consumed item, choice lock, Fake Out
+  freshness, and the Protect counter, counted from stalling moves on consecutive turns in the log
+  (the replay journal now records each move's Pokémon and move). One Mega a side.
+- **Speed, differently from the plan above.** Not classes per pair multiplied: seeded draws of
+  every unknown investment from its prior, weighted by each turn order the log showed (an order
+  between two of these Pokémon is an indicator on the draw, one with a Pokémon outside them a
+  likelihood, as `belief.speed.joint` does for two), grouped by the move order they give this
+  turn. The heaviest orders are solved until 90% of the weight or six orders; each stands for
+  itself by every Pokémon's commonest investment within it. Seeded, so a battle writes the same
+  positions again.
+- **On 150 held-out open-sheet games:** 59 reach such a position, 57 are built (39 2v2, 9 2v1,
+  9 1v2), at 0.2 s a plan and one to six move orders a game.
+- Noticed on the way: the Speed prior puts its two largest weights on 0 and 32 for species as
+  unlike as Basculegion and Rillaboom. Not changed here; worth a look of its own.
+
+**Closed sheets: in progress.** Watching mode follows once both are checked.
+
 - **`vgc.wp.endgame`.** Accept at most two Pokémon left a side. Per Pokémon: Fake Out
   freshness, the Protect counter, a choice lock, items consumed.
 - **The Protect counter.** `stall` is a volatile, so today such a position is not built. It is
@@ -249,6 +275,11 @@ stages 2 and 3 need.
     2v2 answerable. The page says how much of the belief its answer covers.
 
 ### 3. The human check (½ day, plus overnight on Kaggle)
+
+**Open sheets launched 2026-09-30.** `solver_vs_humans.py --endgame doubles --depths 1`: 674
+held-out open-sheet games reach a buildable position, 1,791 positions (1,260 in 2v2s, 531 in 2v1s
+and 1v2s), solved on Kaggle in three runs side by side (`--name doubles-a|b|c`, cap 900 s), and
+scored by kind on the laptop once merged. Depth 2 waits on what depth 1 shows.
 
 - **The step 3.6 check again, in both regimes**, at each held-out game's first 2v1/1v2 and first
   2v2 (open-sheet games, and closed-sheet games as stage 0 reads them), through
