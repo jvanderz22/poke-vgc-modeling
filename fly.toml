@@ -1,7 +1,7 @@
-# The battle-companion web app on Fly.io. See deploy/README.md, and deploy_fly.sh to deploy.
+# fly.toml app configuration file generated for vgc-live-battle-calculator on 2026-10-01T18:38:48-05:00
 #
-# Budget: one machine, stopped when idle (billed per second only while running), a 1 GB volume.
-# Set a hard monthly spend cap in the dashboard (Billing -> Spend limits); this file cannot.
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
 app = 'vgc-live-battle-calculator'
 primary_region = 'iad'
@@ -11,9 +11,7 @@ primary_region = 'iad'
 
 [env]
   PORT = '8080'
-  # Solver processes at once: each holds the simulator (about 220 MB, up to about 460 MB mid-search).
   VGC_SOLVER_WORKERS = '3'
-  # A 1v1 is deepened to depth 3 at most: depth 4 can run for hours with the page polling.
   VGC_SOLVE_MAX_DEPTH = '3'
 
 [[mounts]]
@@ -32,8 +30,6 @@ primary_region = 'iad'
     hard_limit = 25
     soft_limit = 15
 
-# Four shared cores for the doubles answer's six solves at once; 2 GB for three solver processes
-# beside the app. $8.64/month if it never stopped; with auto-stop, cents for personal use.
 [[vm]]
   size = 'shared-cpu-4x'
   memory = '2gb'
