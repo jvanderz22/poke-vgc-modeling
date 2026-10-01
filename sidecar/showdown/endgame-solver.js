@@ -540,6 +540,17 @@ function duel(mons, atk, speed) {
  * in it. P(p1's side outlasts p2's), HP share for what is unresolved after `RACE_TURNS` turns.
  */
 const MELEE_RUNS = 64;
+// `race_doubles: 'calibrated'`: the race's value through P = sigmoid(a * logit(race) + b), fitted on
+// 1,500 training-split open-sheet games at their first turn with two or fewer a side (never the
+// held-out ones the check scores). Raw, the race calls 70% of games at 95% or more and is right 87%
+// of the time; calibrated, a sure race is 0.88, which is how often the side ahead wins a 2v1. A
+// change here is a change of answers for 'calibrated': give it a new name rather than edit it.
+const MELEE_CALIBRATION = {a: 0.403, b: -0.0244, eps: 1 / 128};
+function calibrated(v) {
+	const {a, b, eps} = MELEE_CALIBRATION;
+	const q = Math.min(1 - eps, Math.max(eps, v));
+	return 1 / (1 + Math.exp(-(a * Math.log(q / (1 - q)) + b)));
+}
 function melee(snap, seedKey) {
 	const copy = scorer(snap);
 	const sides = [0, 1].map(s => copy.sides[s].active.filter(p => p && !p.fainted));
@@ -921,7 +932,10 @@ function main() {
 		if (battle.ended) return {v: battle.winner === 'p1' ? 1 : battle.winner === 'p2' ? 0 : 0.5, leaf: 0};
 		if (depth >= search.depth || reach < search.cutoff) {
 			let r = search.race ? race(snap) : null;
-			if (r === null && search.race_doubles) r = melee(snap, key(battle));
+			if (r === null && search.race_doubles) {
+				r = melee(snap, key(battle));
+				if (r !== null && search.race_doubles === 'calibrated') r = calibrated(r);
+			}
 			return {v: r === null ? leaf(battle) : r, leaf: 1};
 		}
 		// A 1v1 below a doubles root, valued by its damage race rather than searched.

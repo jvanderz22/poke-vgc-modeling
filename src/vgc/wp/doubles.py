@@ -32,8 +32,10 @@ from typing import Any
 from vgc.regulation import Regulation, to_id
 from vgc.wp import endgame, solver
 
-# One turn, then the KO extension: about 6 s for a 2v1 and 1–3 minutes for a 2v2 (stage 1).
-SEARCH = {"depth": 1, "prune": 3, "sample": 16, "race": True, "race_1v1": True}
+# One turn, then the KO extension: about 6 s for a 2v1 and 1–3 minutes for a 2v2 (stage 1). The
+# horizon of a position with more than one Pokémon a side is the calibrated damage race: HP share
+# there gave a 2v1 lead about 0.72 where the side ahead wins 88% (stage 3).
+SEARCH = {"depth": 1, "prune": 3, "sample": 16, "race": True, "race_1v1": True, "race_doubles": "calibrated"}
 # Speed: draws, the share of their weight solved, and at most this many move orders.
 DRAWS = 4000
 COVER = 0.9
