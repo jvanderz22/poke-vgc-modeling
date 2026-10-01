@@ -527,6 +527,125 @@ function duel(mons, atk, speed) {
 	return won;
 }
 
+/**
+ * A position with more than one Pokémon a side valued as a damage race, for `search.race_doubles`
+ * at the horizon: what HP share gets wrong is a count lead (two healthy Pokémon against one is
+ * 0.67 by HP share, and the side ahead wins 88% of human 2v1s). Each Pokémon's attacks come from
+ * the simulator's damage on the move as it is used (a spread move at three quarters into two
+ * foes), and the race is played out `MELEE_RUNS` times with seeded dice: every turn each Pokémon
+ * fires the attack that does the most towards a KO (a KO counts double), in priority then Speed
+ * order; a single-target move whose target has fallen goes to the other foe, as in doubles.
+ * Accuracy, roll, crit, full paralysis, Sash and Sturdy, recoil and Life Orb, drain, Sitrus,
+ * Leftovers and burn or poison are drawn or applied; Protect, status moves and switching are not
+ * in it. P(p1's side outlasts p2's), HP share for what is unresolved after `RACE_TURNS` turns.
+ */
+const MELEE_RUNS = 64;
+function melee(snap, seedKey) {
+	const copy = scorer(snap);
+	const sides = [0, 1].map(s => copy.sides[s].active.filter(p => p && !p.fainted));
+	if (!sides[0].length || !sides[1].length || sides[0].length + sides[1].length <= 2) return null;
+	const sun = ['sunnyday', 'desolateland'].includes(copy.field.effectiveWeather());
+	// mons[k]: {side, mon, moves: [{dmg: [per foe index], spread, acc, priority, recoil, drain}]}
+	const mons = [];
+	for (const s of [0, 1]) for (const me of sides[s]) {
+		const foes = sides[1 - s];
+		const slot = copy.sides[s].active.indexOf(me);
+		const req = copy.sides[s].activeRequest;
+		const listed = req && req.active && req.active[slot] ? req.active[slot].moves : me.moveSlots;
+		const hidden = new Set(me.moveSlots.filter(m => m.disabled).map(m => m.id));
+		const moves = [];
+		for (const m of listed) {
+			if (m.disabled || hidden.has(m.id) || m.pp === 0) continue;
+			const move = copy.dex.moves.get(m.id);
+			if (move.category === 'Status') continue;
+			const spread = ['allAdjacentFoes', 'allAdjacent'].includes(move.target) && foes.length > 1;
+			const hits = Array.isArray(move.multihit) ? 3 : (move.multihit || 1);
+			const dmg = foes.map(f => Math.floor(damage(copy, me, f, m.id) * hits * (spread ? 0.75 : 1)));
+			if (!dmg.some(d => d > 0)) continue;
+			const active = prepared(copy, me, foes[0], m.id);
+			let priority = copy.singleEvent('ModifyPriority', active, null, me, null, null, active.priority);
+			priority = copy.runEvent('ModifyPriority', me, null, active, priority);
+			if (move.flags.charge && me.item !== 'powerherb' && !(sun && ['solarbeam', 'solarblade'].includes(move.id))) {
+				for (let i = 0; i < dmg.length; i++) dmg[i] = Math.floor(dmg[i] / 2);
+			}
+			moves.push({dmg, spread, acc: move.accuracy === true ? 1 : move.accuracy / 100, priority: priority || 0,
+				recoil: (move.recoil ? move.recoil[0] / move.recoil[1] : 0) + (me.item === 'lifeorb' ? 0.1 : 0),
+				drain: move.drain ? move.drain[0] / move.drain[1] : 0});
+		}
+		mons.push({side: s, mon: me, foes: foes.map(f => sides[1 - s].indexOf(f)), moves, speed: me.getActionSpeed(),
+			max: me.maxhp, sash: me.item === 'focussash' || me.ability === 'sturdy', sitrus: me.item === 'sitrusberry',
+			para: me.status === 'par' ? 1 / 8 : 0,
+			residual: (me.item === 'leftovers' ? Math.floor(me.maxhp / 16) : 0) - (me.status === 'brn' ? Math.floor(me.maxhp / 16) : 0)
+				- (['psn', 'tox'].includes(me.status) ? Math.floor(me.maxhp / 8) : 0)});
+	}
+	const of = (s, j) => mons.filter(x => x.side === s)[j];
+	const rng = new PRNG(seedFor(`melee|${seedKey}`));
+	let won = 0;
+	for (let run = 0; run < MELEE_RUNS; run++) {
+		const hp = mons.map(x => x.mon.hp), berry = mons.map(x => x.sitrus), sash = mons.map(x => x.sash);
+		const alive = s => mons.some((x, k) => x.side === s && hp[k] > 0);
+		let result = null;
+		for (let turn = 0; turn < RACE_TURNS && result === null; turn++) {
+			// Each Pokémon's attack and target for the turn: the most progress towards a KO.
+			const plan = mons.map((x, k) => {
+				if (hp[k] <= 0) return null;
+				let best = null;
+				for (const mv of x.moves) {
+					const targets = x.foes.map((fi, j) => ({j, k: mons.indexOf(of(1 - x.side, fi))})).filter(t => hp[t.k] > 0);
+					if (!targets.length) continue;
+					const hitsOn = mv.spread ? [targets] : targets.map(t => [t]);
+					for (const ts of hitsOn) {
+						let v = 0;
+						for (const t of ts) v += Math.min(1, mv.dmg[t.j] / hp[t.k]) + (mv.dmg[t.j] >= hp[t.k] ? 1 : 0);
+						v *= mv.acc;
+						if (!best || v > best.v) best = {v, mv, ts};
+					}
+				}
+				return best;
+			});
+			const order = mons.map((x, k) => k).filter(k => plan[k])
+				.map(k => ({k, pr: plan[k].mv.priority, sp: mons[k].speed, tie: rng.random()}))
+				.sort((a, b) => b.pr - a.pr || b.sp - a.sp || a.tie - b.tie).map(o => o.k);
+			for (const k of order) {
+				if (hp[k] <= 0) continue;
+				const x = mons[k], {mv} = plan[k];
+				if (x.para && rng.random() < x.para) continue;
+				let ts = plan[k].ts.filter(t => hp[t.k] > 0);
+				if (!ts.length && !mv.spread) {
+					// A single-target move whose target fell goes to the other foe.
+					ts = x.foes.map((fi, j) => ({j, k: mons.indexOf(of(1 - x.side, fi))})).filter(t => hp[t.k] > 0).slice(0, 1);
+				}
+				let dealt = 0;
+				for (const t of ts) {
+					if (rng.random() >= mv.acc) continue;
+					const roll = (85 + Math.floor(rng.random() * 16)) / 92;
+					let d = Math.floor(mv.dmg[t.j] * roll * (rng.random() < 1 / 24 ? 1.5 : 1));
+					if (sash[t.k] && hp[t.k] === mons[t.k].max && d >= hp[t.k]) { d = hp[t.k] - 1; sash[t.k] = false; }
+					d = Math.min(d, hp[t.k]);
+					hp[t.k] -= d; dealt += d;
+					if (berry[t.k] && hp[t.k] > 0 && hp[t.k] <= mons[t.k].max / 2) { hp[t.k] += Math.floor(mons[t.k].max / 4); berry[t.k] = false; }
+				}
+				if (dealt && mv.recoil) hp[k] -= Math.max(1, Math.round(dealt * mv.recoil));
+				if (dealt && mv.drain) hp[k] = Math.min(x.max, hp[k] + Math.round(dealt * mv.drain));
+				if (berry[k] && hp[k] > 0 && hp[k] <= x.max / 2) { hp[k] += Math.floor(x.max / 4); berry[k] = false; }
+				const a0 = alive(0), a1 = alive(1);
+				if (!a0 || !a1) { result = !a0 && !a1 ? 0.5 : a1 ? 0 : 1; break; }
+			}
+			if (result !== null) break;
+			mons.forEach((x, k) => { if (hp[k] > 0) hp[k] = Math.min(x.max, hp[k] + x.residual); });
+			const a0 = alive(0), a1 = alive(1);
+			if (!a0 || !a1) result = !a0 && !a1 ? 0.5 : a1 ? 0 : 1;
+		}
+		if (result === null) {
+			const share = s => mons.reduce((a, x, k) => a + (x.side === s ? Math.max(0, hp[k]) / x.max : 0), 0);
+			const a = share(0), c = share(1);
+			result = a + c > 0 ? a / (a + c) : 0.5;
+		}
+		won += result;
+	}
+	return won / MELEE_RUNS;
+}
+
 // Minimax value of a zero-sum matrix game for the row player: a saddle point when there is one,
 // otherwise regret matching, which converges to the value at 1/sqrt(iterations).
 function solve(M) {
@@ -801,7 +920,8 @@ function main() {
 	function value(snap, battle, depth, reach) {
 		if (battle.ended) return {v: battle.winner === 'p1' ? 1 : battle.winner === 'p2' ? 0 : 0.5, leaf: 0};
 		if (depth >= search.depth || reach < search.cutoff) {
-			const r = search.race ? race(snap) : null;
+			let r = search.race ? race(snap) : null;
+			if (r === null && search.race_doubles) r = melee(snap, key(battle));
 			return {v: r === null ? leaf(battle) : r, leaf: 1};
 		}
 		// A 1v1 below a doubles root, valued by its damage race rather than searched.

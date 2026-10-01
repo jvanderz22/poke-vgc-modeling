@@ -62,7 +62,8 @@ EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses s
 
 
 def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
-            depths: tuple[int, ...] = DEPTHS) -> tuple[list[dict[str, Any]], dict[str, int]]:
+            depths: tuple[int, ...] = DEPTHS, extra: dict[str, Any] | None = None
+            ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Each qualifying game at its first 1v1: the positions per depth, the model's number, the label.
     `sheets` picks the regime; a closed-sheet game is solved over pairs of likely sets
     (`endgame.pair_candidates`), and what those leave out is the row's `unsolved`."""
@@ -94,7 +95,7 @@ def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
             # Planned once: only the search depth differs between depths, and weighing a closed
             # sheet's set pairs is the slow part.
             base = doubles.SEARCH if endgame_kind == "doubles" else solver.SEARCH
-            plan = adapter.plan(reg, battle, {**base, "depth": depths[0]})
+            plan = adapter.plan(reg, battle, {**base, **(extra or {}), "depth": depths[0]})
             if not plan["eligible"]:
                 counts["not_built"] += 1
                 why = plan["reason"] or ""
@@ -252,9 +253,14 @@ def main() -> None:
                     help="the regime: open-sheet games, or closed-sheet games with both sides' sets from the belief")
     ap.add_argument("--endgame", choices=("1v1", "doubles"), default="1v1",
                     help="the first 1v1, or the first turn with two or fewer a side (2v2, 2v1, 1v2)")
+    ap.add_argument("--search", default="{}", help="search settings over the default, as JSON")
+    ap.add_argument("--tag", help="written beside the default output as <name>_<tag>.json")
     args = ap.parse_args()
     reg = load_regulation("reg_mc")
+    extra = json.loads(args.search)
     out_path = OUT[(args.endgame, args.sheets)]
+    if args.tag:
+        out_path = out_path.with_name(f"{out_path.stem}_{args.tag}.json")
     depths = tuple(int(x) for x in args.depths.split(","))
 
     if args.export:
@@ -263,7 +269,7 @@ def main() -> None:
         from vgc.wp import offload
         from vgc.wp.models import in_battle_version
 
-        rows, counts = collect(reg, in_battle_version(reg.id, args.sheets), args.sheets, args.endgame, depths)
+        rows, counts = collect(reg, in_battle_version(reg.id, args.sheets), args.sheets, args.endgame, depths, extra)
         # Shallow first, so a remote run that hits its deadline has finished what the deeper
         # search needs least and the scoring needs most.
         positions = [j["position"] for d in depths for r in rows for j in r["jobs"][d]]
@@ -276,10 +282,10 @@ def main() -> None:
         from vgc.wp.models import in_battle_version
 
         version = in_battle_version(reg.id, args.sheets)
-        rows, counts = collect(reg, version, args.sheets, args.endgame, depths)
+        rows, counts = collect(reg, version, args.sheets, args.endgame, depths, extra)
         print(f"{counts['games']} games to solve", counts, flush=True)
         solve(rows, args.workers, args.cap, depths)
-        counts["version"], counts["depths"] = version, list(depths)
+        counts["version"], counts["depths"], counts["search"] = version, list(depths), extra
         counts["crashed_positions"] = sum(len(r.get("errors", [])) for r in rows)
     result = {"all": score(rows),
               "settled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] <= SETTLED]),
