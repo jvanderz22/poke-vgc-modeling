@@ -7,7 +7,7 @@ within 5 s. Next: closed-sheet 2v1s on the page, and stage 5, a closed-sheet bel
 concentrates._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
-strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
+strength), carried on as [PLAN-v4](PLAN-v4.md) step 1. Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
 
 ---
 
@@ -382,7 +382,7 @@ So the solved positions are near-copies of one another while real alternatives g
 
 ## How it fits Phase 9
 
-Phase 9 (PLAN-v3 step 9) is a policy over whole battles: `EWP(a)` with exact transitions, chance
+Phase 9 (PLAN-v3 step 9, [PLAN-v4](PLAN-v4.md) step 2) is a policy over whole battles: `EWP(a)` with exact transitions, chance
 enumerated, a belief over hidden sets, and the learned WP at the leaves. This plan builds its
 bottom layer:
 

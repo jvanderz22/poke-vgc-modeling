@@ -1,5 +1,9 @@
 # VGC Reg M-C Model & Advisor — Plan v3
 
+> **Superseded 2026-10-01 by [PLAN-v4.md](PLAN-v4.md).** Kept as the archive of steps 1–9 as they
+> ran, with their measurements and decisions. Code and tests cite "PLAN-v3 step N", so the step
+> numbers here are stable. Read v4 for what to do next.
+
 _Written 2026-09-28._ **Supersedes [PLAN-v2.md](PLAN-v2.md)**, which is kept as the archive of how
 we got here: every measurement, dead end and correction, with its reasoning. [PLAN.md](PLAN.md) is
 the older archive (original research, architecture detail, phases 0–4). v3 restates only what is

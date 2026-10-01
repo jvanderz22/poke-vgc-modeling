@@ -1,8 +1,8 @@
 # vgc — Pokémon Champions VGC advisor
 
 Team-building and battle advice for Pokémon Champions VGC (currently **Regulation M-C**),
-backed by a pinned local Pokémon Showdown as ground truth. See [PLAN-v3.md](docs/PLAN-v3.md) for the
-roadmap and progress ([PLAN-v2.md](docs/PLAN-v2.md) and [PLAN.md](docs/PLAN.md) are the superseded archives), and [docs/phase0-findings.md](docs/phase0-findings.md) for the
+backed by a pinned local Pokémon Showdown as ground truth. See [PLAN-v4.md](docs/PLAN-v4.md) for the
+roadmap and progress ([PLAN-v3.md](docs/PLAN-v3.md), [PLAN-v2.md](docs/PLAN-v2.md) and [PLAN.md](docs/PLAN.md) are the superseded archives), and [docs/phase0-findings.md](docs/phase0-findings.md) for the
 environment decisions. The local battle companion is documented in
 [docs/web-app.md](docs/web-app.md); retraining for a new regulation is
 [docs/regulation-change.md](docs/regulation-change.md), and renting hardware is
@@ -96,7 +96,8 @@ src/vgc/                 regulation · engine · teams · policy · meta · sim 
 
 ## Docs
 
-- [PLAN-v3.md](docs/PLAN-v3.md): the live plan — where things stand, what is next, the gates and principles
+- [PLAN-v4.md](docs/PLAN-v4.md): the live plan — where things stand, what is next, the gates and principles
+- [PLAN-v3.md](docs/PLAN-v3.md): superseded archive — steps 1–9 (calibration, the 1v1 engine in the app, solver speed, the start of doubles); code cites its step numbers
 - [PLAN-v2.md](docs/PLAN-v2.md): superseded archive — every Phase 4–8 measurement and decision, with reasoning
 - [PLAN.md](docs/PLAN.md): superseded archive — the research and architecture behind the stack
 - [docs/phase4-findings.md](docs/phase4-findings.md): what the WP corpus does and doesn't support
