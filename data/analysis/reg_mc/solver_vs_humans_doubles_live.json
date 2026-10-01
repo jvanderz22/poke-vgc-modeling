@@ -770,6 +770,134 @@
    },
    "mean_leaf_mass": 0.9492
   },
+  "2v1|1v2": {
+   "games": 264,
+   "groups": 233,
+   "unsolved": 0,
+   "brier": {
+    "engine": 0.0694,
+    "model": 0.1019,
+    "engine_minus_model": -0.0325,
+    "ci95": [
+     -0.0546,
+     -0.0114
+    ],
+    "verdict": "engine better"
+   },
+   "logloss": {
+    "engine": 0.2569,
+    "model": 0.3467,
+    "engine_minus_model": -0.0898,
+    "ci95": [
+     -0.1652,
+     -0.0098
+    ],
+    "verdict": "engine better"
+   },
+   "calibration_engine": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 81,
+     "mean_pred": 0.004,
+     "p1_won": 0.025
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 58,
+     "mean_pred": 0.15,
+     "p1_won": 0.19
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 16,
+     "mean_pred": 0.521,
+     "p1_won": 0.438
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 41,
+     "mean_pred": 0.838,
+     "p1_won": 0.951
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 68,
+     "mean_pred": 0.994,
+     "p1_won": 0.985
+    }
+   ],
+   "calibration_model": [
+    {
+     "bin": [
+      0,
+      0.05
+     ],
+     "n": 62,
+     "mean_pred": 0.025,
+     "p1_won": 0.081
+    },
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 69,
+     "mean_pred": 0.143,
+     "p1_won": 0.145
+    },
+    {
+     "bin": [
+      0.35,
+      0.65
+     ],
+     "n": 24,
+     "mean_pred": 0.527,
+     "p1_won": 0.542
+    },
+    {
+     "bin": [
+      0.65,
+      0.95
+     ],
+     "n": 57,
+     "mean_pred": 0.844,
+     "p1_won": 0.842
+    },
+    {
+     "bin": [
+      0.95,
+      1
+     ],
+     "n": 52,
+     "mean_pred": 0.975,
+     "p1_won": 0.962
+    }
+   ],
+   "engine_called": {
+    "n": 149,
+    "called_side_won": 0.98,
+    "model_mean_on_called_side": 0.885
+   },
+   "depths": {
+    "1": 264
+   },
+   "mean_leaf_mass": 0.4662
+  },
   "2v1": {
    "games": 122,
    "groups": 116,
@@ -1009,7 +1137,7 @@
    "mean_leaf_mass": 0.4411
   }
  },
- "cap": 60.0,
+ "cap": 180,
  "rows": [
   {
    "id": "gen9championsvgc2026regmcbo3-2677960300",

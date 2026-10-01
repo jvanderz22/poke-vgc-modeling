@@ -1899,8 +1899,9 @@ calculation. Scored exactly as the page runs it (the heaviest three move orders)
 | --- | --- | --- | --- | --- | --- |
 | all | 674 | **0.421** / 0.513 | −0.092 [−0.144, −0.039], engine better | **0.130** / 0.172 | −0.042 [−0.060, −0.024], engine better |
 | 2v2 | 410 | **0.527** / 0.621 | engine better | **0.169** / 0.217 | engine better |
-| 2v1 | 122 | 0.245 / 0.339 | not distinguishable | 0.064 / 0.102 | not distinguishable |
-| 1v2 | 142 | **0.267** / 0.353 | engine better | **0.074** / 0.102 | engine better |
+| 2v1 and 1v2 pooled | 264 | **0.257** / 0.347 | −0.090 [−0.165, −0.010], engine better | **0.069** / 0.102 | −0.033 [−0.055, −0.011], engine better |
+| _2v1 alone_ | 122 | 0.245 / 0.339 | not distinguishable | 0.064 / 0.102 | not distinguishable |
+| _1v2 alone_ | 142 | **0.267** / 0.353 | engine better | **0.074** / 0.102 | engine better |
 
 - It called 169 games at 95% or more and the called side won 96.4%; the model gave that side
   0.87 on average.
@@ -1928,15 +1929,44 @@ set at all).
 | | games | log loss engine / model | engine − model | Brier engine / model | engine − model |
 | --- | --- | --- | --- | --- | --- |
 | all | 349 | 0.474 / 0.540 | −0.066 [−0.143, +0.017], not distinguishable | **0.146** / 0.182 | −0.036 [−0.061, −0.010], engine better |
-| 2v1 | 70 | **0.253** / 0.467 | engine better | **0.078** / 0.147 | engine better |
 | 2v2 | 214 | 0.555 / 0.628 | not distinguishable | 0.184 / 0.219 | not distinguishable |
-| 1v2 | 65 | 0.448 / 0.332 | not distinguishable | 0.096 / 0.094 | not distinguishable |
+| 2v1 and 1v2 pooled | 135 | 0.347 / 0.402 | −0.055 [−0.205, +0.120], not distinguishable | 0.087 / 0.122 | −0.035 [−0.073, +0.003], not distinguishable |
+| _2v1 alone_ | 70 | **0.253** / 0.467 | engine better | **0.078** / 0.147 | engine better |
+| _1v2 alone_ | 65 | 0.448 / 0.332 | not distinguishable | 0.096 / 0.094 | not distinguishable |
 
 - **Weaker than on open sheets**, as the 1v1 was not: the answers average over guessed sets, and
   the solved positions carry little of the belief (the weight is spread over many combinations;
   the heaviest three positions carry a median of about 40% of it).
 - It called 61 games at 95% or more and the called side won 93.4%.
-- **By the plan's rule (the engine leads only where it beats the model), closed-sheet 2v1s pass and
-  2v2s and 1v2s do not yet.** The 2v1 and 1v2 split is the same state from either side, and the
-  1v2's worse point estimate rests on two confident misses in 20 calls, so the side ahead (2v1)
-  passing alone is partly noise; more closed games or a tighter belief would settle it.
+- **By the plan's rule (the engine leads only where it beats the model), no closed-sheet kind
+  passes yet.** A 2v1 and a 1v2 are one state with p1 and p2 named the other way round (from the
+  stands, p1 is no one in particular), so they are judged pooled, and pooled neither score is
+  distinguishable. The 2v1 half passing alone was noise in how the games fell between the labels:
+  the 1v2's worse point estimate rests on two confident misses in 20 calls. On the page the label
+  would only say which seat the user sat in. (First written as "closed 2v1s pass"; corrected the
+  same day, and `solver_vs_humans.py` now reports the pool as `2v1|1v2`.)
+
+## Grouping closed-sheet sets by what changes the fight: tried, reverted
+
+PLAN-endgame-doubles stage 5 (2026-10-01). Each hidden Pokémon's sets were grouped by a signature
+(item, ability, the nature's direction on Speed and on the attacking stat, and the moves realistic
+play would consider against the foes on the field: near-best attack per foe, priority attacks,
+Protect and its kin, Fake Out, speed control, moves on itself), each class solved by its heaviest
+member. Planned only (no solving) on 36 held-out closed-sheet games, then an equivalence check on
+65 classes. The code was reverted.
+
+- **Concentration barely moved.** The three positions solved carried a median 6.3% of the whole
+  belief before and 9.4% after (Protect and Detect merged too), against an aim of 75%. Of the
+  enumerated combinations they carried 38% before and 40% after. Few sets differ in nothing a
+  fight shows: the spread is real (Kingambit's Chople Berry, Focus Sash, Black Glasses and Life
+  Orb; Indeedee's Speed-down nature for Trick Room), multiplied over four hidden Pokémon.
+- **And it was not sound.** Solving a class by its second-heaviest member instead of its heaviest:
+  79% of 65 agreed within 0.02, 11 differed by more than 0.05 (one 0.12 against 0.87). What the
+  signature missed: Grassy Glide (priority 0 in the dex, +1 in Rillaboom's own terrain), support
+  and field moves (Helping Hand against Heal Pulse, Grassy Terrain), secondary effects (Rock
+  Slide's flinch against Throat Chop), and defensive natures (Calm against Bold), because at
+  `prune` 2 the solver still fills spare choices by score and the forced-win check reads every move.
+- **Planning time** was unchanged (median 1.1 s, max 1.9 s).
+- So closed-sheet doubles stay with the model. The check from the stands hides all four Pokémon,
+  where the page hides two, so it is harsher than what the page faces.
+

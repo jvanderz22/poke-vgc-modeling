@@ -21,7 +21,7 @@ v4 restates only what is needed to decide what to do next. Steps restart at 1.
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound on open sheets only and do not run on closed ones |
 | In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1d-sw-split-small` closed. Both pass the powered calibration test. Neither follows what decides an endgame |
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
-| Endgame engine, 2v1 / 1v2 / 2v2 | 🟡 Open sheets: live on the page within 5 s, log loss 0.421 against the model's 0.513 (674 games). Closed sheets: better on Brier only (349 games), 2v1s better on both; not on the page yet |
+| Endgame engine, 2v1 / 1v2 / 2v2 | 🟡 Open sheets: live on the page within 5 s, log loss 0.421 against the model's 0.513 (674 games). Closed sheets: better on Brier only (349 games), no state kind on both; not on the page, and grouping the set belief did not help |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus. Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed |
@@ -107,21 +107,25 @@ in `vgc.web.solving` (`doubles_reason`).
 
 The rest of [PLAN-endgame-doubles](PLAN-endgame-doubles.md), which has the detail.
 
-1. **Show closed-sheet 2v1s on the page.** They passed on both scores (log loss 0.253 against
-   0.467). The model keeps leading in closed 2v2s and 1v2s. Small: a change to `doubles_reason`
-   and the page's label.
-2. **A closed-sheet belief that concentrates** (stage 5). Group each hidden Pokémon's sets by what
+1. ~~Show closed-sheet 2v1s on the page.~~ **Dropped 2026-10-01.** A 2v1 and a 1v2 are one state
+   with the sides named the other way round; pooled (135 games) the engine is not distinguishable
+   from the model on either score, so the 2v1 half's pass was noise. The model leads every closed
+   doubles position until item 3 says otherwise, and the check now reports the pool (`2v1|1v2`).
+2. ~~A closed-sheet belief that concentrates~~ **Tried and reverted 2026-10-01**: grouping took the
+   solved share of the belief from 6.3% to 9.4% (aim 75%), and 11 of 65 classes disagreed between
+   members by more than 0.05. Closed doubles stay with the model. As planned: (stage 5). Group each hidden Pokémon's sets by what
    changes this fight (item, ability, the nature's direction, the moves realistic play would
    consider), solve each class by its heaviest member, and count the 30 games with no fitting
    combination by their priors. Checks: members of a class agree within ~0.02; the three solved
    positions carry ≥75% of the belief (today ~40%); planning stays within ~1.5 s.
-3. **The closed-sheet check again**, by state kind, at the live configuration (local, ~30 min). The
+3. ~~The closed-sheet check again~~ (nothing to check after item 2), by state kind (2v2, and 2v1 with 1v2 pooled), at the live
+   configuration (local, ~30 min). The
    engine leads wherever it now passes.
 4. **Close out the reference runs.** The Kaggle `doubles2-{a,b,c}` runs (depth 1 with the KO
    extension) say what more depth would add over the live one-turn search. Score them and record
    it; decide whether a deeper background search is worth adding to the page.
 
-Estimate: about 1½ days plus the local check.
+Estimate: about 1 day plus the local check.
 
 ### 2. Phase 9: policy strength (EWP and search)
 
@@ -256,7 +260,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | Phase 9's policy is stronger but still fails Phase 6 | The deterministic stack and the endgame engine are the floor |
 | Phase 9 misses the 45 s clock | The doubles work already answers ≤2 a side in 5 s; prune harder above that, and report depth |
 | Reg M-C rotates 2026-12-02 | Step 4, with a mid-November target |
-| The closed-sheet belief does not concentrate enough | Closed 2v1s ship regardless; the model keeps the other closed kinds |
+| The closed-sheet belief does not concentrate enough | The model keeps leading closed doubles; the engine's answer stays open-sheet only |
 | Disk (18 GB free) | Retired models and unreferenced eval sets (`vgc wp prune-eval-cache`) go first |
 
 ---

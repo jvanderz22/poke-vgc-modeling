@@ -22,7 +22,9 @@ either way. That is the point of running it.
 
 `--endgame doubles` asks the same of the first turn where neither side has more than two Pokémon
 left and it is not a 1v1 (2v2, 2v1, 1v2: `vgc.wp.doubles`, PLAN-endgame-doubles stage 3), at
-depth 1 by default, reported by kind as well.
+depth 1 by default, reported by kind as well. A 2v1 and a 1v2 are one state with p1 and p2 named
+the other way round, so `2v1|1v2` pools them, and that pool is what decides a kind with three left;
+the halves are only for reading.
 
     .venv/bin/python scripts/analysis/solver_vs_humans.py --endgame doubles --depths 1 --cap 600
 
@@ -304,8 +306,8 @@ def main() -> None:
               "played_out": score([r for r in rows if r["ended_by"] == "normal"]),
               "forfeit": score([r for r in rows if r["ended_by"] != "normal"])}
     if args.endgame == "doubles":
-        for kind in ("2v2", "2v1", "1v2"):
-            result[kind] = score([r for r in rows if r.get("kind") == kind])
+        for kind in ("2v2", "2v1|1v2", "2v1", "1v2"):
+            result[kind] = score([r for r in rows if r.get("kind") in kind.split("|")])
     if args.sheets == "closed":
         result["covered"] = score([r for r in rows if r.get("unsolved", 0) <= COVERED])
         result["partly_covered"] = score([r for r in rows if r.get("unsolved", 0) > COVERED])

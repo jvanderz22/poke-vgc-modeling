@@ -265,7 +265,7 @@ page leads with the engine there too (`vgc.wp.doubles`, `vgc.web.solving`). It h
 The heaviest three move orders are solved and the rest is reported as unsolved. A forced win is
 named, with its odds when a crit or a flinch is the only way out. On 674 held-out open-sheet games
 this answer predicted the winner better than the model: log loss 0.421 against 0.513 (phase8-findings,
-"a horizon that knows a count lead"). With a closed sheet the page says it is not checked yet.
+"a horizon that knows a count lead"). With a closed sheet the page says the engine has not yet beaten the model there.
 
 Validation is recomputed whenever a team is saved and never trusted from the file: the
 regulation's legality snapshot can change under a team that was legal when it was written.

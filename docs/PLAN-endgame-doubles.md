@@ -2,9 +2,10 @@
 
 _Written 2026-09-30. **Progress (2026-10-01):** stages 0 and 1 done; stage 2 built for open and
 closed sheets; stage 3 done for both (open: the engine beats the model, log loss 0.421 against
-0.513; closed: better on Brier only, and in 2v1s on both); stage 4 built for open sheets, answering
-within 5 s. Next: closed-sheet 2v1s on the page, and stage 5, a closed-sheet belief that
-concentrates._
+0.513; closed: better on Brier only, and no state kind on both); stage 4 built for open sheets,
+answering within 5 s; stage 5 tried and reverted (the belief does not concentrate by grouping).
+Closed-sheet doubles stay with the model. Next: the race at the horizon, which carries about 95%
+of a 2v2 answer._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength), carried on as [PLAN-v4](PLAN-v4.md) step 1. Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
@@ -303,8 +304,7 @@ human doubles endgames end" and "a horizon that knows a count lead"):
   games. Alone it already edges the model.
 - The 5-second budget (below) chose the search: one turn, `prune` 2, eight sampled draws, a
   forced-win check first. Exactly as the page runs it: log loss 0.421 against 0.513 and Brier 0.130
-  against 0.172, engine better; 2v2s and 1v2s engine better on their own, 2v1s not
-  distinguishable. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`) are now a
+  against 0.172, engine better; 2v2s, and 2v1s and 1v2s pooled, engine better on their own. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`) are now a
   reference for what more depth would add.
 
 **Closed sheets, 2026-10-01** (phase8-findings, "the live doubles answer on closed sheets"). The
@@ -312,10 +312,14 @@ live configuration on 349 held-out closed-sheet games, after fixing the set beli
 Mega's ability (55 games had had no set to solve):
 - all: Brier 0.146 against 0.182, engine better; log loss 0.474 against 0.540, not
   distinguishable;
-- 2v1: engine better on both (log loss 0.253 against 0.467); 2v2 and 1v2: not distinguishable.
-- So by this stage's rule only closed-sheet 2v1s pass. The answers average over guessed sets and
-  the three positions solved carry little of the belief; what would help most is a belief that
-  concentrates (sets grouped by what changes the fight), then the check again.
+- 2v2, and 2v1 and 1v2 pooled (135 games: log loss 0.347 against 0.402, Brier 0.087 against
+  0.122): not distinguishable.
+- So by this stage's rule no closed-sheet kind passes yet. A 2v1 and a 1v2 are one state with the
+  sides named the other way round, so they are judged pooled; the 2v1 half alone came out engine
+  better on both (log loss 0.253 against 0.467), which was first read as a pass and was noise in
+  how the games fell between the labels. The answers average over guessed sets and the three
+  positions solved carry little of the belief; what would help most is a belief that concentrates
+  (sets grouped by what changes the fight), then the check again.
 
 ### 4. The app (1 day, only for what passed)
 
@@ -324,16 +328,22 @@ user's budget). Warm solver processes (`vgc.wp.pool`, `endgame-solver.js --serve
 answer (forced-win check and race) and the one-turn search side by side, each move order's search
 replacing its quick value if it lands in time; the heaviest three move orders. On 60 held-out games
 through the page's own path: first answer median 1.2 s, final median 2.3 s, never past 5.1 s.
-Closed sheets: only 2v1s passed their check, and the page does not show them yet; the next step
-is to show closed-sheet 2v1s (the side with two left on a closed sheet) and keep the model leading
-in closed 2v2s and 1v2s.
+Closed sheets: no state kind passed its check, so the model keeps leading every closed doubles
+position until stage 5's belief and the check again say otherwise.
 
-- The engine's row appears in 2v1, 1v2 and 2v2 for the state kinds that passed.
+- The engine's row appears in 2v1, 1v2 and 2v2 for the state kinds that passed, with 2v1 and 1v2
+  one kind (the same state from either seat).
 - It shows the depth, the leaf mass, "realistic play, k choices a Pokémon", and the unsolved mass
   from Speed orders and, on a closed sheet, from the set belief.
 - It deepens in the background as now, and shows only a finished answer.
 
 ### 5. A closed-sheet belief that concentrates (1 day, plus a local check)
+
+**Tried and reverted, 2026-10-01** (phase8-findings, "grouping closed-sheet sets by what changes the
+fight"). Grouping took the three solved positions from 6.3% of the belief to 9.4%, not 75%: the
+sets mostly differ in ways a fight does show. And 11 of 65 classes disagreed by more than 0.05
+between members (Grassy Glide's terrain priority, support moves, secondary effects, defensive
+natures). Closed-sheet doubles stay with the model. What follows is the plan as written.
 
 **Why.** On closed sheets the doubles answer is better than the model on Brier only (349 games),
 where on open sheets it is better on both. The difference is the sets. Each hidden Pokémon keeps
@@ -366,10 +376,8 @@ So the solved positions are near-copies of one another while real alternatives g
   ~40%. The aim is 75% or more.
 - **Time:** closed-sheet planning stays within about 1.5 s, so the 5 s budget still holds.
 - **The closed-sheet check again** (`solver_vs_humans.py --endgame doubles --sheets closed --top 3
-  --search <live> --tag live`, local, about 30 minutes), by kind. The page then leads with the
+  --search <live> --tag live`, local, about 30 minutes), by kind: 2v2, and `2v1|1v2` pooled. The page then leads with the
   engine wherever closed sheets now pass, and keeps the model leading where they do not.
-
-**Meanwhile**, closed-sheet 2v1s already pass and can be shown on their own.
 
 ### Later, only if a check asks for them
 

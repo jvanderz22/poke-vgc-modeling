@@ -18,8 +18,9 @@ two steps over warm solver processes (`vgc.wp.pool`): at once, each position's f
 and the calibrated damage race (`QUICK`); then the one-turn search (`LIVE`), each position's value
 replacing its quick one if it finishes before the deadline. Only the heaviest `TOP_ORDERS` move
 orders are solved, and the weight of the rest is reported as unsolved. Open sheets only: on 674
-held-out open-sheet games the search predicted who won better than the model did (log loss 0.428
-against 0.513); closed sheets have not been checked with it.
+held-out open-sheet games the search predicted who won better than the model did (log loss 0.421
+against 0.513); on 349 closed-sheet games it was not distinguishable in any state kind, so there
+the model leads (PLAN-endgame-doubles, stage 3).
 """
 
 from __future__ import annotations
@@ -266,7 +267,7 @@ def doubles_reason(reg: Regulation, battle) -> str | None:
     if why:
         return why
     if not all(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
-        return "with a closed sheet the doubles engine is not checked yet"
+        return "with a closed sheet the doubles engine has not yet beaten the model"
     return None
 
 
