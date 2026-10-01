@@ -540,6 +540,29 @@ function duel(mons, atk, speed) {
  * in it. P(p1's side outlasts p2's), HP share for what is unresolved after `RACE_TURNS` turns.
  */
 const MELEE_RUNS = 64;
+/**
+ * `search.fast_race`: the race's damage and priorities remembered across the leaves of one search,
+ * keyed on what they depend on rather than recomputed on a fresh copy of each leaf. Damage at the
+ * fixed roll depends on the two Pokémon (species, ability, item, status, stages, volatiles, how
+ * hurt — full, a half, a third, a quarter — times attacked, the side's fallen), the field, and who
+ * else is out; HP itself only for the moves in `HP_MOVES`. A leaf whose every entry is known is
+ * raced without copying the battle at all. A consumable that a damage calculation spends (a resist
+ * berry) is spent once per key rather than once per leaf: the only way this differs from the race
+ * without it.
+ */
+const DAMAGE = new Map(), PRIORITY = new Map();
+const HP_MOVES = new Set(['eruption', 'waterspout', 'dragonenergy', 'flail', 'reversal', 'crushgrip', 'wringout', 'hardpress']);
+function monKey(p) {
+	const hurt = p.hp === p.maxhp ? 'F' : p.hp * 4 <= p.maxhp ? 'q' : p.hp * 3 <= p.maxhp ? 't' : p.hp * 2 <= p.maxhp ? 'h' : 'm';
+	return [p.species.id, p.ability, p.item, p.status, JSON.stringify(p.boosts), hurt, Object.keys(p.volatiles).sort().join('.'),
+		p.timesAttacked, p.side.totalFainted, p.position].join(':');
+}
+function fieldKey(b) {
+	const f = b.field;
+	return [f.weather, f.terrain, Object.keys(f.pseudoWeather).sort().join('.'),
+		...b.sides.map(sd => Object.keys(sd.sideConditions).sort().join('.') + '|' +
+			sd.active.map(p => (p && !p.fainted ? p.species.id + '/' + p.ability : '-')).join(','))].join('/');
+}
 // `race_doubles: 'calibrated'`: the race's value through P = sigmoid(a * logit(race) + b), fitted on
 // 1,500 training-split open-sheet games at their first turn with two or fewer a side (never the
 // held-out ones the check scores). Raw, the race calls 70% of games at 95% or more and is right 87%
@@ -551,31 +574,50 @@ function calibrated(v) {
 	const q = Math.min(1 - eps, Math.max(eps, v));
 	return 1 / (1 + Math.exp(-(a * Math.log(q / (1 - q)) + b)));
 }
-function melee(snap, seedKey) {
-	const copy = scorer(snap);
-	const sides = [0, 1].map(s => copy.sides[s].active.filter(p => p && !p.fainted));
+function melee(snap, seedKey, live = null) {
+	// `live`: the leaf's own battle, read but not changed, with damage from the tables (fast_race).
+	let copy = live ? null : scorer(snap);
+	const scoring = () => copy || (copy = scorer(snap));
+	const b = live || copy;
+	const twin = p => scoring().sides[p.side.n].active[p.position];
+	const field = live ? fieldKey(live) : null;
+	const dmgOf = (me, f, id) => {
+		if (!live) return damage(copy, me, f, id);
+		const k = monKey(me) + '>' + monKey(f) + '#' + id + (HP_MOVES.has(id) ? `@${me.hp}/${f.hp}` : '') + '~' + field;
+		if (!DAMAGE.has(k)) DAMAGE.set(k, damage(scoring(), twin(me), twin(f), id));
+		return DAMAGE.get(k);
+	};
+	const priorityOf = (me, f, id) => {
+		const k = live ? monKey(me) + '#' + id + '~' + field : null;
+		if (k && PRIORITY.has(k)) return PRIORITY.get(k);
+		const c = live ? scoring() : copy, m = live ? twin(me) : me, t = live ? twin(f) : f;
+		const active = prepared(c, m, t, id);
+		let priority = c.singleEvent('ModifyPriority', active, null, m, null, null, active.priority);
+		priority = c.runEvent('ModifyPriority', m, null, active, priority);
+		if (k) PRIORITY.set(k, priority);
+		return priority;
+	};
+	const sides = [0, 1].map(s => b.sides[s].active.filter(p => p && !p.fainted));
 	if (!sides[0].length || !sides[1].length || sides[0].length + sides[1].length <= 2) return null;
-	const sun = ['sunnyday', 'desolateland'].includes(copy.field.effectiveWeather());
+	const sun = ['sunnyday', 'desolateland'].includes(b.field.effectiveWeather());
 	// mons[k]: {side, mon, moves: [{dmg: [per foe index], spread, acc, priority, recoil, drain}]}
 	const mons = [];
 	for (const s of [0, 1]) for (const me of sides[s]) {
 		const foes = sides[1 - s];
-		const slot = copy.sides[s].active.indexOf(me);
-		const req = copy.sides[s].activeRequest;
+		const slot = b.sides[s].active.indexOf(me);
+		const req = b.sides[s].activeRequest;
 		const listed = req && req.active && req.active[slot] ? req.active[slot].moves : me.moveSlots;
 		const hidden = new Set(me.moveSlots.filter(m => m.disabled).map(m => m.id));
 		const moves = [];
 		for (const m of listed) {
 			if (m.disabled || hidden.has(m.id) || m.pp === 0) continue;
-			const move = copy.dex.moves.get(m.id);
+			const move = b.dex.moves.get(m.id);
 			if (move.category === 'Status') continue;
 			const spread = ['allAdjacentFoes', 'allAdjacent'].includes(move.target) && foes.length > 1;
 			const hits = Array.isArray(move.multihit) ? 3 : (move.multihit || 1);
-			const dmg = foes.map(f => Math.floor(damage(copy, me, f, m.id) * hits * (spread ? 0.75 : 1)));
+			const dmg = foes.map(f => Math.floor(dmgOf(me, f, m.id) * hits * (spread ? 0.75 : 1)));
 			if (!dmg.some(d => d > 0)) continue;
-			const active = prepared(copy, me, foes[0], m.id);
-			let priority = copy.singleEvent('ModifyPriority', active, null, me, null, null, active.priority);
-			priority = copy.runEvent('ModifyPriority', me, null, active, priority);
+			const priority = priorityOf(me, foes[0], m.id);
 			if (move.flags.charge && me.item !== 'powerherb' && !(sun && ['solarbeam', 'solarblade'].includes(move.id))) {
 				for (let i = 0; i < dmg.length; i++) dmg[i] = Math.floor(dmg[i] / 2);
 			}
@@ -876,7 +918,13 @@ function main() {
 	// With `search.sample`, a turn is still enumerated while that takes no more replays than the
 	// sample would: a 1v1 turn has a handful of outcomes, and sixteen draws of it cost more than
 	// all of them and are less exact. Only a turn past that budget is sampled instead.
-	function outcomes(snap, a, c, nodeKey) {
+	function outcomes(snap, a, c, nodeKey, many = false) {
+		// `sample_only`: a position with more than two Pokémon (`many`) samples at once. Its turns nearly
+		// always pass the budget, and the replays spent finding that out were half a cell's cost; the
+		// exact question that matters, a win forced next turn, is `win_check`'s.
+		if (search.sample && search.sample_only && many) {
+			return sampled(snap, a, c, nodeKey);
+		}
 		const budget = search.sample || Infinity;
 		const start = nodes, droppedBefore = dropped;
 		const found = new Map();
@@ -933,7 +981,7 @@ function main() {
 		if (depth >= search.depth || reach < search.cutoff) {
 			let r = search.race ? race(snap) : null;
 			if (r === null && search.race_doubles) {
-				r = melee(snap, key(battle));
+				r = melee(snap, key(battle), search.fast_race ? battle : null);
 				if (r !== null && search.race_doubles === 'calibrated') r = calibrated(r);
 			}
 			return {v: r === null ? leaf(battle) : r, leaf: 1};
@@ -967,7 +1015,7 @@ function main() {
 			const row = [], lrow = [], vrow = [];
 			for (const c of o2) {
 				let sum = 0, leafSum = 0, mass = 0, sq = 0;
-				const outs = outcomes(snap, a, c, nodeKey);
+				const outs = outcomes(snap, a, c, nodeKey, here[0] + here[1] > 2);
 				for (const o of outs) {
 					// The KO extension: a turn that costs a Pokémon does not use up a turn of the
 					// depth, so a trade is searched on into the smaller position instead of being
