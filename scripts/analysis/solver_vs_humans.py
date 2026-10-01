@@ -58,6 +58,9 @@ DEPTHS = (2, 3)
 # Under this much of the answer resting on HP share, the engine has settled the position rather
 # than guessed it; that subset is the test of best play (PLAN-v3 step 3.6).
 SETTLED = 0.1
+# With --top N, only the heaviest N positions of each game are solved (the page's doubles answer
+# solves three).
+TOP = 0
 EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses scores ~6.9, not inf
 
 
@@ -96,6 +99,11 @@ def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
             # sheet's set pairs is the slow part.
             base = doubles.SEARCH if endgame_kind == "doubles" else solver.SEARCH
             plan = adapter.plan(reg, battle, {**base, **(extra or {}), "depth": depths[0]})
+            if TOP and plan.get("eligible") and len(plan["jobs"]) > TOP:
+                # As the page solves it: the heaviest move orders, their weight renormalized.
+                kept = plan["jobs"][:TOP]
+                w = sum(j["weight"] for j in kept)
+                plan = {**plan, "jobs": [{**j, "weight": j["weight"] / w} for j in kept]}
             if not plan["eligible"]:
                 counts["not_built"] += 1
                 why = plan["reason"] or ""
@@ -255,7 +263,10 @@ def main() -> None:
                     help="the first 1v1, or the first turn with two or fewer a side (2v2, 2v1, 1v2)")
     ap.add_argument("--search", default="{}", help="search settings over the default, as JSON")
     ap.add_argument("--tag", help="written beside the default output as <name>_<tag>.json")
+    ap.add_argument("--top", type=int, default=0, help="solve only each game's heaviest N positions")
     args = ap.parse_args()
+    global TOP
+    TOP = args.top
     reg = load_regulation("reg_mc")
     extra = json.loads(args.search)
     out_path = OUT[(args.endgame, args.sheets)]

@@ -1873,3 +1873,39 @@ for sleep or bad poison, 2 for Revival Blessing). **664 are scored**, 10 with a 
 - So the lever is the horizon for positions with more than one Pokémon a side: a value that
   knows a count lead, as the damage race knows a 1v1. The page keeps leading with the model in
   2v1, 1v2 and 2v2 until it does.
+
+## A horizon that knows a count lead, and a doubles answer within 5 seconds
+
+PLAN-endgame-doubles stages 3 and 4 (2026-10-01), on the same 674 held-out open-sheet games.
+
+**The damage race for more than one Pokémon a side** (`search.race_doubles`): the trade of blows
+played out 64 times with seeded dice, each Pokémon firing the attack that does most towards a KO,
+spread moves into both foes, priority then Speed, a fallen target's attack going to the other
+foe. Alone it ranks positions as the model does (Brier 0.174 against 0.172) but calls 70% of
+games at 95% or more and is right 87% of the time: log loss 0.782. **Calibrated**
+(sigmoid(0.403 · logit(race) − 0.024), fitted on 1,500 training-split games, never the held-out
+ones), a sure race is 0.88, which is how often the side ahead wins a 2v1, and the race alone
+scores log loss 0.473 against the model's 0.513 and Brier 0.152 against 0.172.
+
+**The live answer has 5 seconds**, so the search is a light one: one turn, the two or three
+choices a Pokémon would consider (`prune` 2), eight sampled draws of a wide turn with no attempt to
+enumerate it first, no KO extension, the calibrated race at the horizon. Before it, a check for a
+win either side forces on this very turn: every opposing reply answered, every chance event
+played likeliest first down to 10% of the turn, Protect counted as a delay because its odds fall
+each turn running, and choices that cannot KO every foe at the lowest roll ruled out by a damage
+calculation. Scored exactly as the page runs it (the heaviest three move orders):
+
+| | games | log loss engine / model | engine − model | Brier engine / model | engine − model |
+| --- | --- | --- | --- | --- | --- |
+| all | 674 | **0.421** / 0.513 | −0.092 [−0.144, −0.039], engine better | **0.130** / 0.172 | −0.042 [−0.060, −0.024], engine better |
+| 2v2 | 410 | **0.527** / 0.621 | engine better | **0.169** / 0.217 | engine better |
+| 2v1 | 122 | 0.245 / 0.339 | not distinguishable | 0.064 / 0.102 | not distinguishable |
+| 1v2 | 142 | **0.267** / 0.353 | engine better | **0.074** / 0.102 | engine better |
+
+- It called 169 games at 95% or more and the called side won 96.4%; the model gave that side
+  0.87 on average.
+- It beats the deeper search that waited on Kaggle with an HP-share horizon (log loss 0.486): the
+  horizon mattered more than the depth.
+- Through the page's own path (`solving.request`, warm solver processes, nothing cached), on 60
+  of these games: first answer median 1.2 s, final median 2.3 s, never past 5.1 s; 52 of 60 had
+  every move order searched in time, the rest kept the quick value for the orders that had not.

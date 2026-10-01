@@ -1,7 +1,8 @@
 # The endgame solver beyond 1v1: 2v1, 1v2 and 2v2
 
-_Written 2026-09-30. **Progress (2026-09-30, night):** stages 0 and 1 done; stage 2 built for open
-sheets, closed sheets in progress; stage 3's open-sheet run on Kaggle (674 games, 1,791 positions)._
+_Written 2026-09-30. **Progress (2026-10-01):** stages 0 and 1 done; stage 2 built for open and
+closed sheets; stage 3 done for open sheets (the engine beats the model: log loss 0.421 against
+0.513); stage 4 built for open sheets, answering within 5 s. Closed sheets' check is next._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
@@ -292,7 +293,26 @@ scored by kind on the laptop once merged. Depth 2 waits on what depth 1 shows.
   as in the 1v1. Realistic play is closer to how people play than full best play, but the field
   is ~1100-rated, so each state kind has to earn its place.
 
+**Done for open sheets, 2026-10-01**, in three steps (phase8-findings, "the engine against how
+human doubles endgames end" and "a horizon that knows a count lead"):
+- Depth 1 with the KO extension and HP share at the horizon: better than the model on Brier, not
+  on log loss. HP share gave a 2v1 lead 0.72 where the side ahead wins 88%.
+- So the horizon became a damage race for several Pokémon, calibrated on 1,500 training-split
+  games. Alone it already edges the model.
+- The 5-second budget (below) chose the search: one turn, `prune` 2, eight sampled draws, a
+  forced-win check first. Exactly as the page runs it: log loss 0.421 against 0.513 and Brier 0.130
+  against 0.172, engine better; 2v2s and 1v2s engine better on their own, 2v1s not
+  distinguishable. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`) are now a
+  reference for what more depth would add.
+
 ### 4. The app (1 day, only for what passed)
+
+**Built for open sheets, 2026-10-01.** A live answer has 5 seconds, planning included (the
+user's budget). Warm solver processes (`vgc.wp.pool`, `endgame-solver.js --serve`); a quick
+answer (forced-win check and race) and the one-turn search side by side, each move order's search
+replacing its quick value if it lands in time; the heaviest three move orders. On 60 held-out games
+through the page's own path: first answer median 1.2 s, final median 2.3 s, never past 5.1 s.
+Closed sheets wait on their check.
 
 - The engine's row appears in 2v1, 1v2 and 2v2 for the state kinds that passed.
 - It shows the depth, the leaf mass, "realistic play, k choices a Pokémon", and the unsolved mass

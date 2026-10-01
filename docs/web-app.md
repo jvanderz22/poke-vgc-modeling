@@ -221,7 +221,7 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/simulate` | Two teams → one seeded battle, narrated turn by turn with spectator WP |
 | `GET /api/endgames` | The decided-endgame set: games, criteria, what they were drawn from, gate verdicts. `only=all\|played_out\|misses` |
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
-| `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes) |
+| `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), and any forced win |
 
 ### Watching someone else's game
 
@@ -249,6 +249,23 @@ numbers are more than 20 points apart, the page says so. On a closed sheet the
 engine solves their three likeliest sets, weighted by what the battle's turn order allows, and
 says how much of the belief was left unsolved. Positions it cannot set up (Substitute, Encore,
 sleep, bad poison) say so instead.
+
+### The engine's answer with two or fewer a side
+
+Once neither side has more than two Pokémon left (a 2v2, 2v1 or 1v2) on open sheets, the Battle
+page leads with the engine there too (`vgc.wp.doubles`, `vgc.web.solving`). It has 5 seconds:
+
+- **At once** (about a second): a check for a win either side can force on this very turn, against
+  every reply and through Protect, and otherwise a damage race between what is left, calibrated on
+  past games. The page says "quick read".
+- **Then**, side by side, a one-turn search over the two or three choices a Pokémon would consider,
+  with the race past it. Each move order it finishes within 5 seconds replaces its quick value, and
+  the page says "searched one turn".
+
+The heaviest three move orders are solved and the rest is reported as unsolved. A forced win is
+named, with its odds when a crit or a flinch is the only way out. On 674 held-out open-sheet games
+this answer predicted the winner better than the model: log loss 0.421 against 0.513 (phase8-findings,
+"a horizon that knows a count lead"). With a closed sheet the page says it is not checked yet.
 
 Validation is recomputed whenever a team is saved and never trusted from the file: the
 regulation's legality snapshot can change under a team that was legal when it was written.
