@@ -199,8 +199,13 @@ function slotOptions(b, side, slot) {
 	if (!p || p.fainted || !req.active[slot]) return ['pass'];
 	const foes = b.sides[1 - side.n].active.map((q, i) => (q && !q.fainted ? i : -1)).filter(i => i >= 0);
 	const out = [];
+	// A move Imprison blocks is disabled 'hidden': the last Pokémon a side has is shown it as
+	// usable, and the simulator refuses it when chosen. A player would be told and choose again,
+	// so it is no choice at all. With every move blocked, any choice is Struggle.
+	const hidden = new Set(p.moveSlots.filter(s => s.disabled === 'hidden').map(s => s.id));
+	if (req.active[slot].moves.every(m => m.disabled || hidden.has(m.id))) return ['move 1'];
 	req.active[slot].moves.forEach((m, i) => {
-		if (m.disabled) return;
+		if (m.disabled || hidden.has(m.id)) return;
 		if (['normal', 'any', 'adjacentFoe'].includes(m.target) && foes.length) {
 			for (const f of foes) out.push(`move ${i + 1} ${f + 1}`);
 		} else if (m.target === 'adjacentAlly') {
