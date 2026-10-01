@@ -1,8 +1,9 @@
 # The endgame solver beyond 1v1: 2v1, 1v2 and 2v2
 
 _Written 2026-09-30. **Progress (2026-10-01):** stages 0 and 1 done; stage 2 built for open and
-closed sheets; stage 3 done for open sheets (the engine beats the model: log loss 0.421 against
-0.513); stage 4 built for open sheets, answering within 5 s. Closed sheets' check is next._
+closed sheets; stage 3 done for both (open: the engine beats the model, log loss 0.421 against
+0.513; closed: better on Brier only, and in 2v1s on both); stage 4 built for open sheets, answering
+within 5 s. Next: closed-sheet 2v1s on the page, and a tighter closed-sheet belief._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
@@ -305,6 +306,16 @@ human doubles endgames end" and "a horizon that knows a count lead"):
   distinguishable. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`) are now a
   reference for what more depth would add.
 
+**Closed sheets, 2026-10-01** (phase8-findings, "the live doubles answer on closed sheets"). The
+live configuration on 349 held-out closed-sheet games, after fixing the set belief's reading of a
+Mega's ability (55 games had had no set to solve):
+- all: Brier 0.146 against 0.182, engine better; log loss 0.474 against 0.540, not
+  distinguishable;
+- 2v1: engine better on both (log loss 0.253 against 0.467); 2v2 and 1v2: not distinguishable.
+- So by this stage's rule only closed-sheet 2v1s pass. The answers average over guessed sets and
+  the three positions solved carry little of the belief; what would help most is a belief that
+  concentrates (sets grouped by what changes the fight), then the check again.
+
 ### 4. The app (1 day, only for what passed)
 
 **Built for open sheets, 2026-10-01.** A live answer has 5 seconds, planning included (the
@@ -312,7 +323,9 @@ user's budget). Warm solver processes (`vgc.wp.pool`, `endgame-solver.js --serve
 answer (forced-win check and race) and the one-turn search side by side, each move order's search
 replacing its quick value if it lands in time; the heaviest three move orders. On 60 held-out games
 through the page's own path: first answer median 1.2 s, final median 2.3 s, never past 5.1 s.
-Closed sheets wait on their check.
+Closed sheets: only 2v1s passed their check, and the page does not show them yet; the next step
+is to show closed-sheet 2v1s (the side with two left on a closed sheet) and keep the model leading
+in closed 2v2s and 1v2s.
 
 - The engine's row appears in 2v1, 1v2 and 2v2 for the state kinds that passed.
 - It shows the depth, the leaf mass, "realistic play, k choices a Pokémon", and the unsolved mass

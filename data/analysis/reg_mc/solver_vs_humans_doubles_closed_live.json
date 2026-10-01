@@ -3,22 +3,13 @@
   "heldout_human": 1025,
   "sheets": "closed",
   "no_1v1": 612,
-  "not_built": 113,
+  "not_built": 64,
   "unfinished": 0,
-  "games": 300,
+  "games": 349,
   "dropped": {
    "a volatile": 24,
    "not shown": 9,
-   "no set anybody has brought fits Floette-Eternal": 17,
-   "no combination of likely sets fits the turn order logged": 25,
-   "no set anybody has brought fits Charizard": 19,
-   "no set anybody has brought fits Drampa": 1,
-   "no set anybody has brought fits Gardevoir": 5,
-   "no set anybody has brought fits Froslass": 7,
-   "no set anybody has brought fits Dragalge": 1,
-   "no set anybody has brought fits Raichu": 2,
-   "no set anybody has brought fits Ampharos": 1,
-   "no set anybody has brought fits Manectric": 1,
+   "no combination of likely sets fits the turn order logged": 30,
    "no set anybody has brought fits Tyrantrum": 1
   },
   "version": "wp-v1d-sw-split-small",
@@ -40,26 +31,26 @@
  },
  "result": {
   "all": {
-   "games": 300,
-   "groups": 297,
+   "games": 349,
+   "groups": 345,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1464,
-    "model": 0.1871,
-    "engine_minus_model": -0.0407,
+    "engine": 0.1461,
+    "model": 0.1816,
+    "engine_minus_model": -0.0354,
     "ci95": [
-     -0.0702,
-     -0.0128
+     -0.0605,
+     -0.01
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.4797,
-    "model": 0.5554,
-    "engine_minus_model": -0.0757,
+    "engine": 0.4744,
+    "model": 0.5402,
+    "engine_minus_model": -0.0659,
     "ci95": [
-     -0.1677,
-     0.0205
+     -0.1433,
+     0.0174
     ],
     "verdict": "not distinguishable"
    },
@@ -78,36 +69,36 @@
       0.05,
       0.35
      ],
-     "n": 94,
-     "mean_pred": 0.166,
-     "p1_won": 0.17
+     "n": 115,
+     "mean_pred": 0.164,
+     "p1_won": 0.148
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 43,
-     "mean_pred": 0.523,
-     "p1_won": 0.512
+     "n": 55,
+     "mean_pred": 0.514,
+     "p1_won": 0.473
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 105,
-     "mean_pred": 0.83,
-     "p1_won": 0.79
+     "n": 118,
+     "mean_pred": 0.828,
+     "p1_won": 0.78
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 37,
-     "mean_pred": 0.988,
-     "p1_won": 0.919
+     "n": 40,
+     "mean_pred": 0.989,
+     "p1_won": 0.925
     }
    ],
    "calibration_model": [
@@ -116,78 +107,78 @@
       0,
       0.05
      ],
-     "n": 9,
-     "mean_pred": 0.035,
-     "p1_won": 0.111
+     "n": 11,
+     "mean_pred": 0.034,
+     "p1_won": 0.091
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 83,
-     "mean_pred": 0.193,
-     "p1_won": 0.241
+     "n": 97,
+     "mean_pred": 0.196,
+     "p1_won": 0.206
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 109,
-     "mean_pred": 0.494,
-     "p1_won": 0.514
+     "n": 127,
+     "mean_pred": 0.495,
+     "p1_won": 0.472
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 83,
-     "mean_pred": 0.807,
-     "p1_won": 0.783
+     "n": 97,
+     "mean_pred": 0.805,
+     "p1_won": 0.794
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 16,
+     "n": 17,
      "mean_pred": 0.969,
-     "p1_won": 0.875
+     "p1_won": 0.882
     }
    ],
    "engine_called": {
-    "n": 58,
-    "called_side_won": 0.931,
-    "model_mean_on_called_side": 0.839
+    "n": 61,
+    "called_side_won": 0.934,
+    "model_mean_on_called_side": 0.842
    },
    "depths": {
-    "1": 300
+    "1": 349
    },
-   "mean_leaf_mass": 0.787
+   "mean_leaf_mass": 0.8019
   },
   "settled": {
-   "games": 42,
-   "groups": 42,
+   "games": 45,
+   "groups": 45,
    "unsolved": 0,
    "brier": {
-    "engine": 0.0459,
-    "model": 0.0597,
-    "engine_minus_model": -0.0139,
+    "engine": 0.0428,
+    "model": 0.0569,
+    "engine_minus_model": -0.0141,
     "ci95": [
-     -0.0567,
-     0.0294
+     -0.0538,
+     0.0284
     ],
     "verdict": "not distinguishable"
    },
    "logloss": {
-    "engine": 0.2439,
-    "model": 0.218,
-    "engine_minus_model": 0.0259,
+    "engine": 0.2278,
+    "model": 0.2107,
+    "engine_minus_model": 0.0171,
     "ci95": [
-     -0.2017,
-     0.3599
+     -0.1948,
+     0.3485
     ],
     "verdict": "not distinguishable"
    },
@@ -206,9 +197,9 @@
       0.95,
       1
      ],
-     "n": 25,
+     "n": 28,
      "mean_pred": 0.998,
-     "p1_won": 0.96
+     "p1_won": 0.964
     }
    ],
    "calibration_model": [
@@ -244,51 +235,51 @@
       0.65,
       0.95
      ],
-     "n": 17,
-     "mean_pred": 0.851,
-     "p1_won": 0.941
+     "n": 19,
+     "mean_pred": 0.852,
+     "p1_won": 0.947
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 6,
-     "mean_pred": 0.969,
+     "n": 7,
+     "mean_pred": 0.97,
      "p1_won": 1.0
     }
    ],
    "engine_called": {
-    "n": 42,
-    "called_side_won": 0.952,
-    "model_mean_on_called_side": 0.854
+    "n": 45,
+    "called_side_won": 0.956,
+    "model_mean_on_called_side": 0.857
    },
    "depths": {
-    "1": 42
+    "1": 45
    },
-   "mean_leaf_mass": 0.0081
+   "mean_leaf_mass": 0.0087
   },
   "unsettled": {
-   "games": 258,
-   "groups": 257,
+   "games": 304,
+   "groups": 303,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1628,
-    "model": 0.2079,
-    "engine_minus_model": -0.0451,
+    "engine": 0.1614,
+    "model": 0.2,
+    "engine_minus_model": -0.0386,
     "ci95": [
-     -0.0781,
-     -0.0116
+     -0.0684,
+     -0.0096
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.5181,
-    "model": 0.6103,
-    "engine_minus_model": -0.0922,
+    "engine": 0.5109,
+    "model": 0.589,
+    "engine_minus_model": -0.0781,
     "ci95": [
-     -0.188,
-     0.0073
+     -0.1632,
+     0.0072
     ],
     "verdict": "not distinguishable"
    },
@@ -307,27 +298,27 @@
       0.05,
       0.35
      ],
-     "n": 94,
-     "mean_pred": 0.166,
-     "p1_won": 0.17
+     "n": 115,
+     "mean_pred": 0.164,
+     "p1_won": 0.148
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 43,
-     "mean_pred": 0.523,
-     "p1_won": 0.512
+     "n": 55,
+     "mean_pred": 0.514,
+     "p1_won": 0.473
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 105,
-     "mean_pred": 0.83,
-     "p1_won": 0.79
+     "n": 118,
+     "mean_pred": 0.828,
+     "p1_won": 0.78
     },
     {
      "bin": [
@@ -345,36 +336,36 @@
       0,
       0.05
      ],
-     "n": 4,
-     "mean_pred": 0.043,
-     "p1_won": 0.25
+     "n": 6,
+     "mean_pred": 0.038,
+     "p1_won": 0.167
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 71,
-     "mean_pred": 0.198,
-     "p1_won": 0.254
+     "n": 85,
+     "mean_pred": 0.201,
+     "p1_won": 0.212
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 107,
-     "mean_pred": 0.493,
-     "p1_won": 0.514
+     "n": 125,
+     "mean_pred": 0.495,
+     "p1_won": 0.472
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 66,
-     "mean_pred": 0.796,
-     "p1_won": 0.742
+     "n": 78,
+     "mean_pred": 0.794,
+     "p1_won": 0.756
     },
     {
      "bin": [
@@ -392,31 +383,31 @@
     "model_mean_on_called_side": 0.8
    },
    "depths": {
-    "1": 258
+    "1": 304
    },
-   "mean_leaf_mass": 0.9138
+   "mean_leaf_mass": 0.9194
   },
   "played_out": {
-   "games": 249,
-   "groups": 247,
+   "games": 283,
+   "groups": 280,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1507,
-    "model": 0.1857,
-    "engine_minus_model": -0.035,
+    "engine": 0.1496,
+    "model": 0.1814,
+    "engine_minus_model": -0.0318,
     "ci95": [
-     -0.068,
-     -0.0023
+     -0.0604,
+     -0.0026
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.4938,
-    "model": 0.5547,
-    "engine_minus_model": -0.0608,
+    "engine": 0.4866,
+    "model": 0.5422,
+    "engine_minus_model": -0.0556,
     "ci95": [
-     -0.1639,
-     0.0553
+     -0.1457,
+     0.0463
     ],
     "verdict": "not distinguishable"
    },
@@ -435,36 +426,36 @@
       0.05,
       0.35
      ],
-     "n": 79,
-     "mean_pred": 0.169,
-     "p1_won": 0.177
+     "n": 95,
+     "mean_pred": 0.168,
+     "p1_won": 0.158
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 35,
-     "mean_pred": 0.525,
-     "p1_won": 0.514
+     "n": 43,
+     "mean_pred": 0.517,
+     "p1_won": 0.488
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 84,
-     "mean_pred": 0.828,
-     "p1_won": 0.774
+     "n": 92,
+     "mean_pred": 0.826,
+     "p1_won": 0.761
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 33,
-     "mean_pred": 0.989,
-     "p1_won": 0.909
+     "n": 35,
+     "mean_pred": 0.99,
+     "p1_won": 0.914
     }
    ],
    "calibration_model": [
@@ -473,78 +464,78 @@
       0,
       0.05
      ],
-     "n": 8,
-     "mean_pred": 0.037,
-     "p1_won": 0.125
+     "n": 9,
+     "mean_pred": 0.036,
+     "p1_won": 0.111
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 69,
-     "mean_pred": 0.193,
-     "p1_won": 0.232
+     "n": 80,
+     "mean_pred": 0.194,
+     "p1_won": 0.2
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 90,
-     "mean_pred": 0.487,
-     "p1_won": 0.5
+     "n": 101,
+     "mean_pred": 0.492,
+     "p1_won": 0.465
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 68,
-     "mean_pred": 0.81,
-     "p1_won": 0.794
+     "n": 78,
+     "mean_pred": 0.807,
+     "p1_won": 0.795
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 14,
-     "mean_pred": 0.969,
-     "p1_won": 0.857
+     "n": 15,
+     "mean_pred": 0.97,
+     "p1_won": 0.867
     }
    ],
    "engine_called": {
-    "n": 51,
-    "called_side_won": 0.922,
-    "model_mean_on_called_side": 0.825
+    "n": 53,
+    "called_side_won": 0.925,
+    "model_mean_on_called_side": 0.827
    },
    "depths": {
-    "1": 249
+    "1": 283
    },
-   "mean_leaf_mass": 0.7747
+   "mean_leaf_mass": 0.7915
   },
   "forfeit": {
-   "games": 51,
-   "groups": 51,
+   "games": 66,
+   "groups": 66,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1255,
-    "model": 0.1941,
-    "engine_minus_model": -0.0686,
+    "engine": 0.1312,
+    "model": 0.1822,
+    "engine_minus_model": -0.051,
     "ci95": [
-     -0.134,
-     -0.0016
+     -0.1085,
+     0.0088
     ],
-    "verdict": "engine better"
+    "verdict": "not distinguishable"
    },
    "logloss": {
-    "engine": 0.4106,
-    "model": 0.5588,
-    "engine_minus_model": -0.1482,
+    "engine": 0.4218,
+    "model": 0.5318,
+    "engine_minus_model": -0.11,
     "ci95": [
-     -0.3109,
-     0.0301
+     -0.2564,
+     0.0469
     ],
     "verdict": "not distinguishable"
    },
@@ -563,35 +554,35 @@
       0.05,
       0.35
      ],
-     "n": 15,
-     "mean_pred": 0.151,
-     "p1_won": 0.133
+     "n": 20,
+     "mean_pred": 0.143,
+     "p1_won": 0.1
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 8,
-     "mean_pred": 0.514,
-     "p1_won": 0.5
+     "n": 12,
+     "mean_pred": 0.503,
+     "p1_won": 0.417
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 21,
-     "mean_pred": 0.84,
-     "p1_won": 0.857
+     "n": 26,
+     "mean_pred": 0.833,
+     "p1_won": 0.846
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 4,
-     "mean_pred": 0.979,
+     "n": 5,
+     "mean_pred": 0.983,
      "p1_won": 1.0
     }
    ],
@@ -601,8 +592,8 @@
       0,
       0.05
      ],
-     "n": 1,
-     "mean_pred": 0.023,
+     "n": 2,
+     "mean_pred": 0.027,
      "p1_won": 0.0
     },
     {
@@ -610,27 +601,27 @@
       0.05,
       0.35
      ],
-     "n": 14,
-     "mean_pred": 0.194,
-     "p1_won": 0.286
+     "n": 17,
+     "mean_pred": 0.21,
+     "p1_won": 0.235
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 19,
-     "mean_pred": 0.523,
-     "p1_won": 0.579
+     "n": 26,
+     "mean_pred": 0.507,
+     "p1_won": 0.5
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 15,
-     "mean_pred": 0.794,
-     "p1_won": 0.733
+     "n": 19,
+     "mean_pred": 0.799,
+     "p1_won": 0.789
     },
     {
      "bin": [
@@ -643,36 +634,36 @@
     }
    ],
    "engine_called": {
-    "n": 7,
+    "n": 8,
     "called_side_won": 1.0,
     "model_mean_on_called_side": 0.94
    },
    "depths": {
-    "1": 51
+    "1": 66
    },
-   "mean_leaf_mass": 0.8468
+   "mean_leaf_mass": 0.8465
   },
   "2v2": {
-   "games": 180,
-   "groups": 179,
+   "games": 214,
+   "groups": 213,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1808,
-    "model": 0.2244,
-    "engine_minus_model": -0.0437,
+    "engine": 0.1836,
+    "model": 0.2194,
+    "engine_minus_model": -0.0358,
     "ci95": [
-     -0.0838,
-     -0.005
+     -0.0707,
+     0.001
     ],
-    "verdict": "engine better"
+    "verdict": "not distinguishable"
    },
    "logloss": {
-    "engine": 0.5508,
-    "model": 0.6398,
-    "engine_minus_model": -0.0891,
+    "engine": 0.5549,
+    "model": 0.6276,
+    "engine_minus_model": -0.0727,
     "ci95": [
-     -0.1885,
-     0.0087
+     -0.1582,
+     0.0185
     ],
     "verdict": "not distinguishable"
    },
@@ -691,27 +682,27 @@
       0.05,
       0.35
      ],
-     "n": 61,
-     "mean_pred": 0.175,
-     "p1_won": 0.23
+     "n": 73,
+     "mean_pred": 0.173,
+     "p1_won": 0.205
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 32,
-     "mean_pred": 0.511,
-     "p1_won": 0.562
+     "n": 44,
+     "mean_pred": 0.503,
+     "p1_won": 0.5
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 83,
-     "mean_pred": 0.825,
-     "p1_won": 0.783
+     "n": 93,
+     "mean_pred": 0.824,
+     "p1_won": 0.763
     },
     {
      "bin": [
@@ -729,27 +720,27 @@
       0.05,
       0.35
      ],
-     "n": 39,
-     "mean_pred": 0.233,
-     "p1_won": 0.359
+     "n": 47,
+     "mean_pred": 0.236,
+     "p1_won": 0.298
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 102,
-     "mean_pred": 0.495,
-     "p1_won": 0.529
+     "n": 119,
+     "mean_pred": 0.496,
+     "p1_won": 0.487
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 39,
-     "mean_pred": 0.763,
-     "p1_won": 0.769
+     "n": 48,
+     "mean_pred": 0.76,
+     "p1_won": 0.771
     }
    ],
    "engine_called": {
@@ -758,31 +749,31 @@
     "model_mean_on_called_side": 0.668
    },
    "depths": {
-    "1": 180
+    "1": 214
    },
-   "mean_leaf_mass": 0.9573
+   "mean_leaf_mass": 0.9539
   },
   "2v1": {
-   "games": 63,
-   "groups": 63,
+   "games": 70,
+   "groups": 70,
    "unsolved": 0,
    "brier": {
-    "engine": 0.0842,
-    "model": 0.1561,
-    "engine_minus_model": -0.0719,
+    "engine": 0.078,
+    "model": 0.1471,
+    "engine_minus_model": -0.0691,
     "ci95": [
-     -0.1294,
-     -0.0169
+     -0.1242,
+     -0.0188
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.268,
-    "model": 0.4936,
-    "engine_minus_model": -0.2257,
+    "engine": 0.2526,
+    "model": 0.4668,
+    "engine_minus_model": -0.2142,
     "ci95": [
-     -0.3977,
-     -0.053
+     -0.3817,
+     -0.0593
     ],
     "verdict": "engine better"
    },
@@ -792,8 +783,8 @@
       0.05,
       0.35
      ],
-     "n": 4,
-     "mean_pred": 0.212,
+     "n": 5,
+     "mean_pred": 0.194,
      "p1_won": 0.0
     },
     {
@@ -810,18 +801,18 @@
       0.65,
       0.95
      ],
-     "n": 19,
-     "mean_pred": 0.854,
-     "p1_won": 0.842
+     "n": 22,
+     "mean_pred": 0.847,
+     "p1_won": 0.864
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 34,
+     "n": 37,
      "mean_pred": 0.99,
-     "p1_won": 0.971
+     "p1_won": 0.973
     }
    ],
    "calibration_model": [
@@ -839,60 +830,60 @@
       0.35,
       0.65
      ],
-     "n": 2,
+     "n": 3,
      "mean_pred": 0.609,
-     "p1_won": 0.5
+     "p1_won": 0.333
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 43,
-     "mean_pred": 0.848,
-     "p1_won": 0.791
+     "n": 48,
+     "mean_pred": 0.852,
+     "p1_won": 0.812
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 16,
+     "n": 17,
      "mean_pred": 0.969,
-     "p1_won": 0.875
+     "p1_won": 0.882
     }
    ],
    "engine_called": {
-    "n": 34,
-    "called_side_won": 0.971,
-    "model_mean_on_called_side": 0.863
+    "n": 37,
+    "called_side_won": 0.973,
+    "model_mean_on_called_side": 0.866
    },
    "depths": {
-    "1": 63
+    "1": 70
    },
-   "mean_leaf_mass": 0.4471
+   "mean_leaf_mass": 0.4603
   },
   "1v2": {
-   "games": 57,
-   "groups": 57,
+   "games": 65,
+   "groups": 65,
    "unsolved": 0,
    "brier": {
-    "engine": 0.1067,
-    "model": 0.1035,
-    "engine_minus_model": 0.0032,
+    "engine": 0.0964,
+    "model": 0.0943,
+    "engine_minus_model": 0.0021,
     "ci95": [
-     -0.0547,
-     0.0649
+     -0.0476,
+     0.0572
     ],
     "verdict": "not distinguishable"
    },
    "logloss": {
-    "engine": 0.4893,
-    "model": 0.3569,
-    "engine_minus_model": 0.1324,
+    "engine": 0.4481,
+    "model": 0.3316,
+    "engine_minus_model": 0.1165,
     "ci95": [
-     -0.1467,
-     0.4996
+     -0.1279,
+     0.4318
     ],
     "verdict": "not distinguishable"
    },
@@ -911,9 +902,9 @@
       0.05,
       0.35
      ],
-     "n": 29,
+     "n": 37,
      "mean_pred": 0.142,
-     "p1_won": 0.069
+     "p1_won": 0.054
     },
     {
      "bin": [
@@ -949,18 +940,18 @@
       0,
       0.05
      ],
-     "n": 9,
-     "mean_pred": 0.035,
-     "p1_won": 0.111
+     "n": 11,
+     "mean_pred": 0.034,
+     "p1_won": 0.091
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 42,
-     "mean_pred": 0.153,
-     "p1_won": 0.119
+     "n": 48,
+     "mean_pred": 0.155,
+     "p1_won": 0.104
     },
     {
      "bin": [
@@ -987,35 +978,44 @@
     "model_mean_on_called_side": 0.833
    },
    "depths": {
-    "1": 57
+    "1": 65
    },
-   "mean_leaf_mass": 0.6246
+   "mean_leaf_mass": 0.6696
   },
   "covered": {
-   "games": 1,
-   "groups": 1,
+   "games": 2,
+   "groups": 2,
    "unsolved": 0,
    "brier": {
-    "engine": 0.0138,
-    "model": 0.0588,
-    "engine_minus_model": -0.045,
+    "engine": 0.0143,
+    "model": 0.0774,
+    "engine_minus_model": -0.0631,
     "ci95": [
-     -0.045,
+     -0.0811,
      -0.045
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.1248,
-    "model": 0.2777,
-    "engine_minus_model": -0.153,
+    "engine": 0.1273,
+    "model": 0.3242,
+    "engine_minus_model": -0.1969,
     "ci95": [
-     -0.153,
+     -0.2409,
      -0.153
     ],
     "verdict": "engine better"
    },
    "calibration_engine": [
+    {
+     "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 1,
+     "mean_pred": 0.122,
+     "p1_won": 0.0
+    },
     {
      "bin": [
       0.65,
@@ -1029,6 +1029,15 @@
    "calibration_model": [
     {
      "bin": [
+      0.05,
+      0.35
+     ],
+     "n": 1,
+     "mean_pred": 0.31,
+     "p1_won": 0.0
+    },
+    {
+     "bin": [
       0.65,
       0.95
      ],
@@ -1038,31 +1047,31 @@
     }
    ],
    "depths": {
-    "1": 1
+    "1": 2
    },
-   "mean_leaf_mass": 0.8917
+   "mean_leaf_mass": 0.9459
   },
   "partly_covered": {
-   "games": 299,
-   "groups": 296,
+   "games": 347,
+   "groups": 343,
    "unsolved": 0,
    "brier": {
     "engine": 0.1469,
-    "model": 0.1876,
-    "engine_minus_model": -0.0407,
+    "model": 0.1822,
+    "engine_minus_model": -0.0353,
     "ci95": [
-     -0.0701,
-     -0.0116
+     -0.0614,
+     -0.0096
     ],
     "verdict": "engine better"
    },
    "logloss": {
-    "engine": 0.4809,
-    "model": 0.5563,
-    "engine_minus_model": -0.0754,
+    "engine": 0.4764,
+    "model": 0.5415,
+    "engine_minus_model": -0.0651,
     "ci95": [
-     -0.1667,
-     0.022
+     -0.1478,
+     0.0235
     ],
     "verdict": "not distinguishable"
    },
@@ -1081,36 +1090,36 @@
       0.05,
       0.35
      ],
-     "n": 94,
-     "mean_pred": 0.166,
-     "p1_won": 0.17
+     "n": 114,
+     "mean_pred": 0.164,
+     "p1_won": 0.149
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 43,
-     "mean_pred": 0.523,
-     "p1_won": 0.512
+     "n": 55,
+     "mean_pred": 0.514,
+     "p1_won": 0.473
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 104,
-     "mean_pred": 0.83,
-     "p1_won": 0.788
+     "n": 117,
+     "mean_pred": 0.827,
+     "p1_won": 0.778
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 37,
-     "mean_pred": 0.988,
-     "p1_won": 0.919
+     "n": 40,
+     "mean_pred": 0.989,
+     "p1_won": 0.925
     }
    ],
    "calibration_model": [
@@ -1119,56 +1128,56 @@
       0,
       0.05
      ],
-     "n": 9,
-     "mean_pred": 0.035,
-     "p1_won": 0.111
+     "n": 11,
+     "mean_pred": 0.034,
+     "p1_won": 0.091
     },
     {
      "bin": [
       0.05,
       0.35
      ],
-     "n": 83,
-     "mean_pred": 0.193,
-     "p1_won": 0.241
+     "n": 96,
+     "mean_pred": 0.195,
+     "p1_won": 0.208
     },
     {
      "bin": [
       0.35,
       0.65
      ],
-     "n": 109,
-     "mean_pred": 0.494,
-     "p1_won": 0.514
+     "n": 127,
+     "mean_pred": 0.495,
+     "p1_won": 0.472
     },
     {
      "bin": [
       0.65,
       0.95
      ],
-     "n": 82,
-     "mean_pred": 0.808,
-     "p1_won": 0.78
+     "n": 96,
+     "mean_pred": 0.806,
+     "p1_won": 0.792
     },
     {
      "bin": [
       0.95,
       1
      ],
-     "n": 16,
+     "n": 17,
      "mean_pred": 0.969,
-     "p1_won": 0.875
+     "p1_won": 0.882
     }
    ],
    "engine_called": {
-    "n": 58,
-    "called_side_won": 0.931,
-    "model_mean_on_called_side": 0.839
+    "n": 61,
+    "called_side_won": 0.934,
+    "model_mean_on_called_side": 0.842
    },
    "depths": {
-    "1": 299
+    "1": 347
    },
-   "mean_leaf_mass": 0.7866
+   "mean_leaf_mass": 0.8011
   }
  },
  "cap": 60.0,
@@ -1358,7 +1367,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.7719,
+   "unsolved": 0.7739,
    "engine": 0.873,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -1483,7 +1492,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.7426,
+   "unsolved": 0.7429,
    "engine": 0.1364,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -1689,7 +1698,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.8112,
+   "unsolved": 0.8134,
    "engine": 0.9524,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -1813,7 +1822,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9442,
+   "unsolved": 0.9448,
    "engine": 0.0503,
    "leaf_mass": 0.4131,
    "depth": 1,
@@ -1896,7 +1905,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.8718,
+   "unsolved": 0.8729,
    "engine": 0.873,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -2145,7 +2154,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.686,
+   "unsolved": 0.7167,
    "engine": 0.2655,
    "leaf_mass": 0.8706,
    "depth": 1,
@@ -2353,7 +2362,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9853,
+   "unsolved": 0.9854,
    "engine": 0.1473,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -2518,7 +2527,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.9229,
+   "unsolved": 0.9236,
    "engine": 0.9871,
    "leaf_mass": 0.1016,
    "depth": 1,
@@ -2559,7 +2568,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.7806,
+   "unsolved": 0.9127,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -2567,17 +2576,17 @@
     "1": [
      {
       "class": "p2b>p2a>p1a",
-      "weight": 0.5385,
+      "weight": 0.5185,
       "value": 0.1217
      },
      {
       "class": "p2b>p2a>p1a",
-      "weight": 0.2308,
+      "weight": 0.2593,
       "value": 0.1217
      },
      {
       "class": "p2b>p2a>p1a",
-      "weight": 0.2308,
+      "weight": 0.2222,
       "value": 0.1217
      }
     ]
@@ -2708,6 +2717,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2678853474",
+   "group": "47232f602fc8",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.4646,
+   "mons": {
+    "p1": [
+     "Sneasler",
+     "Golisopod"
+    ],
+    "p2": [
+     "Floette-Eternal",
+     "Incineroar"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9773,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.3639,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.3194,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.3167,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2678855414",
    "group": "e0176e3df17a",
    "turn": 5,
@@ -2826,6 +2877,47 @@
       "class": "p2a>p1b>p1a",
       "weight": 0.1216,
       "value": 0.9998
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2678892072",
+   "group": "abca74bff0e5",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0656,
+   "mons": {
+    "p1": [
+     "Dragonite"
+    ],
+    "p2": [
+     "Charizard",
+     "Sneasler"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.8983,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.4027,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.3109,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.2865,
+      "value": 0.1217
      }
     ]
    }
@@ -2971,25 +3063,25 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9355,
-   "engine": 0.606,
+   "unsolved": 0.9487,
+   "engine": 0.4782,
    "leaf_mass": 1.0,
    "depth": 1,
    "positions": {
     "1": [
      {
       "class": "p2a>p2b>p1a>p1b",
-      "weight": 0.5183,
+      "weight": 0.3952,
       "value": 0.5321
      },
      {
       "class": "p2a>p2b>p1a>p1b",
-      "weight": 0.2814,
-      "value": 0.552
+      "weight": 0.3463,
+      "value": 0.1217
      },
      {
       "class": "p2a>p1a>p2b>p1b",
-      "weight": 0.2003,
+      "weight": 0.2586,
       "value": 0.873
      }
     ]
@@ -3012,7 +3104,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.8137,
+   "unsolved": 0.8171,
    "engine": 0.9997,
    "leaf_mass": 0.0026,
    "depth": 1,
@@ -3096,7 +3188,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7915,
+   "unsolved": 0.7966,
    "engine": 0.456,
    "leaf_mass": 0.6546,
    "depth": 1,
@@ -3180,7 +3272,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7859,
+   "unsolved": 0.7879,
    "engine": 0.873,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -3330,6 +3422,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2679144316",
+   "group": "d72bf94486bc",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.6958,
+   "mons": {
+    "p1": [
+     "Incineroar",
+     "Baxcalibur"
+    ],
+    "p2": [
+     "Drampa",
+     "Torkoal"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9643,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.367,
+      "value": 0.873
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.3357,
+      "value": 0.873
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.2972,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2679152359",
    "group": "2de6701c748c",
    "turn": 8,
@@ -3387,7 +3521,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.6908,
+   "unsolved": 0.6934,
    "engine": 0.2573,
    "leaf_mass": 0.9147,
    "depth": 1,
@@ -3512,7 +3646,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9177,
+   "unsolved": 0.9185,
    "engine": 0.5994,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -3637,7 +3771,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9421,
+   "unsolved": 0.9431,
    "engine": 0.8235,
    "leaf_mass": 0.9999,
    "depth": 1,
@@ -3679,7 +3813,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9927,
+   "unsolved": 0.9928,
    "engine": 0.5953,
    "leaf_mass": 0.9868,
    "depth": 1,
@@ -3929,7 +4063,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.973,
+   "unsolved": 0.9733,
    "engine": 0.4074,
    "leaf_mass": 0.4291,
    "depth": 1,
@@ -4414,6 +4548,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2679643462",
+   "group": "6f0afe36ec88",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.5157,
+   "mons": {
+    "p1": [
+     "Vanilluxe",
+     "Farigiraf"
+    ],
+    "p2": [
+     "Blastoise",
+     "Gardevoir"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.6466,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.5289,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3555,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.1157,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2679643490",
    "group": "352b5dba15df",
    "turn": 8,
@@ -4515,7 +4691,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.6997,
+   "unsolved": 0.7025,
    "engine": 0.873,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -4872,6 +5048,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2679797690",
+   "group": "93b24ad70f00",
+   "turn": 7,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.9348,
+   "mons": {
+    "p1": [
+     "Raichu",
+     "Incineroar"
+    ],
+    "p2": [
+     "Charizard"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.789,
+   "engine": 0.6752,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.4268,
+      "value": 0.6752
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.3036,
+      "value": 0.6752
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.2696,
+      "value": 0.6752
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2679872478",
    "group": "5ca9b0ad81d5",
    "turn": 3,
@@ -4998,6 +5215,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2679954670",
+   "group": "0aea592d896c",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3097,
+   "mons": {
+    "p1": [
+     "Charizard"
+    ],
+    "p2": [
+     "Ceruledge",
+     "Dragapult"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.1044,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.5455,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.3841,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.0704,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2679958186",
    "group": "6ddb40458bca",
    "turn": 5,
@@ -5057,7 +5315,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7259,
+   "unsolved": 0.7283,
    "engine": 0.873,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -5456,6 +5714,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2680186817",
+   "group": "cd14c92328fa",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1219,
+   "mons": {
+    "p1": [
+     "Farigiraf",
+     "Charizard"
+    ],
+    "p2": [
+     "Charizard",
+     "Whimsicott"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9718,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.3578,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.3543,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.2879,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2680193617",
    "group": "c617df1b097f",
    "turn": 6,
@@ -5473,7 +5773,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9947,
+   "unsolved": 0.9948,
    "engine": 0.8175,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -5598,7 +5898,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.6679,
+   "unsolved": 0.6717,
    "engine": 0.0033,
    "leaf_mass": 0.0273,
    "depth": 1,
@@ -5618,6 +5918,48 @@
       "class": "p2a>p2b>p1a",
       "weight": 0.1644,
       "value": 0.0053
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680283323",
+   "group": "4816cec31765",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6886,
+   "mons": {
+    "p1": [
+     "Froslass",
+     "Arcanine-Hisui"
+    ],
+    "p2": [
+     "Basculegion",
+     "Incineroar"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.8644,
+   "engine": 0.5772,
+   "leaf_mass": 0.8784,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p1b>p2b",
+      "weight": 0.5306,
+      "value": 0.5767
+     },
+     {
+      "class": "p2a>p1a>p1b>p2b",
+      "weight": 0.2664,
+      "value": 0.5787
+     },
+     {
+      "class": "p2a>p1a>p1b>p2b",
+      "weight": 0.203,
+      "value": 0.5767
      }
     ]
    }
@@ -5681,7 +6023,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9382,
+   "unsolved": 0.9383,
    "engine": 0.492,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -5765,7 +6107,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9567,
+   "unsolved": 0.9571,
    "engine": 0.1378,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -5848,7 +6190,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.8365,
+   "unsolved": 0.838,
    "engine": 0.9999,
    "leaf_mass": 0.001,
    "depth": 1,
@@ -5909,6 +6251,48 @@
       "class": "p1b>p1a>p2a",
       "weight": 0.1112,
       "value": 0.9997
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680360234",
+   "group": "891bd545f93c",
+   "turn": 4,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.7373,
+   "mons": {
+    "p1": [
+     "Indeedee-F",
+     "Gardevoir"
+    ],
+    "p2": [
+     "Incineroar",
+     "Sneasler"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9984,
+   "engine": 0.484,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2b>p2a",
+      "weight": 0.3486,
+      "value": 0.4797
+     },
+     {
+      "class": "p1b>p1a>p2b>p2a",
+      "weight": 0.348,
+      "value": 0.4935
+     },
+     {
+      "class": "p1b>p1a>p2b>p2a",
+      "weight": 0.3034,
+      "value": 0.4781
      }
     ]
    }
@@ -6207,6 +6591,88 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2680545106",
+   "group": "59a2eb0ca6de",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.267,
+   "mons": {
+    "p1": [
+     "Salamence"
+    ],
+    "p2": [
+     "Rillaboom",
+     "Floette-Eternal"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.8734,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p2a",
+      "weight": 0.5206,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2b>p2a",
+      "weight": 0.2765,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2b>p2a",
+      "weight": 0.2029,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680554886",
+   "group": "70338d8ac326",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9762,
+   "mons": {
+    "p1": [
+     "Floette-Eternal",
+     "Incineroar"
+    ],
+    "p2": [
+     "Arcanine-Hisui"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.8,
+   "engine": 0.9942,
+   "leaf_mass": 0.0457,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.5286,
+      "value": 0.9942
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.2654,
+      "value": 0.9942
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.206,
+      "value": 0.9942
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2680562294",
    "group": "f702d9cb8644",
    "turn": 5,
@@ -6349,7 +6815,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.7087,
+   "unsolved": 0.7092,
    "engine": 0.0005,
    "leaf_mass": 0.0043,
    "depth": 1,
@@ -6411,6 +6877,47 @@
       "class": "p1a>p2a>p1b>p2b",
       "weight": 0.263,
       "value": 0.6852
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680607531",
+   "group": "43f53e756df6",
+   "turn": 9,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.0296,
+   "mons": {
+    "p1": [
+     "Alakazam"
+    ],
+    "p2": [
+     "Floette-Eternal",
+     "Rotom-Wash"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.9861,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.4483,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.2759,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.2759,
+      "value": 0.1217
      }
     ]
    }
@@ -6576,6 +7083,48 @@
      {
       "class": "p2a>p2b>p1a>p1b",
       "weight": 0.309,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680724561",
+   "group": "fc59b6369451",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.6602,
+   "mons": {
+    "p1": [
+     "Politoed",
+     "Archaludon"
+    ],
+    "p2": [
+     "Charizard",
+     "Rillaboom"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9794,
+   "engine": 0.8361,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.3385,
+      "value": 0.8185
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.3377,
+      "value": 0.8183
+     },
+     {
+      "class": "p1b>p2a>p2b>p1a",
+      "weight": 0.3238,
       "value": 0.873
      }
     ]
@@ -6766,7 +7315,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.8294,
+   "unsolved": 0.831,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -6785,6 +7334,48 @@
      {
       "class": "p1b>p1a>p2a>p2b",
       "weight": 0.2606,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2680988102",
+   "group": "097ea1fd9af5",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.3681,
+   "mons": {
+    "p1": [
+     "Pelipper",
+     "Archaludon"
+    ],
+    "p2": [
+     "Garchomp",
+     "Floette-Eternal"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9909,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.347,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.3357,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.3173,
       "value": 0.1217
      }
     ]
@@ -7015,7 +7606,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.5998,
+   "unsolved": 0.6035,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -7123,6 +7714,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2681199013",
+   "group": "aaefa29a5c2a",
+   "turn": 9,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.9459,
+   "mons": {
+    "p1": [
+     "Gardevoir",
+     "Armarouge"
+    ],
+    "p2": [
+     "Armarouge"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.9157,
+   "engine": 0.9994,
+   "leaf_mass": 0.005,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p1b>p2a",
+      "weight": 0.3762,
+      "value": 0.9994
+     },
+     {
+      "class": "p1a>p1b>p2a",
+      "weight": 0.3191,
+      "value": 0.9994
+     },
+     {
+      "class": "p1a>p1b>p2a",
+      "weight": 0.3047,
+      "value": 0.9994
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2681271176",
    "group": "42b55869a01b",
    "turn": 6,
@@ -7139,7 +7771,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.9521,
+   "unsolved": 0.9526,
    "engine": 0.9515,
    "leaf_mass": 0.3817,
    "depth": 1,
@@ -7305,7 +7937,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.8539,
+   "unsolved": 0.8552,
    "engine": 0.3049,
    "leaf_mass": 0.9999,
    "depth": 1,
@@ -7413,6 +8045,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2681493413",
+   "group": "2bd05012c58a",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8873,
+   "mons": {
+    "p1": [
+     "Gholdengo",
+     "Rillaboom"
+    ],
+    "p2": [
+     "Indeedee-F",
+     "Dragalge"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.8214,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p1b>p2b>p2a",
+      "weight": 0.5112,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p1b>p2b>p2a",
+      "weight": 0.2744,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p1b>p2b>p2a",
+      "weight": 0.2144,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2681527176",
    "group": "4fdfc06596d5",
    "turn": 5,
@@ -7472,7 +8146,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7833,
+   "unsolved": 0.7852,
    "engine": 0.2854,
    "leaf_mass": 0.9577,
    "depth": 1,
@@ -7534,6 +8208,48 @@
       "class": "p1a>p2a>p1b>p2b",
       "weight": 0.2435,
       "value": 0.8644
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2681564459",
+   "group": "6bf29dcdf106",
+   "turn": 10,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.3222,
+   "mons": {
+    "p1": [
+     "Charizard",
+     "Rillaboom"
+    ],
+    "p2": [
+     "Incineroar",
+     "Garchomp"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9236,
+   "engine": 0.4738,
+   "leaf_mass": 0.6941,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.4451,
+      "value": 0.5015
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3167,
+      "value": 0.4265
+     },
+     {
+      "class": "p2b>p1b>p1a>p2a",
+      "weight": 0.2383,
+      "value": 0.4848
      }
     ]
    }
@@ -7787,6 +8503,90 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2681742970",
+   "group": "0f6c7676e03f",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2415,
+   "mons": {
+    "p1": [
+     "Baxcalibur",
+     "Rillaboom"
+    ],
+    "p2": [
+     "Armarouge",
+     "Froslass"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9726,
+   "engine": 0.1651,
+   "leaf_mass": 0.9332,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3934,
+      "value": 0.1674
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3289,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.2777,
+      "value": 0.2134
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2681757018",
+   "group": "cd3c2f06bdf1",
+   "turn": 4,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7779,
+   "mons": {
+    "p1": [
+     "Indeedee-F",
+     "Torkoal"
+    ],
+    "p2": [
+     "Froslass",
+     "Arcanine-Hisui"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.921,
+   "engine": 0.4499,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.4119,
+      "value": 0.3221
+     },
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.3018,
+      "value": 0.7227
+     },
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.2863,
+      "value": 0.3462
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2681769356",
    "group": "b6b5787f2d68",
    "turn": 6,
@@ -7888,7 +8688,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7884,
+   "unsolved": 0.7887,
    "engine": 0.4536,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -8079,6 +8879,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2681884816",
+   "group": "217a126e2c17",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6093,
+   "mons": {
+    "p1": [
+     "Floette-Eternal",
+     "Armarouge"
+    ],
+    "p2": [
+     "Gholdengo",
+     "Arcanine-Hisui"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9633,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3833,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3151,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p2a>p2b>p1b",
+      "weight": 0.3017,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2681895892",
    "group": "8050c684baeb",
    "turn": 4,
@@ -8115,6 +8957,88 @@
       "class": "p1b>p1a>p2a",
       "weight": 0.2451,
       "value": 0.9868
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2681898024",
+   "group": "0f49e3187f86",
+   "turn": 11,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.9416,
+   "mons": {
+    "p1": [
+     "Incineroar",
+     "Kingambit"
+    ],
+    "p2": [
+     "Charizard"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.878,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.3861,
+      "value": 0.873
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.3249,
+      "value": 0.873
+     },
+     {
+      "class": "p2a>p1a>p1b",
+      "weight": 0.289,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2681910247",
+   "group": "d7a643616e68",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.0306,
+   "mons": {
+    "p1": [
+     "Golisopod"
+    ],
+    "p2": [
+     "Alakazam",
+     "Charizard"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.9787,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.3468,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.3312,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p2b>p1a",
+      "weight": 0.322,
+      "value": 0.1217
      }
     ]
    }
@@ -8386,7 +9310,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.96,
+   "unsolved": 0.9607,
    "engine": 0.6864,
    "leaf_mass": 0.9996,
    "depth": 1,
@@ -8552,7 +9476,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9723,
+   "unsolved": 0.9725,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -8701,6 +9625,89 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2682284920",
+   "group": "21ef245ba71b",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.12,
+   "mons": {
+    "p1": [
+     "Raichu"
+    ],
+    "p2": [
+     "Gardevoir",
+     "Basculegion"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.6564,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.5787,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.2615,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p2a",
+      "weight": 0.1597,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2682287881",
+   "group": "26148e35d8d3",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7325,
+   "mons": {
+    "p1": [
+     "Ninetales-Alola",
+     "Sneasler"
+    ],
+    "p2": [
+     "Charizard",
+     "Basculegion"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9407,
+   "engine": 0.578,
+   "leaf_mass": 0.9997,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p1b>p2a>p2b",
+      "weight": 0.4337,
+      "value": 0.5482
+     },
+     {
+      "class": "p1a>p1b>p2a>p2b",
+      "weight": 0.3086,
+      "value": 0.5519
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.2577,
+      "value": 0.6594
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2682312629",
    "group": "68e91f36ce68",
    "turn": 4,
@@ -8785,6 +9792,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2682364660",
+   "group": "6c1d9d83e010",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.8306,
+   "mons": {
+    "p1": [
+     "Rillaboom",
+     "Baxcalibur"
+    ],
+    "p2": [
+     "Ampharos"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.9277,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.4006,
+      "value": 0.873
+     },
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.3665,
+      "value": 0.873
+     },
+     {
+      "class": "p1a>p1b>p2a",
+      "weight": 0.2329,
+      "value": 0.873
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2682369028",
    "group": "79b62b3469d4",
    "turn": 6,
@@ -8802,7 +9850,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.8678,
+   "unsolved": 0.868,
    "engine": 0.7198,
    "leaf_mass": 0.9763,
    "depth": 1,
@@ -8953,6 +10001,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2682413529",
+   "group": "c4d19cf45190",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.1948,
+   "mons": {
+    "p1": [
+     "Floette-Eternal"
+    ],
+    "p2": [
+     "Politoed",
+     "Raichu"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.6905,
+   "engine": 0.2815,
+   "leaf_mass": 0.921,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.4754,
+      "value": 0.302
+     },
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.2918,
+      "value": 0.3756
+     },
+     {
+      "class": "p2b>p2a>p1a",
+      "weight": 0.2329,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2682448905",
    "group": "b5a768256ca3",
    "turn": 4,
@@ -9012,7 +10101,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7116,
+   "unsolved": 0.7143,
    "engine": 0.9167,
    "leaf_mass": 0.3766,
    "depth": 1,
@@ -9288,6 +10377,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2682651120",
+   "group": "c27b31d7c144",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4857,
+   "mons": {
+    "p1": [
+     "Incineroar",
+     "Salamence"
+    ],
+    "p2": [
+     "Whimsicott",
+     "Gardevoir"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9504,
+   "engine": 0.6566,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.4255,
+      "value": 0.6642
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.3608,
+      "value": 0.6642
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.2136,
+      "value": 0.6287
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2682662990",
    "group": "fa68f80cfa90",
    "turn": 11,
@@ -9429,7 +10560,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.8411,
+   "unsolved": 0.8427,
    "engine": 0.6031,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -9490,6 +10621,48 @@
       "class": "p2a>p1a>p1b",
       "weight": 0.2917,
       "value": 0.9998
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2682780786",
+   "group": "ebee741ac916",
+   "turn": 8,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.4512,
+   "mons": {
+    "p1": [
+     "Rillaboom",
+     "Floette-Eternal"
+    ],
+    "p2": [
+     "Gholdengo",
+     "Farigiraf"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9635,
+   "engine": 0.873,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.3445,
+      "value": 0.873
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.3432,
+      "value": 0.873
+     },
+     {
+      "class": "p1b>p2a>p1a>p2b",
+      "weight": 0.3123,
+      "value": 0.873
      }
     ]
    }
@@ -9574,6 +10747,48 @@
       "class": "p2b>p1b>p1a>p2a",
       "weight": 0.2409,
       "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2682847454",
+   "group": "64fbc30c0d86",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5579,
+   "mons": {
+    "p1": [
+     "Charizard",
+     "Indeedee-F"
+    ],
+    "p2": [
+     "Rillaboom",
+     "Baxcalibur"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9964,
+   "engine": 0.7572,
+   "leaf_mass": 0.9677,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3808,
+      "value": 0.7546
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3483,
+      "value": 0.7586
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.2709,
+      "value": 0.7591
      }
     ]
    }
@@ -10285,6 +11500,90 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683239833",
+   "group": "9f5c8af2c1d0",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.4313,
+   "mons": {
+    "p1": [
+     "Garchomp",
+     "Froslass"
+    ],
+    "p2": [
+     "Farigiraf",
+     "Sylveon"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9678,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.3628,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p1a>p2b>p2a",
+      "weight": 0.3253,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p1a>p2b>p2a",
+      "weight": 0.312,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2683254569",
+   "group": "72bae1ce729d",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.5279,
+   "mons": {
+    "p1": [
+     "Charizard",
+     "Aerodactyl"
+    ],
+    "p2": [
+     "Arcanine-Hisui",
+     "Raichu"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9361,
+   "engine": 0.4327,
+   "leaf_mass": 0.917,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.3891,
+      "value": 0.4973
+     },
+     {
+      "class": "p1b>p2b>p2a>p1a",
+      "weight": 0.3317,
+      "value": 0.403
+     },
+     {
+      "class": "p2b>p1b>p1a>p2a",
+      "weight": 0.2791,
+      "value": 0.3778
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683420991",
    "group": "b076c9cb9cea",
    "turn": 6,
@@ -10302,7 +11601,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9253,
+   "unsolved": 0.9259,
    "engine": 0.2535,
    "leaf_mass": 0.9997,
    "depth": 1,
@@ -10327,6 +11626,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683424664",
+   "group": "8f0dc801ecd3",
+   "turn": 14,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.4676,
+   "mons": {
+    "p1": [
+     "Absol",
+     "Indeedee-F"
+    ],
+    "p2": [
+     "Rillaboom",
+     "Floette-Eternal"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9576,
+   "engine": 0.1983,
+   "leaf_mass": 0.6861,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.4544,
+      "value": 0.1983
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3184,
+      "value": 0.1983
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.2272,
+      "value": 0.1983
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683425838",
    "group": "7faccb68dd90",
    "turn": 6,
@@ -10343,7 +11684,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.6653,
+   "unsolved": 0.6692,
    "engine": 0.9995,
    "leaf_mass": 0.0042,
    "depth": 1,
@@ -10385,7 +11726,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9857,
+   "unsolved": 0.9858,
    "engine": 0.5913,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -10617,6 +11958,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683578680",
+   "group": "0e444348216b",
+   "turn": 7,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3542,
+   "mons": {
+    "p1": [
+     "Gardevoir",
+     "Basculegion"
+    ],
+    "p2": [
+     "Archaludon",
+     "Golisopod"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9647,
+   "engine": 0.3426,
+   "leaf_mass": 0.8743,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.4205,
+      "value": 0.3305
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.3566,
+      "value": 0.3652
+     },
+     {
+      "class": "p1b>p1a>p2a>p2b",
+      "weight": 0.2229,
+      "value": 0.3292
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683582631",
    "group": "4d989a5a972b",
    "turn": 5,
@@ -10783,6 +12166,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683637580",
+   "group": "02eedfdc888b",
+   "turn": 4,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3026,
+   "mons": {
+    "p1": [
+     "Dragonite",
+     "Kingambit"
+    ],
+    "p2": [
+     "Charizard",
+     "Sylveon"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9757,
+   "engine": 0.1295,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.4025,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.3112,
+      "value": 0.1467
+     },
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.2863,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683640509",
    "group": "9154f59de350",
    "turn": 7,
@@ -10820,6 +12245,48 @@
       "class": "p1a>p2b>p1b>p2a",
       "weight": 0.2319,
       "value": 0.5004
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2683641150",
+   "group": "9f19602fb67e",
+   "turn": 12,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.2599,
+   "mons": {
+    "p1": [
+     "Kingambit",
+     "Charizard"
+    ],
+    "p2": [
+     "Empoleon",
+     "Vanilluxe"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.8654,
+   "engine": 0.5004,
+   "leaf_mass": 0.387,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.4436,
+      "value": 0.5334
+     },
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.3156,
+      "value": 0.4867
+     },
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.2409,
+      "value": 0.4574
      }
     ]
    }
@@ -10965,7 +12432,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.8525,
+   "unsolved": 0.8539,
    "engine": 0.6046,
    "leaf_mass": 0.9996,
    "depth": 1,
@@ -11090,7 +12557,7 @@
     ]
    },
    "kind": "1v2",
-   "unsolved": 0.6972,
+   "unsolved": 0.6995,
    "engine": 0.3087,
    "leaf_mass": 0.9651,
    "depth": 1,
@@ -11156,6 +12623,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683728292",
+   "group": "bf0966785bd6",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5975,
+   "mons": {
+    "p1": [
+     "Floette-Eternal",
+     "Rillaboom"
+    ],
+    "p2": [
+     "Kingambit",
+     "Sneasler"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9545,
+   "engine": 0.3919,
+   "leaf_mass": 0.8857,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.4144,
+      "value": 0.4034
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3606,
+      "value": 0.4034
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.225,
+      "value": 0.3521
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683730534",
    "group": "30353e786db4",
    "turn": 5,
@@ -11192,6 +12701,47 @@
      {
       "class": "p2b>p1a>p1b>p2a",
       "weight": 0.2324,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2683734480",
+   "group": "58fc9b72ea7d",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6089,
+   "mons": {
+    "p1": [
+     "Incineroar",
+     "Floette-Eternal"
+    ],
+    "p2": [
+     "Golisopod"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.9305,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.5286,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.2654,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.206,
       "value": 0.1217
      }
     ]
@@ -11275,6 +12825,48 @@
       "class": "p1a>p2a>p1b",
       "weight": 0.2259,
       "value": 0.6093
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2683828402",
+   "group": "4ec6a8ffb613",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.853,
+   "mons": {
+    "p1": [
+     "Charizard",
+     "Gholdengo"
+    ],
+    "p2": [
+     "Glimmora",
+     "Dragonite"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.7891,
+   "engine": 0.7262,
+   "leaf_mass": 0.9911,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.3724,
+      "value": 0.7299
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.353,
+      "value": 0.7232
+     },
+     {
+      "class": "p2a>p2b>p1a>p1b",
+      "weight": 0.2746,
+      "value": 0.7251
      }
     ]
    }
@@ -11446,6 +13038,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2683989907",
+   "group": "25a7e8953253",
+   "turn": 14,
+   "winner": "p2",
+   "ended_by": "forfeit",
+   "model": 0.5564,
+   "mons": {
+    "p1": [
+     "Spiritomb",
+     "Blastoise"
+    ],
+    "p2": [
+     "Floette-Eternal",
+     "Garchomp"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.7478,
+   "engine": 0.5963,
+   "leaf_mass": 0.5988,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.548,
+      "value": 0.5001
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.2368,
+      "value": 0.7152
+     },
+     {
+      "class": "p2a>p2b>p1b>p1a",
+      "weight": 0.2152,
+      "value": 0.7104
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2683993732",
    "group": "5746d96a121d",
    "turn": 4,
@@ -11523,6 +13157,90 @@
      {
       "class": "p1a>p2b>p2a",
       "weight": 0.2524,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684007199",
+   "group": "266bf3da63be",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.2106,
+   "mons": {
+    "p1": [
+     "Manectric",
+     "Farigiraf"
+    ],
+    "p2": [
+     "Indeedee",
+     "Raichu"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9114,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.5016,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.2508,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.2476,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684009094",
+   "group": "b7f550bc5c99",
+   "turn": 5,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.3331,
+   "mons": {
+    "p1": [
+     "Charizard",
+     "Garchomp"
+    ],
+    "p2": [
+     "Basculegion",
+     "Garchomp"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9899,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p2a>p2b>p1a",
+      "weight": 0.3903,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p2a>p2b>p1a",
+      "weight": 0.332,
+      "value": 0.1217
+     },
+     {
+      "class": "p1b>p2a>p2b>p1a",
+      "weight": 0.2777,
       "value": 0.1217
      }
     ]
@@ -11713,7 +13431,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9532,
+   "unsolved": 0.9537,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -11733,6 +13451,47 @@
       "class": "p1b>p1a>p2b>p2a",
       "weight": 0.2619,
       "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684052978",
+   "group": "107c76ab4a56",
+   "turn": 6,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.7817,
+   "mons": {
+    "p1": [
+     "Basculegion",
+     "Charizard"
+    ],
+    "p2": [
+     "Gallade"
+    ]
+   },
+   "kind": "2v1",
+   "unsolved": 0.8706,
+   "engine": 0.9998,
+   "leaf_mass": 0.0017,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.4042,
+      "value": 0.9998
+     },
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.3082,
+      "value": 0.9998
+     },
+     {
+      "class": "p1b>p1a>p2a",
+      "weight": 0.2876,
+      "value": 0.9998
      }
     ]
    }
@@ -11797,7 +13556,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9274,
+   "unsolved": 0.9281,
    "engine": 0.3479,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -11822,6 +13581,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2684089542",
+   "group": "74501e1025c6",
+   "turn": 6,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.235,
+   "mons": {
+    "p1": [
+     "Lopunny",
+     "Sylveon"
+    ],
+    "p2": [
+     "Floette-Eternal",
+     "Basculegion"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.8684,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2b>p1b>p2a",
+      "weight": 0.3522,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2b>p2a>p1b",
+      "weight": 0.3452,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3026,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2684090185",
    "group": "f25ee7657b6e",
    "turn": 5,
@@ -11839,7 +13640,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9511,
+   "unsolved": 0.9515,
    "engine": 0.8727,
    "leaf_mass": 0.9969,
    "depth": 1,
@@ -12007,7 +13808,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9255,
+   "unsolved": 0.9261,
    "engine": 0.3484,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -12280,6 +14081,47 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2684162455",
+   "group": "640bf3f5c7e8",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.056,
+   "mons": {
+    "p1": [
+     "Charizard"
+    ],
+    "p2": [
+     "Dragonite",
+     "Trevenant"
+    ]
+   },
+   "kind": "1v2",
+   "unsolved": 0.8168,
+   "engine": 0.1217,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2a>p2b",
+      "weight": 0.3432,
+      "value": 0.1217
+     },
+     {
+      "class": "p1a>p2a>p2b",
+      "weight": 0.3308,
+      "value": 0.1217
+     },
+     {
+      "class": "p2a>p1a>p2b",
+      "weight": 0.326,
+      "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2684174799",
    "group": "09e0afe98984",
    "turn": 6,
@@ -12404,6 +14246,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2684179247",
+   "group": "0cb863b9c4ca",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6634,
+   "mons": {
+    "p1": [
+     "Froslass",
+     "Rillaboom"
+    ],
+    "p2": [
+     "Garchomp",
+     "Armarouge"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9803,
+   "engine": 0.5091,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1a>p1b>p2b",
+      "weight": 0.4287,
+      "value": 0.5175
+     },
+     {
+      "class": "p2a>p1a>p2b>p1b",
+      "weight": 0.3002,
+      "value": 0.4894
+     },
+     {
+      "class": "p2a>p1a>p1b>p2b",
+      "weight": 0.2711,
+      "value": 0.5175
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2684183721",
    "group": "3b40662f234f",
    "turn": 4,
@@ -12483,6 +14367,48 @@
       "class": "p2b>p1a>p1b>p2a",
       "weight": 0.3283,
       "value": 0.2687
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684194256",
+   "group": "5fd68f03798c",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "normal",
+   "model": 0.4012,
+   "mons": {
+    "p1": [
+     "Floette-Eternal",
+     "Overqwil"
+    ],
+    "p2": [
+     "Golisopod",
+     "Serperior"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.8907,
+   "engine": 0.2855,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.4383,
+      "value": 0.3917
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.3909,
+      "value": 0.1217
+     },
+     {
+      "class": "p2b>p1a>p1b>p2a",
+      "weight": 0.1708,
+      "value": 0.3881
      }
     ]
    }
@@ -12669,7 +14595,7 @@
     ]
    },
    "kind": "2v1",
-   "unsolved": 0.8263,
+   "unsolved": 0.828,
    "engine": 0.1436,
    "leaf_mass": 0.9999,
    "depth": 1,
@@ -12985,6 +14911,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2684258877",
+   "group": "87b738a7a97a",
+   "turn": 11,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.6329,
+   "mons": {
+    "p1": [
+     "Sinistcha",
+     "Indeedee-F"
+    ],
+    "p2": [
+     "Rillaboom",
+     "Floette-Eternal"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9745,
+   "engine": 0.5395,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.3741,
+      "value": 0.7854
+     },
+     {
+      "class": "p2b>p1b>p2a>p1a",
+      "weight": 0.3545,
+      "value": 0.2224
+     },
+     {
+      "class": "p2b>p2a>p1b>p1a",
+      "weight": 0.2713,
+      "value": 0.6146
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2684267524",
    "group": "0f96d849db64",
    "turn": 9,
@@ -13027,6 +14995,48 @@
    }
   },
   {
+   "id": "gen9championsvgc2026regmc-2684311062",
+   "group": "d3e9f5af0284",
+   "turn": 5,
+   "winner": "p1",
+   "ended_by": "forfeit",
+   "model": 0.4735,
+   "mons": {
+    "p1": [
+     "Basculegion",
+     "Charizard"
+    ],
+    "p2": [
+     "Arcanine-Hisui",
+     "Gholdengo"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9096,
+   "engine": 0.7619,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p1a>p2a>p1b>p2b",
+      "weight": 0.405,
+      "value": 0.74
+     },
+     {
+      "class": "p1a>p1b>p2a>p2b",
+      "weight": 0.3069,
+      "value": 0.8236
+     },
+     {
+      "class": "p1a>p2a>p1b>p2b",
+      "weight": 0.2881,
+      "value": 0.727
+     }
+    ]
+   }
+  },
+  {
    "id": "gen9championsvgc2026regmc-2684313732",
    "group": "7705fe126354",
    "turn": 9,
@@ -13044,7 +15054,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.9027,
+   "unsolved": 0.9035,
    "engine": 0.5481,
    "leaf_mass": 0.9999,
    "depth": 1,
@@ -13253,7 +15263,7 @@
     ]
    },
    "kind": "2v2",
-   "unsolved": 0.7511,
+   "unsolved": 0.7522,
    "engine": 0.1217,
    "leaf_mass": 1.0,
    "depth": 1,
@@ -13273,6 +15283,48 @@
       "class": "p2a>p2b>p1b>p1a",
       "weight": 0.2485,
       "value": 0.1217
+     }
+    ]
+   }
+  },
+  {
+   "id": "gen9championsvgc2026regmc-2684674255",
+   "group": "c1d00a33c100",
+   "turn": 8,
+   "winner": "p2",
+   "ended_by": "normal",
+   "model": 0.5997,
+   "mons": {
+    "p1": [
+     "Arcanine-Hisui",
+     "Salamence"
+    ],
+    "p2": [
+     "Froslass",
+     "Incineroar"
+    ]
+   },
+   "kind": "2v2",
+   "unsolved": 0.9582,
+   "engine": 0.3702,
+   "leaf_mass": 1.0,
+   "depth": 1,
+   "positions": {
+    "1": [
+     {
+      "class": "p2a>p1b>p1a>p2b",
+      "weight": 0.3737,
+      "value": 0.3662
+     },
+     {
+      "class": "p2a>p1b>p1a>p2b",
+      "weight": 0.3144,
+      "value": 0.3374
+     },
+     {
+      "class": "p1b>p2a>p1a>p2b",
+      "weight": 0.3119,
+      "value": 0.4081
      }
     ]
    }

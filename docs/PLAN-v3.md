@@ -428,10 +428,12 @@ reaches two or fewer a side, on open and closed sheets. About 5½ days plus over
 It starts by checking the 1v1 on closed sheets. The page leads with the engine there, but step
 3.6's check ran on open-sheet games only (principle 4).
 
-**Progress, 2026-09-30.** The closed-sheet 1v1 check passed: log loss 0.345 against the model's
-0.649. The solver plays 2v1, 1v2 and 2v2 with pruning, sampled chance and a damage race for the 1v1s
-it reaches, and `vgc.wp.doubles` builds those positions from open-sheet games. The human check on
-674 open-sheet games is running on Kaggle; closed sheets in the adapter are next.
+**Progress, 2026-10-01.** The closed-sheet 1v1 check passed: log loss 0.345 against the model's
+0.649. The solver plays 2v1, 1v2 and 2v2 (pruning, sampled chance, a calibrated damage race at the
+horizon, a check for a win forced next turn), and `vgc.wp.doubles` builds those positions on open
+and closed sheets. On open sheets the Battle page now answers them within 5 seconds and beats the
+model on 674 held-out games (log loss 0.421 against 0.513). On closed sheets it beats the model on
+Brier only (349 games), and in 2v1s on both; those are next on the page.
 
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
 - exact transitions from a serialized Showdown state (the endgame solver already does this);

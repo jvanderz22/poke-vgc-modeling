@@ -1909,3 +1909,34 @@ calculation. Scored exactly as the page runs it (the heaviest three move orders)
 - Through the page's own path (`solving.request`, warm solver processes, nothing cached), on 60
   of these games: first answer median 1.2 s, final median 2.3 s, never past 5.1 s; 52 of 60 had
   every move order searched in time, the rest kept the quick value for the orders that had not.
+
+## The live doubles answer on closed sheets
+
+PLAN-endgame-doubles stage 3, closed sheets (2026-10-01). The same check on held-out closed-sheet
+games seen from the stands, both sides' sets from the belief (`vgc.wp.doubles._plan_closed`: each
+hidden Pokémon's likeliest sets, combinations weighed by the turn order with them shown), scored
+as the page would run it (live search, heaviest three positions).
+
+**A bug first.** A Mega shows its Mega's ability (Drought, Fairy Aura), and the set belief read it
+as the ability on the sheet; the ability test is the one constraint never given up, so no set
+matched and 55 of the games that reach such a turn had nothing to solve, all of them games with a
+Mega out. Fixed in `belief.sets.given`, which the 1v1 closed adapter and the live view's set
+display also read. Of 413 that reach the turn, **349 are scored** (24 dropped for a volatile, 9 for
+sleep or bad poison, 30 where no combination of likely sets fits the logged turn order, 1 with no
+set at all).
+
+| | games | log loss engine / model | engine − model | Brier engine / model | engine − model |
+| --- | --- | --- | --- | --- | --- |
+| all | 349 | 0.474 / 0.540 | −0.066 [−0.143, +0.017], not distinguishable | **0.146** / 0.182 | −0.036 [−0.061, −0.010], engine better |
+| 2v1 | 70 | **0.253** / 0.467 | engine better | **0.078** / 0.147 | engine better |
+| 2v2 | 214 | 0.555 / 0.628 | not distinguishable | 0.184 / 0.219 | not distinguishable |
+| 1v2 | 65 | 0.448 / 0.332 | not distinguishable | 0.096 / 0.094 | not distinguishable |
+
+- **Weaker than on open sheets**, as the 1v1 was not: the answers average over guessed sets, and
+  the solved positions carry little of the belief (the weight is spread over many combinations;
+  the heaviest three positions carry a median of about 40% of it).
+- It called 61 games at 95% or more and the called side won 93.4%.
+- **By the plan's rule (the engine leads only where it beats the model), closed-sheet 2v1s pass and
+  2v2s and 1v2s do not yet.** The 2v1 and 1v2 split is the same state from either side, and the
+  1v2's worse point estimate rests on two confident misses in 20 calls, so the side ahead (2v1)
+  passing alone is partly noise; more closed games or a tighter belief would settle it.
