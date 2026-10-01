@@ -433,7 +433,9 @@ It starts by checking the 1v1 on closed sheets. The page leads with the engine t
 horizon, a check for a win forced next turn), and `vgc.wp.doubles` builds those positions on open
 and closed sheets. On open sheets the Battle page now answers them within 5 seconds and beats the
 model on 674 held-out games (log loss 0.421 against 0.513). On closed sheets it beats the model on
-Brier only (349 games), and in 2v1s on both; those are next on the page.
+Brier only (349 games), and in 2v1s on both; those are next on the page. The longer-term fix is a
+closed-sheet belief grouped by what changes the fight, so the few positions solved carry most of it
+([PLAN-endgame-doubles](PLAN-endgame-doubles.md), stage 5).
 
 `EWP(a) = Σ_b π_opp(b | o) · E_rng[WP(o′ | a, b)]`:
 - exact transitions from a serialized Showdown state (the endgame solver already does this);

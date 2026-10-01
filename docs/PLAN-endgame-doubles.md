@@ -3,7 +3,8 @@
 _Written 2026-09-30. **Progress (2026-10-01):** stages 0 and 1 done; stage 2 built for open and
 closed sheets; stage 3 done for both (open: the engine beats the model, log loss 0.421 against
 0.513; closed: better on Brier only, and in 2v1s on both); stage 4 built for open sheets, answering
-within 5 s. Next: closed-sheet 2v1s on the page, and a tighter closed-sheet belief._
+within 5 s. Next: closed-sheet 2v1s on the page, and stage 5, a closed-sheet belief that
+concentrates._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength). Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.
@@ -331,6 +332,44 @@ in closed 2v2s and 1v2s.
 - It shows the depth, the leaf mass, "realistic play, k choices a Pokémon", and the unsolved mass
   from Speed orders and, on a closed sheet, from the set belief.
 - It deepens in the background as now, and shows only a finished answer.
+
+### 5. A closed-sheet belief that concentrates (1 day, plus a local check)
+
+**Why.** On closed sheets the doubles answer is better than the model on Brier only (349 games),
+where on open sheets it is better on both. The difference is the sets. Each hidden Pokémon keeps
+its two or three likeliest sheets, the combinations multiply, and the weight spreads thin: the
+three positions the page solves carry a median of about 40% of the belief, and six carry 59%. Many
+of the sheets kept apart do not differ in anything this fight can show (Protect against Detect, a
+fourth move pruning would never pick, a nature that moves neither Speed nor the attacking stat).
+So the solved positions are near-copies of one another while real alternatives go unsolved.
+
+**What.** Group a hidden Pokémon's sheets by what changes this fight, before taking the heaviest:
+- **The signature of a set, against the Pokémon actually across from it:**
+  - item and ability, which act on damage, Speed and survival (Sash, berries, Scarf, Intimidate);
+  - the nature's direction on Speed and on the stat its attacks use, not its name;
+  - the moves realistic play would consider: each damaging move kept only if its damage against
+    one of the foes on the field is close to that set's best on that foe (base power, STAB,
+    effectiveness), plus Protect and its kin, Fake Out, priority attacks, and speed control
+    (Tailwind, Trick Room). Other status moves drop out.
+- **A class is the sheets that share a signature**, with their counts summed. It is solved by its
+  heaviest member, and its weight is the class's.
+- The turn-order weighing and the Speed draws are unchanged; they already depend only on item,
+  ability and nature.
+- **The 30 games where no combination fits the logged turn order** are counted by the priors alone,
+  as the open-sheet path does, instead of being dropped.
+
+**Checks.**
+- **Equivalence:** for a sample of classes with two or more members, solve two members at the
+  live configuration; their values should agree within the sampling error (about 0.02). A class
+  that does not is split on whatever differs.
+- **Concentration:** the share of the belief the three solved positions carry, against today's
+  ~40%. The aim is 75% or more.
+- **Time:** closed-sheet planning stays within about 1.5 s, so the 5 s budget still holds.
+- **The closed-sheet check again** (`solver_vs_humans.py --endgame doubles --sheets closed --top 3
+  --search <live> --tag live`, local, about 30 minutes), by kind. The page then leads with the
+  engine wherever closed sheets now pass, and keeps the model leading where they do not.
+
+**Meanwhile**, closed-sheet 2v1s already pass and can be shown on their own.
 
 ### Later, only if a check asks for them
 
