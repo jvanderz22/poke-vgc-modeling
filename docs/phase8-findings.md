@@ -2055,3 +2055,11 @@ paired against `blend`, grouped bootstrap):
 - **The page uses both** (`LIVE` with `race_doubles: 'blend_boosts'`, the answer and each move
   order's value through `doubles.temper`).
 
+**Through the page's own path** (`scripts/analysis/page_path.py`: every 6th held-out game, 112, through
+`solving.request` with warm solver processes on the laptop and nothing cached, the answer as the
+page shows it within its 5 seconds): first answer median 1.3 s (max 3.3 s), final median 2.8 s
+(p90 5.0 s, max 5.1 s); 93 of 112 had every move order searched in time, and the rest kept the quick
+value for the late ones. The page's answer differed from the no-deadline one by 0.012 on average
+(0.072 where an order was late), and scored log loss 0.347 against 0.343 with no deadline and
+0.546 for the model on the same games: the deadline and tempering a quick value cost about 0.005.
+
