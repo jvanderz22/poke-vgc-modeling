@@ -1838,3 +1838,38 @@ that crashed (below).
 
 **The page is unchanged:** it already leads with the engine on a closed-sheet 1v1, and this is the
 check that had been missing for it.
+
+## The engine against how human doubles endgames end: two or fewer a side, open sheets
+
+PLAN-endgame-doubles stage 3 (2026-10-01). Each held-out open-sheet game at its first turn with
+two or fewer Pokémon a side that is not a 1v1 (`solver_vs_humans.py --endgame doubles --depths 1`),
+planned by `vgc.wp.doubles` and solved at depth 1 with pruning 3, stratified sampling (16), the KO
+extension and the damage race for every 1v1 reached. 1,791 positions over three Kaggle sessions
+side by side, 8½ hours each, cap 900 s: 1,776 solved, 15 past the cap, nine re-solved locally to
+the same answer.
+
+Of 1,703 held-out games, 736 reach such a turn and 674 are built (38 dropped for a volatile, 22
+for sleep or bad poison, 2 for Revival Blessing). **664 are scored**, 10 with a position past the cap.
+
+| | games | Brier engine / model | engine − model, Brier | log loss engine / model | engine − model, log loss |
+| --- | --- | --- | --- | --- | --- |
+| all | 664 | **0.149** / 0.170 | −0.021 [−0.037, −0.004], engine better | 0.486 / 0.509 | −0.023 [−0.081, +0.035], not distinguishable |
+| 2v2 | 400 | **0.170** / 0.215 | −0.045 [−0.067, −0.023], engine better | 0.552 / 0.617 | −0.064 [−0.137, +0.017], not distinguishable |
+| 2v1 | 122 | 0.106 / 0.102 | not distinguishable | 0.336 / 0.339 | not distinguishable |
+| 1v2 | 142 | 0.130 / 0.102 | +0.028 [−0.004, +0.056], not distinguishable | 0.428 / 0.353 | not distinguishable |
+| settled (leaf mass ≤ 0.1) | 68 | **0.044** / 0.096 | engine better | 0.313 / 0.330 | not distinguishable |
+
+- **The engine is better on Brier in 2v2s and overall, not yet on log loss.** It called 112 games
+  at 95% or more and the called side won 94.6%; in 2v2s 88.6% of 44, so it is overconfident at the
+  ends there, which log loss punishes.
+- **Its answers rest mostly on the horizon:** mean leaf mass 0.73. For a 2v1 or 2v2 the horizon
+  is HP share, and HP share undervalues a Pokémon count lead.
+- **2v1 and 1v2 are the same result mirrored, not a bug.** The side ahead won 88.5% and 87.3%;
+  the engine gave it 0.715 and 0.726 on average, the model 0.862 and 0.875. Two healthy Pokémon
+  against one is 0.67 by HP share.
+- **But the engine finds the upsets.** Where it favoured the side behind (35 games of 264), that
+  side won 16 (46%), against 12% for the side behind overall. That is the part of a 2v1 the plan
+  wanted from it; the count lead is the part the model already has.
+- So the lever is the horizon for positions with more than one Pokémon a side: a value that
+  knows a count lead, as the damage race knows a 1v1. The page keeps leading with the model in
+  2v1, 1v2 and 2v2 until it does.
