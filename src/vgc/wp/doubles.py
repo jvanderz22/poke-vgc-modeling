@@ -282,9 +282,15 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
         p = priors.get(sk) or [1.0] * (cap + 1)
         return list(range(len(p))), list(p)
 
+    bands: dict[tuple, tuple[float, float] | None] = {}
+
     def band(ev: Any, sk: tuple[str, str], sp: int) -> tuple[float, float] | None:
-        b = sp_belief.speed_band(reg, ev.forme or ev.species, natures.get(sk), sp)
-        return None if b is None else (sp_belief.effective_speed(b[0], ev), sp_belief.effective_speed(b[1], ev))
+        # Remembered: the turn-order check asks the same few thousand times a plan.
+        key = (id(ev), sk, sp)
+        if key not in bands:
+            b = sp_belief.speed_band(reg, ev.forme or ev.species, natures.get(sk), sp)
+            bands[key] = None if b is None else (sp_belief.effective_speed(b[0], ev), sp_belief.effective_speed(b[1], ev))
+        return bands[key]
 
     mine = {(k[0], species[k]): k for k in keys}
     vals = {k: support((k[0], species[k])) for k in keys}
@@ -320,10 +326,17 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
     if contradicted:
         weights = {k: list(vals[k][1]) for k in keys}
 
+    allowed: dict[tuple, bool] = {}
+
     def ok(draw: dict) -> bool:
-        return all(sp_belief._ordered(band(a, (ka[0], species[ka]), vals[ka][0][draw[ka]]),
-                                      band(b, (kb[0], species[kb]), vals[kb][0][draw[kb]]), sign)
-                   for a, b, sign, ka, kb in within)
+        for n, (a, b, sign, ka, kb) in enumerate(within):
+            key = (n, draw[ka], draw[kb])
+            if key not in allowed:
+                allowed[key] = sp_belief._ordered(band(a, (ka[0], species[ka]), vals[ka][0][draw[ka]]),
+                                                  band(b, (kb[0], species[kb]), vals[kb][0][draw[kb]]), sign)
+            if not allowed[key]:
+                return False
+        return True
 
     speeds: dict[tuple, int] = {}
 
@@ -335,11 +348,16 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
             speeds[(k, idx)] = solver.position_speed(reg, s, sp, _one(f, k[0], k[1]), k[0])
         return speeds[(k, idx)]
 
+    import itertools
+    # The same draws as `choices(weights=...)` makes, without accumulating the weights every draw.
+    ranges = {k: range(len(weights[k])) for k in keys}
+    cums = {k: list(itertools.accumulate(weights[k])) for k in keys}
+
     def sample(check: bool) -> tuple[dict[tuple, dict[str, Any]], int]:
         groups: dict[tuple, dict[str, Any]] = {}
         kept = 0
         for _ in range(draws):
-            draw = {k: rng.choices(range(len(weights[k])), weights=weights[k])[0] for k in keys}
+            draw = {k: rng.choices(ranges[k], cum_weights=cums[k])[0] for k in keys}
             if check and not ok(draw):
                 continue
             kept += 1
