@@ -174,10 +174,30 @@ stages 2 and 3 need.
     come back within 0.05; none comes back near-certain wrongly; mean gap 0.019, none over 0.2;
     0.62× the exact time. That is the bar asked of it: advantages and near-certain results, not
     the digits.
-  - The reported error is too small: 47 of 67 within twice it. A Speed tie sampled sixteen times
-    independently is not eight and eight (one tie, 0.55 exact, came back 0.75). Next: stratified
-    draws, each of the N given its own N-th of each chance event, then the rest of the 180, then
-    the cost of the 2v2 positions with sampling and pruning.
+  - All 180 (178 solved; 2 benchmark positions that take 44 and 63 minutes exactly passed the
+    10-minute cap): the favoured side agrees in 168 of 168; 81 of 87 near-certain answers within
+    0.05 and the other six still lopsided (worst 0.958 → 0.875); none near-certain wrongly; mean
+    gap 0.019, 9 over 0.1, none over 0.2; 0.60× the exact time.
+  - **Stratified draws** (each of the N draws given its own N-th of every chance event, so a Speed
+    tie splits eight and eight): mean gap 0.009 against 0.019 on the same 178 (difference
+    [−0.015, −0.006]), 2 over 0.1, the same time, the same 168/168 and 81/87. Adopted. The
+    reported error is still a little small (153 of 178 within twice it).
+- **2v2 at depth 1 with sampling (`N = 16`, stratified), `k = 3`, KO extension on**, the four
+  positions run side by side:
+
+  | position | value | exact value | seconds | leaf mass | sampling error |
+  | --- | --- | --- | --- | --- | --- |
+  | 0 | 0.610 | 0.617 | 168 | 0.63 | 0.056 |
+  | 1 | 0.696 | | 165 | 0.68 | 0.009 |
+  | 2 | 0.612 | | 152 | 0.61 | 0.057 |
+  | 3 | 0.566 | no answer | 326 | 0.70 | 0.032 |
+
+  - Position 3, the spread-move one, now has an answer; position 0 is within 0.01 of exact at
+    half the time.
+  - **Depth 1 does not settle a 2v2:** leaf mass 0.6–0.7, so most of each answer is HP share at
+    the horizon. Most of the time goes on the 1v1s a second KO opens (300–600 small matrices).
+  - So the next question is what settles it affordably: depth 2 on the cheaper 2v1 and 1v2
+    positions first, a smaller N, and memoizing the 1v1 subgames across the search.
 
 ### 2. The adapter, for open sheets, closed sheets and Watching mode (2 days)
 
