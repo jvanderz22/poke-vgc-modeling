@@ -520,6 +520,22 @@ def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) ->
     return endgame.combine(jobs, results)
 
 
+# The live answer is too sure: taking the best of noisy leaf values pushes it outward. So it goes
+# through P = sigmoid(a · logit(answer) + b), fitted on 1,500 training-split open-sheet games run
+# exactly as the page runs them ('blend_boosts' horizon, three move orders); out of fold 0.013
+# better in log loss, forced wins included. On the held-out games, with 'blend_boosts', log loss
+# 0.384 against 0.407 for 'blend' alone (phase8-findings, "an answer that is not too sure").
+TEMPER = (0.8133, -0.0091)
+
+
+def temper(v: float) -> float:
+    import math
+
+    a, b = TEMPER
+    q = min(1 - 1 / 128, max(1 / 128, v))
+    return 1 / (1 + math.exp(-(a * math.log(q / (1 - q)) + b)))
+
+
 # --- a replay, from the stands ----------------------------------------------------------------
 
 def _two_or_fewer(reg: Regulation, state) -> bool:

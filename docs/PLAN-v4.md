@@ -21,7 +21,7 @@ v4 restates only what is needed to decide what to do next. Steps restart at 1.
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound on open sheets only and do not run on closed ones |
 | In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1d-sw-split-small` closed. Both pass the powered calibration test. Neither follows what decides an endgame |
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
-| Endgame engine, 2v1 / 1v2 / 2v2 | 🟡 Open sheets: live on the page within 5 s, log loss 0.407 against the model's 0.513 (674 games; 2v2s 0.503 against 0.621, with the race blended with HP share and the count). Closed sheets: better on Brier only (349 games), no state kind on both; not on the page, and grouping the set belief did not help |
+| Endgame engine, 2v1 / 1v2 / 2v2 | 🟡 Open sheets: live on the page within 5 s, log loss 0.384 against the model's 0.513 (674 games; 2v2s 0.485 against 0.621), with the race blended with HP share, the count and stat stages, and the answer tempered. Closed sheets: better on Brier only (349 games), no state kind on both; not on the page, and grouping the set belief did not help |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus. Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
 | Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed |
@@ -124,8 +124,9 @@ The rest of [PLAN-endgame-doubles](PLAN-endgame-doubles.md), which has the detai
 4. **The race at the horizon** (done 2026-10-01). A 2v2 answer is about 95% the race, so it was
    blended with HP share and the count, fitted on training games (`race_calibration.py`): held-out
    2v2s log loss 0.503 against 0.527, Brier 0.162 against 0.169, both better; 2v1s and 1v2s level.
-   The page uses it. Next in line, by the residuals: the race applying its own stat drops, then
-   boosts again, and 2v2 calls at 95%+ that win 89%.
+   Then stat stages in the blend and a temperature on the answer (taking the best of noisy leaf
+   values made it too sure): log loss 0.384 against 0.407, Brier 0.122 against 0.125, both
+   better. The page uses both. Tried and dropped: the race applying its own stat changes (level).
 5. **Close out the reference runs.** The Kaggle `doubles2-{a,b,c}` runs (depth 1 with the KO
    extension) say what more depth would add over the live one-turn search. Score them and record
    it; decide whether a deeper background search is worth adding to the page.

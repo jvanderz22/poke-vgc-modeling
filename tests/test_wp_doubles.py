@@ -97,3 +97,15 @@ def test_the_log_read_again_shows_the_sets_it_was_given(reg):
     seen = battle.with_sets({"p1": {m.species: s}}).rp.state
     shown = next(x for x in seen.sides["p1"].mons if x.species == m.species)
     assert seen.sides["p1"].sheet and shown.nature == s["nature"]
+
+
+def test_temper_pulls_a_sure_answer_in_without_turning_it():
+    """The live answer's temperature makes it less sure, keeps its order, and keeps its side."""
+    xs = [0.0, 0.02, 0.2, 0.45, 0.55, 0.8, 0.98, 1.0]
+    ts = [doubles.temper(x) for x in xs]
+    assert ts == sorted(ts)
+    for x, t in zip(xs, ts):
+        if abs(x - 0.5) > 0.05:
+            assert (t > 0.5) == (x > 0.5)
+            assert abs(t - 0.5) < abs(x - 0.5)
+    assert 0.95 < doubles.temper(1.0) < 0.99

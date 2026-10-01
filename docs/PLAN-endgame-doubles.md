@@ -5,8 +5,9 @@ closed sheets; stage 3 done for both (open: the engine beats the model, log loss
 0.513; closed: better on Brier only, and no state kind on both); stage 4 built for open sheets,
 answering within 5 s; stage 5 tried and reverted (the belief does not concentrate by grouping).
 Closed-sheet doubles stay with the model. The race at the horizon, about 95% of a 2v2 answer, is
-now blended with HP share and the count (`race_doubles: 'blend'`): open-sheet 2v2s log loss 0.503
-against 0.527 with the race alone, both scores better; the page uses it._
+now blended with HP share, the count and the net stat stages (`'blend_boosts'`), and the answer
+is tempered: open-sheet log loss 0.384 against the model's 0.513 (2v2s 0.485 against 0.621); the
+page uses both._
 It extends [PLAN-v3](PLAN-v3.md) steps 3 and 8 (the
 1v1 solver and its speed) and is meant as the first milestone of step 9 (Phase 9, policy
 strength), carried on as [PLAN-v4](PLAN-v4.md) step 1. Numbers marked _estimate_ are guesses until stage 1's built-in stats measure them.

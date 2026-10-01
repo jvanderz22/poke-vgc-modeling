@@ -587,9 +587,24 @@ function blended(v, battle) {
 	const standing = s => battle.sides[s].active.filter(p => p && !p.fainted).length;
 	return 1 / (1 + Math.exp(-(a * lg(v) + b * lg(leaf(battle)) + c * (standing(0) - standing(1)) + d)));
 }
-// The race as the horizon's value under `search.race_doubles`: raw (true), 'calibrated' or 'blend'.
+// `race_doubles: 'blend_boosts'`: 'blend' with the net stat stages as well (p1's summed over its
+// Pokémon standing, minus p2's), which the race already sees in its damage and Speed but the blend
+// shrinks with everything else: a side +3 or more ahead won about 10 points more than 'blend' gave
+// it. Fitted the same way; out of fold 0.008 better than 'blend' in log loss, in every kind.
+const MELEE_BLEND_BOOSTS = {a: 0.2799, b: 0.9160, c: 0.8601, e: 0.1480, d: 0.0133, eps: 1 / 128};
+function blendedBoosts(v, battle) {
+	const {a, b, c, e, d, eps} = MELEE_BLEND_BOOSTS;
+	const lg = x => { const q = Math.min(1 - eps, Math.max(eps, x)); return Math.log(q / (1 - q)); };
+	const up = s => battle.sides[s].active.filter(p => p && !p.fainted);
+	const stages = s => up(s).reduce((t, p) => t + Object.values(p.boosts).reduce((u, x) => u + x, 0), 0);
+	return 1 / (1 + Math.exp(-(a * lg(v) + b * lg(leaf(battle)) + c * (up(0).length - up(1).length) +
+		e * (stages(0) - stages(1)) + d)));
+}
+// The race as the horizon's value under `search.race_doubles`: raw (true), 'calibrated', 'blend'
+// or 'blend_boosts'.
+const BLENDS = {calibrated: (v, battle) => calibrated(v), blend: blended, blend_boosts: blendedBoosts};
 function horizon(mode, v, battle) {
-	return mode === 'calibrated' ? calibrated(v) : mode === 'blend' ? blended(v, battle) : v;
+	return BLENDS[mode] ? BLENDS[mode](v, battle) : v;
 }
 function melee(snap, seedKey, live = null) {
 	// `live`: the leaf's own battle, read but not changed, with damage from the tables (fast_race).
@@ -1187,7 +1202,7 @@ function solvePosition(pos) {
 			// Where the sweep fails, the race at the root stands for the rest of the game.
 			const snap = State.serializeBattle(root);
 			let rest = race(snap);
-			if (rest === null) rest = ['calibrated', 'blend'].includes(search.race_doubles)
+			if (rest === null) rest = BLENDS[search.race_doubles]
 				? horizon(search.race_doubles, melee(snap, key(root)) ?? 0.5, root) : leaf(root);
 			const mine = f.side === 'p1' ? rest : 1 - rest;
 			const v = f.won + (1 - f.won) * mine;

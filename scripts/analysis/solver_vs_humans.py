@@ -266,6 +266,8 @@ def main() -> None:
     ap.add_argument("--search", default="{}", help="search settings over the default, as JSON")
     ap.add_argument("--tag", help="written beside the default output as <name>_<tag>.json")
     ap.add_argument("--top", type=int, default=0, help="solve only each game's heaviest N positions")
+    ap.add_argument("--temper", action="store_true",
+                    help="score each answer through `doubles.temper`, as the page shows it; written as <name>_tempered.json")
     args = ap.parse_args()
     global TOP
     TOP = args.top
@@ -300,6 +302,9 @@ def main() -> None:
         solve(rows, args.workers, args.cap, depths)
         counts["version"], counts["depths"], counts["search"] = version, list(depths), extra
         counts["crashed_positions"] = sum(len(r.get("errors", [])) for r in rows)
+    raw = rows
+    if args.temper:
+        rows = [r | {"engine": round(doubles.temper(r["engine"]), 4)} if r.get("engine") is not None else r for r in rows]
     result = {"all": score(rows),
               "settled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] <= SETTLED]),
               "unsettled": score([r for r in rows if r.get("leaf_mass") is not None and r["leaf_mass"] > SETTLED]),
@@ -311,6 +316,10 @@ def main() -> None:
     if args.sheets == "closed":
         result["covered"] = score([r for r in rows if r.get("unsolved", 0) <= COVERED])
         result["partly_covered"] = score([r for r in rows if r.get("unsolved", 0) > COVERED])
+    rows = raw                      # saved as solved; a tempered score is written beside them
+    if args.temper:
+        result["tempered"] = list(doubles.TEMPER)
+        out_path = out_path.with_name(f"{out_path.stem}_tempered.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps({"counts": counts, "result": result, "cap": args.cap,
                                "rows": [{k: v for k, v in r.items() if k != "jobs"} |

@@ -2011,3 +2011,47 @@ run with `calibrated`; paired, grouped bootstrap):
 - **The page's live search uses `blend` from here** (`vgc.web.solving.LIVE`); `doubles.SEARCH`
   and the Kaggle reference runs keep `calibrated`.
 
+**The race applying stat stages: tried, reverted.** The race was made to apply the stages its moves
+change as it plays (a user's own drops and boosts, a foe's from a sure secondary, with Contrary,
+Clear Body and its kin, Defiant, Competitive and Sheer Force), behind a flag so the existing answers
+did not move (checked: identical with it off). On the same 3,542 training games, `blend` refitted on
+that race was level: log loss +0.001 [−0.002, +0.005] overall, +0.003 in 2v2s, and +0.011
+[−0.021, +0.044] on the 375 games whose race it changed. The race is mostly decided before a drop
+matters, and the boost residual did not move with it.
+
+## Boosts in the blend, and an answer that is not too sure
+
+PLAN-endgame-doubles stage 3 (2026-10-01), the two misses `blend` left.
+
+- **Boosts.** The race already sees stat stages in its damage and Speed, but the blend shrinks
+  them with everything else: a side +3 or more ahead won about 10 points more than `blend` gave it.
+  `blend_boosts` adds the net stages (p1's summed over its Pokémon standing, minus p2's):
+  sigmoid(0.280 · logit(race) + 0.916 · logit(HP share) + 0.860 · count lead + 0.148 · stages +
+  0.013). Out of fold on the 3,542 training games: log loss −0.008 [−0.013, −0.003] against
+  `blend`, in 2v2s and in 2v1s and 1v2s alike. Offence, defence and Speed apart add nothing.
+- **Too sure after the search.** Taking the best of noisy leaf values pushes the answer outward,
+  which a horizon fitted at depth 0 cannot see. The live configuration with `blend_boosts` on 1,500
+  training games (`race_calibration.py --answers 1500`, about an hour): 2v2 answers above 0.95
+  averaged 0.978 and won 0.904. A temperature on the answer, sigmoid(0.813 · logit(answer) −
+  0.009) (`doubles.TEMPER`): out of fold −0.013 [−0.024, −0.003], forced wins included (left out,
+  or fitted by kind, it does worse).
+
+**Held out at the live configuration** (674 games, `--tag live_blend_boosts`, scored `--temper`;
+paired against `blend`, grouped bootstrap):
+
+| | log loss | − `blend` | Brier | − `blend` |
+| --- | --- | --- | --- | --- |
+| `blend` | 0.407 | | 0.125 | |
+| `blend` + temperature | 0.391 | −0.017 [−0.037, −0.001] | 0.124 | −0.001 [−0.003, +0.001] |
+| `blend_boosts` | 0.400 | −0.007 [−0.014, −0.000] | 0.123 | −0.002 [−0.005, +0.001] |
+| **`blend_boosts` + temperature** | **0.384** | **−0.024 [−0.045, −0.006]** | **0.122** | **−0.003 [−0.006, −0.000]** |
+| model | 0.513 | | 0.172 | |
+
+- By kind with both: 2v2s 0.485 (`blend` 0.503, −0.019 [−0.041, −0.001]; model 0.621); 2v1s and
+  1v2s 0.227 (`blend` 0.258, −0.031 [−0.073, +0.001]; model 0.347). The engine beats the model
+  in every kind on both scores.
+- 2v2 calibration with both: 0.195 predicted won 0.185, 0.504 won 0.500, 0.815 won 0.812; the 16
+  answers above 0.95 (0.970) won 0.875.
+- **The page uses both** (`LIVE` with `race_doubles: 'blend_boosts'`, the answer and each move
+  order's value through `doubles.temper`).
+
