@@ -5,6 +5,7 @@ this exact solver that re-solve here the same."""
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 
@@ -58,7 +59,7 @@ def test_a_merge_refuses_another_solvers_answers(cache, positions):
     offload.export(positions[:1], jobs)
     _run(cache, jobs)
     s = json.loads((cache / "summary.json").read_text())
-    (cache / "summary.json").write_text(json.dumps(s | {"solver_sha256": "0" * 64}))
+    (cache / "summary.json").write_text(json.dumps(s | {"solver_sha256": "0" * 64, "solver_version": -1}))
     with pytest.raises(ValueError, match="solver"):
         offload.merge(cache / "results.jsonl", jobs)
     assert not solver.CACHE.exists()
@@ -91,7 +92,7 @@ ORIGINAL = solver.SOLVER          # read before any test puts a copy in its plac
 
 def _versioned(tmp_path, name, version, extra=""):
     """A copy of the solver declaring `version`, with `extra` appended (a change of source only)."""
-    src = ORIGINAL.read_text()
+    src = re.sub(r"^const VERSION = \d+;\n", "", ORIGINAL.read_text(), flags=re.M)
     if version is not None:
         src = src.replace("'use strict';\n", f"'use strict';\nconst VERSION = {version};\n", 1)
     p = tmp_path / name
