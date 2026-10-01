@@ -1,6 +1,6 @@
 # VGC Reg M-C Model & Advisor — Plan v4
 
-_Written 2026-10-01._ **Supersedes [PLAN-v3.md](PLAN-v3.md)**, which is kept as the archive of steps
+_Written 2026-10-01; updated the same evening (step 1 closed out, the app deployed)._ **Supersedes [PLAN-v3.md](PLAN-v3.md)**, which is kept as the archive of steps
 1–9 as they ran (2026-09-28 to 2026-10-01): open-sheet calibration, the set-use benchmark, the 1v1
 engine in the app, Watching mode, the Speed prior, closed-sheet routing, eval manifests, solver speed,
 and the start of the doubles endgame. Code and tests cite "PLAN-v3 step N", so v3 keeps its step
@@ -21,10 +21,10 @@ v4 restates only what is needed to decide what to do next. Steps restart at 1.
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound on open sheets only and do not run on closed ones |
 | In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1d-sw-split-small` closed. Both pass the powered calibration test. Neither follows what decides an endgame |
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
-| Endgame engine, 2v1 / 1v2 / 2v2 | 🟡 Open sheets: live on the page within 5 s, log loss 0.384 against the model's 0.513 (674 games; 2v2s 0.485 against 0.621), with the race blended with HP share, the count and stat stages, and the answer tempered. Closed sheets: better on Brier only (349 games), no state kind on both; not on the page, and grouping the set belief did not help |
+| Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against the model's 0.513 (674 games; 2v2s 0.485 against 0.621), within 5 s through the page's own path (median 2.8 s). 🟡 Closed sheets: no state kind beats the model, so the model leads there |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus. Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Heuristic self-play does not predict human results (AUC 0.512). Blocks matchup and team evaluation until a stronger policy passes the same check |
-| Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed |
+| Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed. Deployed at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) behind a password |
 
 What got here, in one line each (detail in [PLAN-v3](PLAN-v3.md) and the findings docs):
 
@@ -97,41 +97,43 @@ depth-4 truth must be re-solved (hours, on Kaggle).
 | `in_battle_closed` | `wp-v1d-sw-split-small` | Passes `closed_sheet_pass` (1,085 battles, power 0.98) |
 
 The endgame engine is not a registered model. Where it leads is decided per state kind and regime
-in `vgc.web.solving` (`doubles_reason`).
+in `vgc.web.solving` (`doubles_reason`). Its doubles horizon (`MELEE_BLEND_BOOSTS` in the solver)
+and the answer's temperature (`doubles.TEMPER`) are fitted on training games by
+`scripts/analysis/race_calibration.py`; a change of answers takes a new `race_doubles` name.
 
 ---
 
 ## Next, in order
 
-### 1. Finish the doubles endgame on closed sheets
+### 1. Finish the doubles endgame (mostly done 2026-10-01)
 
-The rest of [PLAN-endgame-doubles](PLAN-endgame-doubles.md), which has the detail.
+[PLAN-endgame-doubles](PLAN-endgame-doubles.md) has the detail; phase8-findings has the numbers.
 
-1. ~~Show closed-sheet 2v1s on the page.~~ **Dropped 2026-10-01.** A 2v1 and a 1v2 are one state
-   with the sides named the other way round; pooled (135 games) the engine is not distinguishable
-   from the model on either score, so the 2v1 half's pass was noise. The model leads every closed
-   doubles position until item 3 says otherwise, and the check now reports the pool (`2v1|1v2`).
-2. ~~A closed-sheet belief that concentrates~~ **Tried and reverted 2026-10-01**: grouping took the
-   solved share of the belief from 6.3% to 9.4% (aim 75%), and 11 of 65 classes disagreed between
-   members by more than 0.05. Closed doubles stay with the model. As planned: (stage 5). Group each hidden Pokémon's sets by what
-   changes this fight (item, ability, the nature's direction, the moves realistic play would
-   consider), solve each class by its heaviest member, and count the 30 games with no fitting
-   combination by their priors. Checks: members of a class agree within ~0.02; the three solved
-   positions carry ≥75% of the belief (today ~40%); planning stays within ~1.5 s.
-3. ~~The closed-sheet check again~~ (nothing to check after item 2), by state kind (2v2, and 2v1 with 1v2 pooled), at the live
-   configuration (local, ~30 min). The
-   engine leads wherever it now passes.
-4. **The race at the horizon** (done 2026-10-01). A 2v2 answer is about 95% the race, so it was
-   blended with HP share and the count, fitted on training games (`race_calibration.py`): held-out
-   2v2s log loss 0.503 against 0.527, Brier 0.162 against 0.169, both better; 2v1s and 1v2s level.
-   Then stat stages in the blend and a temperature on the answer (taking the best of noisy leaf
-   values made it too sure): log loss 0.384 against 0.407, Brier 0.122 against 0.125, both
-   better. The page uses both. Tried and dropped: the race applying its own stat changes (level).
-5. **Close out the reference runs.** The Kaggle `doubles2-{a,b,c}` runs (depth 1 with the KO
-   extension) say what more depth would add over the live one-turn search. Score them and record
-   it; decide whether a deeper background search is worth adding to the page.
+**Done:**
+- **Closed sheets stay with the model.** Closed 2v1s had seemed to pass, but a 2v1 and a 1v2 are
+  one state with the sides named the other way round, and pooled (135 games) neither score is
+  distinguishable. `solver_vs_humans.py` now reports the pool (`2v1|1v2`).
+- **Grouping the closed-sheet set belief (stage 5): tried and reverted.** It took the solved share
+  of the belief from 6.3% to 9.4% (aim 75%), and 11 of 65 classes disagreed between members by
+  more than 0.05. The spread is real uncertainty over four hidden Pokémon, not duplicate sets.
+- **The horizon, which is about 95% of a 2v2 answer.** The race blended with HP share, the count
+  and the net stat stages (`race_doubles: 'blend_boosts'`), and the answer through a temperature
+  (`doubles.temper`): taking the best of noisy leaf values had made it too sure. All fitted on
+  training games (`scripts/analysis/race_calibration.py`, which reproduces every map). Held out:
+  log loss 0.421 → 0.384, Brier 0.130 → 0.122; 2v2s 0.527 → 0.485. The page uses both.
+- **Tried and dropped:** the race applying the stat stages its moves change (level on training
+  games).
+- **The page's own path** (`scripts/analysis/page_path.py`, 112 games, laptop): first answer
+  median 1.3 s, final median 2.8 s, max 5.1 s; the deadline costs about 0.005 in log loss.
 
-Estimate: about 1 day plus the local check.
+**Open:**
+1. **Close out the reference runs.** The Kaggle `doubles2-{a,b,c}` runs (depth 1 with the KO
+   extension) say what more depth would add over the live one-turn search. They were solved with
+   the solver at `ee9149a`, and the cache key hashes the solver's source: restore that file while
+   collecting and scoring. Then decide whether a deeper background search is worth adding.
+2. **Time the doubles answer on the deployed machine.** Shared cores burst on credit; if answers
+   land late, more of them keep the quick value (see the cloud row below).
+3. **Watch, do not act yet:** 2v2 answers above 0.95 won 0.875 (16 held-out games).
 
 ### 2. Phase 9: policy strength (EWP and search)
 
@@ -204,11 +206,11 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | W1 library, validation, bring/lead ranking | pokepast.es import, calc panel |
 | W2 in-battle WP with gate banner | per-turn WP timeline |
 | W2b weakness and usage reports in the library | all of it |
-| W3 live battle | damage snapped to calc buckets; closed-sheet doubles (step 1) |
+| W3 live battle | damage snapped to calc buckets; closed-sheet doubles (the model leads there) |
 | W4 EWP action table, on-demand bring/lead simulation | behind steps 2–3 |
 | W5 complete-my-team, moveset/SP suggestions | behind step 7 |
 | Video mode | [PLAN-video](PLAN-video.md): WP following a cartridge video of an open-sheet battle. Nothing built |
-| Cloud | [deploy/README](../deploy/README.md): Fly.io, one `shared-cpu-4x` 2 GB machine that stops when idle, a password, a volume. Prepared, not deployed; the 5 s doubles answer is untimed on shared cores |
+| Cloud | **Deployed 2026-10-01** at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) ([deploy/README](../deploy/README.md)): one `shared-cpu-4x` 2 GB machine that stops when idle, three solver processes, 1v1s to depth 3, HTTP Basic password, a 1 GB volume for teams, battles and the solver cache. `./deploy_fly.sh` redeploys from the working tree. Missing: the doubles answer timed on shared cores, and a check that the machine stops when idle |
 
 ---
 
@@ -226,7 +228,9 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 - **Calibration** (`vgc wp calibrate`): fit on the validation split (20% of groups), a temperature
   at turn 0 plus a slope per turn, per context and regime.
 - **The engine against the model** (`scripts/analysis/solver_vs_humans.py`): log loss and Brier,
-  cluster bootstrap by group, by state kind and regime. This decides where the engine leads.
+  cluster bootstrap by group, by state kind and regime, with 2v1 and 1v2 judged pooled
+  (`2v1|1v2`). `--temper` scores the answer as the page shows it. This decides where the engine
+  leads; `scripts/analysis/page_path.py` checks the page's own path (time and score).
 
 ---
 
@@ -256,7 +260,13 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 6. **Tag every artifact with regulation, snapshot version and featurizer version.**
 7. **Land solver changes together and re-solve the benchmark once.**
 8. **CPU-hours are worth more than GPU-hours here.** The budget is $0–5 total: Kaggle before paid,
-   no auto-refill. See [cloud-compute](cloud-compute.md).
+   no auto-refill. See [cloud-compute](cloud-compute.md). The deployed app is the one standing
+   cost: it stops when idle (about $0.30 a month stopped) and sits under a hard spend cap.
+9. **A split by which side is p1 is not a split.** A 2v1 and a 1v2 are one state; judge them
+   pooled, or a half that passes by chance gets shipped.
+10. **Fit a calibration where the answer is made.** The horizon fitted at depth 0 could not see
+    that the search's max over noisy leaves pushes answers outward; a temperature fitted on
+    answers produced exactly as the page produces them could.
 
 ---
 
@@ -267,7 +277,9 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | Phase 9's policy is stronger but still fails Phase 6 | The deterministic stack and the endgame engine are the floor |
 | Phase 9 misses the 45 s clock | The doubles work already answers ≤2 a side in 5 s; prune harder above that, and report depth |
 | Reg M-C rotates 2026-12-02 | Step 4, with a mid-November target |
-| The closed-sheet belief does not concentrate enough | The model keeps leading closed doubles; the engine's answer stays open-sheet only |
+| The closed-sheet belief does not concentrate enough | Happened (stage 5). The model keeps leading closed doubles; the engine's answer stays open-sheet only |
+| The cloud machine never stops, or its solves run long | Auto-stop with no minimum, one machine, 1v1s capped at depth 3, a password, and a hard spend cap in the dashboard |
+| Shared cores miss the 5 s doubles answer | The page keeps the quick answer for late move orders (it costs about 0.005 on the laptop); a `performance-1x` machine is the next size up |
 | Disk (18 GB free) | Retired models and unreferenced eval sets (`vgc wp prune-eval-cache`) go first |
 
 ---
@@ -278,6 +290,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
   Phases 4–8. [PLAN](PLAN.md): original research, full architecture, phases 0–4.
 - [PLAN-endgame-doubles](PLAN-endgame-doubles.md): the solver for 2v1, 1v2 and 2v2 (step 1).
 - [PLAN-video](PLAN-video.md): video mode.
+- [deploy/README](../deploy/README.md): the Fly.io deployment, its sizing and cost.
 - Findings: [phase0](phase0-findings.md) · [phase4](phase4-findings.md) ·
   [phase6](phase6-findings.md) · [phase8](phase8-findings.md).
 - [regulation-change](regulation-change.md) · [cloud-compute](cloud-compute.md) ·

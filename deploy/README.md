@@ -1,6 +1,7 @@
 # Deploying the web app to Fly.io
 
-The battle companion (`vgc web`) as one Fly machine that stops when nobody is using it. Modelled
+The battle companion (`vgc web`) as one Fly machine that stops when nobody is using it. Deployed
+2026-10-01 at https://vgc-live-battle-calculator.fly.dev. Modelled
 on `~/dev/my-radio`, with the same budget rules: one machine, scale to zero, a 1 GB volume, a
 hard spend cap set by hand.
 
