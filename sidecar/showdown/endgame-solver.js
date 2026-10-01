@@ -271,6 +271,24 @@ function parse(part) {
 	return m ? {move: +m[1], target: m[2] === undefined ? null : +m[2]} : null;
 }
 
+// A move as the simulator has it when it hits: type and power changed by the user's ability
+// (Pixilate, Aerilate, Liquid Voice), the weather (Weather Ball) and the move itself. Without
+// this an -ate Double-Edge was a Normal move, and read as doing nothing to a Ghost.
+function prepared(copy, me, foe, id) {
+	let move = copy.dex.getActiveMove(id);
+	copy.singleEvent('ModifyType', move, null, me, foe, move, move);
+	copy.singleEvent('ModifyMove', move, null, me, foe, move, move);
+	move = copy.runEvent('ModifyType', me, foe, move, move);
+	move = copy.runEvent('ModifyMove', me, foe, move, move);
+	return move;
+}
+
+function damage(copy, me, foe, id) {
+	let d;
+	try { d = copy.actions.getDamage(me, foe, prepared(copy, me, foe, id), true); } catch (e) { d = 0; }
+	return typeof d === 'number' && d > 0 ? d : 0;
+}
+
 // The largest share of this Pokémon's HP any live foe's move takes, by the same calculation.
 function threat(copy, side, slot) {
 	const me = copy.sides[side].active[slot];
@@ -280,9 +298,8 @@ function threat(copy, side, slot) {
 		for (const ms of foe.moveSlots) {
 			const move = copy.dex.moves.get(ms.id);
 			if (move.category === 'Status') continue;
-			let d;
-			try { d = copy.actions.getDamage(foe, me, copy.dex.getActiveMove(ms.id), true); } catch (e) { d = 0; }
-			if (typeof d === 'number' && d > 0) worst = Math.max(worst, Math.min(1, d / me.hp));
+			const d = damage(copy, foe, me, ms.id);
+			if (d > 0) worst = Math.max(worst, Math.min(1, d / me.hp));
 		}
 	}
 	return worst;
@@ -307,9 +324,8 @@ function score(copy, side, slot, part, danger) {
 		.filter(x => c.target === null || c.target === x.i + 1);
 	let best = 0, ko = false, foe = null;
 	for (const {p, i} of foes) {
-		let d;
-		try { d = copy.actions.getDamage(me, p, copy.dex.getActiveMove(id), true); } catch (e) { d = 0; }
-		if (typeof d !== 'number' || !(d > 0)) continue;
+		const d = damage(copy, me, p, id);
+		if (!(d > 0)) continue;
 		const hits = Array.isArray(move.multihit) ? 3 : (move.multihit || 1);
 		const share = Math.min(1, d * hits / p.hp);
 		if (share > best) { best = share; ko = d * hits >= p.hp; foe = i; }
@@ -378,6 +394,137 @@ function leaf(b) {
 	const share = side => side.active.filter(p => p && !p.fainted).reduce((a, p) => a + p.hp / p.maxhp, 0);
 	const a = share(b.sides[0]), c = share(b.sides[1]);
 	return a + c > 0 ? a / (a + c) : 0.5;
+}
+
+/**
+ * A 1v1 valued as a damage race, for `search.race` (at the horizon) and `search.race_1v1` (a 1v1
+ * a doubles search reaches is valued so instead of searched). Each side's attacks are taken from
+ * the simulator's damage at the middle roll (`ScoringPRNG`), and each pair of them, one a side,
+ * is raced out turn by turn over both HP totals: accuracy, two damage rolls and a crit a hit,
+ * priority then Speed (Trick Room included, a tie re-drawn each turn), full paralysis one time
+ * in eight (the Champions rule), Focus Sash and Sturdy, recoil, Life Orb and drain, Sitrus Berry,
+ * Leftovers, and burn and poison. The pairs make a matrix game, solved as the search's are.
+ * Status moves, boosts, Protect and switching do not exist in it: it says who wins the trade of
+ * blows, which is what a 1v1 most often comes down to. Returns null for anything but a 1v1.
+ */
+const RACE_TURNS = 12;
+function race(snap) {
+	const copy = scorer(snap);
+	const live = s => copy.sides[s].active.filter(p => p && !p.fainted);
+	if (live(0).length !== 1 || live(1).length !== 1) return null;
+	const mons = [live(0)[0], live(1)[0]];
+	const attacks = [0, 1].map(s => {
+		const me = mons[s], foe = mons[1 - s];
+		const slot = copy.sides[s].active.indexOf(me);
+		const req = copy.sides[s].activeRequest;
+		const listed = req && req.active && req.active[slot] ? req.active[slot].moves : me.moveSlots;
+		const hidden = new Set(me.moveSlots.filter(m => m.disabled).map(m => m.id));
+		const out = [];
+		for (const m of listed) {
+			if (m.disabled || hidden.has(m.id) || m.pp === 0) continue;
+			const move = copy.dex.moves.get(m.id);
+			if (move.category === 'Status') continue;
+			const d = damage(copy, me, foe, m.id);
+			if (!(d > 0)) continue;
+			const hits = Array.isArray(move.multihit) ? 3 : (move.multihit || 1);
+			const active = prepared(copy, me, foe, m.id);
+			let priority = copy.singleEvent('ModifyPriority', active, null, me, null, null, active.priority);
+			priority = copy.runEvent('ModifyPriority', me, null, active, priority);
+			// A two-turn move hits every other turn: Solar Beam in sun and a Power Herb skip the
+			// charge, and one already charging hits on the first.
+			const sun = ['sunnyday', 'desolateland'].includes(copy.field.effectiveWeather());
+			const charge = !!move.flags.charge && me.item !== 'powerherb' && !(sun && ['solarbeam', 'solarblade'].includes(move.id))
+				? (me.volatiles.twoturnmove ? 1 : 2) : 0;
+			out.push({
+				d: d * hits, acc: move.accuracy === true ? 1 : move.accuracy / 100, priority: priority || 0, charge,
+				recoil: (move.recoil ? move.recoil[0] / move.recoil[1] : 0) + (me.item === 'lifeorb' ? 0.1 : 0),
+				drain: move.drain ? move.drain[0] / move.drain[1] : 0,
+			});
+		}
+		return out.length ? out : [{d: 0, acc: 1, priority: 0, recoil: 0, drain: 0}];
+	});
+	const speed = mons.map(p => p.getActionSpeed());
+	const M = attacks[0].map(a => attacks[1].map(c => duel(mons, [a, c], speed)));
+	return solve(M).value;
+}
+
+// P(p1 wins) when each side uses one attack every turn: a distribution over both HP totals.
+function duel(mons, atk, speed) {
+	const max = mons.map(p => p.maxhp);
+	const sash = mons.map(p => p.item === 'focussash' || p.ability === 'sturdy');
+	const sitrus = mons.map(p => p.item === 'sitrusberry');
+	const residual = mons.map(p => (p.item === 'leftovers' ? Math.floor(p.maxhp / 16) : 0)
+		- (p.status === 'brn' ? Math.floor(p.maxhp / 16) : 0) - (['psn', 'tox'].includes(p.status) ? Math.floor(p.maxhp / 8) : 0));
+	const para = mons.map(p => (p.status === 'par' ? 1 / 8 : 0));
+	const hitOutcomes = a => (a.d ? [
+		{p: 1 - a.acc, d: 0},
+		{p: a.acc / 24, d: Math.floor(a.d * 1.5)},
+		{p: a.acc * 23 / 48, d: Math.floor(a.d * 88.5 / 92)},
+		{p: a.acc * 23 / 48, d: Math.floor(a.d * 96.5 / 92)},
+	].filter(o => o.p > 0) : [{p: 1, d: 0}]);
+	const outs = atk.map(hitOutcomes);
+	// A two-turn move's turns of charging: 2 hits on turns 1, 3, ...; 1 (already charging) on 0, 2, ...
+	const fires = (who, turn) => !atk[who].charge || (turn % 2 === (atk[who].charge === 2 ? 1 : 0));
+	const orders = atk[0].priority !== atk[1].priority ? [[atk[0].priority > atk[1].priority ? 0 : 1, 1]]
+		: speed[0] !== speed[1] ? [[speed[0] > speed[1] ? 0 : 1, 1]] : [[0, 0.5], [1, 0.5]];
+	let states = new Map([[`${mons[0].hp}|${mons[1].hp}|${+sitrus[0]}|${+sitrus[1]}`, 1]]);
+	let won = 0, live = 0;
+	for (let turn = 0; turn < RACE_TURNS && states.size; turn++) {
+		const next = new Map();
+		const add = (hp, berry, p) => {
+			const k = `${hp[0]}|${hp[1]}|${berry[0]}|${berry[1]}`;
+			next.set(k, (next.get(k) || 0) + p);
+		};
+		for (const [k, p0] of states) {
+			const [h0, h1, b0, b1] = k.split('|').map(Number);
+			for (const [first, po] of orders) {
+				// Each branch: [hp, berry, p, ended (null, or p1's result)]
+				let branches = [[[h0, h1], [b0, b1], p0 * po, null]];
+				for (const who of [first, 1 - first]) {
+					const foe = 1 - who;
+					const after = [];
+					for (const [hp, berry, p, end] of branches) {
+						if (end !== null) { after.push([hp, berry, p, end]); continue; }
+						const acts = !fires(who, turn) ? [{p: 1, d: 0}]
+							: para[who] ? [{p: para[who], d: null}, ...outs[who].map(o => ({p: o.p * (1 - para[who]), d: o.d}))] : outs[who];
+						for (const o of acts) {
+							const h = hp.slice(), b = berry.slice();
+							if (o.d) {
+								let dmg = o.d;
+								if (sash[foe] && h[foe] === max[foe] && dmg >= h[foe]) dmg = h[foe] - 1;
+								const dealt = Math.min(dmg, h[foe]);
+								h[foe] -= dealt;
+								if (atk[who].recoil) h[who] -= Math.max(1, Math.round(dealt * atk[who].recoil));
+								if (atk[who].drain) h[who] = Math.min(max[who], h[who] + Math.round(dealt * atk[who].drain));
+								for (const x of [foe, who]) {
+									if (b[x] && h[x] > 0 && h[x] <= max[x] / 2) { h[x] += Math.floor(max[x] / 4); b[x] = 0; }
+								}
+							}
+							const out0 = h[0] <= 0, out1 = h[1] <= 0;
+							const end = out0 && out1 ? 0.5 : out1 ? 1 : out0 ? 0 : null;
+							after.push([h, b, p * o.p, end]);
+						}
+					}
+					branches = after;
+				}
+				for (const [hp, berry, p, end] of branches) {
+					if (end !== null) { won += p * end; continue; }
+					const h = hp.map((x, i) => Math.min(max[i], x + residual[i]));
+					const out0 = h[0] <= 0, out1 = h[1] <= 0;
+					if (out0 || out1) { won += p * (out0 && out1 ? 0.5 : out1 ? 1 : 0); continue; }
+					add(h, berry, p);
+				}
+			}
+		}
+		states = next;
+	}
+	// What is still standing after RACE_TURNS turns is scored by HP share.
+	for (const [k, p] of states) {
+		const [h0, h1] = k.split('|').map(Number);
+		const a = h0 / max[0], c = h1 / max[1];
+		won += p * (a + c > 0 ? a / (a + c) : 0.5); live += p;
+	}
+	return won;
 }
 
 // Minimax value of a zero-sum matrix game for the row player: a saddle point when there is one,
@@ -653,7 +800,18 @@ function main() {
 	// most its probability, and it is reported in `leaf_mass` with the depth cut-off.
 	function value(snap, battle, depth, reach) {
 		if (battle.ended) return {v: battle.winner === 'p1' ? 1 : battle.winner === 'p2' ? 0 : 0.5, leaf: 0};
-		if (depth >= search.depth || reach < search.cutoff) return {v: leaf(battle), leaf: 1};
+		if (depth >= search.depth || reach < search.cutoff) {
+			const r = search.race ? race(snap) : null;
+			return {v: r === null ? leaf(battle) : r, leaf: 1};
+		}
+		// A 1v1 below a doubles root, valued by its damage race rather than searched.
+		if (search.race_1v1 && rootAlive > 2) {
+			const here = alive(battle);
+			if (here[0] === 1 && here[1] === 1) {
+				const r = race(snap);
+				if (r !== null) { stats.raced = (stats.raced || 0) + 1; return {v: r, leaf: 1}; }
+			}
+		}
 		const k = key(battle) + '#' + depth;
 		if (cache.has(k)) return cache.get(k);
 		const nodeKey = k;
@@ -698,6 +856,7 @@ function main() {
 		return out;
 	}
 
+	const rootAlive = alive(root).reduce((a, b) => a + b, 0);
 	const r = value(State.serializeBattle(root), root, 0, 1);
 	const round = x => Math.round(x * 1e4) / 1e4;
 	process.stdout.write(JSON.stringify({
