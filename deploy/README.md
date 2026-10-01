@@ -9,7 +9,7 @@ hard spend cap set by hand.
 ./deploy_fly.sh                                               # every time after
 ```
 
-Then open `https://vgc-companion.fly.dev`; the browser asks for user `vgc` and the password.
+Then open `https://vgc-live-battle-calculator.fly.dev`; the browser asks for user `vgc` and the password.
 
 ## What goes where
 

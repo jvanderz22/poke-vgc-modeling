@@ -3,7 +3,7 @@
 # Budget: one machine, stopped when idle (billed per second only while running), a 1 GB volume.
 # Set a hard monthly spend cap in the dashboard (Billing -> Spend limits); this file cannot.
 
-app = 'vgc-companion'
+app = 'vgc-live-battle-calculator'
 primary_region = 'iad'
 
 [build]

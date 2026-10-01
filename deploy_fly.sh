@@ -10,10 +10,10 @@ Usage:
   ./deploy_fly.sh                                   # later deploys
 
 Environment variables also work, from a gitignored .env beside this script (flags win):
-  APP_NAME=vgc-companion REGION=iad ./deploy_fly.sh
+  APP_NAME=vgc-live-battle-calculator REGION=iad ./deploy_fly.sh
 
 Options:
-  --app-name       default: vgc-companion  (must match fly.toml's `app`)
+  --app-name       default: vgc-live-battle-calculator  (must match fly.toml's `app`)
   --region         default: iad
   --volume-name    default: vgc_data       (must match fly.toml's mount source)
   --volume-size    default: 1  (GB: teams, battles and the solver cache)
@@ -40,7 +40,7 @@ if [[ -f "$(dirname "$0")/.env" ]]; then
   set +a
 fi
 
-APP_NAME="${APP_NAME:-vgc-companion}"
+APP_NAME="${APP_NAME:-vgc-live-battle-calculator}"
 REGION="${REGION:-iad}"
 VOLUME_NAME="${VOLUME_NAME:-vgc_data}"
 VOLUME_SIZE="${VOLUME_SIZE:-1}"
