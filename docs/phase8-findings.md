@@ -1798,3 +1798,42 @@ What this leaves:
   (principle 8). It is not built: the ordering is what matters for leading the page, and 7 misses
   are too few to fit on.
 
+
+## The engine against how human 1v1s end, on closed sheets
+
+PLAN-endgame-doubles stage 0 (2026-09-30). Step 3.6's check, rerun on the regime the Battle page
+also leads with the engine in: held-out closed-sheet games seen from the stands, where neither
+side's sets are shown (`solver_vs_humans.py --sheets closed --depths 2`, cap 180 s locally; the
+1,905 positions were solved on Kaggle in 7 h 7 min on 4 workers, cap 360 s, and merged with three
+re-solved locally to the same answer). Each side's sets are its likeliest from the belief, paired
+and weighted jointly with the turn order, heaviest first to 90% of the weight and at most 16 pairs
+a game (`endgame.pair_candidates`).
+
+Of 1,025 held-out games, 95 reach a buildable 1v1 (907 never reach one; 23 are dropped: 12 with
+no set to solve, 8 with a volatile the adapter does not carry, 3 not shown). **86 are scored**; 9
+have a pair still unsolved, 4 past the cap and 5 that crashed (below).
+
+| | games | Brier engine / model | log loss engine / model | engine − model, log loss |
+| --- | --- | --- | --- | --- |
+| all | 86 | **0.105** / 0.228 | **0.345** / 0.649 | −0.304 [−0.420, −0.179], engine better |
+| settled (leaf mass ≤ 0.1) | 20 | **0.066** / 0.156 | **0.217** / 0.482 | −0.265 [−0.520, +0.079], not distinguishable |
+| unsettled | 66 | **0.117** / 0.250 | **0.384** / 0.700 | −0.316 [−0.445, −0.184], engine better |
+| belief covered (≥ 90%) | 50 | | **0.352** / 0.597 | −0.245 [−0.393, −0.081], engine better |
+| belief partly covered | 36 | | **0.336** / 0.722 | −0.385 [−0.572, −0.195], engine better |
+
+- **The engine keeps the lead on closed sheets**, by as much as on open ones (−0.237 there, at
+  depths 2–3). The served closed-sheet model (`wp-v1d-sw-split-small`) is the weaker of the two
+  models, which accounts for part of the wider gap.
+- **Guessed sets did not make it confidently wrong.** It called 22 games at 95% or more, and the
+  called side won 21. Averaging over set pairs makes it call fewer games than on open sheets.
+- **Coverage does not matter here.** Games whose belief was only partly solved score as well as
+  the rest, so the 90% cut costs nothing measurable.
+- **It is less settled:** mean leaf mass 0.35 at depth 2, so most answers still rest partly on HP
+  share at the horizon. Depth 3 was not distinguishable on open sheets and was not run.
+- **The five crashes are one bug:** Imprison (Farigiraf, Indeedee) against a Pokémon sharing
+  Protect. The simulator shows a side's last Pokémon the blocked move as usable and refuses it
+  when chosen. Fixed on the `solver-pruning` branch, where the cache is keyed on a declared
+  version and the fix changes no cached answer; the five positions are solved there once merged.
+
+**The page is unchanged:** it already leads with the engine on a closed-sheet 1v1, and this is the
+check that had been missing for it.

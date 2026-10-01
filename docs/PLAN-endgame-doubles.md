@@ -67,10 +67,13 @@ the benchmark's stored truth, and a sample of step 3.6's positions.
 
 ### 0. The 1v1 on closed sheets, checked (½ day, plus a night on Kaggle)
 
-**Built 2026-09-30; the run is on Kaggle.** `endgame.pair_candidates` and `solver_vs_humans.py
---sheets closed`. 95 held-out closed-sheet games reach a 1v1, which makes 1,905 positions at
-depth 2 (depth 3 was not distinguishable from depth 2 on open sheets). Pairs are kept heaviest
-first to 90% of the belief, at most 16 a game.
+**Done 2026-09-30: the engine keeps the lead.** On 86 held-out closed-sheet games at their first
+1v1, log loss 0.345 against the model's 0.649 (−0.304 [−0.420, −0.179]); it called 22 games at
+95% or more and the called side won 21; partly covered beliefs score as well as covered ones.
+The page keeps leading with the engine (phase8-findings, "The engine against how human 1v1s end,
+on closed sheets"). Built: `endgame.pair_candidates` and `solver_vs_humans.py --sheets closed`;
+1,905 positions at depth 2 solved on Kaggle overnight, pairs heaviest first to 90% of the
+belief, at most 16 a game.
 
 The Battle page already leads with the engine's 1v1 number on a closed sheet, but the check
 behind that (step 3.6) ran on open-sheet games only. Principle 4 says a number belongs to the
@@ -256,6 +259,6 @@ bottom layer:
 About 5½ working days plus two or three overnight Kaggle runs: stage 0 ½ day plus the night,
 stage 1 1½ days, stage 2 2 days, stage 3 ½ day plus the night, stage 4 1 day. Two answers come on
 day one:
-- stage 0's run, launched that evening, says whether the closed-sheet 1v1 should keep leading;
+- stage 0's run says the closed-sheet 1v1 keeps leading (done);
 - stage 1's pruning check on the cached 1v1s says whether the scoring keeps the right move. If it
   does not, that is fixed before anything is built on it.
