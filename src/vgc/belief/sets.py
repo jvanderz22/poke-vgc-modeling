@@ -289,8 +289,12 @@ def given(reg: Regulation, mon: Any) -> SetBelief:
     evidence: list[str] = []
     tests: dict[str, Any] = {}
 
-    ruled_out = set(getattr(mon, "ability_ruled_out", ()) or ())
-    if mon.ability:
+    # A Mega shows its Mega's ability (Drought on Charizard-Mega-Y, Fairy Aura on Floette-Mega), which
+    # says nothing about the ability on its sheet, and the ability test is never given up: read as
+    # the set's, it matched no set at all, and 55 closed-sheet endgames had nothing to solve.
+    mega = bool(getattr(mon, "mega", False))
+    ruled_out = set() if mega else set(getattr(mon, "ability_ruled_out", ()) or ())
+    if mon.ability and not mega:
         want = to_id(mon.ability)
         tests["ability"] = lambda s, want=want: s.ability == want
         belief.possible_abilities = [want]

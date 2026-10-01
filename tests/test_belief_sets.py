@@ -155,3 +155,13 @@ def test_no_spreads_anywhere(reg, built):
     b = sets.for_species(reg, "Incineroar")
     assert not hasattr(b.top(), "sp")
     assert "sp" not in b.to_json() and "spread" not in b.to_json()
+
+
+def test_a_mega_s_shown_ability_says_nothing_about_its_sheet(reg, built):
+    """Mega Charizard Y shows Drought; its sheet lists Blaze or Solar Power. Read as the set's
+    ability, Drought matched no set anybody brought, and the endgame had nothing to solve."""
+    m = Mon("Charizard")
+    m.forme, m.mega, m.ability, m.item = "Charizard-Mega-Y", True, "drought", "charizarditey"
+    b = sets.given(reg, m)
+    assert b.sheets and all(s.item == "charizarditey" for s in b.sheets)
+    assert not any("ability is" in e for e in b.evidence)
