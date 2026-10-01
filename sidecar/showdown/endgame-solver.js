@@ -490,13 +490,39 @@ class ScriptedPRNG {
  * never ended in the same state, nothing merged, and each turn's outcomes multiplied sixteen-fold.
  */
 class SamplingPRNG extends ScriptedPRNG {
-	constructor(seed, rolls, rare) { super([], rolls, rare); this.draw = new PRNG(seed); }
+	/**
+	 * Draw `i` of the `n` drawn for a turn. The draws are stratified: the j-th random event of the
+	 * turn gives each draw its own n-th of [0, 1), in an order `strata(j)` shuffles, so a Speed tie
+	 * over sixteen draws splits eight and eight rather than binomially, and a 90% move misses in
+	 * one or two of them rather than anywhere from none to five.
+	 */
+	constructor(seed, rolls, rare, i, n, strata) {
+		super([], rolls, rare);
+		this.draw = new PRNG(seed); this.i = i; this.n = n; this.strata = strata; this.j = 0;
+	}
 	pick(options) {
 		if (options.length === 1) return options[0].v;
-		let u = this.draw.random();
+		let u = (this.strata(this.j++)[this.i] + this.draw.random()) / this.n;
 		for (const o of options) { if ((u -= o.p) < 0) return o.v; }
 		return options[options.length - 1].v;
 	}
+}
+
+/** Shuffled strata for each random event of a turn's draws, the same for all of them. */
+function strataFor(base, n) {
+	const made = [];
+	return j => {
+		if (!made[j]) {
+			const rng = new PRNG(seedFor(`${base}|strata|${j}`));
+			const perm = [...Array(n).keys()];
+			for (let k = n - 1; k > 0; k--) {
+				const r = Math.floor(rng.random() * (k + 1));
+				[perm[k], perm[r]] = [perm[r], perm[k]];
+			}
+			made[j] = perm;
+		}
+		return made[j];
+	};
 }
 
 function seedFor(pathKey) {
@@ -549,11 +575,12 @@ function main() {
 	function sampled(snap, a, c, nodeKey) {
 		const found = new Map();
 		const n = search.sample;
+		const strata = strataFor(`${nodeKey}|${a}|${c}`, n);
 		for (let i = 0; i < n; i++) {
 			const child = State.deserializeBattle(snap);
 			child.restart(() => {});
 			child.log = []; child.sentLogPos = 0;
-			child.prng = new SamplingPRNG(seedFor(`${nodeKey}|${a}|${c}|${i}`), search.rolls, search.rare);
+			child.prng = new SamplingPRNG(seedFor(`${nodeKey}|${a}|${c}|${i}`), search.rolls, search.rare, i, n, strata);
 			nodes++;
 			if (!child.choose('p1', a) || !child.choose('p2', c)) {
 				throw new Error(`the simulator rejected ${JSON.stringify([a, c])}`);
