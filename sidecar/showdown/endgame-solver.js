@@ -990,9 +990,130 @@ function main() {
 		return out;
 	}
 
+	const round = x => Math.round(x * 1e4) / 1e4;
+
+	/**
+	 * `search.win_check = tol`: before anything else, does either side have a choice that wins this
+	 * very turn against every reply, in all but `tol` of the turn's chance? Each pair of choices is
+	 * played out likeliest chance first and dropped the moment more than `tol` of it is not a win,
+	 * so a choice that does not force the win usually costs a turn or two to rule out. Bounded by
+	 * `search.win_budget` turns simulated (default 2,000); past it, no win is claimed. A forced win
+	 * is the answer: the rest of the search, and the race at its horizon, cannot improve on it.
+	 */
+	function settles(snap, a, c, winner, tol, budget) {
+		const frontier = [{script: [], p: 1}];
+		let won = 0, lost = 0;
+		while (frontier.length) {
+			if (budget.left-- <= 0) return null;
+			let bi = 0;
+			for (let i = 1; i < frontier.length; i++) if (frontier[i].p > frontier[bi].p) bi = i;
+			const {script, p} = frontier[bi];
+			frontier[bi] = frontier[frontier.length - 1]; frontier.pop();
+			const child = State.deserializeBattle(snap);
+			child.restart(() => {});
+			child.log = []; child.sentLogPos = 0;
+			child.prng = new ScriptedPRNG(script, search.rolls, search.rare);
+			nodes++;
+			try {
+				if (!child.choose('p1', a) || !child.choose('p2', c)) return null;
+			} catch (e) {
+				if (!(e instanceof Branch)) throw e;
+				e.options.forEach((o, k) => frontier.push({script: script.concat([{k, p: o.p}]), p: p * o.p}));
+				continue;
+			}
+			if (child.ended && child.winner === winner) won += p; else lost += p;
+			if (lost > tol) return null;
+			if (won >= 1 - tol) return won;
+		}
+		return won >= 1 - tol ? won : null;
+	}
+	// Whether `choice` could KO every foe this turn at all: each foe's HP within the damage aimed at
+	// it at the highest roll, without crits (a win that needs one is not forced), and two hits for a
+	// foe at full HP behind a Focus Sash or Sturdy. Ruling a choice out here costs a damage
+	// calculation; ruling it out by playing it costs a turn simulated per chance event.
+	function couldSweep(copy, side, choice) {
+		const me = copy.sides[side], foes = copy.sides[1 - side].active;
+		const live = foes.map((f, i) => (f && !f.fainted ? i : -1)).filter(i => i >= 0);
+		const dealt = new Map(live.map(i => [i, {d: 0, hits: 0}]));
+		choice.split(',').forEach((part, slot) => {
+			const c = parse(part);
+			const mon = me.active[slot];
+			if (!c || !mon || mon.fainted) return;
+			const req = me.activeRequest;
+			const id = req && req.active && req.active[slot] ? req.active[slot].moves[c.move - 1].id : mon.moveSlots[c.move - 1].id;
+			const move = copy.dex.moves.get(id);
+			if (move.category === 'Status') return;
+			const spread = ['allAdjacentFoes', 'allAdjacent'].includes(move.target) && live.length > 1;
+			const hits = Array.isArray(move.multihit) ? move.multihit[1] : (move.multihit || 1);
+			const aimed = spread ? live : c.target ? [c.target - 1] : live.slice(0, 1);
+			for (const i of aimed) {
+				if (!dealt.has(i)) continue;
+				const x = dealt.get(i);
+				x.d += damage(copy, mon, foes[i], id) * hits * (spread ? 0.75 : 1) * 100 / 92;
+				x.hits += hits;
+			}
+		});
+		return live.every(i => {
+			const f = foes[i], x = dealt.get(i);
+			const guarded = f.hp === f.maxhp && (f.item === 'focussash' || f.ability === 'sturdy');
+			return x.d >= f.hp && (!guarded || x.hits >= 2);
+		});
+	}
+	// Whether a foe of `side` can Protect, Endure or the like this turn with more than `tol` chance of
+	// it working (one time in 3^n after n in a row): one that does survives the turn, so nothing
+	// `side` chooses forces a win, unless `side` has a way through (Unseen Fist, Feint and its kin).
+	function guarded(b, side, tol) {
+		const me = b.sides[side], them = b.sides[1 - side];
+		const through = me.active.some(p => p && !p.fainted && (p.hasAbility('unseenfist')
+			|| p.moveSlots.some(m => b.dex.moves.get(m.id).breaksProtect)));
+		if (through) return false;
+		return them.active.some((f, slot) => {
+			if (!f || f.fainted) return false;
+			const req = them.activeRequest;
+			const moves = req && req.active && req.active[slot] ? req.active[slot].moves : f.moveSlots;
+			const odds = f.volatiles.stall ? 1 / f.volatiles.stall.counter : 1;
+			return odds > tol && moves.some(m => {
+				const mv = b.dex.moves.get(m.id);
+				return !m.disabled && mv.stallingMove && !['wideguard', 'quickguard'].includes(mv.id);
+			});
+		});
+	}
+	function forcedWin(tol) {
+		const snap = State.serializeBattle(root);
+		const o = [options(root, root.sides[0]), options(root, root.sides[1])];
+		const budget = {left: search.win_budget || 2000};
+		const copy = scorer(snap);
+		for (const side of [0, 1]) {
+			if (guarded(root, side, tol)) continue;
+			for (const mine of o[side]) {
+				if (!couldSweep(copy, side, mine)) continue;
+				let worst = 1;
+				for (const theirs of o[1 - side]) {
+					const w = side === 0 ? settles(snap, mine, theirs, 'p1', tol, budget)
+						: settles(snap, theirs, mine, 'p2', tol, budget);
+					if (w === null) { worst = null; break; }
+					worst = Math.min(worst, w);
+				}
+				if (worst !== null) return {side: side === 0 ? 'p1' : 'p2', choice: mine, won: worst};
+				if (budget.left <= 0) return null;
+			}
+		}
+		return null;
+	}
+	if (search.win_check) {
+		const f = forcedWin(search.win_check);
+		if (f) {
+			process.stdout.write(JSON.stringify({
+				value: round(f.side === 'p1' ? f.won : 1 - f.won), leaf_mass: 0, nodes, dropped_mass: 0,
+				ms: Date.now() - t0, forced: {side: f.side, choice: f.choice},
+				moves: {[f.side]: [f.choice]},
+			}) + '\n');
+			return;
+		}
+	}
+
 	const rootAlive = alive(root).reduce((a, b) => a + b, 0);
 	const r = value(State.serializeBattle(root), root, 0, 1);
-	const round = x => Math.round(x * 1e4) / 1e4;
 	process.stdout.write(JSON.stringify({
 		value: round(r.v), leaf_mass: round(r.leaf), nodes, dropped_mass: round(dropped), ms: Date.now() - t0,
 		...(search.prune ? {pruned} : {}),
