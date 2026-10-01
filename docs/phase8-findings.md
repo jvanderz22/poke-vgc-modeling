@@ -1811,7 +1811,8 @@ a game (`endgame.pair_candidates`).
 
 Of 1,025 held-out games, 95 reach a buildable 1v1 (907 never reach one; 23 are dropped: 12 with
 no set to solve, 8 with a volatile the adapter does not carry, 3 not shown). **86 are scored**; 9
-have a pair still unsolved, 4 past the cap and 5 that crashed (below).
+have a pair still unsolved, past the cap or among the 5 positions (two games, by their setups)
+that crashed (below).
 
 | | games | Brier engine / model | log loss engine / model | engine − model, log loss |
 | --- | --- | --- | --- | --- |
