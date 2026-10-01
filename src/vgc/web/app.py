@@ -18,6 +18,7 @@ Scope, honestly stated, because the UI has to say the same thing:
 from __future__ import annotations
 
 import json
+import os
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
@@ -115,6 +116,33 @@ async def _lifespan(_: FastAPI):
 
 
 app = FastAPI(title="VGC battle companion", version="0.1", lifespan=_lifespan)
+
+# A password, for a copy served beyond this machine (`deploy/`): HTTP Basic, user `VGC_WEB_USER`
+# ("vgc" by default) and password `VGC_WEB_PASSWORD`. Unset, the app is open, as it is on
+# localhost. `/api/health` stays open for the platform's health check. Without it a public copy
+# would run anybody's solves and simulations on its owner's bill.
+_PASSWORD = os.environ.get("VGC_WEB_PASSWORD")
+if _PASSWORD:
+    import base64
+    import secrets
+
+    from fastapi import Request
+    from fastapi.responses import Response
+
+    @app.middleware("http")
+    async def _password(request: Request, call_next):
+        if request.url.path == "/api/health":
+            return await call_next(request)
+        header = request.headers.get("authorization", "")
+        try:
+            user, _, password = base64.b64decode(header[6:]).decode().partition(":") \
+                if header.startswith("Basic ") else ("", "", "")
+        except ValueError:
+            user, password = "", ""
+        if not (secrets.compare_digest(user.encode(), os.environ.get("VGC_WEB_USER", "vgc").encode())
+                and secrets.compare_digest(password.encode(), _PASSWORD.encode())):
+            return Response("password required", 401, {"WWW-Authenticate": 'Basic realm="vgc"'})
+        return await call_next(request)
 
 
 class TeamText(BaseModel):

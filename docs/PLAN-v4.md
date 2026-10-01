@@ -208,6 +208,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | W4 EWP action table, on-demand bring/lead simulation | behind steps 2–3 |
 | W5 complete-my-team, moveset/SP suggestions | behind step 7 |
 | Video mode | [PLAN-video](PLAN-video.md): WP following a cartridge video of an open-sheet battle. Nothing built |
+| Cloud | [deploy/README](../deploy/README.md): Fly.io, one `shared-cpu-4x` 2 GB machine that stops when idle, a password, a volume. Prepared, not deployed; the 5 s doubles answer is untimed on shared cores |
 
 ---
 

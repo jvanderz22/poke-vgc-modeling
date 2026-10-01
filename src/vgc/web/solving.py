@@ -38,8 +38,12 @@ from vgc import paths
 from vgc.regulation import Regulation
 from vgc.wp import doubles, endgame, solver
 
-DEPTHS = (1, 2, 3, 4)
-WORKERS = max(1, min(6, (os.cpu_count() or 2) // 2))
+# How deep a 1v1 is taken. Depth 4 can run for hours (F6 did), with the page polling all the while,
+# so a cloud machine that bills by the second caps it (`VGC_SOLVE_MAX_DEPTH`, `deploy/`).
+DEPTHS = tuple(d for d in (1, 2, 3, 4) if d <= int(os.environ.get("VGC_SOLVE_MAX_DEPTH") or 4))
+# Solver processes at once. Each holds a copy of the simulator (about 220 MB, more mid-search), so
+# a small cloud machine sets `VGC_SOLVER_WORKERS` to what its memory allows (`deploy/`).
+WORKERS = int(os.environ.get("VGC_SOLVER_WORKERS") or max(1, min(6, (os.cpu_count() or 2) // 2)))
 
 # Doubles: the live search (checked on held-out games), its quick first answer, the budget. The
 # horizon is the race blended with HP share, the count and the net stat stages ('blend_boosts'),

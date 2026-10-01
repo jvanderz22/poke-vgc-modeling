@@ -582,3 +582,27 @@ def test_a_watched_turn_narrows_both_sides(client, watched):
     assert view["endgame"] == {"eligible": False, "reason": "the engine answers once neither side has more than two Pokémon left"}
     listed = client.get("/api/battles").json()["battles"]
     assert listed[0]["perspective"] == "spectator"
+
+
+def test_a_password_guards_everything_but_health(monkeypatch):
+    """Served beyond localhost, the app asks for a password; Fly's health check still gets in."""
+    import base64
+    import importlib
+
+    import vgc.web.app as webapp
+
+    monkeypatch.setenv("VGC_WEB_PASSWORD", "hunter2")
+    guarded = importlib.reload(webapp)
+    try:
+        from fastapi.testclient import TestClient
+
+        c = TestClient(guarded.app)
+        assert c.get("/api/health").status_code == 200
+        assert c.get("/api/teams").status_code == 401
+        bad = base64.b64encode(b"vgc:wrong").decode()
+        assert c.get("/api/teams", headers={"Authorization": f"Basic {bad}"}).status_code == 401
+        good = base64.b64encode(b"vgc:hunter2").decode()
+        assert c.get("/api/teams", headers={"Authorization": f"Basic {good}"}).status_code == 200
+    finally:
+        monkeypatch.delenv("VGC_WEB_PASSWORD")
+        importlib.reload(webapp)

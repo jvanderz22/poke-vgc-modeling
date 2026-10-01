@@ -1,0 +1,41 @@
+# Only what `vgc web` reads at runtime goes into the image (see Dockerfile). Everything else here
+# is training data, caches, or personal state.
+.git
+**/.git
+.venv
+.venv-train
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.vgc
+.kaggle-token
+kaggle.json
+access_token
+.env
+.DS_Store
+
+# Built in the image instead
+**/node_modules
+frontend/dist
+src/vgc/web/static
+vendor/pokemon-showdown/dist
+vendor/pokemon-showdown/logs
+vendor/pokemon-showdown/databases
+
+# Training data and analysis: about a gigabyte, none of it read by the app
+data/snapshots
+data/features
+data/selfplay
+data/analysis
+data/battles
+data/library
+data/champions-data
+data/replays/gen9championsvgc2026regmb
+data/replays/gen9championsvgc2026regmbbo3
+benchmarks
+checkpoints
+docs
+tests
+scripts
+models/**/*.pkl
+models/**/*.pt

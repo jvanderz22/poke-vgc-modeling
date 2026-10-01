@@ -38,3 +38,6 @@ src/vgc/web/static/
 
 # TypeScript incremental build state
 *.tsbuildinfo
+
+# Deploy secrets (deploy_fly.sh reads them)
+.env
