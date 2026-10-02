@@ -2,7 +2,9 @@
 
 _Written 2026-10-02. **Progress:** stage 0 done the same day ([phase9-findings](phase9-findings.md)):
 on open sheets the model is worth 0.008 nats more than HP share and the count above two a side, not
-distinguishable; on closed sheets 0.02 more._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+distinguishable; on closed sheets 0.02 more. Stage 1 done the same day: the solver plays positions
+with a bench, every listed choice accepted over 2,880 random games, cached answers unchanged, and a
+guess at the hidden parts costs a median 0.44–0.78 s at K 4–6._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -94,10 +96,9 @@ enumerated, not sampled" is superseded: enumeration is exponential in the hits a
 dice drawn after both sides choose is not the determinization that failed in the 1v1
 (PLAN-endgame-doubles, stage 1).
 
-New: **common random numbers across cells.** Today each cell's draws are seeded by its own choices,
-so two of my choices are compared under different dice. Seeding by (node, draw) instead should cut
-the noise in the differences that pick an action. Approximate, because different choices consume
-the PRNG differently; measured in stage 1 as the variance of row differences, with and without.
+~~Common random numbers across cells~~ were built and measured in stage 1, and do not help: the
+error in a difference between two rows was 0.0416 with them and 0.0409 without. Different choices
+use the dice differently, and stratified draws already take most of the noise out of a cell.
 
 ### What the player cannot see: determinization
 
@@ -162,6 +163,10 @@ _about 3 ms a turn replayed with its leaf_. At 4v4:
 So the design point is about K 6, N 4, D 2. Stage 1 measures the per-turn cost with a bench; the
 gate says whether that is strong enough.
 
+**Measured in stage 1** (warm, one guess, N 4): K 4 median 0.44 s (104 turns), K 6 0.78 s (201),
+K 8 1.20 s (323). About 3.8 ms a turn, and replacements add about 40% to the turns. So D 2 at K 4–6
+is 0.9–1.6 s a decision.
+
 ## Stages
 
 Each stage ends in a check. Every new solver behaviour is a `search` key that is off by default,
@@ -189,6 +194,22 @@ What was planned:
   often each state kind occurs, so the cost of a battle is weighted by where its decisions fall.
 
 ### 1. The solver with a bench (2 days)
+
+**Done 2026-10-02** ([phase9-findings](phase9-findings.md), "the solver with a bench";
+`tests/test_solver_bench.py`).
+- **Built:** `bench` positions; `switches`, `mega`, `side_k`, and replacements as their own node
+  (enumerated first, at no depth); `walk` for the acceptance check; `fast_dice` and `melee_runs`
+  for speed; `crn` and `salt` for the noise check. All off by default.
+- **Unchanged:** 180 cached answers re-solved bit for bit (3 stale `race_stages` rows aside).
+  `VERSION` stays at 1.
+- **Accepted:** 2,880 random games from 480 positions, about 21,700 steps, none rejected, after
+  four fixes.
+- **Cost, warm, one guess:** median 0.44 s at K 4, 0.78 s at K 6, 1.20 s at K 8 (prune 2, N 4,
+  fast dice). About 3.8 ms a turn replayed; replacements add about 40% to the turns.
+- **CRN does not help** (row-difference error 0.0416 against 0.0409), so it stays off. **Four
+  draws are noisy for choosing:** the best row matched a 32-draw reference's in 13–15 of 20.
+
+What was planned:
 
 - **Position format.** Up to four a side: which are on the field, and per Pokémon in the back its
   HP, status, item consumed, and whether it has been out. Fainted Pokémon fainted in place, as now.
@@ -228,6 +249,10 @@ On human games, through stage 2's adapter (from the stands, as the endgame check
 - **The leaf**, as worked out above: the race with reinforcements fitted on training games, scored
   against the model and the floor on held-out games by state kind and regime, plus the sibling
   spread. Decides the leaf.
+- **Does the model add anything to the count?** (Stage 0 left this open: on open sheets the model
+  beat the floor by 0.008 nats, not distinguishable.) The floor and logit(model) fitted together
+  on the validation split (the model trained on the training games), scored held out, at every
+  turn above two a side, not only each kind's first. For the page more than for the policy.
 - **Pruning against people.** On held-out turns above two a side, how often each player's actual
   choice survives: per slot and joint, at `k` 2–3 and `K` 4–8, by kind of choice (attack, Protect,
   switch, Mega, status). A choice the log does not show (a flinch, full paralysis, sleep) is

@@ -103,9 +103,23 @@ function per(field, side, i) {
 	return Array.isArray(v) ? v[i] : i === 0 ? v : undefined;
 }
 
-// How many Pokémon a side has left: one or two, the first ones in its team.
+// How many Pokémon a side has on the field: one or two, the first ones in its team.
 function actives(pos, side) {
 	return Math.max(1, Math.min(2, (pos.active || {})[side.id] || 1));
+}
+
+// How many it has in the back (`bench`, PLAN-policy stage 1): the ones after those on the field,
+// before the fainted ones. None unless the position says so, and only behind two on the field:
+// with a Pokémon in the back, an empty slot is filled before anyone chooses again.
+function benched(pos, side) {
+	const m = Math.max(0, Math.min(2, (pos.bench || {})[side.id] || 0));
+	if (m && actives(pos, side) !== 2) throw new Error(`${side.id} has a Pokémon in the back but not two on the field`);
+	return m;
+}
+
+// The Pokémon a side has left, on the field or in the back.
+function standing(side) {
+	return side.pokemon.filter(p => p && !p.fainted);
 }
 
 function setUp(pos) {
@@ -120,18 +134,19 @@ function setUp(pos) {
 	for (const id of Object.keys(f.pseudoWeather)) f.removePseudoWeather(id);
 	for (const side of b.sides) {
 		for (const id of Object.keys(side.sideConditions)) side.removeSideCondition(id);
-		const n = actives(pos, side);
-		for (const p of side.pokemon.slice(n)) {
+		const n = actives(pos, side), m = benched(pos, side);
+		for (const p of side.pokemon.slice(n + m)) {
 			p.hp = 0; p.fainted = true; p.status = 'fnt'; p.switchFlag = false;
 		}
-		side.pokemonLeft = n;
-		side.totalFainted = (s.fainted || {})[side.id] ?? 4 - n;
-		side.pokemon.slice(0, n).forEach((me, i) => {
+		side.pokemonLeft = n + m;
+		side.totalFainted = (s.fainted || {})[side.id] ?? 4 - n - m;
+		// A field about a Pokémon lists those on the field, then those in the back.
+		side.pokemon.slice(0, n + m).forEach((me, i) => {
 			me.clearBoosts();
 			// On the field for a while unless the position says it just arrived: Fake Out and First
 			// Impression fail after a Pokémon's first turn out, and a hand reading of the benchmark
-			// assumed they would.
-			if (!per(s.fresh, side, i)) { me.activeTurns = 3; me.activeMoveActions = 3; }
+			// assumed they would. One in the back starts its count again when it comes in.
+			if (i < n && !per(s.fresh, side, i)) { me.activeTurns = 3; me.activeMoveActions = 3; }
 			const pct = per(s.hp, side, i) ?? 100;
 			me.sethp(Math.max(1, Math.round(me.maxhp * pct / 100)));
 			if (per(s.mega, side, i)) b.actions.runMegaEvo(me);
@@ -140,13 +155,16 @@ function setUp(pos) {
 	if (s.weather) { f.setWeather(s.weather[0], 'debug'); f.weatherState.duration = s.weather[1]; }
 	if (s.terrain) { f.setTerrain(s.terrain[0], 'debug'); f.terrainState.duration = s.terrain[1]; }
 	if (s.trickroom) { f.addPseudoWeather('trickroom', 'debug'); f.pseudoWeather.trickroom.duration = s.trickroom; }
-	for (const side of b.sides) side.pokemon.slice(0, actives(pos, side)).forEach((me, i) => {
-		for (const [stat, n] of Object.entries(per(s.boosts, side, i) || {})) me.boosts[stat] = n;
+	for (const side of b.sides) side.pokemon.slice(0, actives(pos, side) + benched(pos, side)).forEach((me, i) => {
+		// What a switch clears (stages, a lock, the Protect counter) belongs to those on the field.
+		const out = i < actives(pos, side);
+		for (const [stat, n] of Object.entries((out && per(s.boosts, side, i)) || {})) me.boosts[stat] = n;
 		if (per(s.consumed, side, i)) {
 			me.setItem('');
-			if (me.hasAbility('unburden')) me.addVolatile('unburden');
+			// Unburden's speed is a volatile, and a switch clears it.
+			if (out && me.hasAbility('unburden')) me.addVolatile('unburden');
 		}
-		const lock = per(s.choicelock, side, i);
+		const lock = out && per(s.choicelock, side, i);
 		if (lock) {
 			b.activeMove = b.dex.getActiveMove(lock);
 			me.addVolatile('choicelock');
@@ -162,7 +180,7 @@ function setUp(pos) {
 		const status = per(s.status, side, i);
 		if (status) me.setStatus(status, me, null, true);
 		// Protect used `stall` turns running: the simulator's own counter, which triples each time.
-		const stall = per(s.stall, side, i);
+		const stall = out && per(s.stall, side, i);
 		if (stall) { me.addVolatile('stall'); me.volatiles.stall.counter = 3 ** stall; }
 	});
 	for (const side of b.sides) {
@@ -193,7 +211,13 @@ function setUp(pos) {
 // simulator rejects the choice. The target is the request's, not the dex's: a move locked in (the
 // second turn of Phantom Force, Outrage) comes with none, and the simulator rejects one given. A
 // side's choice is one for each slot, a fainted or empty slot passing: 'move 2 1, pass' in a 1v1.
-function slotOptions(b, side, slot) {
+//
+// `flags` (PLAN-policy stage 1), all off unless the search turns them on:
+//   switches  a switch to each Pokémon in the back, unless this one is trapped (Shadow Tag,
+//             Arena Trap: the simulator knows, though the request may hide it)
+//   mega      where a Pokémon can Mega Evolve, its moves are offered with the Mega and not
+//             without: it is what players do, and it keeps the list from doubling
+function slotOptions(b, side, slot, flags = {}) {
 	const req = side.activeRequest;
 	const p = side.active[slot];
 	if (!p || p.fainted || !req.active[slot]) return ['pass'];
@@ -203,29 +227,98 @@ function slotOptions(b, side, slot) {
 	// usable, and the simulator refuses it when chosen. A player would be told and choose again,
 	// so it is no choice at all. With every move blocked, any choice is Struggle.
 	const hidden = new Set(p.moveSlots.filter(s => s.disabled === 'hidden').map(s => s.id));
-	if (req.active[slot].moves.every(m => m.disabled || hidden.has(m.id))) return ['move 1'];
+	if (req.active[slot].moves.every(m => m.disabled || hidden.has(m.id))) return ['move 1', ...switches(side, slot, p, flags)];
+	const mega = flags.mega && req.active[slot].canMegaEvo ? ' mega' : '';
 	req.active[slot].moves.forEach((m, i) => {
 		if (m.disabled || hidden.has(m.id)) return;
 		if (['normal', 'any', 'adjacentFoe'].includes(m.target) && foes.length) {
-			for (const f of foes) out.push(`move ${i + 1} ${f + 1}`);
+			for (const f of foes) out.push(`move ${i + 1} ${f + 1}${mega}`);
 		} else if (m.target === 'adjacentAlly') {
-			out.push(`move ${i + 1} -${2 - slot}`);
+			out.push(`move ${i + 1} -${2 - slot}${mega}`);
 		} else if (m.target === 'adjacentAllyOrSelf') {
-			out.push(`move ${i + 1} -${slot + 1}`);
+			out.push(`move ${i + 1} -${slot + 1}${mega}`);
 		} else {
-			out.push(`move ${i + 1}`);
+			out.push(`move ${i + 1}${mega}`);
 		}
 	});
+	out.push(...switches(side, slot, p, flags));
 	return out.length ? out : ['pass'];
 }
 
-function options(b, side) {
-	const req = side.activeRequest;
-	if (!req || req.wait || !req.active) return ['pass'];
-	const [a, c] = [0, 1].map(slot => slotOptions(b, side, slot));
+// The Pokémon a side has in the back, as the choices that bring each in ('switch 3').
+function bench(side) {
+	return side.pokemon.map((q, i) => ({q, i})).filter(x => x.i >= side.active.length && !x.q.fainted)
+		.map(x => `switch ${x.i + 1}`);
+}
+
+function switches(side, slot, p, flags) {
+	if (!flags.switches || p.trapped || side.activeRequest.active[slot].trapped) return [];
+	return bench(side);
+}
+
+// A side asked to fill its empty slots (after a KO, or in the middle of a turn after U-turn,
+// Parting Shot or an Eject Button): every way to fill as many as its back allows.
+function replacements(side) {
+	const need = side.activeRequest.forceSwitch.map(Boolean);
+	// Revival Blessing asks the same way, for a fainted Pokémon to bring back (the adapters do not
+	// build positions with it, whose fainted Pokémon are fillers; the list is still kept legal).
+	const revive = need.findIndex((n, i) => n && side.active[i] && side.slotConditions[side.active[i].position].revivalblessing);
+	if (revive >= 0) {
+		const fainted = side.pokemon.map((q, i) => ({q, i})).filter(x => x.i >= side.active.length && x.q.fainted)
+			.map(x => `switch ${x.i + 1}`);
+		return fainted.map(f => need.map((n, i) => (i === revive ? f : 'pass')).join(', '));
+	}
+	const back = bench(side);
+	const want = Math.min(need.filter(Boolean).length, back.length);
+	const per = need.map(n => (n ? [...back, 'pass'] : ['pass']));
 	const out = [];
-	for (const x of a) for (const y of c) if (!(x === 'pass' && y === 'pass')) out.push(`${x}, ${y}`);
+	for (const x of per[0]) for (const y of per.length > 1 ? per[1] : ['pass']) {
+		if (x !== 'pass' && x === y) continue;
+		if ([x, y].filter(c => c !== 'pass').length !== want) continue;
+		out.push(per.length > 1 ? `${x}, ${y}` : x);
+	}
 	return out.length ? out : ['pass'];
+}
+
+function options(b, side, flags = {}) {
+	const req = side.activeRequest;
+	if (!req || req.wait) return ['pass'];
+	if (req.forceSwitch) return replacements(side);
+	if (!req.active) return ['pass'];
+	let [a, c] = [0, 1].map(slot => slotOptions(b, side, slot, flags));
+	// Both able to Mega Evolve: only one can, so each also keeps its moves without it.
+	const megas = list => list.some(x => x.endsWith(' mega'));
+	if (megas(a) && megas(c)) {
+		const both = list => [...list, ...list.filter(x => x.endsWith(' mega')).map(x => x.slice(0, -5))];
+		[a, c] = [both(a), both(c)];
+	}
+	const out = [];
+	for (const x of a) for (const y of c) {
+		if (x === 'pass' && y === 'pass') continue;
+		// Two slots cannot bring in the same Pokémon, and a side Mega Evolves once.
+		if (x.startsWith('switch') && x === y) continue;
+		if (x.endsWith(' mega') && y.endsWith(' mega')) continue;
+		out.push(`${x}, ${y}`);
+	}
+	return out.length ? out : ['pass'];
+}
+
+// Whether a battle is waiting on replacements rather than on a turn's moves.
+function replacing(b) {
+	return b.sides.some(s => s.activeRequest && s.activeRequest.forceSwitch);
+}
+
+// Both sides' choices for one step, skipping a side that has nothing to choose (the other side's
+// replacement in the middle of a turn). False if the simulator rejects one.
+function play(b, a, c) {
+	// Who is waiting is read before anyone chooses: the one side owing a replacement finishes the
+	// turn when it chooses, and the other side then has the next turn's request, not a wait.
+	const waiting = b.sides.map(side => !!(side.activeRequest && side.activeRequest.wait));
+	for (const [i, ch] of [[0, a], [1, c]]) {
+		if (waiting[i]) continue;
+		if (!b.choose(b.sides[i].id, ch)) return false;
+	}
+	return true;
 }
 
 /**
@@ -265,9 +358,10 @@ function scorer(snap) {
 	return copy;
 }
 
-// One choice's parts: the move slot (1-based) and target, from 'move 2 1' or 'move 3 -2'.
+// One choice's parts: the move slot (1-based) and target, from 'move 2 1', 'move 3 -2' or
+// 'move 1 2 mega'. A switch is not a move: null.
 function parse(part) {
-	const m = /^move (\d+)(?: (-?\d+))?$/.exec(part.trim());
+	const m = /^move (\d+)(?: (-?\d+))?(?: mega)?$/.exec(part.trim());
 	return m ? {move: +m[1], target: m[2] === undefined ? null : +m[2]} : null;
 }
 
@@ -291,7 +385,11 @@ function damage(copy, me, foe, id) {
 
 // The largest share of this Pokémon's HP any live foe's move takes, by the same calculation.
 function threat(copy, side, slot) {
-	const me = copy.sides[side].active[slot];
+	return threatTo(copy, side, copy.sides[side].active[slot]);
+}
+
+// The same for any Pokémon of `side`'s, one in the back included (were it on the field now).
+function threatTo(copy, side, me) {
 	let worst = 0;
 	for (const foe of copy.sides[1 - side].active) {
 		if (!foe || foe.fainted) continue;
@@ -338,15 +436,25 @@ function score(copy, side, slot, part, danger) {
 // the pairs are formed from what is left. A pair that sends two attacks at a foe one of them KOs
 // alone is dropped while the other foe stands: that is overkill, and the pair that KOs and hits
 // the other foe is kept instead. In a 1v1 the second part is always 'pass'.
-function prune(copy, side, choices, k) {
+//
+// Switches (`search.switches`) are not cut with the moves. At most one is kept a Pokémon: to the
+// one in the back that takes least from the foes' attacks, and only while the one on the field
+// stands to lose at least `SWITCH_THREAT` of its HP to a single attack and the one coming in
+// would lose less. `K` (`search.side_k`) then cuts the side's pairs to the K with the highest
+// summed scores, a switch scoring the share of HP it saves.
+const SWITCH_THREAT = 0.5;
+function prune(copy, side, choices, k, K = 0) {
 	if (!k) return choices;
 	const parts = choices.map(ch => ch.split(',').map(x => x.trim()));
 	const info = [new Map(), new Map()];
+	const saved = [new Map(), new Map()];
 	const kept = [0, 1].map(slot => {
-		const mine = [...new Set(parts.map(p => p[slot]))].filter(x => x !== 'pass');
-		if (mine.length <= k) return new Set([...mine, 'pass']);
+		const all = [...new Set(parts.map(p => p[slot]))].filter(x => x !== 'pass');
+		const mine = all.filter(x => !x.startsWith('switch'));
 		let danger = null;
 		const once = () => (danger === null ? (danger = threat(copy, side, slot)) : danger);
+		const swap = bestSwitch(copy, side, all.filter(x => x.startsWith('switch')), once, saved[slot]);
+		if (mine.length <= k) return new Set([...mine, ...(swap ? [swap] : []), 'pass']);
 		const scored = mine.map(part => ({part, ...score(copy, side, slot, part, once)}));
 		for (const x of scored) info[slot].set(x.part, x);
 		const keep = new Set(['pass']);
@@ -367,6 +475,7 @@ function prune(copy, side, choices, k) {
 			if (keep.size - 1 >= k) break;
 			keep.add(x.part);
 		}
+		if (swap) keep.add(swap);
 		return keep;
 	});
 	const foes = copy.sides[1 - side].active.filter(p => p && !p.fainted).length;
@@ -377,7 +486,36 @@ function prune(copy, side, choices, k) {
 		if (foes > 1 && x && y && x.foe != null && x.foe === y.foe && (x.ko || y.ko)) return false;
 		return true;
 	});
-	return out.length ? out : choices;
+	if (!out.length) return choices;
+	if (!K || out.length <= K) return out;
+	const value = (slot, part) => {
+		if (part === 'pass') return 0;
+		if (saved[slot].has(part)) return saved[slot].get(part);
+		if (!info[slot].has(part)) {
+			let danger = null;
+			const once = () => (danger === null ? (danger = threat(copy, side, slot)) : danger);
+			info[slot].set(part, {part, ...score(copy, side, slot, part, once)});
+		}
+		return info[slot].get(part).score;
+	};
+	const ranked = out.map((ch, j) => {
+		const [a, b] = ch.split(',').map(x => x.trim());
+		return {ch, j, v: value(0, a) + value(1, b || 'pass')};
+	});
+	ranked.sort((x, y) => y.v - x.v || x.j - y.j);
+	return ranked.slice(0, K).map(x => x.ch);
+}
+
+// The one switch worth keeping for a slot (see `prune`), or null; what it saves goes in `saved`.
+function bestSwitch(copy, side, swaps, danger, saved) {
+	if (!swaps.length || danger() < SWITCH_THREAT) return null;
+	let best = null;
+	for (const part of swaps) {
+		const t = threatTo(copy, side, copy.sides[side].pokemon[+part.split(' ')[1] - 1]);
+		if (t < danger() && (!best || t < best.t)) best = {part, t};
+	}
+	if (best) saved.set(best.part, danger() - best.t);
+	return best ? best.part : null;
 }
 
 function key(b) {
@@ -385,13 +523,19 @@ function key(b) {
 	const mon = p => [p.hp, p.status, p.item, JSON.stringify(p.boosts), Object.keys(p.volatiles).sort().join('.'),
 		p.volatiles.stall ? p.volatiles.stall.counter : '', p.volatiles.choicelock ? p.volatiles.choicelock.move : '',
 		p.timesAttacked, p.species.id].join(':');
-	return [f.weather, f.weatherState.duration, f.terrain, f.terrainState.duration,
+	const out = [f.weather, f.weatherState.duration, f.terrain, f.terrainState.duration,
 		Object.entries(f.pseudoWeather).map(([k, v]) => k + v.duration).join(','),
 		...b.sides.map(s => s.active.filter(p => p && !p.fainted).map(mon).join('|'))].join('/');
+	// The back, and a turn stopped for a replacement, only where there are any: a position without
+	// a bench keeps the key it always had, and with it its sampled draws and cached answers.
+	const back = b.sides.map(s => s.pokemon.slice(s.active.length).filter(p => p && !p.fainted).map(mon).join('|'));
+	const stop = replacing(b) ? b.sides.map(s => JSON.stringify((s.activeRequest || {}).forceSwitch || 0)).join(',') +
+		';' + b.queue.list.map(a => a.choice + (a.pokemon ? a.pokemon.side.id + a.pokemon.position : '')).join(',') : '';
+	return back.some(x => x) || stop ? `${out}/back:${back.join('/')}/stop:${stop}` : out;
 }
 
 function leaf(b) {
-	const share = side => side.active.filter(p => p && !p.fainted).reduce((a, p) => a + p.hp / p.maxhp, 0);
+	const share = side => standing(side).reduce((a, p) => a + p.hp / p.maxhp, 0);
 	const a = share(b.sides[0]), c = share(b.sides[1]);
 	return a + c > 0 ? a / (a + c) : 0.5;
 }
@@ -412,6 +556,7 @@ function race(snap) {
 	const copy = scorer(snap);
 	const live = s => copy.sides[s].active.filter(p => p && !p.fainted);
 	if (live(0).length !== 1 || live(1).length !== 1) return null;
+	if (standing(copy.sides[0]).length !== 1 || standing(copy.sides[1]).length !== 1) return null;
 	const mons = [live(0)[0], live(1)[0]];
 	const attacks = [0, 1].map(s => {
 		const me = mons[s], foe = mons[1 - s];
@@ -606,7 +751,8 @@ const BLENDS = {calibrated: (v, battle) => calibrated(v), blend: blended, blend_
 function horizon(mode, v, battle) {
 	return BLENDS[mode] ? BLENDS[mode](v, battle) : v;
 }
-function melee(snap, seedKey, live = null) {
+function melee(snap, seedKey, live = null, search = null) {
+	const runs = (search && search.melee_runs) || MELEE_RUNS;
 	// `live`: the leaf's own battle, read but not changed, with damage from the tables (fast_race).
 	let copy = live ? null : scorer(snap);
 	const scoring = () => copy || (copy = scorer(snap));
@@ -664,9 +810,9 @@ function melee(snap, seedKey, live = null) {
 				- (['psn', 'tox'].includes(me.status) ? Math.floor(me.maxhp / 8) : 0)});
 	}
 	const of = (s, j) => mons.filter(x => x.side === s)[j];
-	const rng = new PRNG(seedFor(`melee|${seedKey}`));
+	const rng = dice(search, `melee|${seedKey}`);
 	let won = 0;
-	for (let run = 0; run < MELEE_RUNS; run++) {
+	for (let run = 0; run < runs; run++) {
 		const hp = mons.map(x => x.mon.hp), berry = mons.map(x => x.sitrus), sash = mons.map(x => x.sash);
 		const alive = s => mons.some((x, k) => x.side === s && hp[k] > 0);
 		let result = null;
@@ -728,7 +874,7 @@ function melee(snap, seedKey, live = null) {
 		}
 		won += result;
 	}
-	return won / MELEE_RUNS;
+	return won / runs;
 }
 
 // Minimax value of a zero-sum matrix game for the row player: a saddle point when there is one,
@@ -849,7 +995,7 @@ class SamplingPRNG extends ScriptedPRNG {
 	 */
 	constructor(seed, rolls, rare, i, n, strata) {
 		super([], rolls, rare);
-		this.draw = new PRNG(seed); this.i = i; this.n = n; this.strata = strata; this.j = 0;
+		this.draw = typeof seed === 'string' ? new PRNG(seed) : seed; this.i = i; this.n = n; this.strata = strata; this.j = 0;
 	}
 	pick(options) {
 		if (options.length === 1) return options[0].v;
@@ -880,6 +1026,33 @@ function seedFor(pathKey) {
 	return 'sodium,' + crypto.createHash('sha256').update(pathKey).digest('hex');
 }
 
+/**
+ * `search.fast_dice` (PLAN-policy stage 1): the race's dice and the sampled turns' draws from sfc32
+ * seeded by the same key, instead of Showdown's PRNG. Showdown's is ChaCha20, built to be
+ * unpredictable, and it was a fifth of a search with a bench. These dice only need to be seeded
+ * and even; the simulator's own random calls still go through the scripted or sampling PRNG.
+ */
+class FastDice {
+	constructor(pathKey) {
+		const h = crypto.createHash('sha256').update(pathKey).digest();
+		[this.a, this.b, this.c, this.d] = [0, 4, 8, 12].map(i => h.readUInt32LE(i));
+		for (let i = 0; i < 12; i++) this.random();
+	}
+	random() {
+		const t = (((this.a + this.b) | 0) + this.d) | 0;
+		this.d = (this.d + 1) | 0;
+		this.a = this.b ^ (this.b >>> 9);
+		this.b = (this.c + (this.c << 3)) | 0;
+		this.c = (this.c << 21) | (this.c >>> 11);
+		this.c = (this.c + t) | 0;
+		return (t >>> 0) / 4294967296;
+	}
+}
+
+function dice(search, pathKey) {
+	return search && search.fast_dice ? new FastDice(pathKey) : new PRNG(seedFor(pathKey));
+}
+
 function solvePosition(pos) {
 	// The race's tables are for one search: another position's Pokémon share a key, not a spread.
 	DAMAGE.clear(); PRIORITY.clear();
@@ -903,12 +1076,50 @@ function solvePosition(pos) {
 				status: p.status}))),
 		});
 	}
+	if (pos.walk) {
+		// {"walk": {"games": n, "turns": t, "seed": s}}: each game plays on from the position with real
+		// dice, every step a random choice from the list the search would be given (search.switches and
+		// search.mega apply). Any the simulator rejects is reported: the list must hold only what the
+		// cartridge would accept (PLAN-policy, stage 1).
+		const w = pos.walk, flags = {switches: !!search.switches, mega: !!search.mega};
+		const snap = State.serializeBattle(root);
+		const report = {games: 0, steps: 0, ended: 0, replacements: 0, switches: 0, megas: 0, rejected: []};
+		for (let g = 0; g < (w.games || 1); g++) {
+			const b = State.deserializeBattle(snap);
+			b.restart(() => {});
+			b.prng = new PRNG(seedFor(`walk|${w.seed || 0}|${g}`));
+			const pick = new PRNG(seedFor(`walk-pick|${w.seed || 0}|${g}`));
+			report.games++;
+			for (let t = 0; t < (w.turns || 30) && !b.ended; t++) {
+				// As the search does each turn: Showdown stops a battle whose unsent log passes 1,000 lines.
+				b.log = []; b.sentLogPos = 0;
+				const o = b.sides.map(sd => options(b, sd, flags));
+				const ch = o.map(list => list[Math.floor(pick.random() * list.length)]);
+				if (replacing(b)) report.replacements++;
+				report.switches += ch.join(',').split('switch').length - 1;
+				report.megas += ch.join(',').split(' mega').length - 1;
+				report.steps++;
+				const asked = b.sides.map(sd => JSON.stringify(sd.activeRequest && {wait: sd.activeRequest.wait,
+					forceSwitch: sd.activeRequest.forceSwitch, active: !!sd.activeRequest.active}));
+				if (!play(b, ch[0], ch[1])) {
+					const side = b.sides.find(sd => sd.choice.error);
+					report.rejected.push({choice: ch, error: side ? side.choice.error : 'rejected', turn: b.turn, asked,
+						requestState: b.requestState});
+					break;
+				}
+			}
+			if (b.ended) report.ended++;
+		}
+		return report;
+	}
 	const cache = new Map();
 	let nodes = 0, dropped = 0, pruned = 0;
 	// With `search.stats`: turns replayed and distinct outcomes, and the matrix sizes met, by how
 	// many Pokémon each side had — what the doubles cost estimates are measured with.
 	const stats = {replays: 0, outcomes: 0, matrices: {}};
-	const alive = bt => bt.sides.map(sd => sd.active.filter(p => p && !p.fainted).length);
+	// Pokémon left a side, the back included (without a bench, the same as those on the field).
+	const alive = bt => bt.sides.map(sd => standing(sd).length);
+	const flags = {switches: !!search.switches, mega: !!search.mega};
 
 	// Every way one turn can go for a pair of choices, with its probability: the turn is replayed
 	// under a scripted PRNG, and each random call past the end of the script throws its options
@@ -926,14 +1137,19 @@ function solvePosition(pos) {
 	function sampled(snap, a, c, nodeKey) {
 		const found = new Map();
 		const n = search.sample;
-		const strata = strataFor(`${nodeKey}|${a}|${c}`, n);
+		// `search.crn`: every cell of the node draws the same dice, so two choices are compared under
+		// one set of draws rather than two (approximately: different choices use the dice differently).
+		// `search.salt` draws other dice for the same position (a reference to check sampling against).
+		const cell = (search.salt ? `${search.salt}|` : '') + (search.crn ? 'crn' : `${a}|${c}`);
+		const strata = strataFor(`${nodeKey}|${cell}`, n);
 		for (let i = 0; i < n; i++) {
 			const child = State.deserializeBattle(snap);
 			child.restart(() => {});
 			child.log = []; child.sentLogPos = 0;
-			child.prng = new SamplingPRNG(seedFor(`${nodeKey}|${a}|${c}|${i}`), search.rolls, search.rare, i, n, strata);
+			const draw = search.fast_dice ? new FastDice(`${nodeKey}|${cell}|${i}`) : seedFor(`${nodeKey}|${cell}|${i}`);
+			child.prng = new SamplingPRNG(draw, search.rolls, search.rare, i, n, strata);
 			nodes++;
-			if (!child.choose('p1', a) || !child.choose('p2', c)) {
+			if (!play(child, a, c)) {
 				throw new Error(`the simulator rejected ${JSON.stringify([a, c])}`);
 			}
 			const k = child.ended ? `end:${child.winner}` : key(child);
@@ -976,7 +1192,7 @@ function solvePosition(pos) {
 			try {
 				// A rejected choice leaves the turn unplayed, and the search would score it as if
 				// it had been: Helping Hand with no target once read as a certain win.
-				if (!child.choose('p1', a) || !child.choose('p2', c)) {
+				if (!play(child, a, c)) {
 					throw new Error(`the simulator rejected ${JSON.stringify([a, c])}`);
 				}
 			} catch (e) {
@@ -1010,16 +1226,22 @@ function solvePosition(pos) {
 	// most its probability, and it is reported in `leaf_mass` with the depth cut-off.
 	function value(snap, battle, depth, reach) {
 		if (battle.ended) return {v: battle.winner === 'p1' ? 1 : battle.winner === 'p2' ? 0 : 0.5, leaf: 0};
-		if (depth >= search.depth || reach < search.cutoff) {
-			let r = search.race ? race(snap) : null;
+		// Filling an empty slot is a choice of its own, made before anything is valued: it costs no
+		// depth, and no position is valued with a slot still empty.
+		const swap = replacing(battle);
+		if (!swap && (depth >= search.depth || reach < search.cutoff)) {
+			// The race is for a 1v1 only, and finding that out on a copy of the battle cost a
+			// deserialization a leaf; the count says so first, with the same answer.
+			const left = alive(battle);
+			let r = search.race && left[0] === 1 && left[1] === 1 ? race(snap) : null;
 			if (r === null && search.race_doubles) {
-				r = melee(snap, key(battle), search.fast_race ? battle : null);
+				r = melee(snap, key(battle), search.fast_race ? battle : null, search);
 				if (r !== null) r = horizon(search.race_doubles, r, battle);
 			}
 			return {v: r === null ? leaf(battle) : r, leaf: 1};
 		}
 		// A 1v1 below a doubles root, valued by its damage race rather than searched.
-		if (search.race_1v1 && rootAlive > 2) {
+		if (search.race_1v1 && rootAlive > 2 && !swap) {
 			const here = alive(battle);
 			if (here[0] === 1 && here[1] === 1) {
 				const r = race(snap);
@@ -1029,12 +1251,12 @@ function solvePosition(pos) {
 		const k = key(battle) + '#' + depth;
 		if (cache.has(k)) return cache.get(k);
 		const nodeKey = k;
-		let o1 = options(battle, battle.sides[0]), o2 = options(battle, battle.sides[1]);
-		if (search.prune) {
+		let o1 = options(battle, battle.sides[0], flags), o2 = options(battle, battle.sides[1], flags);
+		if (search.prune && !swap) {
 			const copy = scorer(snap);
 			const n = o1.length + o2.length;
-			o1 = prune(copy, 0, o1, search.prune);
-			o2 = prune(copy, 1, o2, search.prune);
+			o1 = prune(copy, 0, o1, search.prune, search.side_k);
+			o2 = prune(copy, 1, o2, search.prune, search.side_k);
 			pruned += n - o1.length - o2.length;
 		}
 		const here = alive(battle);
@@ -1047,13 +1269,14 @@ function solvePosition(pos) {
 			const row = [], lrow = [], vrow = [];
 			for (const c of o2) {
 				let sum = 0, leafSum = 0, mass = 0, sq = 0;
-				const outs = outcomes(snap, a, c, nodeKey, here[0] + here[1] > 2);
+				// A replacement is enumerated first like a 1v1 turn: bringing a Pokémon in rarely rolls dice.
+				const outs = outcomes(snap, a, c, nodeKey, !swap && here[0] + here[1] > 2);
 				for (const o of outs) {
 					// The KO extension: a turn that costs a Pokémon does not use up a turn of the
 					// depth, so a trade is searched on into the smaller position instead of being
 					// scored by HP share. In a 1v1 a KO ends the battle, so nothing changes there.
 					const after = alive(o.battle);
-					const next = search.ko_extend !== false && after[0] + after[1] < here[0] + here[1] ? depth : depth + 1;
+					const next = swap || (search.ko_extend !== false && after[0] + after[1] < here[0] + here[1]) ? depth : depth + 1;
 					const r = value(State.serializeBattle(o.battle), o.battle, next, reach * o.p);
 					sum += o.p * r.v; leafSum += o.p * r.leaf; mass += o.p; sq += o.p * r.v * r.v;
 				}
@@ -1101,7 +1324,7 @@ function solvePosition(pos) {
 			child.prng = new ScriptedPRNG(script, search.rolls, search.rare);
 			nodes++;
 			try {
-				if (!child.choose('p1', a) || !child.choose('p2', c)) return null;
+				if (!play(child, a, c)) return null;
 			} catch (e) {
 				if (!(e instanceof Branch)) throw e;
 				e.options.forEach((o, k) => frontier.push({script: script.concat([{k, p: o.p}]), p: p * o.p}));
@@ -1168,7 +1391,7 @@ function solvePosition(pos) {
 	const WIN_EXACT = 0.005;
 	function forcedWin(tol) {
 		const snap = State.serializeBattle(root);
-		const o = [options(root, root.sides[0]), options(root, root.sides[1])];
+		const o = [options(root, root.sides[0], flags), options(root, root.sides[1], flags)];
 		const budget = {left: search.win_budget || 500};
 		const copy = scorer(snap);
 		const here = alive(root);
@@ -1196,14 +1419,15 @@ function solvePosition(pos) {
 		}
 		return null;
 	}
-	if (search.win_check) {
+	// With a Pokémon in the back no turn wins outright: a KO only brings it in.
+	if (search.win_check && !replacing(root) && alive(root).every((n, s) => n === root.sides[s].active.filter(p => p && !p.fainted).length)) {
 		const f = forcedWin(search.win_check);
 		if (f) {
 			// Where the sweep fails, the race at the root stands for the rest of the game.
 			const snap = State.serializeBattle(root);
 			let rest = race(snap);
 			if (rest === null) rest = BLENDS[search.race_doubles]
-				? horizon(search.race_doubles, melee(snap, key(root)) ?? 0.5, root) : leaf(root);
+				? horizon(search.race_doubles, melee(snap, key(root), null, search) ?? 0.5, root) : leaf(root);
 			const mine = f.side === 'p1' ? rest : 1 - rest;
 			const v = f.won + (1 - f.won) * mine;
 			return ({

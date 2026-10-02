@@ -62,3 +62,62 @@ Share of turns by state kind (open; closed within 0.02 of it): 4v4 32%, 4v3 17%,
   doubles answer takes a median 2.8 s across three solver processes. Weighted by their share, that
   would roughly double the cost of a battle. In bulk play, roots at two or fewer a side get one
   move order and a 1 s cap, with the quick value (forced-win check and race) when that runs out.
+
+## The solver with a bench (stage 1)
+
+2026-10-02. The solver now takes positions with Pokémon in the back (`bench: {p1, p2}`; a field
+about a Pokémon lists those on the field, then those in the back), and new search settings, all
+off by default: `switches`, `mega`, `side_k` (a side's pairs cut to the K with the highest summed
+scores), `crn`, `salt`, `fast_dice` and `melee_runs`. Replacements (after a KO, or in the middle of
+a turn after U-turn, Parting Shot, an Eject Button or Eject Pack) are their own node: both sides'
+ways to fill the empty slots, valued before the horizon and costing no depth. `walk` plays random
+listed choices on from a position with real dice and reports any the simulator rejects.
+
+**Nothing that was there moved.** Three samples of 60 cached answers (40 doubles, 20 1v1, nodes
+≤ 3,000), re-solved without the cache, matched bit for bit on value, leaf mass, nodes, matrix,
+choices and sampling error, except three rows. Those three were cached under `race_stages`, the
+experiment PLAN-endgame-doubles dropped, whose key no longer does anything; the solver at HEAD
+does not reproduce them either. They are stale, not changed. `VERSION` stays at 1.
+
+**Every listed choice is one the simulator accepts.** 480 positions from pool teams (4v4 to 2v3,
+a third of them on the first turn out), six walks of up to 30 turns each: 2,880 games, about
+21,700 steps, 5,400 replacements, 11,400 switches and 4,000 Megas, none rejected. Four faults
+were found and fixed on the way:
+- who is waiting has to be read before either side chooses: the side owing a mid-turn replacement
+  finishes the turn when it chooses, and the other side then has a move request, not a wait;
+- with two Pokémon on the field able to Mega Evolve, offering only the Mega versions left no legal
+  pair (a side Mega Evolves once), so both versions are offered then;
+- Revival Blessing's request is a replacement asking for a fainted Pokémon;
+- the walk has to clear the battle log each turn, as the search does, or Showdown stops it at
+  1,000 lines (the walk's fault, not the search's).
+
+**What a decision costs** (25 positions from pool teams, 4v4 to 3v2, one guess at the hidden
+parts; `prune` 2, 4 draws, `fast_race`, `fast_dice`, replacements searched, `blend_boosts` at the
+horizon; a warm `--serve` process):
+
+| K a side | median | p90 | max | turns replayed (median) |
+| --- | --- | --- | --- | --- |
+| 4 | 0.44 s | 0.60 s | 1.1 s | 104 |
+| 6 | 0.78 s | 1.10 s | 1.9 s | 201 |
+| 8 | 1.20 s | 1.74 s | 3.0 s | 323 |
+
+- **About 3.7–4.0 ms a turn replayed**, against the 3 ms estimated, and **replacements add about
+  40% to the turns**, which the estimate left out. A cold process adds about 0.6 s; the policy
+  keeps its solvers warm.
+- **So two guesses at K 4–6 cost a median 0.9–1.6 s a decision** above two a side: near the 1 s
+  design point, not over it by a multiple.
+- **Where the time went, and what was cut** (one 4v4, K 6): replacement cells were sampled four
+  times though bringing a Pokémon in rarely rolls dice. Enumerated first, as a 1v1 turn is, they
+  took the turns replayed from 1,080 to 602. Showdown's PRNG (ChaCha20) was a fifth of what was
+  left; `fast_dice` (sfc32 for the race and the sampled draws) took the position from 3.1 s to
+  2.4 s cold. Racing 16 times instead of 64 adds little once the race reads its damage from tables.
+
+**Common random numbers do not help.** Against a 32-draw reference on 20 roots, the RMS error of a
+difference between two rows of the matrix was 0.0416 with them and 0.0409 without. Different
+choices use the dice differently, and stratified draws already take most of the noise out of a
+cell. `crn` stays off.
+
+**Four draws are noisy for choosing.** In the same check, the row a best response to the
+reference's reply would pick matched the 32-draw reference's pick in 13 (with CRN) and 15
+(without) of 20 roots. Whether more draws or more choices buy more strength is for the gate to say
+(stage 5), but it is the first place the budget would go.
