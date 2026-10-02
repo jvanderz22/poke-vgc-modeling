@@ -162,6 +162,11 @@ that reaches two or fewer a side, in the state kinds where it passed.
 
 The first deliverable is a written stage plan, as PLAN-endgame-doubles was, with the leaf choice
 and the bench (switches return above two a side) worked out before anything is built.
+**Written 2026-10-02: [PLAN-policy](PLAN-policy.md).** In short: a design point of about 1 s a
+decision on one core, set by what step 3 can afford (about 12,000 battles); one turn deep over
+pruned joint choices with switches; the damage race extended with reinforcements as the leaf,
+with the model as the bar it must beat on held-out games; Nash and a π_opp fitted to people both
+run through the gate. About 9 days plus a night or two on Kaggle, most of it step 3's run.
 
 ### 3. Re-run Phase 6 against the Phase 9 policy
 
@@ -295,6 +300,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 - [PLAN-v3](PLAN-v3.md): archive of steps 1–9 (2026-09-28 to 2026-10-01). [PLAN-v2](PLAN-v2.md):
   Phases 4–8. [PLAN](PLAN.md): original research, full architecture, phases 0–4.
 - [PLAN-endgame-doubles](PLAN-endgame-doubles.md): the solver for 2v1, 1v2 and 2v2 (step 1).
+- [PLAN-policy](PLAN-policy.md): Phase 9, the policy over whole battles (step 2).
 - [PLAN-video](PLAN-video.md): video mode.
 - [deploy/README](../deploy/README.md): the Fly.io deployment, its sizing and cost.
 - Findings: [phase0](phase0-findings.md) · [phase4](phase4-findings.md) ·
