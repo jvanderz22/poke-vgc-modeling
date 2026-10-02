@@ -4,7 +4,10 @@ _Written 2026-10-02. **Progress:** stage 0 done the same day ([phase9-findings](
 on open sheets the model is worth 0.008 nats more than HP share and the count above two a side, not
 distinguishable; on closed sheets 0.02 more. Stage 1 done the same day: the solver plays positions
 with a bench, every listed choice accepted over 2,880 random games, cached answers unchanged, and a
-guess at the hidden parts costs a median 0.44–0.78 s at K 4–6._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+guess at the hidden parts costs a median 0.44–0.78 s at K 4–6. Stage 2 done the same day: positions
+from a player's view, no leak, planned in 0.1 s; against the truth, the guessed back and spreads
+change the move chosen in half the decisions (a fifth from the dice alone), and the bring prior is
+no better than uniform at 4v4._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -230,6 +233,21 @@ What was planned:
   - CRN: variance of row differences on 20 roots, with and without.
 
 ### 2. Positions from a player's view (1½ days)
+
+**Done 2026-10-02** (`vgc.policy.view`; [phase9-findings](phase9-findings.md), "positions from a
+player's view"; `tests/test_policy_view.py`, `scripts/analysis/policy_view_check.py`).
+- 97% of move decisions above two a side built (1,138 of 1,172; the rest Revival Blessing, a
+  volatile the solver cannot set up, or sleep). Planning median 0.1 s, p90 0.2 s.
+- No leak: while the player's channel is the same, its positions are identical, whatever the
+  opponent's unrevealed back and spreads.
+- Against the truth: the true back among the two solved 41% of the time (30% at 4v4), the true move
+  order 66%. Value gap to the true position mean 0.073 (noise floor 0.012). Same move chosen 49%
+  (noise floor 79%).
+- **Two levers for stage 5**: the bring prior, which at 4v4 gives the truth 0.16 against a uniform
+  0.17; and D, since two positions carry 30% of the weight at 4v4.
+- Closed sheets are not built (open only, as the gates and Phase 6 are played).
+
+What was planned:
 
 `vgc.wp.doubles.plan` extended above two a side, read from a `BattleState`. In self-play the
 `SideView` also feeds an `Observer` from the same chunks and requests, so the policy sees exactly

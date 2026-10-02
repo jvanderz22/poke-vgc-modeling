@@ -193,9 +193,11 @@ STALLING = {"protect", "detect", "spikyshield", "kingsshield", "banefulbunker", 
             "burningbulwark", "obstruct", "endure", "wideguard", "quickguard", "maxguard"}
 
 
-def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
+def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
+          mons: dict[str, list[Any]] | None = None) -> dict[str, Any]:
     """The state in the solver's form, one entry a Pokémon in slot order wherever it is per
-    Pokémon (the solver's `per`)."""
+    Pokémon (the solver's `per`). `mons` names the Pokémon, in the solver's order: those on the
+    field by default, and with a bench those on the field then those in the back (`vgc.policy.view`)."""
     state = battle.rp.state
     me = state.perspective
     came = endgame.arrivals(battle.journal)
@@ -204,9 +206,9 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]]) -
     def left(since: int | None, duration: int) -> int:
         return max(0, duration - (state.turn - since)) if since is not None else duration
 
-    mons = {sid: actives(state, sid) for sid in ("p1", "p2")}
+    mons = mons or {sid: actives(state, sid) for sid in ("p1", "p2")}
     out: dict[str, Any] = {
-        "active": {sid: len(ms) for sid, ms in mons.items()},
+        "active": {sid: len(actives(state, sid)) for sid in mons},
         "hp": {sid: [endgame._our_hp(m) if sid == me and m.hp_max else endgame._their_hp(m) for m in ms]
                for sid, ms in mons.items()},
         "mega": {sid: [bool(s.get("mega")) for s in side_sets[sid]] for sid in mons},
@@ -249,8 +251,8 @@ def _one(f: dict[str, Any], sid: str, i: int) -> dict[str, Any]:
 # --- Speed ------------------------------------------------------------------------------------
 
 def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]], f: dict[str, Any],
-                  draws: int = DRAWS, cover: float = COVER, top: int = MAX_ORDERS, seed: int = 0
-                  ) -> tuple[list[dict[str, Any]], float, bool, float]:
+                  draws: int = DRAWS, cover: float = COVER, top: int = MAX_ORDERS, seed: int = 0,
+                  ordered: dict[str, int] | None = None) -> tuple[list[dict[str, Any]], float, bool, float]:
     """Move orders on this turn, each `{weight, sp: {sid: [sp, ...]}, order}`, the weight left
     unsolved, whether the log contradicted every draw (then the priors alone are used), and how
     likely the log's turn orders are under these sets (0 when contradicted): what weighs one
@@ -260,7 +262,11 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
     ordering with a Pokémon outside these showed (as `belief.speed.joint` weighs one); an ordering
     between two of these is an indicator on the draw. Your own are known. The draws are grouped by
     the order of the Speeds they give in this position (ties kept), and each group stands for itself
-    by its heaviest draw. Seeded, so the same battle writes the same positions."""
+    by its heaviest draw. Seeded, so the same battle writes the same positions.
+
+    `ordered[sid]`: only the first that many of a side's sets (those on the field) make the move
+    order; the rest (the back) are drawn the same way and take their commonest investment within
+    each group. All of them by default."""
     from vgc.belief import speed as sp_belief
 
     state = battle.rp.state
@@ -361,8 +367,8 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
             if check and not ok(draw):
                 continue
             kept += 1
-            sp = {k: speed_of(k, draw[k]) for k in keys}
-            order = tuple(sorted(keys, key=lambda k: -sp[k]))
+            sp = {k: speed_of(k, draw[k]) for k in okeys}
+            order = tuple(sorted(okeys, key=lambda k: -sp[k]))
             ties = tuple(sp[a] == sp[b] for a, b in zip(order, order[1:]))
             g = groups.setdefault((order, ties), {"n": 0, "draws": {}})
             g["n"] += 1
@@ -370,6 +376,7 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
             g["draws"][sig] = g["draws"].get(sig, 0) + 1
         return groups, kept
 
+    okeys = keys if ordered is None else [k for k in keys if k[1] < ordered[k[0]]]
     groups, kept = sample(bool(within) and not contradicted)
     likelihood *= kept / draws
     if not kept:
@@ -385,8 +392,8 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
         # order; with four Pokémon the commonest whole draw is too rare to be a good stand-in.
         rep = tuple(max(range(len(vals[k][0])), key=lambda i: sum(n for sig, n in g["draws"].items() if sig[x] == i))
                     for x, k in enumerate(keys))
-        sp_rep = {k: speed_of(k, i) for k, i in zip(keys, rep)}
-        if tuple(sorted(keys, key=lambda k: -sp_rep[k])) != order or \
+        sp_rep = {k: speed_of(k, i) for k, i in zip(keys, rep) if k in okeys}
+        if tuple(sorted(okeys, key=lambda k: -sp_rep[k])) != order or \
                 tuple(sp_rep[a] == sp_rep[b] for a, b in zip(order, order[1:])) != ties:
             rep = max(g["draws"].items(), key=lambda kv: kv[1])[0]
         sp = {sid: [] for sid in ("p1", "p2")}

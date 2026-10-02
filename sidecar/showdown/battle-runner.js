@@ -120,6 +120,8 @@ function replay(req) {
  * steps[i] = {input, spectator: [line...], p1: [line...], p2: [line...], requests: {p1?, p2?}}
  * holds what each channel received after input line i was applied. `requests` are the raw
  * request JSON strings each side was sent at that step (the decision points).
+ * `partial`: an inputLog changed by hand may stop fitting the battle it now produces; the steps
+ * are returned up to the first input the battle throws on, and an unfinished battle is not an error.
  */
 function trace(req) {
 	const steps = [];
@@ -152,14 +154,19 @@ function trace(req) {
 			battle.setPlayer(slot, opts);
 			if (req.ots && slot === 'p2') battle.showOpenTeamSheets();
 		} else if (cmd === 'p1' || cmd === 'p2') {
-			battle.choose(cmd, rest);
+			if (req.partial) {
+				try { battle.choose(cmd, rest); } catch (e) { steps.pop(); break; }
+			} else {
+				battle.choose(cmd, rest);
+			}
 		} else if (!cmd.startsWith('version')) {
 			throw new Error(`unsupported input line: ${line}`);
 		}
 		battle && battle.sendUpdates();
+		if (req.partial && end) break;
 	}
-	if (!end) throw new Error('trace did not finish');
-	return {id: req.id, ok: true, ended: true, steps, winner: end.winner || null, turns: end.turns};
+	if (!end && !req.partial) throw new Error('trace did not finish');
+	return {id: req.id, ok: true, ended: !!end, steps, winner: end ? end.winner || null : null, turns: end ? end.turns : battle.turn};
 }
 
 function handle(req) {

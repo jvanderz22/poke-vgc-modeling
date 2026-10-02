@@ -1,0 +1,1090 @@
+{
+ "sides": 23830,
+ "base": 0.6667,
+ "species": {
+  "Abomasnow": {
+   "shown": 32,
+   "brought": 15
+  },
+  "Absol": {
+   "shown": 384,
+   "brought": 221
+  },
+  "Aegislash": {
+   "shown": 294,
+   "brought": 208
+  },
+  "Aerodactyl": {
+   "shown": 841,
+   "brought": 507
+  },
+  "Aggron": {
+   "shown": 64,
+   "brought": 29
+  },
+  "Alakazam": {
+   "shown": 222,
+   "brought": 139
+  },
+  "Alcremie": {
+   "shown": 10,
+   "brought": 6
+  },
+  "Alcremie-Mint-Cream": {
+   "shown": 4,
+   "brought": 3
+  },
+  "Alcremie-Rainbow-Swirl": {
+   "shown": 6,
+   "brought": 4
+  },
+  "Alcremie-Salted-Cream": {
+   "shown": 2,
+   "brought": 2
+  },
+  "Altaria": {
+   "shown": 38,
+   "brought": 17
+  },
+  "Ampharos": {
+   "shown": 57,
+   "brought": 41
+  },
+  "Annihilape": {
+   "shown": 754,
+   "brought": 534
+  },
+  "Appletun": {
+   "shown": 3,
+   "brought": 1
+  },
+  "Araquanid": {
+   "shown": 77,
+   "brought": 46
+  },
+  "Arboliva": {
+   "shown": 21,
+   "brought": 17
+  },
+  "Arcanine": {
+   "shown": 42,
+   "brought": 37
+  },
+  "Arcanine-Hisui": {
+   "shown": 3907,
+   "brought": 2962
+  },
+  "Archaludon": {
+   "shown": 2839,
+   "brought": 2204
+  },
+  "Ariados": {
+   "shown": 10,
+   "brought": 8
+  },
+  "Armarouge": {
+   "shown": 1303,
+   "brought": 925
+  },
+  "Aromatisse": {
+   "shown": 5,
+   "brought": 4
+  },
+  "Audino": {
+   "shown": 31,
+   "brought": 28
+  },
+  "Aurorus": {
+   "shown": 7,
+   "brought": 5
+  },
+  "Avalugg": {
+   "shown": 1,
+   "brought": 1
+  },
+  "Avalugg-Hisui": {
+   "shown": 1,
+   "brought": 0
+  },
+  "Azumarill": {
+   "shown": 18,
+   "brought": 15
+  },
+  "Banette": {
+   "shown": 18,
+   "brought": 14
+  },
+  "Barbaracle": {
+   "shown": 7,
+   "brought": 5
+  },
+  "Basculegion": {
+   "shown": 4460,
+   "brought": 3085
+  },
+  "Basculegion-F": {
+   "shown": 51,
+   "brought": 32
+  },
+  "Bastiodon": {
+   "shown": 9,
+   "brought": 7
+  },
+  "Baxcalibur": {
+   "shown": 898,
+   "brought": 566
+  },
+  "Beartic": {
+   "shown": 6,
+   "brought": 2
+  },
+  "Beedrill": {
+   "shown": 12,
+   "brought": 10
+  },
+  "Bellibolt": {
+   "shown": 71,
+   "brought": 55
+  },
+  "Blastoise": {
+   "shown": 544,
+   "brought": 322
+  },
+  "Blaziken": {
+   "shown": 389,
+   "brought": 263
+  },
+  "Camerupt": {
+   "shown": 614,
+   "brought": 511
+  },
+  "Castform": {
+   "shown": 3,
+   "brought": 1
+  },
+  "Ceruledge": {
+   "shown": 383,
+   "brought": 270
+  },
+  "Chandelure": {
+   "shown": 114,
+   "brought": 84
+  },
+  "Charizard": {
+   "shown": 2919,
+   "brought": 1838
+  },
+  "Chesnaught": {
+   "shown": 42,
+   "brought": 25
+  },
+  "Chimecho": {
+   "shown": 13,
+   "brought": 8
+  },
+  "Cinderace": {
+   "shown": 53,
+   "brought": 43
+  },
+  "Clawitzer": {
+   "shown": 17,
+   "brought": 10
+  },
+  "Clefable": {
+   "shown": 126,
+   "brought": 68
+  },
+  "Cofagrigus": {
+   "shown": 21,
+   "brought": 17
+  },
+  "Conkeldurr": {
+   "shown": 19,
+   "brought": 12
+  },
+  "Corviknight": {
+   "shown": 424,
+   "brought": 244
+  },
+  "Crabominable": {
+   "shown": 74,
+   "brought": 39
+  },
+  "Decidueye": {
+   "shown": 2,
+   "brought": 1
+  },
+  "Decidueye-Hisui": {
+   "shown": 15,
+   "brought": 9
+  },
+  "Dedenne": {
+   "shown": 7,
+   "brought": 3
+  },
+  "Delphox": {
+   "shown": 592,
+   "brought": 408
+  },
+  "Diggersby": {
+   "shown": 7,
+   "brought": 4
+  },
+  "Ditto": {
+   "shown": 36,
+   "brought": 11
+  },
+  "Dragalge": {
+   "shown": 41,
+   "brought": 25
+  },
+  "Dragapult": {
+   "shown": 377,
+   "brought": 269
+  },
+  "Dragonite": {
+   "shown": 861,
+   "brought": 519
+  },
+  "Drampa": {
+   "shown": 65,
+   "brought": 22
+  },
+  "Eelektross": {
+   "shown": 25,
+   "brought": 17
+  },
+  "Emboar": {
+   "shown": 12,
+   "brought": 8
+  },
+  "Emolga": {
+   "shown": 4,
+   "brought": 2
+  },
+  "Empoleon": {
+   "shown": 164,
+   "brought": 98
+  },
+  "Entei": {
+   "shown": 2,
+   "brought": 2
+  },
+  "Espathra": {
+   "shown": 165,
+   "brought": 122
+  },
+  "Espeon": {
+   "shown": 18,
+   "brought": 16
+  },
+  "Excadrill": {
+   "shown": 1542,
+   "brought": 1052
+  },
+  "Falinks": {
+   "shown": 16,
+   "brought": 9
+  },
+  "Farfetch\u2019d": {
+   "shown": 13,
+   "brought": 9
+  },
+  "Farigiraf": {
+   "shown": 3755,
+   "brought": 2566
+  },
+  "Feraligatr": {
+   "shown": 29,
+   "brought": 18
+  },
+  "Flapple": {
+   "shown": 7,
+   "brought": 3
+  },
+  "Flareon": {
+   "shown": 2,
+   "brought": 0
+  },
+  "Floette-Eternal": {
+   "shown": 3036,
+   "brought": 1324
+  },
+  "Florges": {
+   "shown": 6,
+   "brought": 4
+  },
+  "Forretress": {
+   "shown": 1,
+   "brought": 1
+  },
+  "Froslass": {
+   "shown": 1416,
+   "brought": 804
+  },
+  "Furfrou": {
+   "shown": 2,
+   "brought": 0
+  },
+  "Gallade": {
+   "shown": 260,
+   "brought": 172
+  },
+  "Garchomp": {
+   "shown": 3536,
+   "brought": 2339
+  },
+  "Gardevoir": {
+   "shown": 2029,
+   "brought": 1245
+  },
+  "Garganacl": {
+   "shown": 21,
+   "brought": 14
+  },
+  "Gengar": {
+   "shown": 1133,
+   "brought": 823
+  },
+  "Gholdengo": {
+   "shown": 5674,
+   "brought": 4092
+  },
+  "Glaceon": {
+   "shown": 16,
+   "brought": 7
+  },
+  "Glalie": {
+   "shown": 26,
+   "brought": 21
+  },
+  "Glimmora": {
+   "shown": 1018,
+   "brought": 661
+  },
+  "Gliscor": {
+   "shown": 40,
+   "brought": 31
+  },
+  "Gogoat": {
+   "shown": 15,
+   "brought": 5
+  },
+  "Golisopod": {
+   "shown": 3487,
+   "brought": 2082
+  },
+  "Golurk": {
+   "shown": 17,
+   "brought": 14
+  },
+  "Goodra": {
+   "shown": 8,
+   "brought": 7
+  },
+  "Goodra-Hisui": {
+   "shown": 38,
+   "brought": 22
+  },
+  "Gourgeist-Small": {
+   "shown": 1,
+   "brought": 0
+  },
+  "Gourgeist-Super": {
+   "shown": 4,
+   "brought": 3
+  },
+  "Grapploct": {
+   "shown": 170,
+   "brought": 111
+  },
+  "Greninja": {
+   "shown": 97,
+   "brought": 66
+  },
+  "Grimmsnarl": {
+   "shown": 1087,
+   "brought": 779
+  },
+  "Gyarados": {
+   "shown": 146,
+   "brought": 81
+  },
+  "Hatterene": {
+   "shown": 813,
+   "brought": 505
+  },
+  "Hawlucha": {
+   "shown": 50,
+   "brought": 41
+  },
+  "Heliolisk": {
+   "shown": 64,
+   "brought": 42
+  },
+  "Heracross": {
+   "shown": 20,
+   "brought": 14
+  },
+  "Hippowdon": {
+   "shown": 52,
+   "brought": 43
+  },
+  "Houndoom": {
+   "shown": 74,
+   "brought": 51
+  },
+  "Houndstone": {
+   "shown": 40,
+   "brought": 28
+  },
+  "Hydrapple": {
+   "shown": 12,
+   "brought": 5
+  },
+  "Hydreigon": {
+   "shown": 400,
+   "brought": 252
+  },
+  "Incineroar": {
+   "shown": 7213,
+   "brought": 5360
+  },
+  "Indeedee": {
+   "shown": 1638,
+   "brought": 1300
+  },
+  "Indeedee-F": {
+   "shown": 4794,
+   "brought": 3853
+  },
+  "Infernape": {
+   "shown": 14,
+   "brought": 8
+  },
+  "Inteleon": {
+   "shown": 78,
+   "brought": 46
+  },
+  "Jolteon": {
+   "shown": 24,
+   "brought": 20
+  },
+  "Kangaskhan": {
+   "shown": 95,
+   "brought": 65
+  },
+  "Kingambit": {
+   "shown": 5924,
+   "brought": 4019
+  },
+  "Kleavor": {
+   "shown": 213,
+   "brought": 155
+  },
+  "Klefki": {
+   "shown": 53,
+   "brought": 39
+  },
+  "Kommo-o": {
+   "shown": 798,
+   "brought": 514
+  },
+  "Krookodile": {
+   "shown": 74,
+   "brought": 55
+  },
+  "Leafeon": {
+   "shown": 1,
+   "brought": 0
+  },
+  "Liepard": {
+   "shown": 20,
+   "brought": 15
+  },
+  "Lopunny": {
+   "shown": 79,
+   "brought": 51
+  },
+  "Lucario": {
+   "shown": 1194,
+   "brought": 726
+  },
+  "Luxray": {
+   "shown": 13,
+   "brought": 4
+  },
+  "Lycanroc": {
+   "shown": 26,
+   "brought": 12
+  },
+  "Lycanroc-Dusk": {
+   "shown": 175,
+   "brought": 83
+  },
+  "Lycanroc-Midnight": {
+   "shown": 4,
+   "brought": 4
+  },
+  "Mabosstiff": {
+   "shown": 9,
+   "brought": 5
+  },
+  "Machamp": {
+   "shown": 2,
+   "brought": 1
+  },
+  "Malamar": {
+   "shown": 60,
+   "brought": 39
+  },
+  "Mamoswine": {
+   "shown": 163,
+   "brought": 108
+  },
+  "Manectric": {
+   "shown": 32,
+   "brought": 21
+  },
+  "Maushold": {
+   "shown": 166,
+   "brought": 102
+  },
+  "Maushold-Four": {
+   "shown": 242,
+   "brought": 138
+  },
+  "Mawile": {
+   "shown": 262,
+   "brought": 159
+  },
+  "Medicham": {
+   "shown": 8,
+   "brought": 6
+  },
+  "Meganium": {
+   "shown": 134,
+   "brought": 56
+  },
+  "Meowscarada": {
+   "shown": 76,
+   "brought": 55
+  },
+  "Meowstic": {
+   "shown": 37,
+   "brought": 19
+  },
+  "Meowstic-F": {
+   "shown": 38,
+   "brought": 25
+  },
+  "Metagross": {
+   "shown": 1280,
+   "brought": 752
+  },
+  "Milotic": {
+   "shown": 3016,
+   "brought": 1725
+  },
+  "Mimikyu": {
+   "shown": 69,
+   "brought": 55
+  },
+  "Morpeko": {
+   "shown": 9,
+   "brought": 8
+  },
+  "Mr. Mime": {
+   "shown": 41,
+   "brought": 27
+  },
+  "Mr. Rime": {
+   "shown": 18,
+   "brought": 14
+  },
+  "Mudsdale": {
+   "shown": 31,
+   "brought": 21
+  },
+  "Musharna": {
+   "shown": 7,
+   "brought": 4
+  },
+  "Ninetales": {
+   "shown": 47,
+   "brought": 37
+  },
+  "Ninetales-Alola": {
+   "shown": 824,
+   "brought": 497
+  },
+  "Noivern": {
+   "shown": 44,
+   "brought": 31
+  },
+  "Oranguru": {
+   "shown": 62,
+   "brought": 46
+  },
+  "Orthworm": {
+   "shown": 31,
+   "brought": 16
+  },
+  "Overqwil": {
+   "shown": 62,
+   "brought": 52
+  },
+  "Palafin": {
+   "shown": 95,
+   "brought": 57
+  },
+  "Pangoro": {
+   "shown": 16,
+   "brought": 11
+  },
+  "Passimian": {
+   "shown": 4,
+   "brought": 4
+  },
+  "Pawmot": {
+   "shown": 776,
+   "brought": 507
+  },
+  "Pelipper": {
+   "shown": 3045,
+   "brought": 2501
+  },
+  "Perrserker": {
+   "shown": 32,
+   "brought": 20
+  },
+  "Persian": {
+   "shown": 1,
+   "brought": 1
+  },
+  "Persian-Alola": {
+   "shown": 24,
+   "brought": 20
+  },
+  "Pidgeot": {
+   "shown": 97,
+   "brought": 51
+  },
+  "Pikachu": {
+   "shown": 14,
+   "brought": 9
+  },
+  "Pincurchin": {
+   "shown": 99,
+   "brought": 78
+  },
+  "Pinsir": {
+   "shown": 6,
+   "brought": 2
+  },
+  "Politoed": {
+   "shown": 1034,
+   "brought": 783
+  },
+  "Polteageist": {
+   "shown": 4,
+   "brought": 2
+  },
+  "Primarina": {
+   "shown": 762,
+   "brought": 482
+  },
+  "Pyroar": {
+   "shown": 72,
+   "brought": 44
+  },
+  "Quaquaval": {
+   "shown": 17,
+   "brought": 12
+  },
+  "Qwilfish": {
+   "shown": 3,
+   "brought": 3
+  },
+  "Raichu": {
+   "shown": 3761,
+   "brought": 2420
+  },
+  "Raichu-Alola": {
+   "shown": 23,
+   "brought": 19
+  },
+  "Rampardos": {
+   "shown": 12,
+   "brought": 10
+  },
+  "Reuniclus": {
+   "shown": 13,
+   "brought": 8
+  },
+  "Rhyperior": {
+   "shown": 27,
+   "brought": 12
+  },
+  "Rillaboom": {
+   "shown": 12221,
+   "brought": 8334
+  },
+  "Roserade": {
+   "shown": 5,
+   "brought": 2
+  },
+  "Rotom": {
+   "shown": 4,
+   "brought": 3
+  },
+  "Rotom-Frost": {
+   "shown": 3,
+   "brought": 3
+  },
+  "Rotom-Heat": {
+   "shown": 197,
+   "brought": 154
+  },
+  "Rotom-Mow": {
+   "shown": 16,
+   "brought": 4
+  },
+  "Rotom-Wash": {
+   "shown": 241,
+   "brought": 157
+  },
+  "Runerigus": {
+   "shown": 11,
+   "brought": 6
+  },
+  "Sableye": {
+   "shown": 394,
+   "brought": 256
+  },
+  "Salamence": {
+   "shown": 7203,
+   "brought": 4033
+  },
+  "Salazzle": {
+   "shown": 12,
+   "brought": 9
+  },
+  "Samurott-Hisui": {
+   "shown": 107,
+   "brought": 57
+  },
+  "Sandaconda": {
+   "shown": 4,
+   "brought": 3
+  },
+  "Sceptile": {
+   "shown": 90,
+   "brought": 56
+  },
+  "Scizor": {
+   "shown": 131,
+   "brought": 78
+  },
+  "Scolipede": {
+   "shown": 30,
+   "brought": 13
+  },
+  "Scovillain": {
+   "shown": 258,
+   "brought": 139
+  },
+  "Scrafty": {
+   "shown": 116,
+   "brought": 73
+  },
+  "Serperior": {
+   "shown": 20,
+   "brought": 13
+  },
+  "Sharpedo": {
+   "shown": 6,
+   "brought": 5
+  },
+  "Simisage": {
+   "shown": 3,
+   "brought": 3
+  },
+  "Sinistcha": {
+   "shown": 1109,
+   "brought": 624
+  },
+  "Sinistcha-Masterpiece": {
+   "shown": 364,
+   "brought": 213
+  },
+  "Sirfetch\u2019d": {
+   "shown": 156,
+   "brought": 109
+  },
+  "Skarmory": {
+   "shown": 60,
+   "brought": 35
+  },
+  "Skeledirge": {
+   "shown": 45,
+   "brought": 37
+  },
+  "Slowbro": {
+   "shown": 59,
+   "brought": 37
+  },
+  "Slowbro-Galar": {
+   "shown": 6,
+   "brought": 4
+  },
+  "Slowking": {
+   "shown": 11,
+   "brought": 6
+  },
+  "Slowking-Galar": {
+   "shown": 51,
+   "brought": 32
+  },
+  "Slurpuff": {
+   "shown": 4,
+   "brought": 4
+  },
+  "Sneasler": {
+   "shown": 9699,
+   "brought": 6891
+  },
+  "Snorlax": {
+   "shown": 50,
+   "brought": 32
+  },
+  "Spiritomb": {
+   "shown": 80,
+   "brought": 72
+  },
+  "Squawkabilly": {
+   "shown": 13,
+   "brought": 9
+  },
+  "Squawkabilly-Blue": {
+   "shown": 34,
+   "brought": 27
+  },
+  "Squawkabilly-White": {
+   "shown": 13,
+   "brought": 8
+  },
+  "Staraptor": {
+   "shown": 2020,
+   "brought": 1104
+  },
+  "Starmie": {
+   "shown": 110,
+   "brought": 66
+  },
+  "Steelix": {
+   "shown": 58,
+   "brought": 37
+  },
+  "Stunfisk": {
+   "shown": 7,
+   "brought": 5
+  },
+  "Stunfisk-Galar": {
+   "shown": 1,
+   "brought": 1
+  },
+  "Swalot": {
+   "shown": 5,
+   "brought": 1
+  },
+  "Swampert": {
+   "shown": 1157,
+   "brought": 638
+  },
+  "Sylveon": {
+   "shown": 2880,
+   "brought": 1537
+  },
+  "Talonflame": {
+   "shown": 483,
+   "brought": 331
+  },
+  "Tauros": {
+   "shown": 3,
+   "brought": 2
+  },
+  "Tauros-Paldea-Aqua": {
+   "shown": 16,
+   "brought": 9
+  },
+  "Tauros-Paldea-Blaze": {
+   "shown": 10,
+   "brought": 7
+  },
+  "Thievul": {
+   "shown": 10,
+   "brought": 8
+  },
+  "Tinkaton": {
+   "shown": 126,
+   "brought": 63
+  },
+  "Torkoal": {
+   "shown": 1102,
+   "brought": 787
+  },
+  "Torterra": {
+   "shown": 19,
+   "brought": 12
+  },
+  "Toucannon": {
+   "shown": 5,
+   "brought": 3
+  },
+  "Toxapex": {
+   "shown": 226,
+   "brought": 132
+  },
+  "Toxicroak": {
+   "shown": 12,
+   "brought": 5
+  },
+  "Toxtricity": {
+   "shown": 109,
+   "brought": 85
+  },
+  "Toxtricity-Low-Key": {
+   "shown": 26,
+   "brought": 17
+  },
+  "Trevenant": {
+   "shown": 8,
+   "brought": 3
+  },
+  "Tsareena": {
+   "shown": 256,
+   "brought": 162
+  },
+  "Typhlosion": {
+   "shown": 8,
+   "brought": 5
+  },
+  "Typhlosion-Hisui": {
+   "shown": 148,
+   "brought": 108
+  },
+  "Tyranitar": {
+   "shown": 2150,
+   "brought": 1584
+  },
+  "Tyrantrum": {
+   "shown": 2,
+   "brought": 1
+  },
+  "Umbreon": {
+   "shown": 33,
+   "brought": 19
+  },
+  "Vanilluxe": {
+   "shown": 94,
+   "brought": 63
+  },
+  "Vaporeon": {
+   "shown": 7,
+   "brought": 5
+  },
+  "Venusaur": {
+   "shown": 941,
+   "brought": 446
+  },
+  "Victreebel": {
+   "shown": 31,
+   "brought": 26
+  },
+  "Vileplume": {
+   "shown": 40,
+   "brought": 16
+  },
+  "Vivillon": {
+   "shown": 79,
+   "brought": 44
+  },
+  "Vivillon-Fancy": {
+   "shown": 11,
+   "brought": 8
+  },
+  "Vivillon-Garden": {
+   "shown": 2,
+   "brought": 2
+  },
+  "Vivillon-Icy Snow": {
+   "shown": 2,
+   "brought": 1
+  },
+  "Vivillon-Jungle": {
+   "shown": 2,
+   "brought": 1
+  },
+  "Vivillon-Marine": {
+   "shown": 18,
+   "brought": 10
+  },
+  "Vivillon-Monsoon": {
+   "shown": 4,
+   "brought": 4
+  },
+  "Vivillon-Ocean": {
+   "shown": 2,
+   "brought": 2
+  },
+  "Vivillon-Pokeball": {
+   "shown": 24,
+   "brought": 16
+  },
+  "Vivillon-Polar": {
+   "shown": 2,
+   "brought": 2
+  },
+  "Vivillon-Sun": {
+   "shown": 3,
+   "brought": 1
+  },
+  "Vivillon-Tundra": {
+   "shown": 1,
+   "brought": 1
+  },
+  "Volcarona": {
+   "shown": 1829,
+   "brought": 1280
+  },
+  "Watchog": {
+   "shown": 2,
+   "brought": 0
+  },
+  "Weavile": {
+   "shown": 145,
+   "brought": 112
+  },
+  "Whimsicott": {
+   "shown": 1766,
+   "brought": 1068
+  },
+  "Wigglytuff": {
+   "shown": 25,
+   "brought": 18
+  },
+  "Wyrdeer": {
+   "shown": 22,
+   "brought": 14
+  },
+  "Zoroark": {
+   "shown": 13,
+   "brought": 12
+  },
+  "Zoroark-Hisui": {
+   "shown": 136,
+   "brought": 99
+  }
+ }
+}

@@ -121,3 +121,58 @@ cell. `crn` stays off.
 reference's reply would pick matched the 32-draw reference's pick in 13 (with CRN) and 15
 (without) of 20 roots. Whether more draws or more choices buy more strength is for the gate to say
 (stage 5), but it is the first place the budget would go.
+
+## Positions from a player's view (stage 2)
+
+2026-10-02. `vgc.policy.view`: a `PlayerView` is an `Observer` for one side fed its own channel and
+requests, its own six as built, and the opponent's open sheet. `plan` builds the positions one
+decision solves: every Pokémon left, the two on the field then the back, with what is hidden
+guessed. Which of the opponent's unseen sheets are in the back is weighed by how often each species
+is brought when it is on a sheet (`scripts/analysis/bring_rates.py`: 23,830 training-split sides,
+rates 0.56–0.80 around a base of 0.67). The move order on the field comes from
+`doubles.speed_classes`, now able to order only those on the field and give the back its commonest
+investment. The heaviest two (back, move order) are solved. `doubles.facts` and `speed_classes`
+gained an optional argument each, and with it left out their output is unchanged. The solver
+gained `megaUsed`, for a side whose Mega has fainted.
+
+**Nothing leaks** (`tests/test_policy_view.py`). One battle traced three ways (as played, with p2's
+unrevealed back given other Stat Points, and with p2 bringing two other Pokémon to the back):
+while p1's channel is the same, p1's positions are identical. The game reveals p2's back at the
+end of turn 1, so this compares only the first one or two decisions. It is a guard more than a
+measurement: the positions are a function of the view by construction. (The runner's `trace` gained
+`partial`, for an input log changed by hand that stops fitting its battle.)
+
+**Against the truth**, from heuristic self-play on pool teams with open sheets
+(`scripts/analysis/policy_view_check.py`). 150 battles: 1,138 of 1,172 move decisions above two a
+side were built. Not built: 16 for Revival Blessing, 16 for a volatile the solver cannot set up
+(Protean-style type change, confusion, Throat Chop, Supreme Overlord's count), 2 for sleep.
+
+| | decisions | true back among the 2 solved | weight on the true back | true move order solved | weight unsolved | planning, median / p90 |
+| --- | --- | --- | --- | --- | --- | --- |
+| all | 1,138 | 41% (of 908 with an unseen back) | 0.23 | 66% | 0.48 | 99 / 202 ms |
+| 4v4 | 356 | 30% | 0.16 (uniform: 0.17) | 54% | 0.70 | 120 / 287 ms |
+| 3v3 | 154 | 52% | 0.32 | 68% | 0.45 | 99 / 127 ms |
+| 3v2 | 111 | (none unseen) | | 81% | 0.12 | 98 / 127 ms |
+
+And on a second run of 80 battles, every other decision solved (one-turn search at the design
+point) and set against the true position (true back, true spreads), with the true position solved
+again with other dice as the noise floor:
+
+| | valued | value gap, mean / median | gap over 0.1 | same move chosen |
+| --- | --- | --- | --- | --- |
+| the guessed positions | 302 | 0.073 / 0.037 | 85 | 147 (49%) |
+| the noise floor | 302 | 0.012 / 0.002 | 2 | 239 (79%) |
+| 4v4, guessed | 126 | 0.089 / 0.057 | 44 | 47 (37%) |
+| 4v4, floor | 126 | 0.012 / 0.003 | 0 | 94 (75%) |
+
+- **What is hidden changes the move in about half the decisions, against a fifth from the dice
+  alone.** Some of that cannot be removed: the player does not know either. But two parts of it
+  can be priced.
+- **The bring prior is no better than uniform at 4v4** (0.16 on the truth against 0.17). Species
+  rates say little about which four of six a team brings, and the heuristic opponent brings by its
+  own calculation, not as people do. Later in the game the rest of the six is often seen, and the
+  guess improves (0.32 at 3v3).
+- **Two positions carry 30% of the weight at 4v4**, against 88% at 3v2. The start of a game is
+  where more positions (D) would buy most, and where the budget is tightest.
+- The floor covers the sampled turns only: the race at the horizon draws the same dice either way.
+- Planning costs a median 0.1 s of the 1 s a decision.

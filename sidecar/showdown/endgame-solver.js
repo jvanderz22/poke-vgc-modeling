@@ -183,6 +183,9 @@ function setUp(pos) {
 		const stall = out && per(s.stall, side, i);
 		if (stall) { me.addVolatile('stall'); me.volatiles.stall.counter = 3 ** stall; }
 	});
+	// `megaUsed`: the side has Mega Evolved already, with a Pokémon no longer in the position, so a
+	// second stone holder cannot (a position with a bench may have one).
+	for (const side of b.sides) if ((s.megaUsed || {})[side.id]) for (const p of side.pokemon) p.canMegaEvo = null;
 	for (const side of b.sides) {
 		for (const [id, turns] of Object.entries((s.sides || {})[side.id] || {})) {
 			side.addSideCondition(id, side.pokemon[0]);
