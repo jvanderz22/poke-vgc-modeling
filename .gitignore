@@ -41,3 +41,5 @@ src/vgc/web/static/
 
 # Deploy secrets (deploy_fly.sh reads them)
 .env
+# Stage-0 rows for policy_bar.py (8.8 MB, regenerated in a minute)
+data/analysis/reg_mc/policy_bar_rows.jsonl

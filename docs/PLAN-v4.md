@@ -303,7 +303,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 - [PLAN-policy](PLAN-policy.md): Phase 9, the policy over whole battles (step 2).
 - [PLAN-video](PLAN-video.md): video mode.
 - [deploy/README](../deploy/README.md): the Fly.io deployment, its sizing and cost.
-- Findings: [phase0](phase0-findings.md) · [phase4](phase4-findings.md) ·
+- Findings: [phase0](phase0-findings.md) · [phase4](phase4-findings.md) · [phase9](phase9-findings.md) ·
   [phase6](phase6-findings.md) · [phase8](phase8-findings.md).
 - [regulation-change](regulation-change.md) · [cloud-compute](cloud-compute.md) ·
   [web-app](web-app.md).

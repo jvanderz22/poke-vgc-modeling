@@ -1,0 +1,480 @@
+{
+ "open": {
+  "model": "wp-v1f-idp5",
+  "floor": {
+   "a": 2.1217,
+   "c": 0.5489,
+   "e": 0.1237,
+   "d": 0.0144,
+   "rows": 28447,
+   "games": 8773
+  },
+  "heldout_games": 1703,
+  "all": {
+   "states": 5496,
+   "groups": 793,
+   "brier": {
+    "model": 0.1888,
+    "floor": 0.1926,
+    "constant": 0.25,
+    "floor_minus_model": 0.0038,
+    "ci95": [
+     -0.0001,
+     0.0075
+    ],
+    "verdict": "not distinguishable"
+   },
+   "logloss": {
+    "model": 0.548,
+    "floor": 0.5564,
+    "constant": 0.6931,
+    "floor_minus_model": 0.0084,
+    "ci95": [
+     -0.0007,
+     0.0173
+    ],
+    "verdict": "not distinguishable"
+   }
+  },
+  "by_kind": {
+   "4v4": {
+    "states": 1703,
+    "groups": 793,
+    "brier": {
+     "model": 0.2465,
+     "floor": 0.2513,
+     "constant": 0.25,
+     "floor_minus_model": 0.0048,
+     "ci95": [
+      0.0009,
+      0.0086
+     ],
+     "verdict": "model better"
+    },
+    "logloss": {
+     "model": 0.6861,
+     "floor": 0.6958,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0096,
+     "ci95": [
+      0.0018,
+      0.0176
+     ],
+     "verdict": "model better"
+    }
+   },
+   "4v3": {
+    "states": 1218,
+    "groups": 699,
+    "brier": {
+     "model": 0.199,
+     "floor": 0.2057,
+     "constant": 0.25,
+     "floor_minus_model": 0.0066,
+     "ci95": [
+      -0.0002,
+      0.0134
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.5842,
+     "floor": 0.599,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0149,
+     "ci95": [
+      -0.0011,
+      0.0306
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "4v2": {
+    "states": 418,
+    "groups": 350,
+    "brier": {
+     "model": 0.1016,
+     "floor": 0.1023,
+     "constant": 0.25,
+     "floor_minus_model": 0.0007,
+     "ci95": [
+      -0.0052,
+      0.0065
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.335,
+     "floor": 0.3448,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0098,
+     "ci95": [
+      -0.0087,
+      0.0286
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "4v1": {
+    "states": 120,
+    "groups": 110,
+    "brier": {
+     "model": 0.0083,
+     "floor": 0.0087,
+     "constant": 0.25,
+     "floor_minus_model": 0.0003,
+     "ci95": [
+      0.0,
+      0.0007
+     ],
+     "verdict": "model better"
+    },
+    "logloss": {
+     "model": 0.0457,
+     "floor": 0.0493,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0036,
+     "ci95": [
+      -0.0005,
+      0.0083
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v3": {
+    "states": 735,
+    "groups": 526,
+    "brier": {
+     "model": 0.2239,
+     "floor": 0.2287,
+     "constant": 0.25,
+     "floor_minus_model": 0.0048,
+     "ci95": [
+      -0.0045,
+      0.0139
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.6387,
+     "floor": 0.6484,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0097,
+     "ci95": [
+      -0.0109,
+      0.0301
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v2": {
+    "states": 924,
+    "groups": 603,
+    "brier": {
+     "model": 0.1694,
+     "floor": 0.1713,
+     "constant": 0.25,
+     "floor_minus_model": 0.0019,
+     "ci95": [
+      -0.0059,
+      0.0097
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.5104,
+     "floor": 0.5127,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0023,
+     "ci95": [
+      -0.0182,
+      0.022
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v1": {
+    "states": 378,
+    "groups": 310,
+    "brier": {
+     "model": 0.029,
+     "floor": 0.0263,
+     "constant": 0.25,
+     "floor_minus_model": -0.0028,
+     "ci95": [
+      -0.0105,
+      0.0042
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.1192,
+     "floor": 0.1143,
+     "constant": 0.6931,
+     "floor_minus_model": -0.0049,
+     "ci95": [
+      -0.0308,
+      0.0175
+     ],
+     "verdict": "not distinguishable"
+    }
+   }
+  },
+  "budget": {
+   "games": 1012,
+   "turns_mean": 7.47,
+   "decisions_mean": 10.35,
+   "turn_share_by_kind": {
+    "4v4": 0.322,
+    "4v3": 0.165,
+    "3v2": 0.121,
+    "3v3": 0.106,
+    "2v1": 0.072,
+    "2v2": 0.065,
+    "4v2": 0.048,
+    "3v1": 0.045,
+    "1v1": 0.043,
+    "4v1": 0.014
+   }
+  }
+ },
+ "closed": {
+  "model": "wp-v1d-sw-split-small",
+  "floor": {
+   "a": 1.7398,
+   "c": 0.4996,
+   "e": 0.122,
+   "d": -0.0087,
+   "rows": 19273,
+   "games": 6106
+  },
+  "heldout_games": 1025,
+  "all": {
+   "states": 3271,
+   "groups": 994,
+   "brier": {
+    "model": 0.1871,
+    "floor": 0.1964,
+    "constant": 0.25,
+    "floor_minus_model": 0.0093,
+    "ci95": [
+     0.0035,
+     0.0149
+    ],
+    "verdict": "model better"
+   },
+   "logloss": {
+    "model": 0.5472,
+    "floor": 0.5675,
+    "constant": 0.6931,
+    "floor_minus_model": 0.0203,
+    "ci95": [
+     0.0061,
+     0.0338
+    ],
+    "verdict": "model better"
+   }
+  },
+  "by_kind": {
+   "4v4": {
+    "states": 1025,
+    "groups": 994,
+    "brier": {
+     "model": 0.2406,
+     "floor": 0.251,
+     "constant": 0.25,
+     "floor_minus_model": 0.0104,
+     "ci95": [
+      0.0035,
+      0.0172
+     ],
+     "verdict": "model better"
+    },
+    "logloss": {
+     "model": 0.6741,
+     "floor": 0.6952,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0211,
+     "ci95": [
+      0.0067,
+      0.0353
+     ],
+     "verdict": "model better"
+    }
+   },
+   "4v3": {
+    "states": 732,
+    "groups": 713,
+    "brier": {
+     "model": 0.1999,
+     "floor": 0.2172,
+     "constant": 0.25,
+     "floor_minus_model": 0.0173,
+     "ci95": [
+      0.0088,
+      0.0262
+     ],
+     "verdict": "model better"
+    },
+    "logloss": {
+     "model": 0.5854,
+     "floor": 0.6261,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0407,
+     "ci95": [
+      0.0201,
+      0.0619
+     ],
+     "verdict": "model better"
+    }
+   },
+   "4v2": {
+    "states": 266,
+    "groups": 261,
+    "brier": {
+     "model": 0.1098,
+     "floor": 0.1128,
+     "constant": 0.25,
+     "floor_minus_model": 0.003,
+     "ci95": [
+      -0.0042,
+      0.0116
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.3733,
+     "floor": 0.3757,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0024,
+     "ci95": [
+      -0.0272,
+      0.0339
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "4v1": {
+    "states": 77,
+    "groups": 77,
+    "brier": {
+     "model": 0.0136,
+     "floor": 0.014,
+     "constant": 0.25,
+     "floor_minus_model": 0.0005,
+     "ci95": [
+      -0.0,
+      0.0011
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.0807,
+     "floor": 0.0831,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0024,
+     "ci95": [
+      -0.0022,
+      0.0072
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v3": {
+    "states": 423,
+    "groups": 420,
+    "brier": {
+     "model": 0.2158,
+     "floor": 0.2264,
+     "constant": 0.25,
+     "floor_minus_model": 0.0106,
+     "ci95": [
+      -0.0019,
+      0.0237
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.6202,
+     "floor": 0.6438,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0235,
+     "ci95": [
+      -0.0039,
+      0.0522
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v2": {
+    "states": 525,
+    "groups": 513,
+    "brier": {
+     "model": 0.1717,
+     "floor": 0.1754,
+     "constant": 0.25,
+     "floor_minus_model": 0.0037,
+     "ci95": [
+      -0.0054,
+      0.0127
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.5202,
+     "floor": 0.5253,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0051,
+     "ci95": [
+      -0.0201,
+      0.0299
+     ],
+     "verdict": "not distinguishable"
+    }
+   },
+   "3v1": {
+    "states": 223,
+    "groups": 218,
+    "brier": {
+     "model": 0.0332,
+     "floor": 0.033,
+     "constant": 0.25,
+     "floor_minus_model": -0.0002,
+     "ci95": [
+      -0.0068,
+      0.0051
+     ],
+     "verdict": "not distinguishable"
+    },
+    "logloss": {
+     "model": 0.1322,
+     "floor": 0.1388,
+     "constant": 0.6931,
+     "floor_minus_model": 0.0066,
+     "ci95": [
+      -0.0221,
+      0.0296
+     ],
+     "verdict": "not distinguishable"
+    }
+   }
+  },
+  "budget": {
+   "games": 541,
+   "turns_mean": 7.69,
+   "decisions_mean": 10.61,
+   "turn_share_by_kind": {
+    "4v4": 0.306,
+    "4v3": 0.165,
+    "3v2": 0.114,
+    "3v3": 0.103,
+    "2v1": 0.077,
+    "2v2": 0.062,
+    "1v1": 0.056,
+    "4v2": 0.053,
+    "3v1": 0.049,
+    "4v1": 0.016
+   }
+  }
+ }
+}

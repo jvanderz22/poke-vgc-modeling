@@ -1,6 +1,8 @@
 # Phase 9: a policy that plays whole battles (EWP and search)
 
-_Written 2026-10-02. Nothing built yet._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+_Written 2026-10-02. **Progress:** stage 0 done the same day ([phase9-findings](phase9-findings.md)):
+on open sheets the model is worth 0.008 nats more than HP share and the count above two a side, not
+distinguishable; on closed sheets 0.02 more._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -168,6 +170,18 @@ so with it off the cached 1v1 and doubles answers stay bit-identical and `VERSIO
 
 ### 0. The bar and the budget (½ day, laptop)
 
+**Done 2026-10-02** (`scripts/analysis/policy_bar.py`; [phase9-findings](phase9-findings.md)).
+- **The bar is low on open sheets.** Held-out log loss above two a side: model 0.548 against the
+  floor's 0.556, +0.008 [−0.001, +0.017], not distinguishable. Better only at 4v4, where both are
+  near a coin flip. On closed sheets the model is better by 0.020 [+0.006, +0.034], most of it at
+  4v3 (0.041): it knows which Pokémon are left, and the floor does not.
+- **The budget holds, with one change.** A side decides about 9 times a game (7.5 turns, 1.5
+  replacements; nearly the same in both regimes), so about 15 full decisions a battle. But 18% of
+  turns are at two or fewer a side, where the page's answer takes 2.8 s on three processes. Bulk
+  play gives those roots one move order and a 1 s cap, with the quick value as the fallback (stage 4).
+
+What was planned:
+
 - **The bar.** The served models' log loss and Brier at the first turn of each state kind above
   two a side, per regime, on held-out games (the predictions exist). And the floor: HP share and
   the count, fitted on training games. If the floor already matches the model, the bar is low.
@@ -228,7 +242,9 @@ On human games, through stage 2's adapter (from the stands, as the endgame check
   position's matrix → combined by weight → the choice. Under Nash, the mixed strategy is sampled
   with the policy's seeded `rng`, so battles stay reproducible; under the fitted π_opp, the
   argmax of EWP.
-- Roots with two or fewer a side go to the doubles engine's live search as it runs on the page.
+- Roots with two or fewer a side go to the doubles engine's live search. In bulk play that means
+  one move order and a 1 s cap, falling back to the quick value (stage 0: those roots are 18% of
+  turns, and the page's 2.8 s on three processes would double a battle's cost).
 - Forced replacements use the same machinery as any decision.
 - **Team preview stays the heuristic's** for the gate, so the gate measures play, not brings. See
   the open questions.
