@@ -43,6 +43,14 @@ costs the image's disk ($0.15 per GB-month) and the volume ($0.15 a month for 1 
 **Set the spend cap.** Dashboard → your org → Billing → Spend limits. The script cannot, and it
 is the only thing that bounds a mistake (a machine that never stops, a second volume).
 
+## Measured on the deployed machine (2026-10-01)
+
+- **It stops when idle.** Left alone after the deploy, it stopped by itself about 6 minutes after
+  its last request (23:41 → 23:47 UTC).
+- **Cold start.** From stopped, the first request answered in 3.8 s, the next in 0.1 s. The solver
+  processes warm in the background: three of them, about 55 MB each idle, with the app at about
+  65 MB and 1.7 GB of the 2 GB free.
+
 ## Not yet known
 
 - **The 5-second answer on shared cores.** Shared vCPUs run at a small baseline and burst above
@@ -51,8 +59,6 @@ is the only thing that bounds a mistake (a machine that never stops, a second vo
   (`scripts/analysis/page_path.py`). Time a few positions on the deployed page; if answers come
   in late, either raise the machine (`performance-1x`, 2 GB, is $34 a month running, same
   per-second rule) or accept the quick answer more often.
-- **Cold start.** A stopped machine starts on the first request (a few seconds), then warms its
-  solver processes in the background.
 
 ## Password
 

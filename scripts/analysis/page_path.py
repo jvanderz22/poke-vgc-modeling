@@ -8,6 +8,9 @@ landed, how many move orders were searched in time, and the final value; and sco
 against the same games' no-deadline answer (`--tag`'s saved rows, tempered) and the model.
 
     .venv/bin/python scripts/analysis/page_path.py --every 6
+
+`--gap` waits between games, as a battle does between turns: on shared cores (the Fly machine)
+back-to-back solves spend burst credit that one answer a turn would not.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -72,6 +76,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--every", type=int, default=6, help="every Nth eligible held-out game")
     ap.add_argument("--tag", default="live_blend_boosts", help="the saved no-deadline run to compare with")
+    ap.add_argument("--gap", type=float, default=0.0, help="seconds to wait between games")
+    ap.add_argument("--out", default=str(OUT))
     args = ap.parse_args()
     reg = load_regulation("reg_mc")
     # Nothing cached: the page's first sight of a position is a fresh solve.
@@ -85,7 +91,9 @@ def main() -> None:
     time.sleep(3)                       # the processes start with the app, not with the question
     rows = []
     try:
-        for replay, battle in todo:
+        for i, (replay, battle) in enumerate(todo):
+            if i and args.gap:
+                time.sleep(args.gap)
             r = ask(reg, replay["id"], battle)
             s = saved.get(replay["id"])
             if s is None or s.get("engine") is None or r["value"] is None:
@@ -110,7 +118,7 @@ def main() -> None:
               "logloss": {"page": round(ll(col("value")), 4), "no_deadline": round(ll(col("no_deadline")), 4),
                           "model": round(ll(col("model")), 4)},
               "errors": sum(bool(r["error"]) for r in rows)}
-    OUT.write_text(json.dumps({"result": result, "rows": rows}, indent=1) + "\n")
+    Path(args.out).write_text(json.dumps({"result": result, "rows": rows}, indent=1) + "\n")
     print(json.dumps(result, indent=1))
 
 

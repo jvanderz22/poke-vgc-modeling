@@ -1,6 +1,6 @@
 # VGC Reg M-C Model & Advisor — Plan v4
 
-_Written 2026-10-01; updated the same evening (step 1 closed out, the app deployed)._ **Supersedes [PLAN-v3.md](PLAN-v3.md)**, which is kept as the archive of steps
+_Written 2026-10-01; updated through 2026-10-02 (step 1 closed out, the app deployed, the reference runs scored, the 2v2 tail checked)._ **Supersedes [PLAN-v3.md](PLAN-v3.md)**, which is kept as the archive of steps
 1–9 as they ran (2026-09-28 to 2026-10-01): open-sheet calibration, the set-use benchmark, the 1v1
 engine in the app, Watching mode, the Speed prior, closed-sheet routing, eval manifests, solver speed,
 and the start of the doubles endgame. Code and tests cite "PLAN-v3 step N", so v3 keeps its step
@@ -83,8 +83,10 @@ L0  Regulation config  legal pool · clauses · mechanics flags · SP rules · f
 
 **Versioned interfaces:** `observation()` (golden-tested); `snapshots.VERSION` 4; `Featurizer.VERSION`
 3. Every dataset and model card records the featurizer version, and scoring refuses a mismatch. The
-solver's cache key hashes its source, so any solver edit invalidates the cache and the benchmark's
-depth-4 truth must be re-solved (hours, on Kaggle).
+solver's cache key hashes the version the solver declares (`const VERSION` in
+`endgame-solver.js`), not its source: bump it with any change that could move an answer, or the
+cache keeps the old answers (`check_cache` re-solves a sample to catch a forgotten bump). A bump
+invalidates the benchmark's depth-4 truth, which must then be re-solved (hours, on Kaggle).
 
 ---
 
@@ -105,7 +107,7 @@ and the answer's temperature (`doubles.TEMPER`) are fitted on training games by
 
 ## Next, in order
 
-### 1. Finish the doubles endgame (mostly done 2026-10-01)
+### 1. Finish the doubles endgame (done 2026-10-01)
 
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md) has the detail; phase8-findings has the numbers.
 
@@ -125,15 +127,19 @@ and the answer's temperature (`doubles.TEMPER`) are fitted on training games by
   games).
 - **The page's own path** (`scripts/analysis/page_path.py`, 112 games, laptop): first answer
   median 1.3 s, final median 2.8 s, max 5.1 s; the deadline costs about 0.005 in log loss.
+- **2v2 answers at 95% or more are too sure, and a fix does not pay.** Folded to the favoured side,
+  128 games (training and held out) answered about 0.975 and won about 0.93: real, 2v2 searched
+  answers only. The one read closely was a player missing the engine's winning line. A 2v2 cap
+  fitted on training games is level held out (−0.001 [−0.012, +0.007]); not shipped.
+- **No deeper background search.** The Kaggle reference runs (`doubles2-{a,b,c}`: the KO
+  extension, `prune` 3, 16 draws; 1,760 positions) on the same horizon as the live search: log loss
+  +0.017 [−0.015, +0.052], Brier level, and no better with a cross-fitted temperature. More search
+  below the horizon adds nothing (phase8-findings, "a wider one-turn search").
 
 **Open:**
-1. **Close out the reference runs.** The Kaggle `doubles2-{a,b,c}` runs (depth 1 with the KO
-   extension) say what more depth would add over the live one-turn search. They were solved with
-   the solver at `ee9149a`, and the cache key hashes the solver's source: restore that file while
-   collecting and scoring. Then decide whether a deeper background search is worth adding.
-2. **Time the doubles answer on the deployed machine.** Shared cores burst on credit; if answers
-   land late, more of them keep the quick value (see the cloud row below).
-3. **Watch, do not act yet:** 2v2 answers above 0.95 won 0.875 (16 held-out games).
+- **Time the doubles answer on the deployed machine.** Taken by hand, outside this plan's steps.
+  Shared cores burst on credit; if answers land late, more of them keep the quick value (see the
+  cloud row below). `page_path.py --gap` paces the games as turns would.
 
 ### 2. Phase 9: policy strength (EWP and search)
 
@@ -210,7 +216,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | W4 EWP action table, on-demand bring/lead simulation | behind steps 2–3 |
 | W5 complete-my-team, moveset/SP suggestions | behind step 7 |
 | Video mode | [PLAN-video](PLAN-video.md): WP following a cartridge video of an open-sheet battle. Nothing built |
-| Cloud | **Deployed 2026-10-01** at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) ([deploy/README](../deploy/README.md)): one `shared-cpu-4x` 2 GB machine that stops when idle, three solver processes, 1v1s to depth 3, HTTP Basic password, a 1 GB volume for teams, battles and the solver cache. `./deploy_fly.sh` redeploys from the working tree. Missing: the doubles answer timed on shared cores, and a check that the machine stops when idle |
+| Cloud | **Deployed 2026-10-01** at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) ([deploy/README](../deploy/README.md)): one `shared-cpu-4x` 2 GB machine that stops when idle, three solver processes, 1v1s to depth 3, HTTP Basic password, a 1 GB volume for teams, battles and the solver cache. `./deploy_fly.sh` redeploys from the working tree. Stops by itself about 6 min after its last request; a cold start answers in 3.8 s. Missing: the doubles answer timed on shared cores |
 
 ---
 

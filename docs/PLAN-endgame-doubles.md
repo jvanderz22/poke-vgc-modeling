@@ -306,8 +306,10 @@ human doubles endgames end" and "a horizon that knows a count lead"):
   games. Alone it already edges the model.
 - The 5-second budget (below) chose the search: one turn, `prune` 2, eight sampled draws, a
   forced-win check first. Exactly as the page runs it: log loss 0.421 against 0.513 and Brier 0.130
-  against 0.172, engine better; 2v2s, and 2v1s and 1v2s pooled, engine better on their own. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`) are now a
-  reference for what more depth would add.
+  against 0.172, engine better; 2v2s, and 2v1s and 1v2s pooled, engine better on their own. The Kaggle runs at depth 1 with the KO extension (`doubles2-a|b|c`), a
+  reference for what a wider search would add, were scored the same evening: nothing (log loss
+  +0.017 [−0.015, +0.052] against the live search on the same horizon; phase8-findings, "a wider
+  one-turn search"). No deeper background search.
 
 **Closed sheets, 2026-10-01** (phase8-findings, "the live doubles answer on closed sheets"). The
 live configuration on 349 held-out closed-sheet games, after fixing the set belief's reading of a

@@ -2063,3 +2063,67 @@ value for the late ones. The page's answer differed from the no-deadline one by 
 (0.072 where an order was late), and scored log loss 0.347 against 0.343 with no deadline and
 0.546 for the model on the same games: the deadline and tempering a quick value cost about 0.005.
 
+
+## A wider one-turn search: the Kaggle reference runs, closed out
+
+PLAN-v4 step 1 (2026-10-01). The three Kaggle runs `doubles2-{a,b,c}` solved the held-out
+open-sheet doubles at `doubles.SEARCH`: one turn with the KO extension, `prune` 3, 16 sampled
+draws, the `calibrated` race at the horizon. About 9.5 hours on 4 cores each (1,791 positions,
+1,760 solved, 31 past the 900 s cap, all of them in 2v2s). They were launched with the solver at
+`1613b5c`; today's solver declares the same version and re-solved each run's three smallest
+positions to the same value, leaf mass and nodes, so they merged as they are. Scored with
+`solver_vs_humans.py --endgame doubles --depths 1 --tag v2`.
+
+The question was whether a deeper or wider search in the background would add anything over the
+live one (`prune` 2, 8 draws, no KO extension, a forced-win check first). Paired on the 657 games
+both answered, grouped bootstrap, neither tempered:
+
+| | log loss | − live, same horizon | Brier | − live, same horizon |
+| --- | --- | --- | --- | --- |
+| reference (`calibrated`) | 0.433 | +0.017 [−0.015, +0.052] | 0.128 | −0.000 [−0.005, +0.004] |
+| live (`calibrated`) | 0.416 | | 0.128 | |
+| live (`blend_boosts`), what the page runs before the temperature | 0.396 | | 0.121 | |
+| model | 0.508 | | 0.169 | |
+
+- **The wider search adds nothing.** 2v2s: log loss +0.011 [−0.025, +0.058], Brier −0.005
+  [−0.011, +0.002]. 2v1s and 1v2s pooled: +0.024 [−0.033, +0.068], and Brier worse, +0.007
+  [+0.001, +0.012].
+- **Not a matter of sharpness.** A temperature cross-fitted on half the groups and scored on the
+  other half (20 splits) gives 0.431 against the live search's 0.413. The wider search's answers are
+  no better ordered, not just too sure.
+- Against the page's horizon the reference is worse: +0.037 [+0.000, +0.073] in log loss. The
+  horizon is where the answer is made (about 95% of a 2v2, as before); more search below it does
+  not help.
+- **So no deeper background search.** The live one-turn search stays as it is, and the reference
+  runs are not repeated at `blend_boosts`: the three cost about 115 core-hours for a search the
+  same horizon already shows to be no better.
+
+## 2v2 answers at 95% or more: too sure, and not worth a fix
+
+PLAN-v4 step 1's watch item (2026-10-02). The 16 held-out p1 calls above 0.95 that won 0.875 were
+one side of it. Folded to the side the answer favours, as the page shows it (tempered):
+
+| 2v2 answers ≥ 0.95 | games | answer | favoured side won | losses |
+| --- | --- | --- | --- | --- |
+| training, temperature out of fold (`race_calibration_answers.json`) | 59 | 0.973 | 0.915 | 5 |
+| held out (`--tag live_blend_boosts --temper`) | 69 | 0.977 | 0.942 | 4 |
+
+- **Real, and 2v2s only.** 9 losses where about 3 were due (a Poisson tail near 0.006). 2v1s and
+  1v2s at the top are calibrated (training 0.978 won 0.976; held out 0.992 won 0.988, 0.993 won
+  0.970), and so are forced wins. Every 2v2 in the tail is a searched answer, none a forced win.
+- **Not forfeits or the clock.** Of the 9, one was a forfeit by the favoured side; the other 8
+  were played out to the last Pokémon.
+- **Read one closely** (held out, `…2681005823`, turn 5: Arcanine-Hisui at −1 with Focus Sash and
+  Basculegion against Rillaboom at 24% and Kingambit at 40% under p2's Tailwind; the engine said
+  1.000). The engine was right: Flare Blitz into Rillaboom, whose Wood Hammer recoil faints it
+  first, retargets onto Kingambit, and the Sash holds. The player chose Extreme Speed and Aqua Jet
+  instead, neither KO'd, and lost. Re-solved with other spreads for Rillaboom (bulky, or defensive)
+  and for Basculegion (fast, or half and half), the answer stays 1.000: the hidden spreads are not
+  the cause here. The engine's answer is best play against the two or three replies it keeps; at
+  the top of a 2v2 the miss is a human not finding the line, which one temperature over all
+  answers does not see.
+- **A cap does not pay.** A cap on 2v2 answers fitted on the training games (0.91; 0.90–0.935
+  across folds): out of fold on training 0.510 → 0.507; held out, log loss −0.001 [−0.012, +0.007]
+  in 2v2s and −0.001 [−0.008, +0.004] overall, Brier level. Not shipped. The tail is about 5% of
+  2v2s and costs about 0.003 of their log loss.
+- So a 2v2 answer of 97% on the page wins about 93% of the time between people at this rating.
