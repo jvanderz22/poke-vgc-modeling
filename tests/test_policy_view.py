@@ -29,7 +29,7 @@ def _trace(input_log):
 
 
 def _plans(reg, steps, sid, text):
-    """(what the player has been shown so far, its plan) at each of its move decisions."""
+    """(what the player has been shown so far, its plan) at each of its decisions."""
     v = V.PlayerView(reg, sid, text)
     shown: list[str] = []
     out = []
@@ -41,7 +41,8 @@ def _plans(reg, steps, sid, text):
         req = json.loads(step["requests"][sid])
         v.request(req)
         shown.append(step["requests"][sid])
-        if req.get("active") and not req.get("wait") and not req.get("forceSwitch"):
+        # Moves and replacements both (a replacement is a decision like any other, stage 4).
+        if (req.get("active") or req.get("forceSwitch")) and not req.get("wait"):
             out.append((list(shown), V.plan(reg, v)))
     return out
 

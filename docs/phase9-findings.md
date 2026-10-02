@@ -275,3 +275,74 @@ opponent model fitted to people: P(pair) ∝ exp(summed score) over the K kept.
 **What it costs** (stage 1's 25 positions, warm, one guess, N 4, the race with the back at the
 horizon): K 4 median 0.43 s, K 6 0.93 s, K 8 1.77 s; about 5 ms a turn against 3.8 (the features,
 and the longer race). Two guesses at K 6 are about 1.9 s a decision; at K 4 about 0.9 s.
+
+---
+
+## The policy (stage 4)
+
+2026-10-02, `vgc.policy.ewp` (`EWPPolicy`, and `ScorerPolicy`, stage 5's held-out opponent),
+`scripts/analysis/policy_check.py` (about 4½ minutes for 100 battles on 4 workers; the results in
+`data/analysis/reg_mc/policy_check_people-k4.json` and `-k6.json`).
+
+**What a decision is.** `view.plan` gives the positions (two guesses at the opponent's back and
+spreads above two a side, one move order at two or fewer). The heaviest is solved first and fixes
+the player's rows; the others solve those same rows (`search.root_keep`), so every guess can be
+combined row by row (871 of 871 decisions did). Each answer carries each kept choice's people score
+and each cell's variance (`search.root_detail`). Then:
+- **nash**: the guesses are one game in which the opponent knows which guess is true: the player's
+  rows against a column for every combination of replies, C[a, (b₁, b₂)] = Σⱼ wⱼ Mⱼ[a, bⱼ], solved
+  as a linear program and sampled with the battle's seeded rng;
+- **people**: each guess's opponent chooses as the people model says, P(b) ∝ exp(score), and the
+  policy plays the argmax of EWP.
+- A **replacement** is a root of its own (`setup.empty`: the fainted Pokémon's slot holds a filler
+  and the root asks for replacements, mid-turn, as the simulator does after KOs), each way to fill
+  the slots valued by the turn after it. When both sides lost a Pokémon, the opponent's choice is
+  in the matrix too.
+- The record of each decision is the EWP table: every row's EWP, sampling error and worst reply.
+
+**The checks:** 100 battles against the heuristic, 50 human-corpus pairings each played twice with
+the policies swapped, open sheets, 4 battles at once on the laptop.
+
+| | K 4 (the policy) | K 6 |
+| --- | --- | --- |
+| invalid choices | **0** | 6 (before the two fixes below) |
+| errors | 0 | 0 |
+| battles replayed from their seeds, same inputs | **4 of 4** | 4 of 4 |
+| decisions searched | 871 of 894 (97.4%) | 759 of 783 |
+| a decision, median / p90 / p99 | **0.99 / 2.1 / 4.6 s** | 2.1 / 4.1 / 8.8 s |
+| at 4v4 | 1.5 s | 2.9 s |
+| at a replacement, both sides, 3v3 | 4.1 s | 8.0 s |
+| at 2v2, 1v1 | 0.5 s, 0.2 s | 1.0 s, 0.2 s |
+| won against the heuristic (not the gate) | 0.70 | 0.75 |
+| battles a second, one side searching | 0.38 | 0.22 |
+
+The times are with four battles running at once, which is how bulk play runs. The two win rates are
+not distinguishable at 100 battles (±0.09), so the policy keeps K 4, which meets the 1 s median,
+and the gate says whether that is enough.
+
+**Fallbacks** (the heuristic plays the turn): 23 of 894. A switch in the middle of a turn (U-turn,
+Parting Shot, Eject Button: the solver's root cannot be mid-turn) 9; No Retreat, Throat Chop or a
+type change, volatiles the solver does not set up, 10; sleep and freeze, whose counters are hidden,
+4. No timeouts.
+
+**Found and fixed on the way:**
+- **A locked move** (the charging turn of Electro Shot, a Hyper Beam recharge): the request lists
+  the one move without a target, and the battle refuses a choice that names one. The solver does
+  not know the lock, so the policy now writes the choice as the request asks.
+- **PP.** Two long battles (20 and 34 turns) ran a Pokémon out of a move's PP, which the solver
+  does not track, and the policy chose it. The player's own request shows its PP, so a position now
+  says which moves are out (`setup.nopp`), and the solver does not offer them. Struggle is written
+  like a lock.
+- Both are new position keys, off unless present: 60 cached answers re-solved without the cache
+  match bit for bit except two stale `race_stages` rows, which the committed solver gives the same
+  new value for.
+
+**Where it departs from the plan:**
+- **No 1 s cap at two or fewer a side.** A cap on wall time makes a battle depend on the machine.
+  The search's size is the budget instead, so a battle is a function of its seed, and those roots
+  answer in 0.2–0.5 s anyway. A 30 s timeout is the only clock, and none fired.
+- **Those roots use the policy's own search**, people pruning and the race horizon, not the page's
+  (`prune` 2, the forced-win check): the people reading needs the people scores, and the forced-win
+  check answers without a matrix.
+- **Replacements cost the most**: each way to fill the slots is a full turn searched, four at a
+  double replacement. They are 18% of decisions (158 of 894), and move the p99 more than the median.

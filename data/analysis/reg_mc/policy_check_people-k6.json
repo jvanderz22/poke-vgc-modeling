@@ -1,0 +1,246 @@
+{
+ "settings": {
+  "opponent": "people",
+  "pairs": 50,
+  "seed": 4
+ },
+ "run": {
+  "run_id": "policy-check-people-p50",
+  "wall_seconds": 456.4,
+  "battles_per_second": 0.22,
+  "outcome_digest": "e2d685bbd2af9847"
+ },
+ "battles": 100,
+ "errors": 0,
+ "error_examples": [],
+ "invalid_choices": 6,
+ "trapped_retries": 0,
+ "ewp_win_rate_not_the_gate": 0.75,
+ "mean_turns": 6.2,
+ "decisions": 783,
+ "searched": 759,
+ "fallbacks": {
+  "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 10,
+  "Falinks has noretreat, which the solver cannot set up": 4,
+  "error: StopIteration: ": 4,
+  "Kingambit is slp, whose turn counter is not shown": 2,
+  "Golisopod is slp, whose turn counter is not shown": 1,
+  "Salamence has disable, which the solver cannot set up": 1,
+  "Milotic has throatchop, which the solver cannot set up": 1,
+  "Arcanine-Hisui has throatchop, which the solver cannot set up": 1
+ },
+ "timeouts": 0,
+ "ms": {
+  "median": 2103,
+  "p90": 4135,
+  "p99": 8756,
+  "max": 9936
+ },
+ "ms_by_kind": {
+  "4v4": {
+   "n": 161,
+   "median": 2940,
+   "p90": 4171,
+   "max": 6993
+  },
+  "3v3": {
+   "n": 73,
+   "median": 2177,
+   "p90": 2849,
+   "max": 3849
+  },
+  "3v2": {
+   "n": 51,
+   "median": 1851,
+   "p90": 2340,
+   "max": 2678
+  },
+  "4v3": {
+   "n": 45,
+   "median": 2572,
+   "p90": 3438,
+   "max": 3683
+  },
+  "3v1": {
+   "n": 39,
+   "median": 538,
+   "p90": 1018,
+   "max": 1185
+  },
+  "1v1": {
+   "n": 38,
+   "median": 164,
+   "p90": 217,
+   "max": 445
+  },
+  "2v1": {
+   "n": 37,
+   "median": 386,
+   "p90": 566,
+   "max": 718
+  },
+  "replace 3v3": {
+   "n": 36,
+   "median": 7998,
+   "p90": 9664,
+   "max": 9936
+  },
+  "2v2": {
+   "n": 33,
+   "median": 963,
+   "p90": 1226,
+   "max": 4692
+  },
+  "1v2": {
+   "n": 33,
+   "median": 433,
+   "p90": 580,
+   "max": 707
+  },
+  "3v4": {
+   "n": 30,
+   "median": 2573,
+   "p90": 3534,
+   "max": 4123
+  },
+  "replace 3v4": {
+   "n": 27,
+   "median": 4518,
+   "p90": 6410,
+   "max": 7199
+  },
+  "2v3": {
+   "n": 27,
+   "median": 1986,
+   "p90": 2551,
+   "max": 3260
+  },
+  "4v2": {
+   "n": 24,
+   "median": 2316,
+   "p90": 2860,
+   "max": 3145
+  },
+  "none": {
+   "n": 20,
+   "median": 3,
+   "p90": 6,
+   "max": 8
+  },
+  "replace 2v2": {
+   "n": 19,
+   "median": 1029,
+   "p90": 1577,
+   "max": 2999
+  },
+  "replace 2v3": {
+   "n": 18,
+   "median": 2084,
+   "p90": 4105,
+   "max": 4473
+  },
+  "replace 3v2": {
+   "n": 17,
+   "median": 4020,
+   "p90": 5498,
+   "max": 7958
+  },
+  "replace 2v1": {
+   "n": 14,
+   "median": 452,
+   "p90": 554,
+   "max": 890
+  },
+  "1v3": {
+   "n": 8,
+   "median": 859,
+   "p90": 1077,
+   "max": 1343
+  },
+  "4v1": {
+   "n": 7,
+   "median": 477,
+   "p90": 618,
+   "max": 718
+  },
+  "replace 3v1": {
+   "n": 6,
+   "median": 944,
+   "p90": 2266,
+   "max": 2473
+  },
+  "replace 1v2": {
+   "n": 5,
+   "median": 449,
+   "p90": 549,
+   "max": 552
+  },
+  "2v4": {
+   "n": 4,
+   "median": 2067,
+   "p90": 2476,
+   "max": 2650
+  },
+  "replace 2v4": {
+   "n": 3,
+   "median": 2613,
+   "p90": 3643,
+   "max": 3901
+  },
+  "1v4": {
+   "n": 3,
+   "median": 1110,
+   "p90": 1222,
+   "max": 1250
+  },
+  "replace 1v3": {
+   "n": 2,
+   "median": 1193,
+   "p90": 1298,
+   "max": 1324
+  },
+  "replace 1v1": {
+   "n": 2,
+   "median": 168,
+   "p90": 178,
+   "max": 180
+  },
+  "replace 1v4": {
+   "n": 1,
+   "median": 1217,
+   "p90": 1217,
+   "max": 1217
+  }
+ },
+ "positions_solved": {
+  "2": 528,
+  "1": 231
+ },
+ "rows_kept_by_all_guesses": 759,
+ "replay": {
+  "replayed": 4,
+  "same": 4,
+  "battles": [
+   {
+    "index": 0,
+    "same": true,
+    "had_timeout": false
+   },
+   {
+    "index": 1,
+    "same": true,
+    "had_timeout": false
+   },
+   {
+    "index": 2,
+    "same": true,
+    "had_timeout": false
+   },
+   {
+    "index": 3,
+    "same": true,
+    "had_timeout": false
+   }
+  ]
+ }
+}

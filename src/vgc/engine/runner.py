@@ -192,12 +192,21 @@ def play_battle(
     views = {s: SideView(battle_id, s, s) for s in names}
     rngs = {s: random.Random(f"{seed}:{s}") for s in names}
     pol = dict(zip(names, policies))
+    # A policy that reads the battle as a player does (`vgc.policy.ewp`) is given its own team as
+    # built and every chunk its side is sent; one that does not define these is unaffected.
+    observe = {s: getattr(pol[s], "observe", None) for s in names}
+    for s, team in zip(names, teams):
+        begin = getattr(pol[s], "begin", None)
+        if begin is not None:
+            begin(battle_id, s, team)
     invalid = trapped = 0
     accepted = {s: 0 for s in names}
     for _ in range(max_decisions):
         for s in names:
             for chunk in res.get(s, []):
                 views[s].feed(chunk)
+                if observe[s] is not None:
+                    observe[s](battle_id, s, chunk)
         if res.get("ended"):
             end = res["end"]
             return BattleRecord(

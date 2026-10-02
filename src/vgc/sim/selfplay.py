@@ -33,7 +33,7 @@ SELFPLAY = paths.ROOT / "data" / "selfplay"
 class Matchup:
     team_a: str  # Showdown export text
     team_b: str
-    policy_a: str  # "random" | "heuristic"
+    policy_a: str  # "random" | "heuristic" | "ewp-people" | "ewp-nash" | "scorer"
     policy_b: str
     team_a_id: str = ""
     team_b_id: str = ""
@@ -51,10 +51,11 @@ class Matchup:
 _W: dict[str, Any] = {}
 
 
-def _init_worker(reg_id: str) -> None:
+def _init_worker(reg_id: str, ewp: dict[str, Any] | None = None) -> None:
     from vgc.regulation import load_regulation
 
     _W["reg"] = load_regulation(reg_id)
+    _W["ewp"] = ewp or {}
     _W["runner"] = BattleRunner()
     _W["policies"] = {}
 
@@ -69,6 +70,14 @@ def _policy(name: str):
             from vgc.policy.heuristic import HeuristicPolicy
 
             _W["policies"][name] = HeuristicPolicy(_W["reg"])
+        elif name == "scorer":
+            from vgc.policy.ewp import ScorerPolicy
+
+            _W["policies"][name] = ScorerPolicy(_W["reg"])
+        elif name in ("ewp-people", "ewp-nash"):
+            from vgc.policy.ewp import EWPPolicy
+
+            _W["policies"][name] = EWPPolicy(_W["reg"], name.split("-")[1], **_W.get("ewp", {}))
         else:
             raise ValueError(f"unknown policy {name!r}")
     return _W["policies"][name]
@@ -91,6 +100,15 @@ def _play(task: tuple[int, str, list[int], Matchup]) -> dict[str, Any]:
     a_side = "p2" if m.swap_sides else "p1"
     out = rec.summary() | {"index": index, "a_side": a_side, "a_won": None if rec.winner is None else rec.winner == a_side}
     out["input_log"], out["log"] = rec.input_log, rec.log
+    # A searching policy's record of each decision (`vgc.policy.ewp`): its EWP table and timing.
+    decisions = []
+    for name in {sides[0][1], sides[1][1]}:
+        pol = _W["policies"].get(name)
+        if getattr(pol, "decisions", None) is not None:
+            decisions += pol.decisions
+            pol.decisions = []
+    if decisions:
+        out["decisions"] = decisions
     return out
 
 
@@ -114,6 +132,7 @@ def run(
     run_id: str | None = None,
     out_dir: Path | None = None,
     keep_logs: bool = True,
+    ewp: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     run_id = run_id or f"{dt.datetime.now():%Y%m%d-%H%M%S}-s{seed}"
     out_dir = out_dir or SELFPLAY / run_id
@@ -121,7 +140,7 @@ def run(
     tasks = [(i, run_id, battle_seed(seed, i), m) for i, m in enumerate(matchups)]
     t0 = time.perf_counter()
     results: list[dict[str, Any]] = []
-    with mp.get_context("spawn").Pool(workers, initializer=_init_worker, initargs=(reg_id,)) as pool:
+    with mp.get_context("spawn").Pool(workers, initializer=_init_worker, initargs=(reg_id, ewp)) as pool:
         for r in pool.imap_unordered(_play, tasks, chunksize=4):
             results.append(r)
     wall = time.perf_counter() - t0
@@ -153,6 +172,7 @@ def run(
         "wall_seconds": round(wall, 1),
         "battles_per_second": round(len(results) / wall, 2),
         "policies": sorted({(m.policy_a, m.policy_b) for m in matchups}),
+        **({"ewp": ewp} if ewp else {}),
         # Which information regime the run was played in. Recorded because it is not recoverable
         # from the run id, and a mix whose regime nobody checked is what finding 8 was about.
         "ots": sorted({bool(m.ots) for m in matchups}),

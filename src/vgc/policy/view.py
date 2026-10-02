@@ -76,6 +76,7 @@ class PlayerView:
         # From the stands ("spectator", the human checks) there is no team of one's own.
         self.mine = from_team(reg, team_text) if team_text else []
         self.setup = {"perspective": perspective, "mine": self.mine, "theirs": []}
+        self.req: dict[str, Any] | None = None
 
     def feed(self, lines: list[str]) -> None:
         for line in lines:
@@ -95,6 +96,7 @@ class PlayerView:
 
     def request(self, req: dict[str, Any]) -> None:
         self.o.request(req)
+        self.req = req
 
 
 # --- the positions -------------------------------------------------------------------------------
@@ -120,6 +122,24 @@ def _sheet_set(reg: Regulation, m: Any) -> dict[str, Any]:
             "moves": [(reg.dex.get_move(x) or {}).get("name", x) for x in m.moves]}
 
 
+def empty_slots(reg: Regulation, view: PlayerView) -> dict[str, list[int]]:
+    """The slots waiting for a replacement at this decision (PLAN-policy stage 4): the player's as
+    its request asks, and the opponent's where it has fewer than two on the field and some in the
+    back, which at the player's own replacement means both lost a Pokémon in the same turn."""
+    state, me = view.o, view.perspective
+    them = "p2" if me == "p1" else "p1"
+    out: dict[str, list[int]] = {}
+    force = (view.req or {}).get("forceSwitch")
+    if force:
+        out[me] = [i for i, x in enumerate(force) if x]
+        on = doubles.actives(state, them)
+        back = reg.bring - sum(m.state == "fainted" for m in state.sides[them].mons) - len(on)
+        if len(on) < 2 and back > 0:
+            taken = {m.position for m in on}
+            out[them] = [i for i in (0, 1) if i not in taken][:back]
+    return out
+
+
 def reason(reg: Regulation, view: PlayerView) -> str | None:
     """Why no position is built for this decision, or None."""
     state = view.o
@@ -129,10 +149,16 @@ def reason(reg: Regulation, view: PlayerView) -> str | None:
         return "the battle is not in progress"
     if not state.sides[them].sheet:
         return "their sheet is closed"
+    empty = empty_slots(reg, view)
+    if me in empty:
+        mons = (view.req or {}).get("side", {}).get("pokemon", [])
+        for i in empty[me]:
+            if i < len(mons) and not mons[i]["condition"].endswith("fnt"):
+                return "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched"
     for sid in ("p1", "p2"):
         on = doubles.actives(state, sid)
         left = reg.bring - sum(m.state == "fainted" for m in state.sides[sid].mons)
-        if left > len(on) and len(on) < 2:
+        if left > len(on) and len(on) < 2 and sid not in empty:
             return "a slot is waiting for a replacement"
         for m in on:
             if m.volatiles:
@@ -220,6 +246,7 @@ def plan(reg: Regulation, view: PlayerView, search: dict[str, Any] | None = None
     if not orders:
         return {"eligible": False, "reason": "no Speed order to solve"}
 
+    empty = empty_slots(reg, view)
     jobs = []
     for back, w_back in backs(reg, state, them):
         extra = [_sheet_set(reg, m) for m in back]
@@ -232,22 +259,80 @@ def plan(reg: Regulation, view: PlayerView, search: dict[str, Any] | None = None
         f["bench"] = {sid: len(mons[sid]) - len(on[sid]) for sid in ("p1", "p2")}
         used = {sid: any(m.mega for m in state.sides[sid].mons) for sid in ("p1", "p2")}
         f["megaUsed"] = {sid: True for sid, u in used.items() if u}
+        nopp = _out_of_pp(view, mons[me])
+        if nopp:
+            f["nopp"] = {me: nopp}
+        if empty:
+            f = _emptied(reg, f, sets_, empty)
         for o in orders:
             sides = {}
             for sid in ("p1", "p2"):
                 sides[sid] = [{**s, "sp": sp} for s, sp in zip(sets_[sid], o["sp"][sid])] + \
                     [s for s in sets_[sid][len(o["sp"][sid]):]]
+                for i in empty.get(sid, []):
+                    sides[sid].insert(i, _placeholder(reg, sets_))
             jobs.append({"weight": w_back * o["weight"], "back": [m.species for m in back], "order": o["order"],
                          "position": compose(reg, sides, f, search)})
     jobs.sort(key=lambda j: -j["weight"])
     total = sum(j["weight"] for j in jobs)
     kept = jobs[:positions]
     covered = sum(j["weight"] for j in kept)
+    # How the solver's sides map onto the battle's: its slot i is the battle's `slots[sid][i]` (a
+    # side with one Pokémon left has it in the solver's first slot, wherever it stands), and the
+    # player's Pokémon k (field, then back) is `team[k]` by nickname, None for an empty slot's filler.
+    slots = {sid: [0, 1] if sid in empty or len(on[sid]) != 1 else [on[sid][0].position, 1 - on[sid][0].position]
+             for sid in ("p1", "p2")}
+    team = [m.nickname for m in on[me] + seen_back[me]]
+    for i in empty.get(me, []):
+        team.insert(i, None)
     return {"eligible": True, "reason": None,
             "kind": f"{len(mine)}v{len(theirs_seen) + _unseen(reg, state, them)[1]}",
+            "replacing": sorted(empty), "slots": slots, "team": team,
             "jobs": [{**j, "weight": j["weight"] / covered} for j in kept],
             "unsolved": round(1 - covered / total * (1 - unsolved_speed), 4) if total else 1.0,
             "considered": len(jobs), "notes": notes}
+
+
+def _out_of_pp(view: PlayerView, mons: list[Any]) -> list[list[str]] | None:
+    """The moves each of the player's Pokémon on the field has no PP left for, as its request shows
+    them (a long battle runs out), in the solver's order; None when there are none."""
+    active = (view.req or {}).get("active") or []
+    out = []
+    for m in mons:
+        slot = active[m.position] if m.state == "active" and m.position is not None and m.position < len(active) else {}
+        out.append([mv["id"] for mv in slot.get("moves", []) if mv.get("pp") == 0])
+    return out if any(out) else None
+
+
+# A Pokémon's entries in the solver's per-Pokémon lists, for an empty slot's filler: it is fainted
+# before anything reads them.
+_NEUTRAL = {"hp": 100, "mega": False, "boosts": {}, "consumed": False, "status": None, "timesAttacked": 0,
+            "stall": 0, "fresh": False, "choicelock": None, "nopp": []}
+
+
+def _placeholder(reg: Regulation, side_sets: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
+    used = {s["species"] for ss in side_sets.values() for s in ss}
+    x = next(x for x in reversed(solver.FILLERS) if x not in used)
+    return {"species": x, "ability": solver._ability(reg, x), "moves": ["Protect"]}
+
+
+def _emptied(reg: Regulation, f: dict[str, Any], side_sets: dict[str, list[dict[str, Any]]],
+             empty: dict[str, list[int]]) -> dict[str, Any]:
+    """`facts` with a filler standing in each empty slot: two on the field, the solver told which
+    are empty, and a neutral entry in each per-Pokémon list at the slot."""
+    f = {**f, "active": dict(f["active"]), "empty": {sid: list(v) for sid, v in empty.items()}}
+    for sid, slots in empty.items():
+        f["active"][sid] = 2
+        n = len(side_sets[sid])
+        for k, neutral in _NEUTRAL.items():
+            v = (f.get(k) or {}).get(sid)
+            if v is None:
+                continue
+            v = list(v) + [neutral] * (n - len(v))
+            for i in slots:
+                v.insert(i, neutral)
+            f[k] = {**f[k], sid: v}
+    return f
 
 
 def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) -> dict[str, Any] | None:

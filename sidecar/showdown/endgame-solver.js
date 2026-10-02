@@ -152,6 +152,18 @@ function setUp(pos) {
 			if (per(s.mega, side, i)) b.actions.runMegaEvo(me);
 		});
 	}
+	// `empty` (PLAN-policy stage 4): slots whose Pokémon has just fainted, for a root that is a
+	// replacement. The position holds a filler there, fainted, and the root asks for replacements as
+	// the simulator does after a turn's KOs: mid-turn, so filling them ends the turn and nothing else
+	// (no second end of turn).
+	let emptied = false;
+	for (const side of b.sides) for (const slot of (s.empty || {})[side.id] || []) {
+		const p = side.active[slot];
+		if (!p || p.fainted) continue;
+		p.hp = 0; p.fainted = true; p.status = 'fnt'; p.switchFlag = true;
+		side.pokemonLeft--;
+		emptied = true;
+	}
 	if (s.weather) { f.setWeather(s.weather[0], 'debug'); f.weatherState.duration = s.weather[1]; }
 	if (s.terrain) { f.setTerrain(s.terrain[0], 'debug'); f.terrainState.duration = s.terrain[1]; }
 	if (s.trickroom) { f.addPseudoWeather('trickroom', 'debug'); f.pseudoWeather.trickroom.duration = s.trickroom; }
@@ -175,6 +187,12 @@ function setUp(pos) {
 			me.lastMove = b.dex.getActiveMove(lock);
 		}
 		if (per(s.timesAttacked, side, i)) me.timesAttacked = per(s.timesAttacked, side, i);
+		// `nopp` (PLAN-policy stage 4): the moves a Pokémon has no PP left for, which the player's own
+		// request shows. With none left the simulator disables a move, so it is not offered.
+		for (const id of per(s.nopp, side, i) || []) {
+			const slot = me.moveSlots.find(m => m.id === id);
+			if (slot) slot.pp = 0;
+		}
 		// Only the statuses whose effect is fixed once set. Sleep and bad poison carry a counter the
 		// cartridge does not show, so a position with either is not built (vgc.wp.endgame says so).
 		const status = per(s.status, side, i);
@@ -204,7 +222,7 @@ function setUp(pos) {
 			if (move.flags['cantusetwice'] && me.lastMove?.id === slot.id) me.disableMove(slot.id);
 		}
 	}
-	b.makeRequest('move');
+	if (emptied) { b.midTurn = true; b.makeRequest('switch'); } else b.makeRequest('move');
 	return b;
 }
 
@@ -1441,6 +1459,7 @@ function solvePosition(pos) {
 	}
 	const cache = new Map();
 	let nodes = 0, dropped = 0, pruned = 0;
+	let rootScores = null;
 	// With `search.stats`: turns replayed and distinct outcomes, and the matrix sizes met, by how
 	// many Pokémon each side had — what the doubles cost estimates are measured with.
 	const stats = {replays: 0, outcomes: 0, matrices: {}};
@@ -1583,12 +1602,28 @@ function solvePosition(pos) {
 		if (search.prune && !swap) {
 			const copy = scorer(snap);
 			const n = o1.length + o2.length;
+			// At the root, with `root_detail` (PLAN-policy stage 4), each kept choice's people score is
+			// kept for the answer: the policy's model of the opponent reads it.
+			const atRoot = battle === root;
+			const scores = atRoot && search.root_detail ? [new Map(), new Map()] : [null, null];
 			const cut = search.prune_by === 'people'
-				? (i, o) => prunePeople(copy, i, o, search.prune, search.side_k, search.people_top || 3)
-				: (i, o) => prune(copy, i, o, search.prune, search.side_k);
-			o1 = cut(0, o1);
-			o2 = cut(1, o2);
+				? (i, o) => prunePeople(copy, i, o, search.prune, search.side_k, search.people_top || 3, scores[i])
+				: (i, o) => prune(copy, i, o, search.prune, search.side_k, scores[i]);
+			// `root_keep` (stage 4): a side's choices at the root given rather than cut, so the guesses
+			// at what one player cannot see all solve that player's same rows.
+			const given = i => {
+				const want = atRoot && search.root_keep && search.root_keep[i ? 'p2' : 'p1'];
+				if (!want) return null;
+				const legal = new Set(i ? o2 : o1);
+				const out = want.filter(ch => legal.has(ch));
+				return out.length ? out : null;
+			};
+			const g1 = given(0), g2 = given(1);
+			const c1 = cut(0, o1), c2 = cut(1, o2);
+			o1 = g1 || c1;
+			o2 = g2 || c2;
 			pruned += n - o1.length - o2.length;
+			if (atRoot && search.root_detail) rootScores = scores;
 		}
 		const here = alive(battle);
 		const kind = here.join('v');
@@ -1781,6 +1816,14 @@ function solvePosition(pos) {
 			acc + row.reduce((b2, v, j) => b2 + r.g.p1[i] * v * r.g.p2[j], 0), 0) / search.sample))} : {}),
 		moves: {p1: r.o1, p2: r.o2}, matrix: r.M && r.M.map(row => row.map(round)),
 		strategy: r.g && {p1: r.g.p1.map(round), p2: r.g.p2.map(round)},
+
+		// With `root_detail`: each root choice's people score (null where none was given: a
+		// replacement, or `prune` off) and each cell's variance over its sampled turns.
+		...(search.root_detail && r.M ? {
+			people: rootScores && {p1: r.o1.map(ch => rootScores[0].has(ch) ? round(rootScores[0].get(ch)) : null),
+				p2: r.o2.map(ch => rootScores[1].has(ch) ? round(rootScores[1].get(ch)) : null)},
+			cell_var: r.V.map(row => row.map(v => Math.round(v * 1e6) / 1e6)),
+		} : {}),
 	});
 }
 

@@ -10,7 +10,9 @@ change the move chosen in half the decisions (a fifth from the dice alone), and 
 no better than uniform at 4v4. Stage 3 done the same day: the leaf is the race with the back, blended
 (held out 0.548 against the model's 0.554 and the floor's 0.562); pruning now keeps what a model of
 people ranks highest as well (people's pairs in the top 6: 35%, against 28%); the model adds about
-0.01 nats to the count on open sheets._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+0.01 nats to the count on open sheets. Stage 4 done the same day: the policy plays whole battles,
+no invalid choice in 100, each a function of its seed, a median 0.99 s a decision at K 4 (2.1 s at
+K 6), 97% of decisions searched, replacements included._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -304,6 +306,27 @@ On human games, through stage 2's adapter (from the stands, as the endgame check
   log-likelihood of human choices against a uniform choice over the kept set.
 
 ### 4. The policy (1½ days)
+
+**Done 2026-10-02** ([phase9-findings](phase9-findings.md), "the policy"; `vgc.policy.ewp`,
+`policy_check.py`).
+- `EWPPolicy` (`ewp-people`, `ewp-nash` in self-play): plan, then the guesses solved on one warm
+  solver, the first fixing the player's rows for the rest (`root_keep`), each answer with its people
+  scores and cell variances (`root_detail`). Nash is the guesses as one game in which the opponent
+  knows which is true; people is the argmax of EWP against the people model.
+- **Replacements** are searched like moves (`setup.empty`). Mid-turn switches, a few volatiles and
+  hidden sleep counters fall to the heuristic: 2.6% of decisions.
+- **100 battles against the heuristic:** no invalid choice, 4 of 4 replayed from their seeds to the
+  same inputs, a median 0.99 s a decision with four battles at once (4v4 1.5 s, p99 4.6 s). **K 4**:
+  K 6 took 2.1 s and its win rate (0.75 against 0.70) is not distinguishable at 100 battles.
+- Fixed on the way: a locked move (Electro Shot charging, a recharge) is written as the request
+  asks, and moves out of PP are not offered (`setup.nopp`). Cached answers unchanged.
+- Departures: no wall-clock cap at two or fewer a side (a battle would depend on the machine; they
+  answer in 0.2–0.5 s); those roots use the policy's search, not the page's.
+- Stage 5's tools are built with it: `policy_gate.py` (export, play here, pack, merge, score),
+  `ScorerPolicy` (the held-out opponent), and `kaggle_selfplay.sh` with `selfplay_batch.py`, whose
+  kernel path was run here end to end and merged after replaying.
+
+What was planned:
 
 `vgc.policy.ewp.EWPPolicy`, a `Policy` like the heuristic.
 - A decision: plan → `D` positions → the warm solver (`--serve`, one per self-play worker) → each
