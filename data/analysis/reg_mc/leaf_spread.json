@@ -1,0 +1,464 @@
+{
+ "positions": 30,
+ "policy": {
+  "spread_median": 0.1218,
+  "gap_median": 0.0028
+ },
+ "floor": {
+  "spread_median": 0.1308,
+  "gap_median": 0.0011
+ },
+ "same_choice": 20,
+ "rows": [
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.09934613215302061,
+    "gap": 0.0075931499999999374,
+    "choice": "move 4 mega, move 3 1",
+    "value": 0.6115
+   },
+   "floor": {
+    "spread": 0.11713587380516169,
+    "gap": 0.011326570000000036,
+    "choice": "move 4 mega, move 3 1",
+    "value": 0.4824
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.11000825007642175,
+    "gap": 0.02410000000000001,
+    "choice": "move 2 2, move 3 1",
+    "value": 0.717
+   },
+   "floor": {
+    "spread": 0.14061421810518784,
+    "gap": 0.0006594400000000666,
+    "choice": "move 2 2, move 3 1",
+    "value": 0.596
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.24162984245305646,
+    "gap": 0.0776,
+    "choice": "move 3 1, move 1",
+    "value": 0.6247
+   },
+   "floor": {
+    "spread": 0.19178567631716426,
+    "gap": 0.0,
+    "choice": "move 3 1, move 1",
+    "value": 0.7542
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.06526637885108481,
+    "gap": 0.0001742699999999764,
+    "choice": "switch 3, move 2 2",
+    "value": 0.2078
+   },
+   "floor": {
+    "spread": 0.09542385853536722,
+    "gap": 0.0006418299999999544,
+    "choice": "switch 3, move 2 2",
+    "value": 0.2967
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.18569575897066512,
+    "gap": 0.0034153100000000602,
+    "choice": "move 2, move 4 mega",
+    "value": 0.648
+   },
+   "floor": {
+    "spread": 0.08695336069829845,
+    "gap": 0.0,
+    "choice": "move 2, move 1 1 mega",
+    "value": 0.8206
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.17279647710529283,
+    "gap": 0.0011507700000000787,
+    "choice": "move 1 2, move 3 1",
+    "value": 0.6225
+   },
+   "floor": {
+    "spread": 0.14134347281391793,
+    "gap": 0.005458870000000116,
+    "choice": "move 1 2, move 3 1",
+    "value": 0.6582
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.12617095105010856,
+    "gap": 4.794999999990779e-05,
+    "choice": "move 4 2 mega, move 4 1",
+    "value": 0.7995
+   },
+   "floor": {
+    "spread": 0.17247073886282535,
+    "gap": 0.0009065099999999715,
+    "choice": "move 3 mega, move 1 1",
+    "value": 0.7461
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.050757510220163476,
+    "gap": 0.0232,
+    "choice": "move 4, move 3 2",
+    "value": 0.8038
+   },
+   "floor": {
+    "spread": 0.06511791214895397,
+    "gap": 0.0,
+    "choice": "move 3, move 2 1",
+    "value": 0.7194
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.25356736667884616,
+    "gap": 0.19480000000000003,
+    "choice": "move 4, move 1",
+    "value": 0.6288
+   },
+   "floor": {
+    "spread": 0.22306063153211544,
+    "gap": 0.17570000000000002,
+    "choice": "move 4, move 1",
+    "value": 0.5944
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.41381432430499554,
+    "gap": 0.9613,
+    "choice": "move 1 1, move 1 2",
+    "value": 0.9613
+   },
+   "floor": {
+    "spread": 0.40698835671306377,
+    "gap": 0.9353,
+    "choice": "move 1 1, move 1 2",
+    "value": 0.9353
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.16431174516377528,
+    "gap": 0.0005934199999999556,
+    "choice": "move 4, move 3 2",
+    "value": 0.4539
+   },
+   "floor": {
+    "spread": 0.14017578808894932,
+    "gap": 0.011454529999999907,
+    "choice": "move 1 1, move 4",
+    "value": 0.4701
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.15994371048806938,
+    "gap": 0.002116270000000142,
+    "choice": "move 2 1 mega, move 2 2",
+    "value": 0.7272
+   },
+   "floor": {
+    "spread": 0.16598835195913933,
+    "gap": 0.005572880000000002,
+    "choice": "move 2 1 mega, move 2 2",
+    "value": 0.601
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.13743804134348442,
+    "gap": 0.0014212399999999903,
+    "choice": "move 1 1, switch 4",
+    "value": 0.6503
+   },
+   "floor": {
+    "spread": 0.1662174392833483,
+    "gap": 0.0006193500000001295,
+    "choice": "move 1 1, switch 4",
+    "value": 0.5338
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.17829777103015335,
+    "gap": 0.00010409000000000113,
+    "choice": "move 1 2 mega, move 2",
+    "value": 0.3212
+   },
+   "floor": {
+    "spread": 0.19030647380939367,
+    "gap": 0.0016452599999999817,
+    "choice": "move 1 2 mega, move 2",
+    "value": 0.4038
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.15944516538261325,
+    "gap": 0.00579193999999994,
+    "choice": "move 1 2, move 1 1",
+    "value": 0.7652
+   },
+   "floor": {
+    "spread": 0.10363147714645177,
+    "gap": 0.1774,
+    "choice": "move 1 2, move 1 1",
+    "value": 0.8769
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.14207387453581072,
+    "gap": 0.014973570000000214,
+    "choice": "move 3 2 mega, move 3 1",
+    "value": 0.8661
+   },
+   "floor": {
+    "spread": 0.15323815252373962,
+    "gap": 0.02268893000000005,
+    "choice": "move 3 2 mega, move 3 1",
+    "value": 0.8125
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.161323092726719,
+    "gap": 0.11759999999999998,
+    "choice": "move 2, move 1 1 mega",
+    "value": 0.5011
+   },
+   "floor": {
+    "spread": 0.14421982735877567,
+    "gap": 0.0,
+    "choice": "move 2, move 1 1 mega",
+    "value": 0.4405
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.13631856367519846,
+    "gap": 0.0,
+    "choice": "move 2, move 1 1",
+    "value": 0.5815
+   },
+   "floor": {
+    "spread": 0.13367941809039885,
+    "gap": 0.0,
+    "choice": "move 2, move 1 1",
+    "value": 0.5415
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.10182115342084189,
+    "gap": 0.0035007099999999625,
+    "choice": "move 2 1 mega, move 4",
+    "value": 0.7159
+   },
+   "floor": {
+    "spread": 0.08883619757733896,
+    "gap": 0.0,
+    "choice": "move 2 1 mega, move 4",
+    "value": 0.6894
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.05970732495077783,
+    "gap": 4.444999999997368e-05,
+    "choice": "move 3 mega, move 1",
+    "value": 0.9699
+   },
+   "floor": {
+    "spread": 0.06225558350436638,
+    "gap": 0.000336000000000114,
+    "choice": "move 3 mega, move 3 2",
+    "value": 0.9698
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.07570561405866805,
+    "gap": 0.0020230700000000157,
+    "choice": "move 2 1, move 1 2",
+    "value": 0.4384
+   },
+   "floor": {
+    "spread": 0.07468135685516429,
+    "gap": 0.00015463999999998368,
+    "choice": "move 2 2, move 1 2",
+    "value": 0.4492
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.11563678004722959,
+    "gap": 0.0021999999999999797,
+    "choice": "move 1 2, switch 3",
+    "value": 0.1886
+   },
+   "floor": {
+    "spread": 0.10566618018932297,
+    "gap": 0.0,
+    "choice": "move 1 2, move 4",
+    "value": 0.1614
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.09558918574062421,
+    "gap": 0.003995379999999882,
+    "choice": "move 2 1, move 3 2 mega",
+    "value": 0.8585
+   },
+   "floor": {
+    "spread": 0.12683822908738793,
+    "gap": 0.0057139000000000495,
+    "choice": "move 2 1, move 3 2 mega",
+    "value": 0.8131
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.1120053089295104,
+    "gap": 0.01550000000000007,
+    "choice": "move 2 1 mega, move 3 2",
+    "value": 0.899
+   },
+   "floor": {
+    "spread": 0.14945494002281162,
+    "gap": 0.0253000000000001,
+    "choice": "move 2 1 mega, move 3 2",
+    "value": 0.8665
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.20053873313565718,
+    "gap": 0.0,
+    "choice": "move 3 2, move 4",
+    "value": 0.8367
+   },
+   "floor": {
+    "spread": 0.11800704310430893,
+    "gap": 0.006164079999999905,
+    "choice": "move 3 2, move 1 1",
+    "value": 0.8244
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.11751643383894111,
+    "gap": 0.0,
+    "choice": "move 3 2, move 3",
+    "value": 0.3605
+   },
+   "floor": {
+    "spread": 0.11318738488551726,
+    "gap": 0.0,
+    "choice": "move 3 2, move 3",
+    "value": 0.372
+   }
+  },
+  {
+   "kind": "4v4",
+   "policy": {
+    "spread": 0.07806075798202573,
+    "gap": 0.001980259999999956,
+    "choice": "move 3 1, move 2",
+    "value": 0.435
+   },
+   "floor": {
+    "spread": 0.12801629405356912,
+    "gap": 0.0005407199999999945,
+    "choice": "move 3 1, switch 4",
+    "value": 0.4897
+   }
+  },
+  {
+   "kind": "4v3",
+   "policy": {
+    "spread": 0.07062697976029932,
+    "gap": 0.020499999999999963,
+    "choice": "move 1, move 1",
+    "value": 0.7802
+   },
+   "floor": {
+    "spread": 0.06157699956152459,
+    "gap": 0.06490000000000007,
+    "choice": "move 1, move 1",
+    "value": 0.8584
+   }
+  },
+  {
+   "kind": "3v3",
+   "policy": {
+    "spread": 0.08798351605398719,
+    "gap": 0.0008897099999999325,
+    "choice": "move 4 2, move 2 1 mega",
+    "value": 0.6793
+   },
+   "floor": {
+    "spread": 0.0676491171823813,
+    "gap": 0.003378419999999993,
+    "choice": "move 3 1, move 2 2 mega",
+    "value": 0.8356
+   }
+  },
+  {
+   "kind": "3v2",
+   "policy": {
+    "spread": 0.11239696508543577,
+    "gap": 0.018900000000000028,
+    "choice": "move 1, move 4",
+    "value": 0.8777
+   },
+   "floor": {
+    "spread": 0.139337953908135,
+    "gap": 0.001356809999999875,
+    "choice": "move 1, move 4",
+    "value": 0.8117
+   }
+  }
+ ]
+}

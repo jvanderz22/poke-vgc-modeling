@@ -36,11 +36,13 @@ BRING_RATES = paths.DATA / "analysis" / "reg_mc" / "bring_rates.json"
 BRING_PRIOR_SIDES = 20
 # Positions a decision solves (the plan's D).
 POSITIONS = 2
-# The policy's search at the design point (PLAN-policy, stage 1): one turn, two choices a Pokémon,
-# K a side, four draws, replacements searched, the blended race at the horizon.
-SEARCH = {"depth": 1, "prune": 2, "side_k": 6, "sample": 4, "sample_only": True, "ko_extend": False,
-          "race": True, "race_doubles": "blend_boosts", "fast_race": True, "fast_dice": True,
-          "switches": True, "mega": True}
+# The policy's search at the design point (PLAN-policy, stages 1 and 3): one turn; each Pokémon's
+# choices as `prune` 2 keeps them and the three a model of people ranks highest, Mega both ways; the
+# side's top K pairs by that model; four draws; replacements searched; at the horizon the race with
+# the back, blended as fitted on human games ('policy').
+SEARCH = {"depth": 1, "prune": 2, "prune_by": "people", "people_top": 3, "side_k": 6, "sample": 4,
+          "sample_only": True, "ko_extend": False, "race": True, "race_doubles": "policy", "race_bench": True,
+          "fast_race": True, "fast_dice": True, "switches": True, "mega": "both"}
 
 
 @lru_cache(maxsize=1)
@@ -63,7 +65,7 @@ class PlayerView:
     (`request`) into an `Observer` for its side, with the journal `vgc.wp.doubles` reads (arrivals,
     moves, turn marks), and its own six as built (`from_team`)."""
 
-    def __init__(self, reg: Regulation, perspective: str, team_text: str):
+    def __init__(self, reg: Regulation, perspective: str, team_text: str | None):
         from vgc.battle.entry import from_team
         from vgc.data.observe import Observer
 
@@ -71,7 +73,8 @@ class PlayerView:
         self.o = Observer(perspective, reg.dex)
         self.rp = type("Viewed", (), {"state": self.o})()
         self.journal: list[dict[str, Any]] = []
-        self.mine = from_team(reg, team_text)
+        # From the stands ("spectator", the human checks) there is no team of one's own.
+        self.mine = from_team(reg, team_text) if team_text else []
         self.setup = {"perspective": perspective, "mine": self.mine, "theirs": []}
 
     def feed(self, lines: list[str]) -> None:

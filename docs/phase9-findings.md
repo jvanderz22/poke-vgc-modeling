@@ -176,3 +176,102 @@ again with other dice as the noise floor:
   where more positions (D) would buy most, and where the budget is tightest.
 - The floor covers the sampled turns only: the race at the horizon draws the same dice either way.
 - Planning costs a median 0.1 s of the 1 s a decision.
+
+## The leaf, the model against the count, and pruning against people (stage 3)
+
+2026-10-02. Four checks on open-sheet human games, each fitted on training-split games and scored on
+held-out ones (cluster bootstrap by group).
+
+### Does the model add anything to the count? (`model_vs_count.py`)
+
+At every turn above two a side, the floor (HP share, count lead, net stages), the served model, and
+both together, the two fits on the validation split (20% of training groups, which the model did
+not train on):
+
+| | rows (groups) | log loss model / floor / both | both − floor | both − model |
+| --- | --- | --- | --- | --- |
+| open | 9,926 (793) | 0.5745 / 0.5809 / 0.5713 | −0.0097 [−0.016, −0.003], better | −0.003, not distinguishable |
+| closed | 5,921 (994) | 0.5664 / 0.5893 / 0.5624 | −0.027 [−0.043, −0.010], better | −0.004, not distinguishable |
+
+- **On open sheets the model knows about 0.01 nats more than the count**: real, and too small to
+  show against the floor alone (+0.006, not distinguishable). Fitted together, the weight on the
+  model is 0.69, with HP share 0.64 and the count 0.36.
+- **On closed sheets the model contains the count**: together, the count's weights go slightly
+  negative.
+
+### The leaf: the race with the back (`bench_race.py`)
+
+`meleeBench` (`race_bench`) races everything left: a fallen Pokémon's slot is filled at the end of the
+turn from the back, spread damage takes its 0.75 only against two, and Tailwind and Trick Room run out
+by their turns left. Each game at the first turn of each kind above two a side, from the stands,
+both backs guessed by bring rate (never from later in the replay), the heaviest four (backs × move
+order) raced and averaged. 26,635 training states, 5,144 held out (790 groups; 2,164 dropped for
+a volatile, sleep or Revival Blessing).
+
+| | log loss model / floor / raw race / race blend | race blend − model |
+| --- | --- | --- |
+| **all** | 0.554 / 0.562 / 1.037 / **0.548** | −0.006 [−0.016, +0.004], not distinguishable |
+| 4v4 | **0.686** / 0.696 / 1.286 / 0.702 | +0.016 [+0.005, +0.027], model better |
+| 4v3 | 0.588 / 0.601 / 1.089 / 0.579 | −0.008, not distinguishable |
+| 4v2 | 0.347 / 0.353 / 0.667 / 0.330 | −0.017, not distinguishable |
+| 3v3 | 0.639 / 0.648 / 1.222 / 0.621 | −0.018, not distinguishable |
+| 3v2 | 0.509 / 0.513 / 0.927 / **0.478** | −0.032 [−0.054, −0.011], race blend better |
+
+- **The blend: sigmoid(0.137 · logit(race) + 1.725 · logit(HP share) + 0.460 · count lead + 0.100 ·
+  stages + 0.022).** It beats the floor by 0.014 overall and ties the model; better than the
+  model at 3v2, worse at 4v4.
+- **The raw race is far too sure** (log loss 1.04), as it was at two or fewer a side, and its weight
+  in the blend is small. At 4v4, before anything has fallen, a race that leaves out Protect, Fake Out
+  and speed control is worse than no race.
+- **The leaf is the race blend** (`race_doubles: 'policy'`: this blend with a back, `blend_boosts`
+  without). The model is no better overall and would need an observation built for every leaf.
+
+### Does the leaf tell siblings apart? (`leaf_spread.py`)
+
+30 positions from pool teams, one-turn search at the policy's settings, with the race blend and with
+the floor at the horizon: matrix spread a median 0.12 and 0.13; the gap between p1's best and second
+choice against p2's equilibrium reply a median 0.003 and 0.001; the same choice in 20 of 30. Neither
+leaf is flat. The tiny gaps say many choices are near-ties, which is what makes four draws noisy for
+choosing (stage 1).
+
+### Pruning against what people chose (`prune_vs_people.py`)
+
+Every turn above two a side of all held-out games and 4,000 training games: 36,237 decisions, the
+choice read from the log (a switch before any move, a Mega, the slot's move and its target; flinches,
+sleep and blocked moves unknown), against the solver's lists for the position with the decider's
+own back as brought.
+
+Today's pruning (`prune`), the share of people's choices it keeps, per Pokémon:
+
+| kind | choices | kept at k 2 | kept at k 3 |
+| --- | --- | --- | --- |
+| attack | 27,348 | 74% | 78% |
+| switch | 8,285 | 36% | 36% |
+| Protect | 7,156 | 98% | 98% |
+| **status** (Tailwind, Trick Room, Follow Me, …) | 6,853 | **5%** | 19% |
+| Mega | 4,586 | 58% | 60% |
+| Fake Out | 2,866 | 100% | 100% |
+
+- 1,117 choices were not listed at all: the player held the Mega back (724 of them Protects), and
+  the list Mega Evolves wherever it can.
+- Of people's pairs, 37% survive the per-Pokémon cut and 28% the side's top 6 (31% at 8).
+
+**A model of people choosing** (`vgc.policy.people`): a conditional logit per Pokémon over what the
+solver says each choice is (damage, KO, priority, spread, Protect and the danger it is in, Protect
+again, Fake Out while it works, speed control and whether it is already up, redirection, Helping
+Hand, screens, disruption, status inflicted, setup, healing, a switch and the HP it saves, Mega).
+Fitted on 33,468 training choices, scored on 24,839 held out: log-likelihood 1.833 against 2.062 for
+a uniform choice; the person's choice is its first 34% of the time, in its top 3 69%. Its largest
+weights: damage +2.14, Protect when threatened +1.37, Protect again −1.32, setting up what is already
+up −1.32, switching for HP saved +0.92, spread +0.83, Mega +0.83. Per kind, its top 3 keeps status
+moves 79% of the time (against 19%), switches 38%, attacks 69%, Protect 82%, Mega 70%.
+
+**The union** (each Pokémon keeps what `prune` 2 keeps and the model's top 3, Mega both ways, the
+side's pairs ranked by the model): 68% of people's pairs survive the per-Pokémon cut, and **35% the
+top 6, 43% the top 8, 54% the top 12** (against 28%, 31% and, untested, for `prune`). Built as
+`prune_by: 'people'` with `mega: 'both'`; the policy's default. The summed scores are also the
+opponent model fitted to people: P(pair) ∝ exp(summed score) over the K kept.
+
+**What it costs** (stage 1's 25 positions, warm, one guess, N 4, the race with the back at the
+horizon): K 4 median 0.43 s, K 6 0.93 s, K 8 1.77 s; about 5 ms a turn against 3.8 (the features,
+and the longer race). Two guesses at K 6 are about 1.9 s a decision; at K 4 about 0.9 s.

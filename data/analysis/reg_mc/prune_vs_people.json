@@ -1,0 +1,135 @@
+{
+ "decisions": 36237,
+ "per_pokemon": {
+  "attack": {
+   "n": 28550,
+   "legal": 27348,
+   "held_mega": 321,
+   "kept_k2": 20296,
+   "kept_k3": 21328,
+   "share_k2": 0.742,
+   "share_k3": 0.78
+  },
+  "unknown": {
+   "n": 11761
+  },
+  "switch": {
+   "n": 8285,
+   "legal": 8285,
+   "held_mega": 0,
+   "kept_k2": 3002,
+   "kept_k3": 3002,
+   "share_k2": 0.362,
+   "share_k3": 0.362
+  },
+  "protect": {
+   "n": 7880,
+   "legal": 7156,
+   "held_mega": 724,
+   "kept_k2": 6976,
+   "kept_k3": 6983,
+   "share_k2": 0.975,
+   "share_k3": 0.976
+  },
+  "status": {
+   "n": 7025,
+   "legal": 6853,
+   "held_mega": 113,
+   "kept_k2": 317,
+   "kept_k3": 1311,
+   "share_k2": 0.046,
+   "share_k3": 0.191
+  },
+  "mega": {
+   "n": 4667,
+   "legal": 4586,
+   "held_mega": 0,
+   "kept_k2": 2666,
+   "kept_k3": 2767,
+   "share_k2": 0.581,
+   "share_k3": 0.603
+  },
+  "fake out": {
+   "n": 2969,
+   "legal": 2866,
+   "held_mega": 72,
+   "kept_k2": 2866,
+   "kept_k3": 2866,
+   "share_k2": 1.0,
+   "share_k3": 1.0
+  }
+ },
+ "pairs": {
+  "decisions_both_known": 25766,
+  "legal_k2": 23908,
+  "kept_k2": 0.37,
+  "kept_k2_K4": 0.221,
+  "kept_k2_K6": 0.276,
+  "kept_k2_K8": 0.314,
+  "legal_k3": 23908,
+  "kept_k3": 0.416,
+  "kept_k3_K4": 0.231,
+  "kept_k3_K6": 0.297,
+  "kept_k3_K8": 0.343
+ },
+ "people": {
+  "train_slots": 33468,
+  "heldout_slots": 24839,
+  "heldout_nll": 1.833,
+  "heldout_nll_uniform": 2.0621,
+  "slot_top1": 0.338,
+  "slot_top2": 0.538,
+  "slot_top3": 0.69,
+  "slot_top4": 0.796,
+  "weights": {
+   "attack": -1.0887,
+   "damage": 2.1375,
+   "ko": 0.1294,
+   "priority": -0.129,
+   "spread": 0.8316,
+   "at_ally": 0.0,
+   "protect": -0.1302,
+   "protect_danger": 1.3673,
+   "protect_again": -1.3165,
+   "guard": 0.0,
+   "fakeout": 0.7634,
+   "fakeout_works": 0.7634,
+   "speed_control": 0.1999,
+   "already_up": -1.3157,
+   "trickroom_up": -0.826,
+   "status": 0.8115,
+   "redirect": 0.5909,
+   "helpinghand": 0.0719,
+   "screen": 0.4203,
+   "disrupt": -0.4573,
+   "inflict": -0.3016,
+   "setup": 0.7165,
+   "setup_danger": -0.5593,
+   "heal": -0.327,
+   "missing_hp": 0.1571,
+   "other_status": -0.2025,
+   "switch": -0.356,
+   "switch_saved": 0.9159,
+   "switch_danger": 0.7254,
+   "mega": 0.8283
+  },
+  "pairs": {
+   "heldout": 10955,
+   "listed": 10614,
+   "top4": 0.256,
+   "top6": 0.35,
+   "top8": 0.427,
+   "top12": 0.541,
+   "top16": 0.627
+  }
+ },
+ "people_model": {
+  "K": 6,
+  "T": 1.639,
+  "train_cases": 3738,
+  "heldout_cases": 2864,
+  "heldout_nll": 1.6598,
+  "heldout_nll_uniform": 1.7285,
+  "heldout_top1": 0.315
+ }
+}

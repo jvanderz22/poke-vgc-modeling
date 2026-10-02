@@ -1,0 +1,82 @@
+{
+ "open": {
+  "val_rows": 10304,
+  "held_rows": 9926,
+  "held_groups": 793,
+  "logloss": {
+   "model": 0.5745,
+   "floor": 0.5809,
+   "stack": 0.5713
+  },
+  "floor_minus_model": {
+   "diff": 0.0064,
+   "ci95": [
+    -0.0035,
+    0.0165
+   ],
+   "verdict": "not distinguishable"
+  },
+  "stack_minus_floor": {
+   "diff": -0.0097,
+   "ci95": [
+    -0.0163,
+    -0.0029
+   ],
+   "verdict": "stack better"
+  },
+  "stack_minus_model": {
+   "diff": -0.0032,
+   "ci95": [
+    -0.0072,
+    0.0008
+   ],
+   "verdict": "not distinguishable"
+  },
+  "stack_coef": {
+   "logit_share": 0.637,
+   "lead": 0.356,
+   "boosts": 0.072,
+   "logit_model": 0.689
+  }
+ },
+ "closed": {
+  "val_rows": 6839,
+  "held_rows": 5921,
+  "held_groups": 994,
+  "logloss": {
+   "model": 0.5664,
+   "floor": 0.5893,
+   "stack": 0.5624
+  },
+  "floor_minus_model": {
+   "diff": 0.0229,
+   "ci95": [
+    0.0072,
+    0.0378
+   ],
+   "verdict": "model better"
+  },
+  "stack_minus_floor": {
+   "diff": -0.0269,
+   "ci95": [
+    -0.0428,
+    -0.0103
+   ],
+   "verdict": "stack better"
+  },
+  "stack_minus_model": {
+   "diff": -0.004,
+   "ci95": [
+    -0.0104,
+    0.0023
+   ],
+   "verdict": "not distinguishable"
+  },
+  "stack_coef": {
+   "logit_share": -0.134,
+   "lead": -0.225,
+   "boosts": 0.082,
+   "logit_model": 1.167
+  }
+ }
+}

@@ -7,7 +7,10 @@ with a bench, every listed choice accepted over 2,880 random games, cached answe
 guess at the hidden parts costs a median 0.44–0.78 s at K 4–6. Stage 2 done the same day: positions
 from a player's view, no leak, planned in 0.1 s; against the truth, the guessed back and spreads
 change the move chosen in half the decisions (a fifth from the dice alone), and the bring prior is
-no better than uniform at 4v4._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+no better than uniform at 4v4. Stage 3 done the same day: the leaf is the race with the back, blended
+(held out 0.548 against the model's 0.554 and the floor's 0.562); pruning now keeps what a model of
+people ranks highest as well (people's pairs in the top 6: 35%, against 28%); the model adds about
+0.01 nats to the count on open sheets._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -262,6 +265,28 @@ what the app and the replays see, never the runner's battle.
   - planning time, which counts against the 1 s.
 
 ### 3. The leaf, and realistic play against what people chose (1½ days, laptop)
+
+**Done 2026-10-02** ([phase9-findings](phase9-findings.md), "the leaf, the model against the count,
+and pruning against people"; `bench_race.py`, `leaf_spread.py`, `prune_vs_people.py`,
+`model_vs_count.py`; `vgc.policy.people`).
+- **The leaf** is `race_doubles: 'policy'`: the race with the back (`race_bench`), blended with HP
+  share, the count and stages, fitted on 26,635 training states. Held out: 0.548 against the model's
+  0.554 (not distinguishable) and the floor's 0.562; better than the model at 3v2, worse at 4v4.
+  The model at the leaf is not built.
+- **Siblings:** neither the race nor the floor is flat across a matrix (spread 0.12 and 0.13), but
+  the best and second choice are a median 0.003 apart: many near-ties.
+- **Pruning kept 5% of people's status moves, 36% of their switches, and none of their held-back
+  Megas.** Fixed by a model of people choosing, fitted on training turns: the policy keeps `prune`'s
+  choices and the model's top 3 each, Mega both ways, the side's top K by the model
+  (`prune_by: 'people'`, `mega: 'both'`). People's pairs in the top 6: 35% (28% before); top 8: 43%.
+- **π_opp fitted to people** is that model: P(pair) ∝ exp(summed score) over the K kept. Nash and it
+  both go to the gate, as planned.
+- **The model and the count:** on open sheets the model adds 0.0097 nats [0.003, 0.016] to the
+  floor; on closed sheets it contains the count.
+- **Cost moved:** with people pruning and the race with the back, one guess costs 0.43 s at K 4 and
+  0.93 s at K 6 (warm, N 4). Two guesses fit the 1 s design point at K 4, not at K 6.
+
+What was planned:
 
 On human games, through stage 2's adapter (from the stands, as the endgame checks were):
 - **The leaf**, as worked out above: the race with reinforcements fitted on training games, scored
