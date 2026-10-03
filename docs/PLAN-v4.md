@@ -167,6 +167,9 @@ decision on one core, set by what step 3 can afford (about 12,000 battles); one 
 pruned joint choices with switches; the damage race extended with reinforcements as the leaf,
 with the model as the bar it must beat on held-out games; Nash and a π_opp fitted to people both
 run through the gate. About 9 days plus a night or two on Kaggle, most of it step 3's run.
+**Done 2026-10-03** ([phase9-findings](phase9-findings.md)): the policy fitted to people passes,
+0.678 against the heuristic and 0.692 against a held-out opponent, at a median 0.74 s a decision.
+The pilot's spread (s = 0.356, split-half 0.96) keeps step 3 at 1,500 pairings × 8 battles.
 
 ### 3. Re-run Phase 6 against the Phase 9 policy
 

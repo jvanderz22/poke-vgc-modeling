@@ -171,6 +171,36 @@ bash scripts/cloud/kaggle_solve.sh --collect
   function, and scoring stays here, so nothing on Kaggle can move a verdict. The first smoke test
   used benchmark positions only.
 
+## D. CPU: self-play battles on Kaggle (PLAN-policy stage 5)
+
+The same pattern for battles: a battle is a function of its seed (the run's seed and its index),
+so where it is played changes nothing, and a merge checks that it did not.
+
+```bash
+# 1. a run: matchups and settings (or `local` to play it here)
+.venv/bin/python scripts/analysis/policy_gate.py export --name G1 --policy ewp-people --opponent heuristic --pairs 250
+# 2. the code it needs, hashed; launch and walk away
+.venv/bin/python scripts/analysis/policy_gate.py pack --name G1
+bash scripts/cloud/kaggle_selfplay.sh G1 --no-wait
+# 3. later: download, check, merge into data/selfplay/gate-G1, then score
+bash scripts/cloud/kaggle_selfplay.sh G1 --collect
+.venv/bin/python scripts/analysis/policy_gate.py score --name G1
+```
+
+- **What goes up.** The `vgc` package, the two sidecars, the few data files a battle reads (traced
+  on real battles: the regulation, the dex, the usage files, the bring rates), the matchups (team
+  sheets from public replays) and the run's settings. The engine dataset is the solver's. Wheels of
+  the laptop's versions of what a Kaggle image lacks (poke-env, and numpy and scipy pinned so the
+  game solve is the same) are a dataset of their own, pushed only when a version moves.
+- **What the merge checks.** The code that played hashes to this code (so edit nothing between
+  `pack` and `--collect`, or set the edits aside for the merge), and the three shortest battles
+  replay here to the same inputs, choice by choice. Scoring stays here.
+- **Speed.** One-side-searching battles: 500 in 46–112 minutes on a session. Both sides searching:
+  800 in 1.7–2.6 hours. Four sessions ran side by side; a fifth queued.
+- **Kaggle's quirks.** The code archive arrives unpacked, so its file listing is long and paged: a
+  push is awaited by a stamp file named to sort first. A kernel's slug cannot be its dataset's.
+  A kernel's log is readable only after it ends.
+
 ## What never leaves the laptop
 
 - **Held-out data and the frozen split** are tracked, so a cloud box has them, but nothing on a cloud

@@ -12,7 +12,11 @@ no better than uniform at 4v4. Stage 3 done the same day: the leaf is the race w
 people ranks highest as well (people's pairs in the top 6: 35%, against 28%); the model adds about
 0.01 nats to the count on open sheets. Stage 4 done the same day: the policy plays whole battles,
 no invalid choice in 100, each a function of its seed, a median 0.99 s a decision at K 4 (2.1 s at
-K 6), 97% of decisions searched, replacements included._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
+K 6), 97% of decisions searched, replacements included. Stage 5 done 2026-10-03: the people reading
+passes every gate (0.678 against the heuristic, 0.692 against the held-out scorer, 1.00 against
+random, a median 0.74 s a decision on one core) and ships; Nash beats the heuristic only 0.584. The
+pilot (1,600 battles) gives s = 0.356 and split-half 0.96, so step 3's 1,500 pairings × 8 battles
+holds (attenuation 0.90): one night of three Kaggle sessions._ This is [PLAN-v4](PLAN-v4.md) step 2's first deliverable:
 the stage plan, with the leaf and the bench worked out before anything is built. It builds on
 [PLAN-endgame-doubles](PLAN-endgame-doubles.md), whose solver is this search's bottom layer.
 Numbers marked _estimate_ are guesses until a stage measures them.
@@ -345,6 +349,26 @@ What was planned:
   decision time by state kind on one core.
 
 ### 5. The gates (about 2 laptop-hours, or one Kaggle session)
+
+**Done 2026-10-03** ([phase9-findings](phase9-findings.md), "the gates and the pilot";
+`policy_gate.py`, `policy_vs_people.py`, `kaggle_selfplay.sh`).
+- **The people reading ships.** Against the heuristic 0.678 [0.640, 0.716], against the held-out
+  scorer 0.692 [0.654, 0.730], against random 1.00. Nash: 0.584 [0.546, 0.622] against the
+  heuristic (under 0.60), 0.560 against the scorer, 0.98 against random.
+- **Latency:** a median 0.74 s a decision on one laptop core, p99 3.1 s.
+- **EWP against what happened:** bracketed. Against the heuristic and the scorer the policy wins more
+  than its EWP says (ECE 0.048, 0.056), against itself less (0.062, by 0.07–0.14 in the middle bins).
+  The planned check, against the opponent π_opp assumes, has no such opponent in self-play.
+- **The pilot** (100 pairings × 16, people against itself): split-half 0.921 (0.959 at 16),
+  s = 0.356, 56% of pairings beyond 85/15, 7.31 turns a battle (humans 7.55). Step 3 stays at 1,500
+  pairings × 8 battles: attenuation 0.90.
+- **Reported:** the policy's choice is the human's 11.5% of the time on held-out turns (the people
+  model's first pair 7.8%, uniform 2.0%).
+- **Fixed after the gates:** hidden traps (5 of 2,200 gate battles looped on a refused switch; the
+  pilot ran fixed, no errors in 1,600), and a failed battle's decisions leaking into the next record.
+- Kaggle self-play works: six runs played there and merged after replaying here, 18 of 18 the same.
+
+What was planned:
 
 Teams are human-corpus pairings, as in Phase 6. **Each pairing is played twice with the policies
 swapped between the teams**, sides alternating, so team strength cancels. The unit is the pairing.

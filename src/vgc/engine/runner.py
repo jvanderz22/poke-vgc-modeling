@@ -199,7 +199,7 @@ def play_battle(
         begin = getattr(pol[s], "begin", None)
         if begin is not None:
             begin(battle_id, s, team)
-    invalid = trapped = 0
+    invalid = trapped = refused = 0
     accepted = {s: 0 for s in names}
     for _ in range(max_decisions):
         for s in names:
@@ -222,14 +222,15 @@ def play_battle(
             raise RunnerError(f"{battle_id}: no side has a decision to make")
         view = views[side]
         view.pending = False
-        if view.errors and invalid and invalid % 3 == 0:
-            choice = "default"  # repeated invalid choices: let Showdown pick
+        if (view.errors and invalid and invalid % 3 == 0) or refused >= 3:
+            choice = "default"  # repeated invalid or refused choices: let Showdown pick
         elif view.battle.teampreview:
             choice = _choice_text(pol[side].teampreview(view.battle, rngs[side]))
         else:
             choice = _choice_text(pol[side].choose_move(view.battle, rngs[side]))
         res = runner.request({"op": "choose", "id": battle_id, "side": side, "choice": choice})
         if res["ok"]:
+            refused = 0
             if on_decision is not None:  # the view isn't fed this response until the next loop
                 on_decision(side, view.battle, accepted[side])
             accepted[side] += 1
@@ -237,6 +238,8 @@ def play_battle(
             # Hidden trapping (Shadow Tag, Arena Trap…) is only revealed by a rejected switch.
             if "is trapped" in (res.get("error") or ""):
                 trapped += 1
+                # A policy that does not read the request again would choose the same switch for ever.
+                refused += 1
                 continue
             invalid += 1
             LOG.debug("%s %s invalid choice %r: %s", battle_id, side, choice, res.get("error"))

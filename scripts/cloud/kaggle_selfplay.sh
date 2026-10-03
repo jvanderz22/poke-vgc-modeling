@@ -38,7 +38,7 @@ RUN=".vgc/jobs/selfplay-$NAME"
 UP="$RUN/upload"
 WORK=".vgc/kaggle-selfplay-$NAME"
 SLUG="vgc-selfplay-$(echo "$NAME" | tr '[:upper:]_' '[:lower:]-')"
-KERNEL="$SLUG"
+KERNEL="vgc-selfplay-run-${SLUG#vgc-selfplay-}"      # not the dataset's slug: Kaggle refuses that
 POLL_SECONDS="${POLL_SECONDS:-180}"
 KAGGLE="${KAGGLE:-.venv/bin/kaggle}"
 PY="${PY:-.venv/bin/python}"
@@ -99,7 +99,7 @@ fi
 
 # --- 3. the run --------------------------------------------------------------------------------
 RUN_ID=$($PY -c "import json; print(json.load(open('$UP/run.json'))['run_id'])")
-STAMPED=$(ls "$UP" | grep -E "^$RUN_ID-[0-9]+\.json$" | sort | tail -1)
+STAMPED=$(ls "$UP" | grep -E "^0-$RUN_ID-[0-9]+\.json$" | sort | tail -1)
 cp "$UP/run.json" "$WORK/launched.json"
 echo "==> $RUN_ID: $(grep -c . "$UP/matchups.jsonl") battles"
 push_dataset "$UP" "$SLUG" "VGC selfplay $NAME"
@@ -111,7 +111,7 @@ cp scripts/cloud/selfplay_batch.py "$WORK/nb/"
 cat > "$WORK/nb/kernel-metadata.json" <<JSON
 {
   "id": "$KUSER/$KERNEL",
-  "title": "VGC selfplay $NAME",
+  "title": "VGC selfplay run $NAME",
   "code_file": "selfplay_batch.py",
   "language": "python",
   "kernel_type": "script",

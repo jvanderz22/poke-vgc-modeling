@@ -89,6 +89,10 @@ def _play(task: tuple[int, str, list[int], Matchup]) -> dict[str, Any]:
     sides = [(m.team_a, m.policy_a, m.team_a_id), (m.team_b, m.policy_b, m.team_b_id)]
     if m.swap_sides:
         sides.reverse()
+    for name in {sides[0][1], sides[1][1]}:          # a battle that errored leaves its records behind
+        pol = _policy(name)
+        if getattr(pol, "decisions", None) is not None:
+            pol.decisions = []
     try:
         rec: BattleRecord = play_battle(
             _W["runner"], f"{run_id}-{index}", seed, reg.showdown_format,

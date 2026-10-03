@@ -222,6 +222,16 @@ function setUp(pos) {
 			if (move.flags['cantusetwice'] && me.lastMove?.id === slot.id) me.disableMove(slot.id);
 		}
 	}
+	// Trapping, where switches are searched (PLAN-policy stage 4): what the simulator works out at
+	// each end of turn (Shadow Tag, Arena Trap, a partial trap), and what the player's own request
+	// says (`trapped`, shown once a switch was refused). Without it the root offered switches the
+	// battle refuses.
+	if ((pos.search || {}).switches) for (const side of b.sides) side.active.forEach((p, i) => {
+		if (!p || p.fainted) return;
+		p.trapped = p.maybeTrapped = false;
+		b.runEvent('TrapPokemon', p);
+		if (per(s.trapped, side, i)) p.trapped = true;
+	});
 	if (emptied) { b.midTurn = true; b.makeRequest('switch'); } else b.makeRequest('move');
 	return b;
 }

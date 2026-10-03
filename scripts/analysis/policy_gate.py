@@ -63,9 +63,10 @@ def run_dir(name: str) -> Path:
 
 
 def export(name: str, policy: str, opponent: str, pairs: int, seed: int, per_pairing: int,
-           ewp: dict[str, Any]) -> Path:
+           ewp: dict[str, Any], part: str = "0/1") -> Path:
     """The run's battles, `per_pairing` a pairing, consecutive: half with the policy on each team,
-    sides alternating."""
+    sides alternating. `part` i/n keeps every n-th of the sampled pairings from the i-th, so a run
+    split over kernels has disjoint pairings (the battle seed is the run's seed and its index)."""
     from vgc.meta.pool import load_pool
     from vgc.regulation import load_regulation
     from vgc.sim.validity import human_games, select_pairings
@@ -74,6 +75,9 @@ def export(name: str, policy: str, opponent: str, pairs: int, seed: int, per_pai
     pool = {t.id: t for t in load_pool(reg)}
     chosen = [p for p in select_pairings(human_games(reg), 0) if p[0] in pool and p[1] in pool]
     chosen = sorted(random.Random(seed).sample(chosen, pairs))
+    i, n = map(int, part.split("/"))
+    chosen = chosen[i::n]
+    pairs = len(chosen)
     other = policy if opponent == "self" else opponent
     rows = []
     for i, (a, b) in enumerate(chosen):
@@ -87,7 +91,8 @@ def export(name: str, policy: str, opponent: str, pairs: int, seed: int, per_pai
     with open(d / "matchups.jsonl", "w") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")
-    run = {"run_id": f"gate-{name}", "name": name, "reg": REG, "seed": seed, "policy": policy, "opponent": opponent,
+    run = {"run_id": f"gate-{name}", "name": name, "reg": REG, "seed": seed + 1000 * i, "part": part,
+           "policy": policy, "opponent": opponent,
            "pairs": pairs, "per_pairing": per_pairing, "ewp": ewp, "max_minutes": 690,
            "commit": subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()}
     (d / "run.json").write_text(json.dumps(run, indent=1) + "\n")
@@ -175,7 +180,9 @@ def pack(name: str) -> Path:
     run = {**run, "versions": {p: md.version(p) for p in PINS}, "wheels": wheels(), "code_sha256": code_sha()}
     (d / "run.json").write_text(json.dumps(run, indent=1) + "\n")
     (up / "run.json").write_text(json.dumps(run, indent=1) + "\n")
-    (up / f"{run['run_id']}-{int(time.time())}.json").write_text(json.dumps(run) + "\n")
+    # The file a push is awaited by: first in Kaggle's listing, which is by path and paged, and which
+    # lists the code archive unpacked.
+    (up / f"0-{run['run_id']}-{int(time.time())}.json").write_text(json.dumps(run) + "\n")
     shutil.copy(d / "matchups.jsonl", up / "matchups.jsonl")
     print(f"packed {up}: code {run['code_sha256'][:12]}, wheels {run['wheels']}")
     return up
@@ -259,28 +266,38 @@ def calibration(decisions: list[tuple[float, float, int]]) -> dict[str, Any]:
     return {"decisions": len(p), "brier": round(float(((p - y) ** 2).mean()), 4), "ece": round(ece, 4), "bins": bins}
 
 
-def score(name: str) -> dict[str, Any]:
-    run, rows = _load(name)
-    battles = _battles(run)
+def score(names: list[str]) -> dict[str, Any]:
+    """One run's verdicts, or several runs' pooled (a run split over kernels: same policy, opponent
+    and battles a pairing, different pairings)."""
+    loaded = [_load(n) for n in names]
+    run = loaded[0][0]
+    assert all((r["policy"], r["opponent"], r["per_pairing"], r["ewp"]) ==
+               (run["policy"], run["opponent"], run["per_pairing"], run["ewp"]) for r, _ in loaded), "not one run"
     policy, opponent = run["policy"], run["opponent"]
     by_pairing: dict[int, list[float]] = collections.defaultdict(list)
     turns, ms, fallbacks, calib = [], [], collections.Counter(), []
-    team_a: dict[int, list[float]] = collections.defaultdict(list)       # the pilot: the first team's results
+    team_a: dict[int, list[float]] = collections.defaultdict(list)     # the pilot: the first team's results
     errors = 0
-    for r in battles:
+    everything = [(k, r, rows, battle) for k, (r, rows) in enumerate(loaded) for battle in _battles(r)]
+    battles = [b for *_, b in everything]
+    for k, rr, rows, r in everything:
         if "error" in r:
             errors += 1
             continue
-        m = rows[r["index"]]
+        m = {**rows[r["index"]], "pairing": k * 100_000 + rows[r["index"]]["pairing"]}
         a_side = r["a_side"]
         ewp_side = a_side if m["policy_a"] == policy else ("p2" if a_side == "p1" else "p1")
         res = 0.5 if r["winner"] is None else float(r["winner"] == ewp_side)
         by_pairing[m["pairing"]].append(res)
-        first = rows[m["pairing"] * run["per_pairing"]]["team_a_id"]
+        first = rows[rows[r["index"]]["pairing"] * run["per_pairing"]]["team_a_id"]
         a_team_side = a_side if m["team_a_id"] == first else ("p2" if a_side == "p1" else "p1")
         team_a[m["pairing"]].append(0.5 if r["winner"] is None else float(r["winner"] == a_team_side))
         turns.append(r["turns"])
         for d in r.get("decisions", []):
+            # Only this battle's: a battle that errored left its records to the next one (fixed in
+            # `selfplay._play`, after the gates were played).
+            if d.get("battle") != r["battle_id"]:
+                continue
             if opponent != "self" and d["side"] != ewp_side:
                 continue
             ms.append(d["ms"] + d.get("ms_fallback", 0))
@@ -290,7 +307,7 @@ def score(name: str) -> dict[str, Any]:
                 won = 0.5 if r["winner"] is None else float(r["winner"] == d["side"])
                 calib.append((d["ewp"][d["chosen"]], won, m["pairing"]))
     per = np.array([np.mean(v) for _, v in sorted(by_pairing.items())])
-    out: dict[str, Any] = {"run": run["run_id"], "policy": policy, "opponent": opponent, "settings": run["ewp"],
+    out: dict[str, Any] = {"run": [r["run_id"] for r, _ in loaded], "policy": policy, "opponent": opponent, "settings": run["ewp"],
                            "battles": len(battles), "errors": errors, "pairings": len(per),
                            "complete_pairings": sum(len(v) == run["per_pairing"] for v in by_pairing.values()),
                            "mean_turns": round(float(np.mean(turns)), 2) if turns else None}
@@ -311,7 +328,8 @@ def score(name: str) -> dict[str, Any]:
                         "beyond_85_15": round(float(np.mean([x >= 0.85 or x <= 0.15 for x in a])), 3) if a else None}
     from vgc.sim.selfplay import SELFPLAY
 
-    where = json.loads((SELFPLAY / run["run_id"] / "summary.json").read_text()).get("where", "laptop")
+    wheres = {json.loads((SELFPLAY / r["run_id"] / "summary.json").read_text()).get("where", "laptop") for r, _ in loaded}
+    where = wheres.pop() if len(wheres) == 1 else "mixed"
     # Judged on the laptop's core only: a Kaggle CPU is about twice as slow (cloud-compute.md, C).
     out["latency_ms"] = {"where": where, "decisions": len(ms), "median": round(float(np.median(ms))) if ms else None,
                          "p99": round(float(np.percentile(ms, 99))) if ms else None, "max": max(ms) if ms else None,
@@ -333,6 +351,7 @@ def main() -> None:
     e.add_argument("--per-pairing", type=int, default=2)
     e.add_argument("--seed", type=int, default=5)
     e.add_argument("--ewp", default="{}", help="EWPPolicy settings, as JSON")
+    e.add_argument("--part", default="0/1", help="i/n: the i-th of n disjoint shares of the pairings")
     lo = sub.add_parser("local")
     lo.add_argument("--name", required=True)
     lo.add_argument("--workers", type=int, default=4)
@@ -343,9 +362,10 @@ def main() -> None:
     mg.add_argument("outputs", nargs="+", type=Path)
     sc = sub.add_parser("score")
     sc.add_argument("--name", action="append", required=True)
+    sc.add_argument("--pool", help="score the named runs as one, under this name")
     a = ap.parse_args()
     if a.cmd == "export":
-        export(a.name, a.policy, a.opponent, a.pairs, a.seed, a.per_pairing, json.loads(a.ewp))
+        export(a.name, a.policy, a.opponent, a.pairs, a.seed, a.per_pairing, json.loads(a.ewp), a.part)
     elif a.cmd == "local":
         local(a.name, a.workers)
     elif a.cmd == "pack":
@@ -353,7 +373,7 @@ def main() -> None:
     elif a.cmd == "merge":
         merge(a.name, a.outputs)
     else:
-        res = {n: score(n) for n in a.name}
+        res = {a.pool: score(a.name)} if a.pool else {n: score([n]) for n in a.name}
         (OUT / "policy_gate.json").write_text(json.dumps(
             {**(json.loads((OUT / "policy_gate.json").read_text()) if (OUT / "policy_gate.json").exists() else {}), **res},
             indent=1) + "\n")

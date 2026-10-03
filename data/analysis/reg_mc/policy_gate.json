@@ -1,0 +1,1663 @@
+{
+ "r-people": {
+  "run": [
+   "gate-r-people"
+  ],
+  "policy": "ewp-people",
+  "opponent": "random",
+  "settings": {},
+  "battles": 100,
+  "errors": 0,
+  "pairings": 50,
+  "complete_pairings": 50,
+  "mean_turns": 5.2,
+  "win_rate": {
+   "point": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "passes": true
+  },
+  "latency_ms": {
+   "where": "laptop",
+   "decisions": 581,
+   "median": 1005,
+   "p99": 3607,
+   "max": 4875,
+   "passes": false
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 8,
+   "Cinderace has typechange, which the solver cannot set up": 3,
+   "Mamoswine has disable, which the solver cannot set up": 3,
+   "Golisopod is slp, whose turn counter is not shown": 2,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 2,
+   "Archaludon has perish3, which the solver cannot set up": 2,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 2,
+   "Raichu has perish3, which the solver cannot set up": 1,
+   "Raichu has perish2, perish3, which the solver cannot set up": 1,
+   "Raichu has perish1, perish2, perish3, which the solver cannot set up": 1,
+   "Sylveon has taunt, which the solver cannot set up": 1,
+   "Golisopod has throatchop, which the solver cannot set up": 1,
+   "Pawmot has typechange, which the solver cannot set up": 1,
+   "Sylveon has throatchop, which the solver cannot set up": 1,
+   "Dragonite has throatchop, which the solver cannot set up": 1,
+   "Floette-Eternal has encore, which the solver cannot set up": 1,
+   "Politoed has perish3, which the solver cannot set up": 1,
+   "Kingambit has perish1, perish2, perish3, which the solver cannot set up": 1
+  },
+  "calibration": {
+   "decisions": 548,
+   "brier": 0.0743,
+   "ece": 0.1899,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 1,
+     "pairings": 1,
+     "ewp": 0.088,
+     "won": 1.0,
+     "won_ci95": null
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 2,
+     "pairings": 1,
+     "ewp": 0.148,
+     "won": 1.0,
+     "won_ci95": null
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 5,
+     "pairings": 4,
+     "ewp": 0.249,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 17,
+     "pairings": 13,
+     "ewp": 0.364,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 17,
+     "pairings": 14,
+     "ewp": 0.448,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 44,
+     "pairings": 31,
+     "ewp": 0.557,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 73,
+     "pairings": 37,
+     "ewp": 0.644,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 55,
+     "pairings": 31,
+     "ewp": 0.752,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 76,
+     "pairings": 36,
+     "ewp": 0.853,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 258,
+     "pairings": 50,
+     "ewp": 0.972,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    }
+   ]
+  }
+ },
+ "r-nash": {
+  "run": [
+   "gate-r-nash"
+  ],
+  "policy": "ewp-nash",
+  "opponent": "random",
+  "settings": {},
+  "battles": 100,
+  "errors": 0,
+  "pairings": 50,
+  "complete_pairings": 50,
+  "mean_turns": 5.92,
+  "win_rate": {
+   "point": 0.98,
+   "ci95": [
+    0.95,
+    1.0
+   ],
+   "passes": true
+  },
+  "latency_ms": {
+   "where": "laptop",
+   "decisions": 651,
+   "median": 933,
+   "p99": 3518,
+   "max": 4871,
+   "passes": true
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 8,
+   "Cinderace has typechange, which the solver cannot set up": 3,
+   "Golisopod is slp, whose turn counter is not shown": 2,
+   "Archaludon is slp, whose turn counter is not shown": 2,
+   "Farigiraf has throatchop, which the solver cannot set up": 2,
+   "Sneasler has encore, which the solver cannot set up": 2,
+   "Archaludon has perish3, which the solver cannot set up": 2,
+   "Salamence is slp, whose turn counter is not shown": 2,
+   "Chandelure has flashfire, which the solver cannot set up": 1,
+   "Raichu has perish3, which the solver cannot set up": 1,
+   "Raichu has perish2, perish3, which the solver cannot set up": 1,
+   "Raichu has perish1, perish2, perish3, which the solver cannot set up": 1,
+   "Sylveon has taunt, which the solver cannot set up": 1,
+   "Gholdengo has throatchop, which the solver cannot set up": 1,
+   "Golisopod has throatchop, which the solver cannot set up": 1,
+   "Pawmot has typechange, which the solver cannot set up": 1,
+   "Sylveon has throatchop, which the solver cannot set up": 1,
+   "Dragonite has throatchop, which the solver cannot set up": 1,
+   "Floette-Eternal has throatchop, which the solver cannot set up": 1,
+   "Floette-Eternal has encore, which the solver cannot set up": 1,
+   "Politoed has perish3, which the solver cannot set up": 1,
+   "Kingambit has perish1, perish2, perish3, which the solver cannot set up": 1,
+   "Salamence has taunt, which the solver cannot set up": 1,
+   "Tyranitar is frz, whose turn counter is not shown": 1
+  },
+  "calibration": {
+   "decisions": 612,
+   "brier": 0.1205,
+   "ece": 0.2253,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 16,
+     "pairings": 5,
+     "ewp": 0.012,
+     "won": 0.5,
+     "won_ci95": [
+      0.2,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 15,
+     "pairings": 10,
+     "ewp": 0.154,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 14,
+     "pairings": 13,
+     "ewp": 0.26,
+     "won": 0.929,
+     "won_ci95": [
+      0.7692,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 27,
+     "pairings": 20,
+     "ewp": 0.351,
+     "won": 0.926,
+     "won_ci95": [
+      0.925,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 33,
+     "pairings": 26,
+     "ewp": 0.454,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 56,
+     "pairings": 34,
+     "ewp": 0.562,
+     "won": 0.982,
+     "won_ci95": [
+      0.9118,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 59,
+     "pairings": 35,
+     "ewp": 0.647,
+     "won": 1.0,
+     "won_ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 63,
+     "pairings": 35,
+     "ewp": 0.754,
+     "won": 0.984,
+     "won_ci95": [
+      0.9143,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 86,
+     "pairings": 34,
+     "ewp": 0.854,
+     "won": 0.965,
+     "won_ci95": [
+      0.9338,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 243,
+     "pairings": 50,
+     "ewp": 0.971,
+     "won": 0.996,
+     "won_ci95": [
+      0.988,
+      1.0
+     ]
+    }
+   ]
+  }
+ },
+ "lat-people": {
+  "run": [
+   "gate-lat-people"
+  ],
+  "policy": "ewp-people",
+  "opponent": "heuristic",
+  "settings": {},
+  "battles": 20,
+  "errors": 0,
+  "pairings": 10,
+  "complete_pairings": 10,
+  "mean_turns": 6.65,
+  "win_rate": {
+   "point": 0.55,
+   "ci95": [
+    0.3,
+    0.8
+   ],
+   "passes": false
+  },
+  "latency_ms": {
+   "where": "laptop",
+   "decisions": 166,
+   "median": 738,
+   "p99": 3060,
+   "max": 3566,
+   "passes": true
+  },
+  "fallbacks": {
+   "Garchomp is slp, whose turn counter is not shown": 2,
+   "Salamence has throatchop, which the solver cannot set up": 1,
+   "Armarouge has flashfire, which the solver cannot set up": 1
+  },
+  "calibration": {
+   "decisions": 162,
+   "brier": 0.1861,
+   "ece": 0.1108,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 16,
+     "pairings": 6,
+     "ewp": 0.024,
+     "won": 0.0,
+     "won_ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 6,
+     "pairings": 3,
+     "ewp": 0.151,
+     "won": 0.167,
+     "won_ci95": [
+      0.0,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 17,
+     "pairings": 8,
+     "ewp": 0.251,
+     "won": 0.353,
+     "won_ci95": [
+      0.0,
+      0.75
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 16,
+     "pairings": 6,
+     "ewp": 0.362,
+     "won": 0.5,
+     "won_ci95": [
+      0.0417,
+      0.7083
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 11,
+     "pairings": 6,
+     "ewp": 0.459,
+     "won": 0.636,
+     "won_ci95": [
+      0.1667,
+      0.8333
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 14,
+     "pairings": 7,
+     "ewp": 0.545,
+     "won": 0.643,
+     "won_ci95": [
+      0.1429,
+      0.8571
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 20,
+     "pairings": 9,
+     "ewp": 0.66,
+     "won": 0.4,
+     "won_ci95": [
+      0.1481,
+      0.7037
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 16,
+     "pairings": 9,
+     "ewp": 0.742,
+     "won": 0.812,
+     "won_ci95": [
+      0.4444,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 15,
+     "pairings": 7,
+     "ewp": 0.85,
+     "won": 0.733,
+     "won_ci95": [
+      0.4286,
+      1.0
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 31,
+     "pairings": 8,
+     "ewp": 0.972,
+     "won": 0.903,
+     "won_ci95": [
+      0.625,
+      1.0
+     ]
+    }
+   ]
+  }
+ },
+ "h-people": {
+  "run": [
+   "gate-h-people"
+  ],
+  "policy": "ewp-people",
+  "opponent": "heuristic",
+  "settings": {},
+  "battles": 500,
+  "errors": 1,
+  "pairings": 250,
+  "complete_pairings": 249,
+  "mean_turns": 6.52,
+  "win_rate": {
+   "point": 0.678,
+   "ci95": [
+    0.64,
+    0.716
+   ],
+   "passes": true
+  },
+  "latency_ms": {
+   "where": "kaggle",
+   "decisions": 4053,
+   "median": 2206,
+   "p99": 9893,
+   "max": 15543,
+   "passes": null
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 37,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 29,
+   "Pawmot has typechange, which the solver cannot set up": 28,
+   "Greninja has typechange, which the solver cannot set up": 15,
+   "Kingambit is slp, whose turn counter is not shown": 13,
+   "Armarouge has flashfire, which the solver cannot set up": 11,
+   "Cinderace has typechange, which the solver cannot set up": 6,
+   "Rotom-Heat has charge, which the solver cannot set up": 4,
+   "Floette-Eternal has confusion, which the solver cannot set up": 4,
+   "Salamence has throatchop, which the solver cannot set up": 3,
+   "Armarouge has throatchop, which the solver cannot set up": 3,
+   "Steelix has disable, which the solver cannot set up": 3,
+   "Gengar is slp, whose turn counter is not shown": 3,
+   "Salamence is slp, whose turn counter is not shown": 2,
+   "Raichu has throatchop, which the solver cannot set up": 2,
+   "Drampa has perish1, perish2, perish3, which the solver cannot set up": 2,
+   "Charizard has disable, which the solver cannot set up": 2,
+   "Garchomp is slp, whose turn counter is not shown": 2,
+   "Tyranitar is slp, whose turn counter is not shown": 2,
+   "Garchomp has perish1, perish2, perish3, which the solver cannot set up": 2,
+   "Tyranitar has disable, which the solver cannot set up": 2,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 1,
+   "Arcanine-Hisui has throatchop, which the solver cannot set up": 1,
+   "Gengar has throatchop, which the solver cannot set up": 1,
+   "Rillaboom has throatchop, which the solver cannot set up": 1,
+   "Arcanine-Hisui is slp, whose turn counter is not shown": 1,
+   "Ceruledge has throatchop, which the solver cannot set up": 1,
+   "Drampa has perish3, which the solver cannot set up": 1,
+   "Drampa has perish2, perish3, which the solver cannot set up": 1,
+   "Garchomp has throatchop, which the solver cannot set up": 1,
+   "Archaludon has throatchop, which the solver cannot set up": 1,
+   "Dragonite has throatchop, which the solver cannot set up": 1,
+   "Floette-Eternal has encore, which the solver cannot set up": 1,
+   "Gholdengo has healblock, which the solver cannot set up": 1,
+   "Froslass is slp, whose turn counter is not shown": 1,
+   "Conkeldurr is slp, whose turn counter is not shown": 1,
+   "Glimmora has throatchop, which the solver cannot set up": 1,
+   "Swampert has throatchop, which the solver cannot set up": 1,
+   "Garchomp has perish3, which the solver cannot set up": 1,
+   "Garchomp has perish2, perish3, which the solver cannot set up": 1,
+   "Farigiraf is slp, whose turn counter is not shown": 1,
+   "Primarina has disable, which the solver cannot set up": 1,
+   "Incineroar is slp, whose turn counter is not shown": 1,
+   "Torkoal is frz, whose turn counter is not shown": 1
+  },
+  "calibration": {
+   "decisions": 3855,
+   "brier": 0.1423,
+   "ece": 0.0482,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 440,
+     "pairings": 133,
+     "ewp": 0.032,
+     "won": 0.075,
+     "won_ci95": [
+      0.0533,
+      0.1497
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 176,
+     "pairings": 99,
+     "ewp": 0.157,
+     "won": 0.239,
+     "won_ci95": [
+      0.1751,
+      0.337
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 209,
+     "pairings": 119,
+     "ewp": 0.248,
+     "won": 0.33,
+     "won_ci95": [
+      0.2423,
+      0.4062
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 210,
+     "pairings": 127,
+     "ewp": 0.354,
+     "won": 0.433,
+     "won_ci95": [
+      0.3777,
+      0.5465
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 256,
+     "pairings": 155,
+     "ewp": 0.452,
+     "won": 0.504,
+     "won_ci95": [
+      0.492,
+      0.6443
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 376,
+     "pairings": 184,
+     "ewp": 0.552,
+     "won": 0.59,
+     "won_ci95": [
+      0.5274,
+      0.6555
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 421,
+     "pairings": 206,
+     "ewp": 0.652,
+     "won": 0.741,
+     "won_ci95": [
+      0.6724,
+      0.781
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 394,
+     "pairings": 201,
+     "ewp": 0.75,
+     "won": 0.812,
+     "won_ci95": [
+      0.7717,
+      0.8696
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 338,
+     "pairings": 167,
+     "ewp": 0.854,
+     "won": 0.876,
+     "won_ci95": [
+      0.8288,
+      0.9192
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 1035,
+     "pairings": 232,
+     "ewp": 0.974,
+     "won": 0.953,
+     "won_ci95": [
+      0.9213,
+      0.973
+     ]
+    }
+   ]
+  }
+ },
+ "h-nash": {
+  "run": [
+   "gate-h-nash"
+  ],
+  "policy": "ewp-nash",
+  "opponent": "heuristic",
+  "settings": {},
+  "battles": 500,
+  "errors": 0,
+  "pairings": 250,
+  "complete_pairings": 250,
+  "mean_turns": 6.93,
+  "win_rate": {
+   "point": 0.584,
+   "ci95": [
+    0.546,
+    0.622
+   ],
+   "passes": false
+  },
+  "latency_ms": {
+   "where": "kaggle",
+   "decisions": 4288,
+   "median": 2305,
+   "p99": 10163,
+   "max": 14924,
+   "passes": null
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 37,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 33,
+   "Pawmot has typechange, which the solver cannot set up": 31,
+   "Greninja has typechange, which the solver cannot set up": 17,
+   "Cinderace has typechange, which the solver cannot set up": 12,
+   "Kingambit is slp, whose turn counter is not shown": 11,
+   "Armarouge has flashfire, which the solver cannot set up": 9,
+   "Charizard has encore, which the solver cannot set up": 4,
+   "Rotom-Heat has charge, which the solver cannot set up": 4,
+   "Salamence has throatchop, which the solver cannot set up": 4,
+   "Sneasler has disable, which the solver cannot set up": 4,
+   "Steelix has disable, which the solver cannot set up": 4,
+   "Arcanine-Hisui has throatchop, which the solver cannot set up": 3,
+   "Gholdengo has disable, which the solver cannot set up": 3,
+   "Tyranitar is slp, whose turn counter is not shown": 3,
+   "Dragonite has throatchop, which the solver cannot set up": 2,
+   "Kingambit is frz, whose turn counter is not shown": 2,
+   "Garchomp has disable, which the solver cannot set up": 2,
+   "Basculegion is slp, whose turn counter is not shown": 2,
+   "Basculegion has throatchop, which the solver cannot set up": 2,
+   "Swampert has throatchop, which the solver cannot set up": 2,
+   "Rillaboom is slp, whose turn counter is not shown": 2,
+   "Floette-Eternal has encore, which the solver cannot set up": 2,
+   "Farigiraf has disable, which the solver cannot set up": 2,
+   "Garchomp has perish1, perish2, perish3, which the solver cannot set up": 2,
+   "Farigiraf is slp, whose turn counter is not shown": 2,
+   "Rotom-Heat has throatchop, which the solver cannot set up": 1,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 1,
+   "Charizard has disable, which the solver cannot set up": 1,
+   "Archaludon has throatchop, which the solver cannot set up": 1,
+   "Garchomp has perish3, which the solver cannot set up": 1,
+   "Garchomp has perish2, perish3, which the solver cannot set up": 1,
+   "Arcanine-Hisui is slp, whose turn counter is not shown": 1,
+   "Rotom-Heat is slp, whose turn counter is not shown": 1
+  },
+  "calibration": {
+   "decisions": 4079,
+   "brier": 0.154,
+   "ece": 0.0601,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 697,
+     "pairings": 178,
+     "ewp": 0.031,
+     "won": 0.085,
+     "won_ci95": [
+      0.0537,
+      0.133
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 268,
+     "pairings": 130,
+     "ewp": 0.151,
+     "won": 0.216,
+     "won_ci95": [
+      0.1679,
+      0.3038
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 291,
+     "pairings": 145,
+     "ewp": 0.254,
+     "won": 0.333,
+     "won_ci95": [
+      0.2247,
+      0.3695
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 327,
+     "pairings": 171,
+     "ewp": 0.348,
+     "won": 0.416,
+     "won_ci95": [
+      0.3674,
+      0.5117
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 355,
+     "pairings": 169,
+     "ewp": 0.45,
+     "won": 0.577,
+     "won_ci95": [
+      0.4422,
+      0.5797
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 383,
+     "pairings": 178,
+     "ewp": 0.55,
+     "won": 0.593,
+     "won_ci95": [
+      0.5397,
+      0.6691
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 404,
+     "pairings": 203,
+     "ewp": 0.653,
+     "won": 0.743,
+     "won_ci95": [
+      0.6712,
+      0.7852
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 289,
+     "pairings": 154,
+     "ewp": 0.749,
+     "won": 0.796,
+     "won_ci95": [
+      0.716,
+      0.8355
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 244,
+     "pairings": 144,
+     "ewp": 0.848,
+     "won": 0.898,
+     "won_ci95": [
+      0.8299,
+      0.9282
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 821,
+     "pairings": 211,
+     "ewp": 0.968,
+     "won": 0.942,
+     "won_ci95": [
+      0.9316,
+      0.9774
+     ]
+    }
+   ]
+  }
+ },
+ "s-nash": {
+  "run": [
+   "gate-s-nash"
+  ],
+  "policy": "ewp-nash",
+  "opponent": "scorer",
+  "settings": {},
+  "battles": 500,
+  "errors": 1,
+  "pairings": 250,
+  "complete_pairings": 249,
+  "mean_turns": 6.39,
+  "win_rate": {
+   "point": 0.56,
+   "ci95": [
+    0.52,
+    0.6
+   ],
+   "passes": true
+  },
+  "latency_ms": {
+   "where": "kaggle",
+   "decisions": 4033,
+   "median": 2282,
+   "p99": 10360,
+   "max": 26588,
+   "passes": null
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 36,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 35,
+   "Pawmot has typechange, which the solver cannot set up": 29,
+   "Armarouge has flashfire, which the solver cannot set up": 18,
+   "Greninja has typechange, which the solver cannot set up": 14,
+   "Arcanine-Hisui has throatchop, which the solver cannot set up": 5,
+   "Sylveon has disable, which the solver cannot set up": 4,
+   "Primarina has disable, which the solver cannot set up": 4,
+   "Basculegion has throatchop, which the solver cannot set up": 3,
+   "Dragonite has throatchop, which the solver cannot set up": 3,
+   "Salamence has throatchop, which the solver cannot set up": 3,
+   "Incineroar has taunt, which the solver cannot set up": 3,
+   "Floette-Eternal is tox, whose turn counter is not shown": 3,
+   "Cinderace has typechange, which the solver cannot set up": 3,
+   "Tyranitar is slp, whose turn counter is not shown": 3,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 3,
+   "Golisopod has confusion, which the solver cannot set up": 2,
+   "Kingambit has throatchop, which the solver cannot set up": 2,
+   "Beedrill has dragoncheer, which the solver cannot set up": 2,
+   "Kingambit is frz, whose turn counter is not shown": 2,
+   "Salamence is frz, whose turn counter is not shown": 2,
+   "Volcarona is frz, whose turn counter is not shown": 2,
+   "Rillaboom has typechange, which the solver cannot set up": 2,
+   "Garchomp has perish1, perish2, perish3, which the solver cannot set up": 2,
+   "Steelix has disable, which the solver cannot set up": 2,
+   "Charizard has throatchop, which the solver cannot set up": 1,
+   "Raichu has throatchop, which the solver cannot set up": 1,
+   "Gyarados has throatchop, which the solver cannot set up": 1,
+   "Rotom-Heat has charge, which the solver cannot set up": 1,
+   "Salamence has encore, which the solver cannot set up": 1,
+   "Basculegion is slp, whose turn counter is not shown": 1,
+   "Gholdengo has throatchop, which the solver cannot set up": 1,
+   "Basculegion has healblock, which the solver cannot set up": 1,
+   "Rillaboom is slp, whose turn counter is not shown": 1,
+   "Excadrill is slp, whose turn counter is not shown": 1,
+   "Garchomp has perish3, which the solver cannot set up": 1,
+   "Garchomp has perish2, perish3, which the solver cannot set up": 1,
+   "Farigiraf has disable, which the solver cannot set up": 1,
+   "Raichu is slp, whose turn counter is not shown": 1,
+   "Salamence has disable, which the solver cannot set up": 1,
+   "Torkoal is frz, whose turn counter is not shown": 1
+  },
+  "calibration": {
+   "decisions": 3830,
+   "brier": 0.1463,
+   "ece": 0.0305,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 629,
+     "pairings": 186,
+     "ewp": 0.034,
+     "won": 0.049,
+     "won_ci95": [
+      0.0448,
+      0.1201
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 252,
+     "pairings": 130,
+     "ewp": 0.153,
+     "won": 0.202,
+     "won_ci95": [
+      0.1346,
+      0.2679
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 274,
+     "pairings": 145,
+     "ewp": 0.251,
+     "won": 0.226,
+     "won_ci95": [
+      0.1661,
+      0.294
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 304,
+     "pairings": 153,
+     "ewp": 0.35,
+     "won": 0.421,
+     "won_ci95": [
+      0.3453,
+      0.4961
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 347,
+     "pairings": 168,
+     "ewp": 0.453,
+     "won": 0.487,
+     "won_ci95": [
+      0.4159,
+      0.5596
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 376,
+     "pairings": 172,
+     "ewp": 0.548,
+     "won": 0.652,
+     "won_ci95": [
+      0.586,
+      0.7145
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 397,
+     "pairings": 205,
+     "ewp": 0.65,
+     "won": 0.67,
+     "won_ci95": [
+      0.6158,
+      0.7345
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 240,
+     "pairings": 148,
+     "ewp": 0.749,
+     "won": 0.729,
+     "won_ci95": [
+      0.6757,
+      0.8142
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 260,
+     "pairings": 151,
+     "ewp": 0.852,
+     "won": 0.846,
+     "won_ci95": [
+      0.8079,
+      0.9132
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 751,
+     "pairings": 206,
+     "ewp": 0.969,
+     "won": 0.967,
+     "won_ci95": [
+      0.915,
+      0.9733
+     ]
+    }
+   ]
+  }
+ },
+ "s-people": {
+  "run": [
+   "gate-s-people"
+  ],
+  "policy": "ewp-people",
+  "opponent": "scorer",
+  "settings": {},
+  "battles": 500,
+  "errors": 3,
+  "pairings": 250,
+  "complete_pairings": 247,
+  "mean_turns": 5.98,
+  "win_rate": {
+   "point": 0.692,
+   "ci95": [
+    0.654,
+    0.73
+   ],
+   "passes": true
+  },
+  "latency_ms": {
+   "where": "kaggle",
+   "decisions": 3743,
+   "median": 2352,
+   "p99": 10391,
+   "max": 27515,
+   "passes": null
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 36,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 28,
+   "Pawmot has typechange, which the solver cannot set up": 27,
+   "Armarouge has flashfire, which the solver cannot set up": 20,
+   "Greninja has typechange, which the solver cannot set up": 12,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 4,
+   "Cinderace has typechange, which the solver cannot set up": 4,
+   "Salamence has disable, which the solver cannot set up": 4,
+   "Primarina has disable, which the solver cannot set up": 4,
+   "Golisopod is slp, whose turn counter is not shown": 3,
+   "Incineroar has taunt, which the solver cannot set up": 3,
+   "Arcanine-Hisui has throatchop, which the solver cannot set up": 3,
+   "Incineroar has encore, which the solver cannot set up": 3,
+   "Rotom-Heat has charge, which the solver cannot set up": 2,
+   "Swampert has perish3, which the solver cannot set up": 2,
+   "Salamence is frz, whose turn counter is not shown": 2,
+   "Incineroar has throatchop, which the solver cannot set up": 2,
+   "Floette-Eternal has disable, which the solver cannot set up": 2,
+   "Charizard is slp, whose turn counter is not shown": 2,
+   "Archaludon has perish1, perish2, perish3, which the solver cannot set up": 2,
+   "Kingambit is slp, whose turn counter is not shown": 2,
+   "Farigiraf has disable, which the solver cannot set up": 2,
+   "Golisopod has throatchop, which the solver cannot set up": 2,
+   "Salamence has throatchop, which the solver cannot set up": 2,
+   "Milotic has throatchop, which the solver cannot set up": 1,
+   "Gyarados has throatchop, which the solver cannot set up": 1,
+   "Gholdengo has throatchop, which the solver cannot set up": 1,
+   "Farigiraf has throatchop, which the solver cannot set up": 1,
+   "Basculegion is slp, whose turn counter is not shown": 1,
+   "Torkoal is frz, whose turn counter is not shown": 1,
+   "Swampert has perish2, perish3, which the solver cannot set up": 1,
+   "Swampert has perish1, perish2, perish3, which the solver cannot set up": 1,
+   "Sneasler has disable, which the solver cannot set up": 1,
+   "Grapploct is frz, whose turn counter is not shown": 1,
+   "Conkeldurr is slp, whose turn counter is not shown": 1,
+   "Rillaboom is tox, whose turn counter is not shown": 1,
+   "Garchomp has throatchop, which the solver cannot set up": 1,
+   "Garchomp has perish3, which the solver cannot set up": 1,
+   "Garchomp has perish2, perish3, which the solver cannot set up": 1,
+   "Gengar has perish3, which the solver cannot set up": 1,
+   "Gengar has perish2, perish3, which the solver cannot set up": 1,
+   "Dragonite has throatchop, which the solver cannot set up": 1,
+   "Sneasler has encore, which the solver cannot set up": 1
+  },
+  "calibration": {
+   "decisions": 3551,
+   "brier": 0.1394,
+   "ece": 0.0563,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 367,
+     "pairings": 131,
+     "ewp": 0.036,
+     "won": 0.074,
+     "won_ci95": [
+      0.0683,
+      0.1775
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 183,
+     "pairings": 105,
+     "ewp": 0.151,
+     "won": 0.202,
+     "won_ci95": [
+      0.1595,
+      0.3167
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 176,
+     "pairings": 101,
+     "ewp": 0.254,
+     "won": 0.33,
+     "won_ci95": [
+      0.2634,
+      0.4449
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 208,
+     "pairings": 125,
+     "ewp": 0.352,
+     "won": 0.49,
+     "won_ci95": [
+      0.384,
+      0.5587
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 240,
+     "pairings": 147,
+     "ewp": 0.452,
+     "won": 0.604,
+     "won_ci95": [
+      0.5431,
+      0.6939
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 342,
+     "pairings": 181,
+     "ewp": 0.551,
+     "won": 0.655,
+     "won_ci95": [
+      0.5963,
+      0.7214
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 380,
+     "pairings": 197,
+     "ewp": 0.65,
+     "won": 0.766,
+     "won_ci95": [
+      0.7123,
+      0.8202
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 396,
+     "pairings": 200,
+     "ewp": 0.751,
+     "won": 0.763,
+     "won_ci95": [
+      0.7551,
+      0.8572
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 316,
+     "pairings": 163,
+     "ewp": 0.852,
+     "won": 0.886,
+     "won_ci95": [
+      0.7994,
+      0.9049
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 943,
+     "pairings": 232,
+     "ewp": 0.976,
+     "won": 0.973,
+     "won_ci95": [
+      0.9492,
+      0.9856
+     ]
+    }
+   ]
+  }
+ },
+ "pilot-people": {
+  "run": [
+   "gate-pilot-people-0",
+   "gate-pilot-people-1"
+  ],
+  "policy": "ewp-people",
+  "opponent": "self",
+  "settings": {},
+  "battles": 1600,
+  "errors": 0,
+  "pairings": 100,
+  "complete_pairings": 100,
+  "mean_turns": 7.31,
+  "pilot": {
+   "pairings": 100,
+   "split_half_r": 0.921,
+   "spearman_brown": 0.959,
+   "spread_s": 0.356,
+   "beyond_85_15": 0.56
+  },
+  "latency_ms": {
+   "where": "kaggle",
+   "decisions": 28792,
+   "median": 1849,
+   "p99": 8875,
+   "max": 13677,
+   "passes": null
+  },
+  "fallbacks": {
+   "Revival Blessing, which would bring back a Pok\u00e9mon the solver does not have": 253,
+   "a switch in the middle of a turn (U-turn, an Eject Button), which is not searched": 178,
+   "Pawmot has typechange, which the solver cannot set up": 134,
+   "Golisopod has disable, which the solver cannot set up": 28,
+   "Arcanine-Hisui has perish1, perish2, perish3, which the solver cannot set up": 23,
+   "Sneasler has encore, which the solver cannot set up": 21,
+   "Arcanine-Hisui has disable, which the solver cannot set up": 17,
+   "Meowscarada has typechange, which the solver cannot set up": 17,
+   "Arcanine-Hisui has perish2, perish3, which the solver cannot set up": 17,
+   "Arcanine-Hisui has perish3, which the solver cannot set up": 16,
+   "Raichu has throatchop, which the solver cannot set up": 12,
+   "Salamence has healblock, which the solver cannot set up": 11,
+   "Garchomp has disable, which the solver cannot set up": 10,
+   "Incineroar is slp, whose turn counter is not shown": 10,
+   "Charizard has disable, which the solver cannot set up": 8,
+   "Salamence has disable, which the solver cannot set up": 7,
+   "Gengar has perish2, perish3, which the solver cannot set up": 7,
+   "Dragonite has throatchop, which the solver cannot set up": 7,
+   "Rillaboom has disable, which the solver cannot set up": 5,
+   "Rillaboom is slp, whose turn counter is not shown": 5,
+   "Salamence has throatchop, which the solver cannot set up": 5,
+   "Armarouge has flashfire, which the solver cannot set up": 4,
+   "Gengar has perish1, perish2, perish3, which the solver cannot set up": 4,
+   "Garchomp has encore, which the solver cannot set up": 4,
+   "Alakazam has perish3, which the solver cannot set up": 4,
+   "Gengar has perish3, which the solver cannot set up": 4,
+   "Sneasler is frz, whose turn counter is not shown": 4,
+   "Incineroar has throatchop, which the solver cannot set up": 4,
+   "Salamence has dragoncheer, which the solver cannot set up": 3,
+   "Golisopod has throatchop, which the solver cannot set up": 3,
+   "Milotic is frz, whose turn counter is not shown": 3,
+   "Dragonite is slp, whose turn counter is not shown": 2,
+   "Archaludon has perish3, which the solver cannot set up": 2,
+   "Dragalge is frz, whose turn counter is not shown": 2,
+   "Alakazam has perish2, perish3, which the solver cannot set up": 2,
+   "Sylveon is slp, whose turn counter is not shown": 2
+  },
+  "calibration": {
+   "decisions": 27954,
+   "brier": 0.1369,
+   "ece": 0.0623,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "n": 4284,
+     "pairings": 99,
+     "ewp": 0.034,
+     "won": 0.017,
+     "won_ci95": [
+      0.0129,
+      0.0299
+     ]
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "n": 1819,
+     "pairings": 98,
+     "ewp": 0.152,
+     "won": 0.08,
+     "won_ci95": [
+      0.0562,
+      0.104
+     ]
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "n": 1724,
+     "pairings": 94,
+     "ewp": 0.25,
+     "won": 0.153,
+     "won_ci95": [
+      0.1093,
+      0.1827
+     ]
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "n": 1584,
+     "pairings": 89,
+     "ewp": 0.352,
+     "won": 0.212,
+     "won_ci95": [
+      0.1694,
+      0.2557
+     ]
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "n": 2426,
+     "pairings": 96,
+     "ewp": 0.452,
+     "won": 0.349,
+     "won_ci95": [
+      0.2402,
+      0.3438
+     ]
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "n": 2845,
+     "pairings": 92,
+     "ewp": 0.55,
+     "won": 0.414,
+     "won_ci95": [
+      0.3608,
+      0.4677
+     ]
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "n": 2748,
+     "pairings": 95,
+     "ewp": 0.651,
+     "won": 0.585,
+     "won_ci95": [
+      0.5394,
+      0.6508
+     ]
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "n": 2349,
+     "pairings": 97,
+     "ewp": 0.751,
+     "won": 0.679,
+     "won_ci95": [
+      0.6762,
+      0.7641
+     ]
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "n": 2235,
+     "pairings": 97,
+     "ewp": 0.848,
+     "won": 0.821,
+     "won_ci95": [
+      0.7906,
+      0.8725
+     ]
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "n": 5940,
+     "pairings": 100,
+     "ewp": 0.973,
+     "won": 0.956,
+     "won_ci95": [
+      0.9392,
+      0.9661
+     ]
+    }
+   ]
+  }
+ }
+}

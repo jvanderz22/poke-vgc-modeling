@@ -262,6 +262,9 @@ def plan(reg: Regulation, view: PlayerView, search: dict[str, Any] | None = None
         nopp = _out_of_pp(view, mons[me])
         if nopp:
             f["nopp"] = {me: nopp}
+        trapped = _trapped(view, mons[me])
+        if trapped:
+            f["trapped"] = {me: trapped}
         if empty:
             f = _emptied(reg, f, sets_, empty)
         for o in orders:
@@ -304,10 +307,19 @@ def _out_of_pp(view: PlayerView, mons: list[Any]) -> list[list[str]] | None:
     return out if any(out) else None
 
 
+def _trapped(view: PlayerView, mons: list[Any]) -> list[bool] | None:
+    """Which of the player's Pokémon on the field its request says are trapped (a hidden trap is
+    shown there once a switch was refused), in the solver's order; None when none are."""
+    active = (view.req or {}).get("active") or []
+    out = [bool(m.state == "active" and m.position is not None and m.position < len(active)
+                and active[m.position].get("trapped")) for m in mons]
+    return out if any(out) else None
+
+
 # A Pokémon's entries in the solver's per-Pokémon lists, for an empty slot's filler: it is fainted
 # before anything reads them.
 _NEUTRAL = {"hp": 100, "mega": False, "boosts": {}, "consumed": False, "status": None, "timesAttacked": 0,
-            "stall": 0, "fresh": False, "choicelock": None, "nopp": []}
+            "stall": 0, "fresh": False, "choicelock": None, "nopp": [], "trapped": False}
 
 
 def _placeholder(reg: Regulation, side_sets: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:

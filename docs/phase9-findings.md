@@ -346,3 +346,88 @@ type change, volatiles the solver does not set up, 10; sleep and freeze, whose c
   check answers without a matrix.
 - **Replacements cost the most**: each way to fill the slots is a full turn searched, four at a
   double replacement. They are 18% of decisions (158 of 894), and move the p99 more than the median.
+
+---
+
+## The gates and the pilot (stage 5)
+
+2026-10-02 to 03, `scripts/analysis/policy_gate.py` (verdicts in
+`data/analysis/reg_mc/policy_gate.json`), played on Kaggle through `scripts/cloud/kaggle_selfplay.sh`
+except the random floor and the latency run, played on the laptop. Every Kaggle run was merged only
+after its three shortest battles replayed on the laptop to the same inputs, choice by choice (18 of
+18 did). Pairings are human-corpus pairings, open sheets, each played twice with the policies
+swapped between the teams; the unit is the pairing, intervals by bootstrap over pairings. The policy
+is K 4, two guesses above two a side.
+
+| | against the heuristic (≥ 0.60, interval above 0.5) | against the scorer (interval above 0.5) | against random (≥ 0.95) |
+| --- | --- | --- | --- |
+| **people** | **0.678** [0.640, 0.716] **passes** | **0.692** [0.654, 0.730] **passes** | 1.00 (50 pairings) passes |
+| nash | 0.584 [0.546, 0.622] fails (under 0.60) | 0.560 [0.520, 0.600] passes | 0.98 [0.95, 1.00] passes |
+
+250 pairings each against the heuristic and the scorer, 50 against random. **The people reading
+ships**: it passes both opponents, and step 3 is about predicting people. It also beats the scorer by
+more than Nash does (0.69 against 0.56): playing as if the opponent is a ~1100 player pays against
+players that are not minimax.
+
+**Latency** (laptop, one battle at a time, 20 battles, 166 decisions): a median **0.74 s**, p99
+3.1 s, the longest 3.6 s. Passes (median ≤ 1 s, p99 under 45 s). With four battles at once the
+median is 0.9–1.0 s; on Kaggle's CPUs 1.8–2.4 s.
+
+**EWP against what happened** (the chosen row's EWP, binned, against the result):
+
+| EWP of the choice | against the heuristic: won | against the scorer: won | against itself (pilot): won |
+| --- | --- | --- | --- |
+| 0.0–0.1 | 0.075 | 0.074 | 0.017 |
+| 0.2–0.3 | 0.33 | 0.33 | 0.15 |
+| 0.4–0.5 | 0.50 | 0.60 | 0.35 |
+| 0.5–0.6 | 0.59 | 0.66 | 0.41 |
+| 0.6–0.7 | 0.74 | 0.77 | 0.59 |
+| 0.8–0.9 | 0.88 | 0.89 | 0.82 |
+| 0.9–1.0 | 0.95 | 0.97 | 0.96 |
+| ECE / Brier | 0.048 / 0.142 | 0.056 / 0.139 | 0.062 / 0.137 |
+
+The gate as planned (in self-play against the opponent π_opp assumes) cannot be run: π_opp assumes
+people, and nothing in self-play plays as people do. What the three runs show instead is EWP
+bracketed from both sides, as it should be if it is right about a people-strength opponent: against
+weaker opponents the policy wins more than its EWP says (by up to 0.15 in the middle bins), and
+against itself, stronger than people, less (by 0.07–0.14). Part of the miss against itself is the
+winner's curse of taking the argmax of noisy rows. Both ends hold. Not a pass, and not a sign
+of a broken leaf.
+
+**The pilot:** the policy against itself, 100 pairings × 16 battles (1,600, two Kaggle sessions
+of 1.7 and 2.6 hours, no errors).
+
+| | |
+| --- | --- |
+| split-half reliability (8 against 8) | r = 0.921, **0.959** at 16 (Spearman–Brown) |
+| spread of the pairings' win rates, noise removed | **s = 0.356** |
+| pairings beyond 85/15 | 56% (the heuristic: 67%) |
+| turns a battle | **7.31** (humans 7.55, the heuristic 5.81) |
+| decisions the heuristic made instead | 3% (Revival Blessing and Pawmot's type change most) |
+
+So step 3's design holds: at s 0.356 the attenuation is √(s² / (s² + 0.25/n)) = **0.90 at 8 battles
+a pairing** (0.82 at 4), better than the heuristic's 0.85. 1,500 pairings × 8 battles = 12,000
+battles with both sides searching: on Kaggle about 2.2 hours a 800-battle session, so about 33
+session-hours, three sessions side by side for one night. The policy plays battles as long as people
+do, but its matchups are still lopsided. Whether its win rates track human results is step 3's
+question.
+
+**Agreement with people** (held out, `policy_vs_people.py`, 1,557 decisions of 199 groups, from the
+stands as stage 3 built them, one guess): the policy's choice is the human's joint choice **11.5%**
+[10.0, 13.1] of the time, against 7.8% [6.5, 9.2] for the people model's own first pair and 2.0%
+for a uniform choice; the human's pair is among its four rows 26% of the time. Searching moves the
+policy towards what people do, not away from it.
+
+**Found by the gates, and fixed after them:**
+- **A hidden trap.** The solver's root never worked out trapping (Shadow Tag, Arena Trap), so it
+  offered switches the battle refuses. The battle does not count a refused switch as invalid (the
+  trap is hidden), and the policy chose the same switch again until the 2,000-decision cap: 5 of
+  the 2,200 gate battles errored that way (scored as the one battle of their pairing that finished).
+  Now the solver runs the simulator's own trap check where switches are searched, a position carries
+  the `trapped` its request shows, and the runner lets the simulator choose after three refusals. The
+  pilot ran with the fix: no errors in 1,600.
+- **A failed battle's decisions** were left to the next battle's record by `selfplay._play`, which
+  had muddled the calibration of the runs with an error. Each decision names its battle; scoring
+  keeps a battle's own, and `_play` now clears them first.
+- On Kaggle the code archive arrives unpacked and the file listing is paged, so a push is awaited by
+  a stamp file that sorts first, and the kernel's slug cannot be its dataset's.

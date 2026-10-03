@@ -50,3 +50,25 @@ def test_a_pokemon_in_the_back_needs_two_on_the_field():
     pos["active"] = {"p1": 1, "p2": 2}
     with pytest.raises(RuntimeError):  # "p1 has a Pokémon in the back but not two on the field"
         solver.solve_uncached(pos)
+
+
+def _listed(pos):
+    return solver.solve_uncached({**pos, "search": {"list_only": True, "prune": 0, **FLAGS}})["all"]
+
+
+def test_a_shadow_tag_on_the_field_takes_the_switches_away():
+    shadow = "Gengar @ Gengarite\nAbility: Cursed Body\nEVs: 32 SpA / 32 Spe\nTimid Nature\n- Shadow Ball\n- Protect"
+    pos = _position((4, 4))
+    free = _listed(pos)
+    assert any("switch" in c for c in free["p1"])
+    pos = {**pos, "p2": "\n\n".join([shadow] + pos["p2"].split("\n\n")[1:]),
+           "setup": {**pos["setup"], "mega": {"p2": [True, False]}}}
+    tagged = _listed(pos)
+    # Ghosts are not trapped: whatever p1 still lists switching is from one.
+    assert len([c for c in tagged["p1"] if "switch" in c]) < len([c for c in free["p1"] if "switch" in c])
+
+
+def test_a_pokemon_the_request_says_is_trapped_is_not_offered_a_switch():
+    pos = _position((4, 4))
+    pos = {**pos, "setup": {**pos["setup"], "trapped": {"p1": [True, True]}}}
+    assert not any("switch" in c for c in _listed(pos)["p1"])
