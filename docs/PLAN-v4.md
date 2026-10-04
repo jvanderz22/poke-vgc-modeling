@@ -176,10 +176,16 @@ The pilot's spread (s = 0.356, split-half 0.96) keeps step 3 at 1,500 pairings �
 The simulator-validity check, unchanged: does policy-vs-policy win rate between two teams predict
 the human series result? It is built (`phase6-findings`). A pass unblocks steps 6–7; a fail means
 the deterministic stack stays the floor.
+**Done 2026-10-04: fails** ([phase6-findings](phase6-findings.md) §8). 1,500 pairings × 8 battles
+of the Phase 9 policy against itself: AUC 0.514 [0.488, 0.541] on 1,207 series, recalibrated no
+better than the constant, the same as the heuristic on those pairings (0.504). Less lopsided (38%
+beyond 85/15, against 57%) but no better at ordering. The deterministic stack stays the floor;
+steps 6–7 stay blocked.
 
-### 4. Ready for the 2026-12-02 rotation
+### 4. Ready for the next regulation
 
-Has a date, so it runs alongside steps 2–3 and must be done by mid-November.
+Reg M-C rotates 2026-12-02. No deadline: being late costs little, so this is taken when it is wanted,
+not ahead of other work.
 - **L0 config for the next regulation** as soon as its rules are public
   ([regulation-change](regulation-change.md)).
 - **The set encoder's shared vocabulary,** so `wp-v1f`'s successor can warm-start on M-C games.
@@ -290,7 +296,7 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | --- | --- |
 | Phase 9's policy is stronger but still fails Phase 6 | The deterministic stack and the endgame engine are the floor |
 | Phase 9 misses the 45 s clock | The doubles work already answers ≤2 a side in 5 s; prune harder above that, and report depth |
-| Reg M-C rotates 2026-12-02 | Step 4, with a mid-November target |
+| Reg M-C rotates 2026-12-02 | Step 4, when it is wanted; being late costs little |
 | The closed-sheet belief does not concentrate enough | Happened (stage 5). The model keeps leading closed doubles; the engine's answer stays open-sheet only |
 | The cloud machine never stops, or its solves run long | Auto-stop with no minimum, one machine, 1v1s capped at depth 3, a password, and a hard spend cap in the dashboard |
 | Shared cores miss the 5 s doubles answer | The page keeps the quick answer for late move orders (it costs about 0.005 on the laptop); a `performance-1x` machine is the next size up |

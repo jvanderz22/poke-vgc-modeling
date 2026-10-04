@@ -165,3 +165,36 @@ something worth building on, starting from a predictor whose own noise is alread
 It does, separately, sharpen what Phase 8 is for. The hidden Stat Points mean speed order and exact
 damage are unknown to a player at *open* sheets, not only at closed ones, and nothing in the pipeline
 infers either — see PLAN-v2 finding 8.
+
+## 8. Re-run against the Phase 9 policy (PLAN-v4 step 3, 2026-10-04)
+
+The standing check, against the policy that passed PLAN-policy's gates (the people reading, K 4,
+heuristic team preview): `scripts/analysis/step3_validity.py`, result in
+`data/analysis/reg_mc/sim_validity_ewp.json`. 1,500 human-corpus pairings × 8 battles, the policy on
+both sides, 12,000 battles on four Kaggle sessions (about 9 hours each), no errors, merged after 12
+battles replayed on the laptop to the same inputs. Scored by the same `validity.score` and `verdict`
+as §1, on games that ended normally, cluster bootstrap by group.
+
+| | games (groups) | AUC | log loss − constant | recalibrated − constant |
+| --- | --- | --- | --- | --- |
+| **Phase 9 policy** | 2,064 (1,207) | **0.514** [0.488, 0.541] | +0.232 [+0.195, +0.269] | −0.0009 [−0.0027, +0.0010] |
+| heuristic, the same pairings | 2,019 (1,173) | 0.504 [0.479, 0.530] | +0.428 [+0.378, +0.476] | −0.0007 [−0.0025, +0.0010] |
+
+**It fails, as the heuristic did.** Neither scale-free test clears its interval. The policy's win
+rates are less lopsided (38% of pairings beyond 85/15 against the heuristic's 57% on these pairings,
+sd 0.29 against 0.35), so the raw log loss is half as bad. But they order the human results no better
+than the heuristic's, and no better than chance. The interval's top, 0.541, sits below the 0.55 this
+run was sized to detect (PLAN-policy: 92% power at 1,500 series, though ended-normal games cover
+1,207 groups). So this is a bounded null, not an underpowered one: any team-strength signal in this
+policy's self-play is small.
+
+The other subsets agree: all games 0.519 [0.498, 0.540], forfeits 0.529 [0.496, 0.563], held-out
+0.462 [0.405, 0.521]. Rated games, 0.536 [0.502, 0.568], is the one interval just above 0.5. It is
+one of five subsets, not the gated one, and is not read as a pass.
+
+**What it means** (§6's fork, now taken twice): a policy that plays as long as people do (7.44 turns
+a battle against 7.55), beats the heuristic 0.68, and picks a human's exact choice 11.5% of the time
+does not make self-play predict who wins between two human teams. The deterministic team tools stay
+the floor. Phase 10's matrix form and Phase 11's search over self-play stay blocked. §7's limits
+still apply (imputed spreads, a ~1100 population, the heuristic's team preview), and the preview is
+the one untested lever this run could change: the humans' own brings, for the same pairings.
