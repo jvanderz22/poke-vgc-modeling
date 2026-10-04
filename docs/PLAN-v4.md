@@ -1,5 +1,9 @@
 # VGC Reg M-C Model & Advisor — Plan v4
 
+> **Superseded 2026-10-04 by [PLAN-v5.md](PLAN-v5.md).** Kept as the archive of steps 1–5 as they
+> ran, with their measurements and decisions. Code and tests cite "PLAN-v4 step N", so the step
+> numbers here are stable. Read v5 for what to do next.
+
 _Written 2026-10-01; updated through 2026-10-02 (step 1 closed out, the app deployed, the reference runs scored, the 2v2 tail checked)._ **Supersedes [PLAN-v3.md](PLAN-v3.md)**, which is kept as the archive of steps
 1–9 as they ran (2026-09-28 to 2026-10-01): open-sheet calibration, the set-use benchmark, the 1v1
 engine in the app, Watching mode, the Speed prior, closed-sheet routing, eval manifests, solver speed,
