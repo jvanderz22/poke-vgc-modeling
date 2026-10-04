@@ -109,7 +109,7 @@ def _matchup(r: dict[str, Any]):
     from vgc.sim.selfplay import Matchup
 
     return Matchup(r["team_a"], r["team_b"], r["policy_a"], r["policy_b"], r["team_a_id"], r["team_b_id"],
-                   swap_sides=r["swap_sides"], ots=r["ots"])
+                   swap_sides=r["swap_sides"], ots=r["ots"], preview_a=r.get("preview_a"), preview_b=r.get("preview_b"))
 
 
 def local(name: str, workers: int) -> None:

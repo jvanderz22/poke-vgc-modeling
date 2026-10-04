@@ -140,7 +140,8 @@ def main() -> int:
 
     def task(r: dict) -> tuple:
         m = selfplay.Matchup(r["team_a"], r["team_b"], r["policy_a"], r["policy_b"], r.get("team_a_id", ""),
-                             r.get("team_b_id", ""), swap_sides=r.get("swap_sides", False), ots=r.get("ots", True))
+                             r.get("team_b_id", ""), swap_sides=r.get("swap_sides", False), ots=r.get("ots", True),
+                             preview_a=r.get("preview_a"), preview_b=r.get("preview_b"))
         return (r["index"], run["run_id"], battle_seed(run["seed"], r["index"]), m)
 
     counts = {"played": 0, "error": 0}

@@ -44,6 +44,23 @@ class Matchup:
     # regime a cartridge is in. It belongs on the matchup rather than the run so a run can mix
     # the two, which is what a model that must handle both needs.
     ots: bool = True
+    # A team preview made for the side rather than by its policy ("team 3142": the four brought,
+    # the first two leading), e.g. what the human who played the team chose (PLAN-v4 step 3).
+    preview_a: str | None = None
+    preview_b: str | None = None
+
+
+class Previewed:
+    """A policy whose team preview is given: everything else is the policy's own."""
+
+    def __init__(self, policy: Any, preview: str):
+        self._policy, self._preview = policy, preview
+
+    def teampreview(self, battle: Any, rng: Any) -> str:
+        return self._preview
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._policy, name)
 
 
 # --- worker ----------------------------------------------------------------------------
@@ -86,9 +103,10 @@ def _policy(name: str):
 def _play(task: tuple[int, str, list[int], Matchup]) -> dict[str, Any]:
     index, run_id, seed, m = task
     reg = _W["reg"]
-    sides = [(m.team_a, m.policy_a, m.team_a_id), (m.team_b, m.policy_b, m.team_b_id)]
+    sides = [(m.team_a, m.policy_a, m.team_a_id, m.preview_a), (m.team_b, m.policy_b, m.team_b_id, m.preview_b)]
     if m.swap_sides:
         sides.reverse()
+    pols = [_policy(s[1]) if s[3] is None else Previewed(_policy(s[1]), s[3]) for s in sides]
     for name in {sides[0][1], sides[1][1]}:          # a battle that errored leaves its records behind
         pol = _policy(name)
         if getattr(pol, "decisions", None) is not None:
@@ -96,7 +114,7 @@ def _play(task: tuple[int, str, list[int], Matchup]) -> dict[str, Any]:
     try:
         rec: BattleRecord = play_battle(
             _W["runner"], f"{run_id}-{index}", seed, reg.showdown_format,
-            teams=(sides[0][0], sides[1][0]), policies=(_policy(sides[0][1]), _policy(sides[1][1])),
+            teams=(sides[0][0], sides[1][0]), policies=(pols[0], pols[1]),
             team_ids=(sides[0][2], sides[1][2]), ots=m.ots,
         )
     except Exception as e:  # keep the run going; record the failure
