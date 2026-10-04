@@ -579,3 +579,27 @@ def test_recipes_are_compared_on_the_same_rows_paired_by_battle():
     shuffled = rows(good) | {"open": rows(good)["open"] | {"battle": battle[::-1]}}
     with pytest.raises(ValueError, match="same open-sheet rows"):
         compare_validation({"a": rows(blunt), "b": shuffled}, "a")
+
+
+def test_an_ensemble_reads_the_mean_of_its_members_logits():
+    """`EnsembleSetModel`: the members' raw logits averaged, then the ensemble's own temperatures."""
+    from vgc.wp.models import SHEETS_COL, EnsembleSetModel, SetModel
+
+    class Session:
+        def __init__(self, wp, br):
+            self.wp, self.br = wp, br
+
+        def run(self, _, feed):
+            n = len(feed["glob"])
+            return [np.full(n, self.wp, np.float32), np.full((n, 12), self.br, np.float32)]
+
+    model = EnsembleSetModel.__new__(EnsembleSetModel)
+    model.human_ctx_col, model.sheets_col = 6, SHEETS_COL
+    model.calibration = {"human": 2.0}
+    model.sessions = [Session(1.0, 0.0), Session(3.0, 2.0)]
+    d = {"cat": np.zeros((4, 3)), "num": np.zeros((4, 2)), "glob": np.zeros((4, SHEETS_COL + 1), np.float32)}
+    d["glob"][:, 6] = 1
+    d["glob"][:, SHEETS_COL] = 1
+    wp, br = model.predict(d, bs=3)
+    assert np.allclose(wp, 1 / (1 + np.exp(-2.0 / 2.0))) and np.allclose(br, 1 / (1 + np.exp(-1.0)))
+    assert issubclass(EnsembleSetModel, SetModel)

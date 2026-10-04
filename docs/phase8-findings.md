@@ -2151,3 +2151,41 @@ one side of it. Folded to the side the answer favours, as the page shows it (tem
   in 2v2s and −0.001 [−0.008, +0.004] overall, Brier level. Not shipped. The tail is about 5% of
   2v2s and costs about 0.003 of their log loss.
 - So a 2v2 answer of 97% on the page wins about 93% of the time between people at this rating.
+
+## A seed ensemble for the WP model
+
+PLAN-v4 step 5 (2026-10-04). Every training run stops at epoch 3–4, and where it stops sets the
+confidence (PLAN-v3). The served open-sheet model, `wp-v1f-idp5`, was retrained four more times
+on the laptop with only the seed changed (about 55 minutes, four at once). Human validation log
+loss ran 0.563–0.573 across the five seeds (the served one 0.566), and the fitted temperature
+0.95–1.40: the fragility, measured. `wp-v1f-ens5` is the five read as one: the mean of their raw
+logits, then its own per-regime temperatures, fitted as any model's are (`EnsembleSetModel`,
+`vgc wp ensemble`), and gated like one.
+
+| held out | `wp-v1f-idp5` (served open) | `wp-v1d-sw-split-small` (served closed) | **`wp-v1f-ens5`** |
+| --- | --- | --- | --- |
+| open, spectator log loss | 0.5528 | 0.5523 | **0.5478** |
+| open, player log loss | 0.5755 | 0.5799 | **0.5710** |
+| closed, spectator log loss | 0.5665 | 0.5633 | **0.5557** |
+| closed, player log loss | 0.5878 | 0.5910 | **0.5783** |
+| closed ECE (spectator) | 0.012 | 0.017 | **0.010** |
+| bring top-4 overlap (usage 0.671) | 0.702 | | 0.700 |
+| gates | all pass | closed passes | **closed passes; `in_battle_ece` fails at t7+** |
+
+**It is better everywhere it is scored, and it fails one gate on the edge.** At t7+ its ECE is
+0.0328 against a threshold of 0.0318. The served model's is 0.0326 against 0.0327. The ECEs are
+the same; the threshold, which is computed from each model's own predictions, moved by 0.001. The
+served model passes that bucket by 0.0001 (PLAN-v3 recorded it), so this is the same model on the
+same edge, not a worse one.
+
+**On the decided-endgame benchmark** (24 positions, 30 direction pairs; too few to gate on) the
+picture is mixed. It moves the right way in 19 of 30 pairs (the served model 23), and sits further
+from its own mix of the known cases (0.130 against 0.038). But it separates won from lost
+positions better (0.118 against 0.078), is far less sure of positions that are lost (0.50 against
+0.65), and moves less on a fact that cannot matter (0.005 against 0.019). Averaging seeds pulls
+the answers together, and that includes the direction a single seed happens to take.
+
+**Not pinned:** that is a decision. On closed sheets, where it passes, it is 0.008 nats better
+than the served closed model on spectator rows and 0.013 on player rows, which is the case for
+pinning it there. It costs five network runs a prediction instead of one, which the live page can
+afford (the model is 155k parameters).

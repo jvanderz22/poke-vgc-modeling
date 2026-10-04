@@ -196,8 +196,11 @@ not ahead of other work.
 
 ### 5. Loose ends, taken when they block something
 
-- **A seed ensemble for the WP models.** Every run stops at epoch 3–4, and where it stops sets the
-  confidence. Serving one needs `SetModel` to take several exports.
+- ~~**A seed ensemble for the WP models.**~~ **Done 2026-10-04**: `wp-v1f-ens5`, five seeds of
+  `wp-v1f-idp5` read as one (`vgc wp ensemble`). Better log loss in both regimes (open 0.5478
+  against 0.5528, closed 0.5557 against the served 0.5633); passes the closed-sheet gates and
+  misses `in_battle_ece` at t7+ by 0.001, where the served model passes by 0.0001. Not pinned
+  ([phase8-findings](phase8-findings.md), "a seed ensemble").
 - ~~**The benchmark's illegal items**~~ (F5's Choice Band, F11's Assault Vest, a filler's Choice
   Specs). **Done 2026-10-04**: none decided its family (the calc never applied them), so they are
   now Life Orb, Shuca Berry and Metal Coat, re-solved at depth 4 with every value unchanged.

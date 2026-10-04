@@ -697,6 +697,33 @@ def cmd_wp_card(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wp_ensemble(args: argparse.Namespace) -> int:
+    """One set model made of several trained alike (`models.EnsembleSetModel`): its card names the
+    members, and it is calibrated, evaluated and pinned like any model."""
+    from vgc.wp import models
+    from vgc.wp.dataset import FEATURES
+
+    reg = _reg(args)
+    vocab = (FEATURES / reg.id / args.dataset / "vocab.json").read_text()
+    trained = {}
+    for m in args.members:
+        d = models.model_dir(reg.id, m)
+        if (d / "vocab.json").read_text() != vocab:
+            print(f"{m} was not built on {args.dataset}'s vocabulary")
+            return 1
+        t = json.loads((d / "train.json").read_text())
+        trained[m] = {"seed": t["hyperparams"].get("seed"), "best_epoch": t.get("best_epoch"),
+                      "val_wp_logloss_human": t.get("val_wp_logloss_human")}
+    out = models.model_dir(reg.id, args.version)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "members.json").write_text(json.dumps({"members": args.members}, indent=1) + "\n")
+    (out / "vocab.json").write_text(vocab)
+    info = json.loads((FEATURES / reg.id / args.dataset / "info.json").read_text())
+    models.write_card(reg.id, args.version, "set", info, {"ensemble": trained})
+    print(f"{args.version}: the mean logit of {len(args.members)} models; calibrate it next")
+    return 0
+
+
 def cmd_wp_calibrate(args: argparse.Namespace) -> int:
     from vgc.wp.dataset import load
     from vgc.wp.models import calibrate
@@ -1365,6 +1392,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", required=True)
     p.add_argument("--dataset", required=True)
     p.set_defaults(func=cmd_wp_card)
+    p = with_reg(wp.add_parser("ensemble", help="one set model made of several trained alike"))
+    p.add_argument("--version", required=True)
+    p.add_argument("--dataset", required=True)
+    p.add_argument("--members", nargs="+", required=True)
+    p.set_defaults(func=cmd_wp_ensemble)
     p = with_reg(wp.add_parser("calibrate", help="fit per-context temperatures on the validation split"))
     p.add_argument("--version", required=True)
     p.add_argument("--dataset", help="default: the one the model was trained on")

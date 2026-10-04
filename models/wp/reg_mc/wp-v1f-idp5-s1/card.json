@@ -1,0 +1,90 @@
+{
+ "version": "wp-v1f-idp5-s1",
+ "kind": "set",
+ "regulation": "reg_mc",
+ "created": "2026-10-04T17:16:27",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1f",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
+  "manifest_battles": 50827,
+  "featurizer_version": 3,
+  "n_num": 166,
+  "n_glob": 44,
+  "rows": {
+   "train": 869377,
+   "val": 122206,
+   "eval_human_ots": 47617,
+   "eval_human_ots_team": 122584,
+   "eval_human_closed": 43271,
+   "eval_human_closed_team": 3214,
+   "eval_selfplay_battle": 168790,
+   "eval_selfplay_team": 713376
+  },
+  "val_rate": {
+   "human": 0.2,
+   "selfplay": 0.05
+  },
+  "seconds": 868.9,
+  "val_split": "group",
+  "resplit_from": "wp-v1e",
+  "val_battles": {
+   "selfplay": 1839,
+   "human": 2487
+  }
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1e-train.json",
+  "sha256": "ce78951464b9adda171366cc43db56b4d06d384af2821b2722ee4817b488c1e1"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmc/train.jsonl.gz",
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 38145,
+   "human": 12682
+  }
+ },
+ "git": {
+  "sha": "0f4c3cd4e754c568e3677c1e8bc533f219973b78",
+  "dirty": true
+ },
+ "training": {
+  "hyperparams": {
+   "d": 64,
+   "layers": 2,
+   "heads": 4,
+   "dropout": 0.3,
+   "epochs": 12,
+   "bs": 2048,
+   "lr": 0.0003,
+   "bring_weight": 0.3,
+   "seed": 1,
+   "weight_decay": 0.05,
+   "id_dropout": 0.5,
+   "id_dropout_preview": 0.5,
+   "preview_wp_weight": 1.0,
+   "human_weight": 4.0
+  },
+  "best_epoch": 3,
+  "val_wp_logloss": 0.5615,
+  "selection_metric": 0.5633,
+  "selected_on": "human",
+  "temperature": 0.9502,
+  "val_wp_logloss_calibrated": 0.56133,
+  "val_wp_logloss_human": 0.5633,
+  "parameters": 154898,
+  "torch": "2.2.2",
+  "device": "cpu",
+  "train_rows": 869377,
+  "val_rows": 122206
+ }
+}

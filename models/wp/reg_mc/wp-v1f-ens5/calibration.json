@@ -1,0 +1,11 @@
+{
+ "selfplay": 0.741,
+ "selfplay_slope": 0.04157,
+ "selfplay_rows": 23498,
+ "human": 1.1291,
+ "human_slope": -0.05466,
+ "human_rows": 50665,
+ "human_closed": 0.7756,
+ "human_closed_slope": 0.04177,
+ "human_closed_rows": 48043
+}

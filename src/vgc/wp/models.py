@@ -183,6 +183,36 @@ class SetModel(WPModel):
         return sig(np.concatenate(wp) / self._temperatures(d["glob"])), sig(np.concatenate(br))
 
 
+class EnsembleSetModel(SetModel):
+    """Several set models trained alike but for their seed, read as one: the mean of their raw
+    logits, then the ensemble's own temperatures (it is calibrated and gated like any model). Every
+    run stops at epoch 3–4 and where it stops sets the confidence (PLAN-v3); a mean over seeds is
+    less hostage to where any one of them stopped."""
+
+    def __init__(self, paths_: list[Path], calibration: dict | None = None, human_ctx_col: int = 6,
+                 sheets_col: int = SHEETS_COL):
+        import onnxruntime as ort
+
+        super().__init__(paths_[0], calibration, human_ctx_col, sheets_col)
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = 4
+        self.sessions = [self.session] + [ort.InferenceSession(str(p), opts, providers=["CPUExecutionProvider"])
+                                          for p in paths_[1:]]
+
+    def predict(self, d, bs: int = 4096):
+        wp, br = [], []
+        for i in range(0, len(d["glob"]), bs):
+            feed = {"cat": d["cat"][i : i + bs].astype(np.int64), "num": d["num"][i : i + bs].astype(np.float32),
+                    "glob": d["glob"][i : i + bs]}
+            outs = [s.run(None, feed) for s in self.sessions]
+            wp.append(np.mean([o[0] for o in outs], axis=0))
+            br.append(np.mean([o[1] for o in outs], axis=0))
+        if not wp:
+            return np.zeros(0), np.zeros((0, 12))
+        sig = lambda z: 1 / (1 + np.exp(-z))  # noqa: E731
+        return sig(np.concatenate(wp) / self._temperatures(d["glob"])), sig(np.concatenate(br))
+
+
 def registered(reg_id: str) -> list[dict[str, Any]]:
     return [e for e in (json.loads(REGISTRY.read_text())["wp"] if REGISTRY.exists() else [])
             if e["regulation"] == reg_id]
@@ -279,7 +309,11 @@ def load_model(reg_id: str, version: str) -> WPModel:
     kind = json.loads((out / "card.json").read_text())["kind"]
     def _set(o: Path) -> SetModel:
         cal = o / "calibration.json"
-        return SetModel(o / "model.onnx", json.loads(cal.read_text()) if cal.exists() else None)
+        cal = json.loads(cal.read_text()) if cal.exists() else None
+        if (o / "members.json").exists():
+            members = json.loads((o / "members.json").read_text())["members"]
+            return EnsembleSetModel([model_dir(reg_id, m) / "model.onnx" for m in members], cal)
+        return SetModel(o / "model.onnx", cal)
 
     return {"logistic": LogisticModel.load, "gbt": GBTModel.load, "set": _set}[kind](out)
 
