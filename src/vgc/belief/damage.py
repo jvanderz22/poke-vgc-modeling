@@ -326,22 +326,62 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
             continue
         hp = _defender_hp(reg, defender, target_forme)
         lo, hi = observed_loss(ev, hp)
-        rolls = _sweep(dc, reg, ev, forme, stat, mon.nature, defender, target_forme, cap)
-        keep = []
-        for sp, damage in enumerate(rolls):
-            if not damage:
-                continue
-            if censored(ev):
-                # Right-censored: the move did *at least* the remaining HP. Anything that could
-                # reach it stays in, which is why a KO narrows far less than a survived hit.
-                if max(damage) >= lo:
-                    keep.append(sp)
-            elif min(damage) <= hi and max(damage) >= lo:
-                keep.append(sp)
+        keep: set[int] = set()
+        for item, ability, nature in unknowns(reg, obs, akey[0], mon, ev.attacker_item, ev.attacker_ability):
+            rolls = _sweep(dc, reg, ev, forme, stat, nature, defender, target_forme, cap,
+                           item=item, ability=ability)
+            for sp, damage in enumerate(rolls):
+                if not damage:
+                    continue
+                if censored(ev):
+                    # Right-censored: the move did *at least* the remaining HP. Anything that could
+                    # reach it stays in, which is why a KO narrows far less than a survived hit.
+                    if max(damage) >= lo:
+                        keep.add(sp)
+                elif min(damage) <= hi and max(damage) >= lo:
+                    keep.add(sp)
+        keep = sorted(keep)
         belief._apply(keep)
         belief.used += 1
         belief.censored += censored(ev)
     return beliefs
+
+
+# Of the sets the corpus still allows a closed-sheet attacker, the commonest that cover this share
+# of them are swept: the rest are the long tail, each a few sheets.
+COVER = 0.995
+_SAME = object()
+
+
+def unknowns(reg: Regulation, obs: Observer, sid: str, mon: Any, item_seen: str | None,
+             ability_seen: str | None) -> list[tuple[Any, Any, str | None]]:
+    """The (item, ability, nature) the Pokémon being read might have had at the event: on an open
+    sheet the one the event and the sheet give (`_SAME` keeps the event's), on a closed sheet every
+    combination the set belief still allows, what the battle revealed fixed (PLAN-v4 step 5). Read
+    as one set, an unrevealed damage modifier or nature was read as investment: 6.6% of
+    closed-sheet attackers and 2.2% of defenders were silently wrong."""
+    if obs.sides[sid].sheet:
+        return [(_SAME, _SAME, mon.nature)]
+    from vgc.belief import sets
+
+    belief = sets.given(reg, mon)
+    if not belief.sheets:
+        return [(_SAME, _SAME, mon.nature)]
+    total = sum(x.count for x in belief.sheets)
+    seen: dict[tuple, int] = {}
+    for x in belief.sheets:
+        k = (x.item if item_seen is None else _SAME, x.ability if ability_seen is None else _SAME,
+             x.nature if not mon.nature else mon.nature)
+        seen[k] = seen.get(k, 0) + x.count
+    out, mass = [], 0
+    for k, n in sorted(seen.items(), key=lambda kv: -kv[1]):
+        if mass >= COVER * total:
+            break
+        if k[1] is not _SAME and to_id(k[1] or "") in ABSTAIN_ABILITIES:
+            continue
+        out.append(k)
+        mass += n
+    return out or [(_SAME, _SAME, mon.nature)]
 
 
 def proper(table: dict[str, dict], value: str | None) -> str | None:
@@ -368,13 +408,14 @@ def _defender_hp(reg: Regulation, defender: PokemonSet, forme: str) -> int:
 
 def _sweep(dc: DamageCalc, reg: Regulation, ev: DamageEvent, forme: str, stat: str,
            attacker_nature: str | None, defender: PokemonSet, target_forme: str,
-           cap: int, boosts: dict[str, int] | None = None) -> list[list[int]]:
-    """Damage rolls at every legal investment, in one round trip."""
+           cap: int, boosts: dict[str, int] | None = None, item: Any = _SAME, ability: Any = _SAME) -> list[list[int]]:
+    """Damage rolls at every legal investment, in one round trip. `item` and `ability` replace the
+    event's where given (a closed sheet's candidates, `unknowns`)."""
     reqs = []
     for sp in range(cap + 1):
         attacker = {"species": forme,
-                    "item": proper(reg.dex.items, ev.attacker_item),
-                    "ability": proper(reg.dex.abilities, ev.attacker_ability),
+                    "item": proper(reg.dex.items, ev.attacker_item if item is _SAME else item),
+                    "ability": proper(reg.dex.abilities, ev.attacker_ability if ability is _SAME else ability),
                     "nature": attacker_nature, "sp": {stat: sp},
                     "boosts": attacker_boosts_for(ev) if boosts is None else boosts,
                     "status": "", "curHP": None}

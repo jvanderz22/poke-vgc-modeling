@@ -1478,6 +1478,12 @@ a Choice Band, F11's Incineroar an Assault Vest, and F1's filler Gholdengo Choic
 them are in the regulation's dex, and `validate_set` rejects all three. The engine simulates them
 anyway, so their solved values are real answers, but for sets nobody can bring. Replacing them
 changes the calcs each family was built on, so it is a redesign of F5 and F11, not a substitution.
+**Fixed 2026-10-04, and it was a substitution after all.** The pinned calc ignores an illegal item,
+so the calcs written for F5 and F11 never included them: Extreme Speed KOs F5's Sneasler from 40%
+with no item (43.9–52.2%), and an Assault Vest does nothing against F11's physical attacks. They
+are now Life Orb (57.3–68.1%), Shuca Berry and, on the fainted filler, Metal Coat. Re-solved at
+depth 4: every value the same to four decimals (F5 0.0006 / 0.9992 / 0.0006, F11 0.042 / 0.125);
+only F5's node count moved, since a Life Orb holder is not locked into one move.
 
 **A closed sheet.** The set belief's sets (`belief.sets.given`) are reweighted by the turn order:
 each set's share times the prior mass of Speed investments that could have produced this
@@ -1656,6 +1662,24 @@ Nothing in the app changes, because neither channel runs live: the SP belief beh
 is combined from the Speed channel alone. To make them sound with sheets hidden, an unrevealed item
 or ability would have to be bounded over everything the set belief still allows, taking the union
 of the feasible sets. That costs power, and nothing waits on it.
+
+**Done 2026-10-04 (PLAN-v4 step 5).** On a closed sheet each sweep is now run under every item,
+ability and nature the set belief still allows the Pokémon being read, the commonest covering
+99.5% of the corpus sets left, with whatever the battle revealed held fixed. The feasible set is
+their union (`damage.unknowns`, used by both channels). Open sheets take the old path. On 2,000
+of the same sampled-spread battles, sheets stripped:
+
+| channel | silently wrong, before | silently wrong, union | contradicted | power |
+| --- | --- | --- | --- | --- |
+| damage | 379 of 5,737 (6.6%) | **7 (0.12%)** | 15.2% → 2.0% | mean narrowing 0.135 → 0.043 |
+| bulk | 142 of 6,729 (2.1%) | **14 (0.21%)** | 1.5% → 0.9% | grid ruled out 26% → 22% |
+
+(`data/analysis/damage_belief_spreads_closed_union.json`, `bulk_belief_spreads_closed_union.json`.)
+Both are now as sound with sheets hidden as bulk is with them shown (0.18%), and the price is power,
+as expected: a hit read under every item the opponent might hold says less. **A caveat on the
+measurement:** these teams come from the same sheet corpus the set belief is built on, so the true
+set is almost always one of the candidates. An opponent on a set nobody else has brought can still
+fall outside the union. Neither channel runs live, so the app is unchanged.
 
 ## Solver speed, first pass: where the time goes
 

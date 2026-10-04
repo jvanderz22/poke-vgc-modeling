@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from vgc.belief.damage import (ABSTAIN_ABILITIES, attacker_boosts_for, censored, observed_loss,
-                               proper, usable, _field)
+                               _SAME, proper, unknowns, usable, _field)
 from vgc.data.observe import DamageEvent, Observer
 from vgc.engine.calc import DamageCalc
 from vgc.regulation import Regulation, defensive_stat, to_id
@@ -163,28 +163,34 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
         if reg.dex.get_species(forme) is None or reg.dex.get_species(a_forme) is None:
             continue
 
-        rolls = _sweep(dc, reg, ev, attacker, a_forme, target, forme, stat, cap)
         belief = beliefs.get(dkey)
         if belief is None:
             belief = beliefs[dkey] = BulkBelief(side=dkey[0], species=dkey[1], cap=cap)
         belief.regions.setdefault(stat, belief._full())
 
+        # On a closed sheet, every item, ability and nature the set belief still allows the
+        # defender (`damage.unknowns`): the region is their union.
+        item_seen = ev.target_item if ev.target_item is not None else (target.item or None)
         keep = set()
-        for hp_sp in range(cap + 1):
-            hp = hp_stat(reg, forme, hp_sp)
-            if hp is None:
-                continue
-            lo, hi = observed_loss(ev, hp)
-            for d_sp, damage in enumerate(rolls):
-                if not damage or (hp_sp, d_sp) not in belief.regions[stat]:
+        for item, ability, nature in unknowns(reg, obs, dkey[0], target, item_seen,
+                                              ev.target_ability or target.ability or None):
+            rolls = _sweep(dc, reg, ev, attacker, a_forme, target, forme, stat, cap,
+                           item=item, ability=ability, nature=nature)
+            for hp_sp in range(cap + 1):
+                hp = hp_stat(reg, forme, hp_sp)
+                if hp is None:
                     continue
-                if censored(ev):
-                    # Right-censored: the move did *at least* what was left, so anything that can
-                    # reach it stays in. A KO — or a sash — says far less than a survived hit.
-                    if max(damage) >= lo:
+                lo, hi = observed_loss(ev, hp)
+                for d_sp, damage in enumerate(rolls):
+                    if not damage or (hp_sp, d_sp) not in belief.regions[stat]:
+                        continue
+                    if censored(ev):
+                        # Right-censored: the move did *at least* what was left, so anything that
+                        # can reach it stays in. A KO — or a sash — says far less than a survived hit.
+                        if max(damage) >= lo:
+                            keep.add((hp_sp, d_sp))
+                    elif min(damage) <= hi and max(damage) >= lo:
                         keep.add((hp_sp, d_sp))
-                elif min(damage) <= hi and max(damage) >= lo:
-                    keep.add((hp_sp, d_sp))
         belief._apply(stat, keep)
         belief.used += 1
         belief.censored += censored(ev)
@@ -192,7 +198,8 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], PokemonSe
 
 
 def _sweep(dc: DamageCalc, reg: Regulation, ev: DamageEvent, attacker: PokemonSet, a_forme: str,
-           target: PokemonSet, forme: str, stat: str, cap: int) -> list[list[int]]:
+           target: PokemonSet, forme: str, stat: str, cap: int, item: Any = _SAME, ability: Any = _SAME,
+           nature: Any = _SAME) -> list[list[int]]:
     """Damage at every legal investment in the defending stat, in one round trip.
 
     HP is deliberately absent: it does not enter the damage roll at all, only the fraction it
@@ -215,10 +222,11 @@ def _sweep(dc: DamageCalc, reg: Regulation, ev: DamageEvent, attacker: PokemonSe
             # the *end* of the battle, so a Pokémon whose item was knocked off reads as having
             # never held one — and Knock Off is 1.5x exactly when there was something to remove.
             "defender": {"species": forme,
-                         "item": proper(reg.dex.items, ev.target_item if ev.target_item is not None
-                                        else target.item),
-                         "ability": proper(reg.dex.abilities, ev.target_ability or target.ability),
-                         "nature": target.nature, "sp": {stat: sp},
+                         "item": proper(reg.dex.items, (ev.target_item if ev.target_item is not None
+                                                        else target.item) if item is _SAME else item),
+                         "ability": proper(reg.dex.abilities, (ev.target_ability or target.ability)
+                                           if ability is _SAME else ability),
+                         "nature": target.nature if nature is _SAME else nature, "sp": {stat: sp},
                          "boosts": ev.target_boosts or {},
                          "status": ev.target_status or "", "curHP": None},
             "move": {"name": ev.move, "isCrit": bool(ev.crit)},

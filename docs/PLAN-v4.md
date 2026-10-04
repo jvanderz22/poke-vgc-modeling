@@ -198,10 +198,12 @@ not ahead of other work.
 
 - **A seed ensemble for the WP models.** Every run stops at epoch 3–4, and where it stops sets the
   confidence. Serving one needs `SetModel` to take several exports.
-- **The benchmark's illegal items** (F5's Choice Band, F11's Assault Vest, a filler's Choice
-  Specs). Replacing them redesigns those families and means a depth-4 re-solve.
-- **Damage and bulk on closed sheets** (6.6% and 2.2% silently wrong). Bounding an unrevealed item
-  or ability over what the set belief allows.
+- ~~**The benchmark's illegal items**~~ (F5's Choice Band, F11's Assault Vest, a filler's Choice
+  Specs). **Done 2026-10-04**: none decided its family (the calc never applied them), so they are
+  now Life Orb, Shuca Berry and Metal Coat, re-solved at depth 4 with every value unchanged.
+- ~~**Damage and bulk on closed sheets**~~ (6.6% and 2.2% silently wrong). **Done 2026-10-04**: the
+  union over what the set belief allows brings them to 0.12% and 0.21%, at a cost in power
+  ([phase8-findings](phase8-findings.md), "damage and bulk with sheets hidden").
 - **The assumed non-Speed spread in doubles,** where spread moves put more KOs on a threshold.
   Integrating the bulk thresholds the way Speed is integrated.
 

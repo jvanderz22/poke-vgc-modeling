@@ -282,7 +282,7 @@
      "ours": 189,
      "value": 0.0006,
      "leaf_mass": 0.0014,
-     "nodes": 15466
+     "nodes": 28768
     }
    },
    "search": {
@@ -300,7 +300,7 @@
      "ours": 189,
      "value": 0.9992,
      "leaf_mass": 0.0014,
-     "nodes": 23849
+     "nodes": 38610
     }
    },
    "search": {
@@ -318,7 +318,7 @@
      "ours": 189,
      "value": 0.0006,
      "leaf_mass": 0.0014,
-     "nodes": 84
+     "nodes": 28768
     }
    },
    "search": {

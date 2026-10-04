@@ -177,7 +177,13 @@ def pack(name: str) -> Path:
         for f in FILES:
             t.add(paths.ROOT / f, f)
         t.add(paths.ROOT / "sidecar" / "calc" / "node_modules", "sidecar/calc/node_modules")
-    run = {**run, "versions": {p: md.version(p) for p in PINS}, "wheels": wheels(), "code_sha256": code_sha()}
+    # The commit the code is, so a merge after later edits can check it out (`git worktree`).
+    head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", "src/vgc", *FILES], capture_output=True, text=True).stdout
+    if dirty.strip():
+        print("  the code has uncommitted edits: a merge after later edits cannot check this code out")
+    run = {**run, "versions": {p: md.version(p) for p in PINS}, "wheels": wheels(), "code_sha256": code_sha(),
+           "packed_commit": None if dirty.strip() else head}
     (d / "run.json").write_text(json.dumps(run, indent=1) + "\n")
     (up / "run.json").write_text(json.dumps(run, indent=1) + "\n")
     # The file a push is awaited by: first in Kaggle's listing, which is by path and paged, and which

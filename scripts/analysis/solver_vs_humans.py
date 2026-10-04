@@ -66,8 +66,42 @@ TOP = 0
 EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses scores ~6.9, not inf
 
 
+# `--bulk`: every guessed spread in a position rewritten, its Speed kept (loose end, PLAN-v4 step 5).
+# The engine assumes the main attacking stat first, then HP, then the defences (`solver.spread`);
+# nothing shows what people build instead, so these are the two other shapes builds take.
+BULK = {"hp_first": ("hp", "main", "def", "spd"), "defences": ("hp", "def", "spd", "main")}
+
+
+def rebulk(reg, text: str, mode: str) -> str:
+    """A side's set texts with each spread's non-Speed points reallocated in `BULK[mode]`'s order."""
+    from vgc.regulation import to_id
+
+    label = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
+    back = {v: k for k, v in label.items()}
+    out = []
+    for block in text.split("\n\n"):
+        lines = block.split("\n")
+        ev = next((i for i, x in enumerate(lines) if x.startswith("EVs: ")), None)
+        if ev is None:
+            out.append(block)
+            continue
+        sp = {back[part.split()[1]]: int(part.split()[0]) for part in lines[ev][5:].split(" / ")}
+        moves = [to_id(x[2:]) for x in lines if x.startswith("- ")]
+        kinds = [(reg.dex.get_move(m) or {}).get("category") for m in moves]
+        main = "spa" if kinds.count("Special") > kinds.count("Physical") else "atk"
+        left, cap = reg.sp_budget - sp.get("spe", 0), reg.sp_per_stat_cap
+        new = {k: 0 for k in label} | {"spe": sp.get("spe", 0)}
+        for stat in BULK[mode]:
+            stat = main if stat == "main" else stat
+            new[stat] = min(cap, left)
+            left -= new[stat]
+        lines[ev] = "EVs: " + " / ".join(f"{v} {label[k]}" for k, v in new.items() if v)
+        out.append("\n".join(lines))
+    return "\n\n".join(out)
+
+
 def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
-            depths: tuple[int, ...] = DEPTHS, extra: dict[str, Any] | None = None
+            depths: tuple[int, ...] = DEPTHS, extra: dict[str, Any] | None = None, bulk: str | None = None
             ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Each qualifying game at its first 1v1: the positions per depth, the model's number, the label.
     `sheets` picks the regime; a closed-sheet game is solved over pairs of likely sets
@@ -114,6 +148,10 @@ def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
                 dropped[key] = dropped.get(key, 0) + 1
                 continue
             counts["games"] += 1
+            if bulk:
+                plan = {**plan, "jobs": [{**j, "position": {**j["position"], "p1": rebulk(reg, j["position"]["p1"], bulk),
+                                                            "p2": rebulk(reg, j["position"]["p2"], bulk)}}
+                                         for j in plan["jobs"]]}
             state = battle.rp.state
             rows.append({
                 "id": replay["id"], "group": replay_group(replay), "turn": state.turn,
@@ -265,6 +303,7 @@ def main() -> None:
                     help="the first 1v1, or the first turn with two or fewer a side (2v2, 2v1, 1v2)")
     ap.add_argument("--search", default="{}", help="search settings over the default, as JSON")
     ap.add_argument("--tag", help="written beside the default output as <name>_<tag>.json")
+    ap.add_argument("--bulk", choices=tuple(BULK), help="every guessed spread rebuilt this way, Speed kept")
     ap.add_argument("--top", type=int, default=0, help="solve only each game's heaviest N positions")
     ap.add_argument("--temper", action="store_true",
                     help="score each answer through `doubles.temper`, as the page shows it; written as <name>_tempered.json")
@@ -284,7 +323,8 @@ def main() -> None:
         from vgc.wp import offload
         from vgc.wp.models import in_battle_version
 
-        rows, counts = collect(reg, in_battle_version(reg.id, args.sheets), args.sheets, args.endgame, depths, extra)
+        rows, counts = collect(reg, in_battle_version(reg.id, args.sheets), args.sheets, args.endgame, depths, extra,
+                               args.bulk)
         # Shallow first, so a remote run that hits its deadline has finished what the deeper
         # search needs least and the scoring needs most.
         positions = [j["position"] for d in depths for r in rows for j in r["jobs"][d]]
@@ -297,7 +337,8 @@ def main() -> None:
         from vgc.wp.models import in_battle_version
 
         version = in_battle_version(reg.id, args.sheets)
-        rows, counts = collect(reg, version, args.sheets, args.endgame, depths, extra)
+        rows, counts = collect(reg, version, args.sheets, args.endgame, depths, extra, args.bulk)
+        counts["bulk"] = args.bulk
         print(f"{counts['games']} games to solve", counts, flush=True)
         solve(rows, args.workers, args.cap, depths)
         counts["version"], counts["depths"], counts["search"] = version, list(depths), extra

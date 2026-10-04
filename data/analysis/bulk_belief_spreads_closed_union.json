@@ -1,0 +1,176 @@
+{
+ "run": "data/selfplay/gen-heuristic-heuristic-spreads-s21-p4000x5",
+ "regime": "closed",
+ "battles": 2000,
+ "pokemon_checked": 6729,
+ "soundness": {
+  "silently_wrong": 14,
+  "rate": 0.0020805468866101945,
+  "contradicted": 62,
+  "contradicted_rate": 0.009213850497845148,
+  "examples": [
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-40",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-42",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-44",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "spd"
+    ],
+    "true": {
+     "hp": 1,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 19,
+     "spe": 14
+    },
+    "bounds": {
+     "hp": [
+      0,
+      2
+     ],
+     "spd": [
+      0,
+      1
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-279",
+    "mon": [
+     "p2",
+     "Rillaboom"
+    ],
+    "stat": [
+     "def"
+    ],
+    "true": {
+     "hp": 14,
+     "atk": 6,
+     "def": 20,
+     "spa": 0,
+     "spd": 16,
+     "spe": 10
+    },
+    "bounds": {
+     "hp": [
+      0,
+      3
+     ],
+     "def": [
+      0,
+      0
+     ]
+    },
+    "used": 1
+   },
+   {
+    "battle": "gen-heuristic-heuristic-spreads-s21-p4000x5-296",
+    "mon": [
+     "p2",
+     "Baxcalibur"
+    ],
+    "stat": [
+     "def"
+    ],
+    "true": {
+     "hp": 5,
+     "atk": 19,
+     "def": 22,
+     "spa": 0,
+     "spd": 5,
+     "spe": 15
+    },
+    "bounds": {
+     "hp": [
+      0,
+      10
+     ],
+     "def": [
+      0,
+      6
+     ]
+    },
+    "used": 1
+   }
+  ]
+ },
+ "power": {
+  "grid_ruled_out": 0.21964638489565175,
+  "axis_ruled_out": {
+   "hp": 0.022806226032032483,
+   "def": 0.06078607860786078,
+   "spd": 0.06728738307685676
+  },
+  "observations_per_pokemon": 1.6721652548669936,
+  "censored_share": 0.5061322431567721,
+  "hit_both_ways": 0.2034477634120969
+ },
+ "events_by_reason": {
+  "usable": 11292,
+  "move_power_hidden": 899,
+  "not_a_damaging_move": 2,
+  "spread_and_screen_disagree": 1
+ }
+}

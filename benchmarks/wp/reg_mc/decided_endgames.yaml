@@ -58,6 +58,12 @@ format: 1v1 and 2v2 endgames, doubles rules (spread moves hit one target when on
 # sheets too. They faint before the position starts, so they matter only through Last Respects'
 # count, Speed evidence, and F9. All are legal in Reg M-C: the first draft had a Clear Amulet
 # Garchomp and an Amoonguss, neither of which is.
+#
+# Three items were illegal in Reg M-C until 2026-10-04 (F5's Choice Band, F11's Assault Vest, F1's
+# filler Gholdengo's Choice Specs). The pinned calc ignores an illegal item, so the calcs written
+# here never included them, and none decided its family: Extreme Speed KOs F5's Sneasler from 40%
+# with no item, and an Assault Vest does nothing against F11's physical attacks. They are now Life
+# Orb, Shuca Berry and Metal Coat, and the engine re-solved those families.
 fillers: |
   Rillaboom @ Miracle Seed
   Ability: Grassy Surge
@@ -156,13 +162,13 @@ families:
       fainted: {ours: [Gholdengo, Rillaboom, Incineroar]}
       field: {weather: Sunny Day, weather_turns_left: 4}
     extra_ours: |
-      Gholdengo @ Choice Specs
+      Gholdengo @ Metal Coat
       Ability: Good as Gold
       EVs: 2 HP / 32 SpA / 32 Spe
       Timid Nature
       - Make It Rain
       - Shadow Ball
-      - Trick
+      - Nasty Plot
       - Protect
     variants:
       A: {sheets: open, theirs_item: Life Orb, theirs: {item: Life Orb}, expected: 1.0,
@@ -306,13 +312,14 @@ families:
     theirs:
       - {species: Arcanine-Hisui, ability: Rock Head, hp: 50}
     calcs:
-      - "Extreme Speed (Adamant 32 Atk) vs our 2 HP / 0 Def Sneasler: 43.9–52.2%  → KOs ours from 40%"
+      - "Extreme Speed (Adamant 32 Atk, Life Orb) vs our 2 HP / 0 Def Sneasler: 57.3–68.1%, and
+         43.9–52.2% with no item  → KOs ours from 40% whatever it holds"
       - "Close Combat vs 32 HP / 32+ Def Arcanine-H: 84.1–100.9%  → KOs from 50% for any spread"
       - "Focus Sash cannot matter: they are not at full HP"
     build:
       ours: {species: Sneasler, item: White Herb, ability: Unburden, nature: Jolly,
              sp: {hp: 2, atk: 32, spe: 32}, hp: 40, moves: [Close Combat, Dire Claw, Fake Out, Protect]}
-      theirs: {species: Arcanine-Hisui, item: Choice Band, ability: Rock Head, nature: Adamant, hp: 50,
+      theirs: {species: Arcanine-Hisui, item: Life Orb, ability: Rock Head, nature: Adamant, hp: 50,
                moves: [Flare Blitz, Extreme Speed, Head Smash, Protect]}
     variants:
       A: {sheets: open, extreme_speed: on sheet, expected: 0.0, why: "priority goes first and KOs"}
@@ -494,7 +501,7 @@ families:
          sp: "32 Atk / 32 Spe / 2 HP", hp: 25, moves: [Dragon Claw, Rock Tomb, Swords Dance, Protect],
          speed: 169}
     theirs:
-      - {species: Incineroar, item: Assault Vest, ability: Intimidate, hp: 50,
+      - {species: Incineroar, item: Shuca Berry, ability: Intimidate, hp: 50,
          moves_known: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
     calcs:
       - "Dragon Claw vs 32 HP / 2 Def Incineroar: 37.1–43.5%; on a crit 54.9–65.3%  → KOs from 50%
@@ -509,7 +516,7 @@ families:
     build:
       ours: {species: Garchomp, item: Focus Sash, ability: Sand Veil, nature: Jolly,
              sp: {hp: 2, atk: 32, spe: 32}, hp: 25, moves: [Dragon Claw, Rock Tomb, Swords Dance, Protect]}
-      theirs: {species: Incineroar, item: Assault Vest, ability: Intimidate, nature: Careful, hp: 50,
+      theirs: {species: Incineroar, item: Shuca Berry, ability: Intimidate, nature: Careful, hp: 50,
                moves: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
     variants:
       A: {sheets: open, expected: 0.042, why: "one Dragon Claw, which KOs only on a 1-in-24 crit"}
