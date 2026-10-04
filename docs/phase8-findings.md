@@ -2162,7 +2162,7 @@ loss ran 0.563–0.573 across the five seeds (the served one 0.566), and the fit
 logits, then its own per-regime temperatures, fitted as any model's are (`EnsembleSetModel`,
 `vgc wp ensemble`), and gated like one.
 
-| held out | `wp-v1f-idp5` (served open) | `wp-v1d-sw-split-small` (served closed) | **`wp-v1f-ens5`** |
+| held out | `wp-v1f-idp5` (served open) | `wp-v1d-sw-split-small` (served closed until now) | **`wp-v1f-ens5`** |
 | --- | --- | --- | --- |
 | open, spectator log loss | 0.5528 | 0.5523 | **0.5478** |
 | open, player log loss | 0.5755 | 0.5799 | **0.5710** |
@@ -2185,7 +2185,8 @@ positions better (0.118 against 0.078), is far less sure of positions that are l
 0.65), and moves less on a fact that cannot matter (0.005 against 0.019). Averaging seeds pulls
 the answers together, and that includes the direction a single seed happens to take.
 
-**Not pinned:** that is a decision. On closed sheets, where it passes, it is 0.008 nats better
-than the served closed model on spectator rows and 0.013 on player rows, which is the case for
-pinning it there. It costs five network runs a prediction instead of one, which the live page can
-afford (the model is 155k parameters).
+**Pinned for closed sheets** (2026-10-04, `models/served.json`). There it passes, and it is 0.008
+nats better than the previous closed model on spectator rows and 0.013 on player rows. It costs
+five network runs a prediction instead of one: a closed-sheet answer on the live page took 0.8 s
+against the open model's 0.5 s, measured with six solver workers busy. Open sheets keep
+`wp-v1f-idp5`, which passes the gate this one misses.

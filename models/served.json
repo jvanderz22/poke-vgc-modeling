@@ -1,13 +1,13 @@
 {
  "reg_mc": {
-  "decided": "2026-09-28",
+  "decided": "2026-10-04",
   "bring": "wp-v1f-idp5",
   "in_battle_open": "wp-v1f-idp5",
-  "in_battle_closed": "wp-v1d-sw-split-small",
+  "in_battle_closed": "wp-v1f-ens5",
   "why": {
    "bring": "Passes bring_beats_usage (top-4 overlap 0.702 vs usage 0.672) and is the first model whose preview interval clears zero by more than a rounding error ([-0.0107, -0.0036]). wp-v1d: 0.688, [-0.0092, -0.0003].",
    "in_battle_open": "Passes in_battle_ece under the powered test (4,127 battles, power 1.0 at 1.5x), fixing the early-turn miss: t1-2 ECE 0.019 vs wp-v1d's 0.024. Passes t7+ by 0.0001. Open log loss 0.5528 vs 0.5523. Calibrated on 20% of human groups.",
-   "in_battle_closed": "Passes closed_sheet_pass (1,085 battles, power 0.98 at 1.5x) and scores 0.003 nats better on closed sheets than wp-v1f-idp5 (0.5633 vs 0.5665), which also passes. Chosen for the closed-sheet log loss over serving one model in both regimes (2026-09-28)."
+   "in_battle_closed": "Passes closed_sheet_pass and scores 0.008 nats better on closed-sheet spectator rows than wp-v1d-sw-split-small (0.5557 vs 0.5633) and 0.013 better on player rows (0.5783 vs 0.5910), with lower closed ECE (0.010 vs 0.017). Five seeds of wp-v1f-idp5 read as one (mean raw logits, own temperatures). Not pinned for open sheets: it misses in_battle_ece at t7+ by 0.001 (2026-10-04)."
   }
  }
 }

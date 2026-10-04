@@ -19,7 +19,7 @@ v4 restates only what is needed to decide what to do next. Steps restart at 1.
 | Battle state (L1b) | ✅ One state object, two adapters: Showdown logs (`Observer`) and a person's taps (`battle.entry`) |
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound on open sheets only and do not run on closed ones |
-| In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1d-sw-split-small` closed. Both pass the powered calibration test. Neither follows what decides an endgame |
+| In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1f-ens5` closed (from 2026-10-04; `wp-v1d-sw-split-small` before). Both pass their regime's powered calibration test. Neither follows what decides an endgame |
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
 | Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against the model's 0.513 (674 games; 2v2s 0.485 against 0.621), within 5 s through the page's own path (median 2.8 s). 🟡 Closed sheets: no state kind beats the model, so the model leads there |
 | Pre-battle (preview) win probability | ❌ Not learnable from this corpus. Preview advice is "what to bring", not "you are favoured" |
@@ -199,7 +199,8 @@ not ahead of other work.
 - ~~**A seed ensemble for the WP models.**~~ **Done 2026-10-04**: `wp-v1f-ens5`, five seeds of
   `wp-v1f-idp5` read as one (`vgc wp ensemble`). Better log loss in both regimes (open 0.5478
   against 0.5528, closed 0.5557 against the served 0.5633); passes the closed-sheet gates and
-  misses `in_battle_ece` at t7+ by 0.001, where the served model passes by 0.0001. Not pinned
+  misses `in_battle_ece` at t7+ by 0.001, where the served model passes by 0.0001. **Pinned for
+  closed sheets** (2026-10-04, 0.8 s a live answer against 0.5 s); open sheets keep `wp-v1f-idp5`
   ([phase8-findings](phase8-findings.md), "a seed ensemble").
 - ~~**The benchmark's illegal items**~~ (F5's Choice Band, F11's Assault Vest, a filler's Choice
   Specs). **Done 2026-10-04**: none decided its family (the calc never applied them), so they are
