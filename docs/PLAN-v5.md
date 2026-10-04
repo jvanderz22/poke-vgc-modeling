@@ -114,24 +114,24 @@ step settles whether the check can be passed on this corpus at all.
   and the two they led with (`scripts/analysis/step3_brings.py`). Collect with
   `kaggle_selfplay.sh step3b-$i --collect`. The merge replays against the packed code, commit
   `9049d90`, so run it from a worktree at that commit or with the changed `src/vgc` files checked out
-  from it. Then `step3_brings.py score`, written up as [phase6-findings](phase6-findings.md) §9.
-- **The ceiling.** Both runs were sized to detect an AUC of 0.55. Nothing has shown that anything
-  seeing only the two teams reaches 0.55 on these games. The served model's preview head is trained
-  on this corpus with both teams in view. On 4,127 held-out battles it beats the constant by 0.007
-  nats ([−0.0107, −0.0036]), a small signal. Score it through `vgc.sim.validity.score` on the
-  held-out series: the best team-only predictor available, on the same test.
-  Also report how often a series' later games go the way its first did. The players are the same
-  within a series, so this bounds team plus player, not team alone.
+  from it. Then `step3_brings.py score`, written up as [phase6-findings](phase6-findings.md) §10.
+- ~~**The ceiling.**~~ **Done 2026-10-04** ([phase6-findings](phase6-findings.md) §9,
+  `scripts/analysis/phase6_ceiling.py`). On held-out games the preview head **passes** Phase 6's
+  check: AUC 0.562 [0.537, 0.584], recalibrated −0.0066 [−0.0115, −0.0013]. It beats heuristic
+  self-play on the same 1,794 games by +0.036 [+0.001, +0.071]. Against the policy, the 767 shared
+  held-out games cannot separate them (+0.020 [−0.028, +0.070]). So the check can be passed here,
+  and the third branch below is closed. The ceiling is low, though: Bo3 game 2 goes to game 1's
+  winner 57.7% of the time, which puts an oracle for team plus player near AUC 0.72. The sheets
+  alone reach 0.56.
 - **How to read it:**
   - **The brings run passes.** The policy's self-play measures team strength once it is given what
     people bring. Phase 10 (on-demand matchup evaluation) is unblocked, with the brings as an input,
     and the brings model ranks them.
   - **It fails, and the preview head clears what the policy did not.** The policy is the gap. No
     more Kaggle self-play for team strength until a policy differs in kind, not only in depth.
-  - **It fails, and the preview head is no better.** This corpus cannot judge a simulator at its
-    size, and the verdict is *undecided*, not fail (principle 6). Phases 10–11 wait on a stronger
-    reference (see Deferred).
-- **Cost:** the Kaggle sessions already running; the ceiling is an hour on the laptop.
+  - ~~**It fails, and the preview head is no better.**~~ Closed by the ceiling: the preview head
+    passes on this corpus.
+- **Cost:** the Kaggle sessions already running.
 
 ### 2. Why self-play misses: the Phase 6 diagnostics
 
@@ -178,12 +178,17 @@ results on held-out series. No simulator number reaches the page or Phase 10 any
   already measures this). Keep the humans' brings. If step 2 found an archetype bias, deepen the
   search where it bites, for example two turns while a setup or Trick Room move is legal. Gate:
   the Phase 6 check unchanged, on a fresh draw of series. Kaggle, about 4 sessions.
-- **3b. Self-play as one input, not the answer.** Stack the self-play WP onto the preview head: a
-  logistic over the two logits, fitted on training series and scored on held-out series, with
-  self-play run for the held-out pairings. The same goes for team strengths: shrink the
+- **3b. Self-play as one input, not the answer.** Promoted by the ceiling: the preview head passes
+  alone, so the question is whether self-play adds to it. Stack the self-play WP onto the preview head: a
+  logistic over the two logits, fitted out of fold by series on held-out games only. The preview
+  head trained on the training series, so a stack fitted there would over-trust it. Self-play must
+  cover the held-out pairings: the heuristic's already does (1,794 games). The same goes for team strengths: shrink the
   human-fitted Bradley–Terry towards the self-play one, with the weight fitted out of fold. Gate:
   held-out log loss below the preview head alone, whole interval below zero. This is the cheapest
   way to use a weak signal honestly. It can pass when the signal is too weak to stand on its own.
+  **Tested 2026-10-04 on the battles already played: self-play adds nothing.** Heuristic +0.0004
+  [−0.0008, +0.0015] nats on 1,794 held-out games; policy −0.0000 [−0.0028, +0.0027] on 767
+  ([phase6-findings](phase6-findings.md) §9). It stays the test for any later policy.
 - **3c. A simulator with a scope.** If rollouts predict human results from some turn on, that turn
   is where self-play may be trusted. Matchup evaluation then becomes "from this position", not
   "from team preview", and the move advice in step 4 gets a deeper check than one turn. The scope

@@ -1,0 +1,273 @@
+{
+ "held_out_shards": [
+  "heldout_human",
+  "heldout_team"
+ ],
+ "scored_on": "held-out games that ended normally",
+ "versions": {
+  "preview": "wp-v1f-idp5",
+  "preview_ensemble": "wp-v1f-ens5"
+ },
+ "alone": {
+  "preview": {
+   "games": 2518,
+   "groups": 1509,
+   "auc": 0.5617,
+   "auc_95ci": [
+    0.5368,
+    0.584
+   ],
+   "logloss_delta": -0.00711,
+   "logloss_delta_95ci": [
+    -0.0118,
+    -0.0019
+   ],
+   "recalibrated_delta": -0.00659,
+   "recalibrated_delta_95ci": [
+    -0.0115,
+    -0.0013
+   ],
+   "pass": true
+  },
+  "preview_ensemble": {
+   "games": 2518,
+   "groups": 1509,
+   "auc": 0.5601,
+   "auc_95ci": [
+    0.5367,
+    0.5829
+   ],
+   "logloss_delta": -0.00734,
+   "logloss_delta_95ci": [
+    -0.012,
+    -0.0023
+   ],
+   "recalibrated_delta": -0.00669,
+   "recalibrated_delta_95ci": [
+    -0.0118,
+    -0.0013
+   ],
+   "pass": true
+  },
+  "heuristic": {
+   "games": 1794,
+   "groups": 1052,
+   "auc": 0.5309,
+   "auc_95ci": [
+    0.5026,
+    0.5598
+   ],
+   "logloss_delta": 0.39035,
+   "logloss_delta_95ci": [
+    0.334,
+    0.4438
+   ],
+   "recalibrated_delta": -0.00135,
+   "recalibrated_delta_95ci": [
+    -0.0044,
+    0.0015
+   ],
+   "pass": false
+  },
+  "policy": {
+   "games": 767,
+   "groups": 445,
+   "auc": 0.5308,
+   "auc_95ci": [
+    0.4906,
+    0.5709
+   ],
+   "logloss_delta": 0.20864,
+   "logloss_delta_95ci": [
+    0.1538,
+    0.265
+   ],
+   "recalibrated_delta": -0.00117,
+   "recalibrated_delta_95ci": [
+    -0.0063,
+    0.0039
+   ],
+   "pass": false
+  }
+ },
+ "paired": {
+  "preview - heuristic": {
+   "games": 1794,
+   "groups": 1052,
+   "auc_diff": 0.0362,
+   "auc_diff_95ci": [
+    0.0012,
+    0.0706
+   ],
+   "preview": 0.5671,
+   "heuristic": 0.5309
+  },
+  "preview - policy": {
+   "games": 767,
+   "groups": 445,
+   "auc_diff": 0.0195,
+   "auc_diff_95ci": [
+    -0.028,
+    0.0696
+   ],
+   "preview": 0.5502,
+   "policy": 0.5308
+  },
+  "preview_ensemble - policy": {
+   "games": 767,
+   "groups": 445,
+   "auc_diff": 0.0071,
+   "auc_diff_95ci": [
+    -0.0404,
+    0.0558
+   ],
+   "preview_ensemble": 0.5379,
+   "policy": 0.5308
+  },
+  "policy - heuristic": {
+   "games": 750,
+   "groups": 432,
+   "auc_diff": 0.009,
+   "auc_diff_95ci": [
+    -0.0358,
+    0.0533
+   ],
+   "policy": 0.5305,
+   "heuristic": 0.5216
+  }
+ },
+ "stacked": {
+  "heuristic": {
+   "games": 1794,
+   "groups": 1052,
+   "logloss": {
+    "preview": 0.68578,
+    "preview+selfplay": 0.68613
+   },
+   "selfplay_adds": 0.00035,
+   "selfplay_adds_95ci": [
+    -0.00078,
+    0.00145
+   ],
+   "coefficients_by_fold": {
+    "preview": [
+     [
+      0.985
+     ],
+     [
+      1.189
+     ],
+     [
+      0.933
+     ],
+     [
+      0.838
+     ],
+     [
+      1.005
+     ]
+    ],
+    "preview+selfplay": [
+     [
+      0.988,
+      -0.001
+     ],
+     [
+      1.156,
+      0.02
+     ],
+     [
+      0.875,
+      0.029
+     ],
+     [
+      0.785,
+      0.029
+     ],
+     [
+      0.953,
+      0.024
+     ]
+    ]
+   }
+  },
+  "policy": {
+   "games": 767,
+   "groups": 445,
+   "logloss": {
+    "preview": 0.68978,
+    "preview+selfplay": 0.68977
+   },
+   "selfplay_adds": -1e-05,
+   "selfplay_adds_95ci": [
+    -0.00283,
+    0.00273
+   ],
+   "coefficients_by_fold": {
+    "preview": [
+     [
+      0.538
+     ],
+     [
+      0.835
+     ],
+     [
+      0.677
+     ],
+     [
+      0.701
+     ],
+     [
+      0.84
+     ]
+    ],
+    "preview+selfplay": [
+     [
+      0.452,
+      0.06
+     ],
+     [
+      0.731,
+      0.071
+     ],
+     [
+      0.635,
+      0.038
+     ],
+     [
+      0.618,
+      0.053
+     ],
+     [
+      0.807,
+      0.024
+     ]
+    ]
+   }
+  }
+ },
+ "series_bound": {
+  "ended_normal": {
+   "series": 1628,
+   "agree": 0.5768,
+   "agree_95ci": [
+    0.5534,
+    0.6007
+   ],
+   "sd_of_series_p": 0.1959,
+   "oracle_auc": 0.7243,
+   "oracle_logloss_delta": -0.0823
+  },
+  "all": {
+   "series": 3987,
+   "agree": 0.5613,
+   "agree_95ci": [
+    0.5455,
+    0.5766
+   ],
+   "sd_of_series_p": 0.1751,
+   "oracle_auc": 0.702,
+   "oracle_logloss_delta": -0.0662
+  }
+ }
+}

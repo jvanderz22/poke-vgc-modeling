@@ -198,3 +198,68 @@ does not make self-play predict who wins between two human teams. The determinis
 the floor. Phase 10's matrix form and Phase 11's search over self-play stay blocked. §7's limits
 still apply (imputed spreads, a ~1100 population, the heuristic's team preview), and the preview is
 the one untested lever this run could change: the humans' own brings, for the same pairings.
+
+## 9. The ceiling: a team-only predictor on the same test (PLAN-v5 step 1, 2026-10-04)
+
+Both self-play runs were bounded nulls against the AUC of 0.55 they were sized to detect. That
+counts against the policy only if something that sees only the two teams can reach it on these
+games. The best such predictor available is the WP model's preview head, trained on this corpus
+with both teams in view. `scripts/analysis/phase6_ceiling.py` scores it by this phase's own code,
+on held-out games only (the `heldout_human` and `heldout_team` shards, ended normally), beside the
+two self-play runs on the same games. Result: `data/analysis/reg_mc/phase6_ceiling.json`.
+
+| predictor | games (series) | AUC | recalibrated − constant | passes |
+| --- | --- | --- | --- | --- |
+| **preview head**, `wp-v1f-idp5` | 2,518 (1,509) | **0.562** [0.537, 0.584] | **−0.0066** [−0.0115, −0.0013] | **yes** |
+| preview head, `wp-v1f-ens5` | 2,518 (1,509) | 0.560 [0.537, 0.583] | −0.0067 [−0.0118, −0.0013] | yes |
+| heuristic self-play | 1,794 (1,052) | 0.531 [0.503, 0.560] | −0.0014 [−0.0044, +0.0015] | no |
+| Phase 9 policy self-play | 767 (445) | 0.531 [0.491, 0.571] | −0.0012 [−0.0063, +0.0039] | no |
+
+Paired, on the games both cover (cluster bootstrap by series):
+
+| | games (series) | AUC difference |
+| --- | --- | --- |
+| preview head − heuristic | 1,794 (1,052) | **+0.036** [+0.001, +0.071] |
+| preview head − policy | 767 (445) | +0.020 [−0.028, +0.070] |
+| policy − heuristic | 750 (432) | +0.009 [−0.036, +0.053] |
+
+**The check can be passed on this corpus.** A team-only predictor clears both scale-free tests on
+held-out games, at about the AUC the runs were sized for. So the self-play fails are fails, not
+"this corpus cannot judge".
+
+**The preview head beats heuristic self-play on the same games, just.** Against the policy, the
+held-out overlap is 767 games, too few to separate them. On the whole run the policy's interval
+topped out at 0.541 (§8), below the preview head's 0.562 here. Those are different games, so that
+comparison is suggestive, not a result.
+
+**The ceiling is low.** The best team-only predictor orders these games at 0.56. That is enough to
+pass, but not enough to tell someone they are favoured. It agrees with the preview number being
+worth 0.007 nats (PLAN-v5, "where things stand").
+
+**Most of what is predictable about a series is not in its two sheets.** Game 2 of a Bo3 went to
+game 1's winner in 57.7% [55.3, 60.1] of 1,628 series where both ended normally. If the two games
+were independent draws at a fixed p for the series, that p would spread with an sd of about 0.20
+around 0.5, and an oracle that knew it would score an AUC of about 0.72. Players adapt between
+games, which pulls agreement down, so 0.72 is a rough floor on that oracle, not a measurement. It
+covers the teams, the players and anything else fixed within a series. The teams' sheets alone reach
+0.56.
+
+**Self-play adds nothing to the preview head** (PLAN-v5 step 3b, on the battles already played).
+The test is a logistic over the preview logit alone against one over both logits, fitted out of fold
+by series on the held-out games, since the preview head trained on the rest. The per-game log loss
+is compared by a cluster bootstrap.
+
+| | games (series) | stacked − preview alone, log loss | self-play's weight (by fold) |
+| --- | --- | --- | --- |
+| heuristic | 1,794 (1,052) | +0.0004 [−0.0008, +0.0015] | −0.001 to 0.029 |
+| Phase 9 policy | 767 (445) | −0.0000 [−0.0028, +0.0027] | 0.024 to 0.071 |
+
+The heuristic's interval rules out a gain larger than 0.0008 nats. The policy's is three times
+wider, on a third of the games, and centred on nothing.
+
+**What this changes.** The check can be passed here, and the preview head passes it, so self-play
+is not failing an impossible test. Neither policy's self-play carries team-strength information that
+the preview head lacks. Step 3b stays the test for any later policy (3a), because it can pass on a
+signal too weak to stand alone. And the team-level diagnostic (step 2a) has
+to account for players. 1,471 teams play in two or more series, and 42% of games have both teams in
+two or more, but a team is mostly one player's.
