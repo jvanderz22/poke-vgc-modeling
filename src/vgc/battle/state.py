@@ -223,6 +223,9 @@ class Side:
         self.conditions: dict[str, int] = {}  # id → turn it started
         self.sheet = False  # an open team sheet was shown for this side
         self.brought_known = False  # which 4 were brought is known to this perspective
+        # Which four, when a person said so (`entry` "bring"). Kept out of `to_json`, so the
+        # golden-tested `observation()` does not move.
+        self.brought: list[str] | None = None
 
     def to_json(self, exact: bool) -> dict[str, Any]:
         return {

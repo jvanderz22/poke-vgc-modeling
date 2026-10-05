@@ -111,6 +111,9 @@ export function BattleSession({ reg, route, navigate, teams }: {
             Looking at tap {step} of {view.entries_total}. Log anything to come back to now.
           </p></div>}
 
+      {view.perspective !== "spectator" && step === null &&
+        !view.sides[view.perspective].mons.some((m) => m.state === "not_brought") &&
+        <YourFour view={view} onLog={log} busy={busy} />}
       {!view.started && <Leads view={view} onLog={log} busy={busy} />}
 
       <Timeline id={id} reg={reg} view={view} route={route} navigate={navigate} />
@@ -206,8 +209,10 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const names = sideNames(view.perspective);
   const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
   const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
+  // Above two a side, after the first faint: the model and the policy's value combined.
+  const policy = ans.mode === "policy";
   // Two or fewer a side: answered within seconds, one turn deep, a damage race past it.
-  const doubles = !!ans.kind;
+  const doubles = !!ans.kind && !policy;
   const forced = (ans.positions ?? []).find((p) => p.forced)?.forced;
   const horizon = doubles ? "the damage race" : "HP share";
   // The answer under three guesses at a hidden spread's other points: shown as a range on the bar
@@ -226,20 +231,23 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       )}
       <div className="row" style={{ justifyContent: "space-between" }}>
         <span>
-          Engine:{" "}
+          {policy ? "Model + policy:" : "Engine:"}{" "}
           {ans.value != null
             ? <><b className="wp-num">{pct(ans.value)}%</b>{" "}
-                {view.perspective === "spectator" ? "P1 wins" : "you win"} with best play from both sides</>
+                {view.perspective === "spectator" ? "P1 wins" : "you win"}
+                {policy ? <> (the policy's one-turn value {pct(ans.policy ?? 0)}%, the model {pct(ans.model ?? 0)}%)</>
+                        : <> with best play from both sides</>}</>
             : <>searching…</>}
         </span>
         <span>
-          {!doubles && ans.depth != null && <>searched {ans.depth} of {ans.max_depth} turns</>}
+          {!doubles && !policy && ans.depth != null && <>searched {ans.depth} of {ans.max_depth} turns</>}
+          {policy && ans.depth != null && <>one turn, {ans.kind}</>}
           {doubles && ans.depth === 0 && <>quick read</>}
           {doubles && ans.depth === 1 && <>searched one turn
             {ans.searched != null && ans.searched < (ans.positions?.length ?? 0) &&
               <> ({ans.searched} of {ans.positions?.length} move orders in time)</>}</>}
-          {ans.depth != null && leaf >= 0.005 && <> · {pct(leaf)}% of it still decided by {horizon}</>}
-          {ans.searching != null && (doubles
+          {!policy && ans.depth != null && leaf >= 0.005 && <> · {pct(leaf)}% of it still decided by {horizon}</>}
+          {ans.searching != null && (doubles || policy
             ? <> · searching ({Math.round(ans.elapsed ?? 0)}s)</>
             : <> · looking {ans.searching} deep ({Math.round(ans.elapsed ?? 0)}s)</>)}
         </span>
@@ -270,9 +278,14 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       )}
       {apart && (
         <div className="engine-apart">
-          The model and the engine are {Math.abs(pct(ans.value!) - pct(model!))} points apart. They answer
-          different questions (how games like this have gone, and best play from here). On held-out
-          human {doubles ? "endgames with two or fewer a side" : "1v1s"}, the engine was the closer of the two.
+          {policy
+            ? <>The combined number and the model's are {Math.abs(pct(ans.value!) - pct(model!))} points
+                apart: the policy reads this position differently from how games like it have gone. On
+                held-out human games after the first faint, the two combined beat the model alone.</>
+            : <>The model and the engine are {Math.abs(pct(ans.value!) - pct(model!))} points apart. They
+                answer different questions (how games like this have gone, and best play from here). On
+                held-out human {doubles ? "endgames with two or fewer a side" : "1v1s"}, the engine was the
+                closer of the two.</>}
         </div>
       )}
       {ans.error && <div className="engine-apart">The search failed: {ans.error}</div>}
@@ -296,6 +309,39 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
 
 /** Who starts. Four taps and the game is under way — and the arrivals ask their questions in the
  *  order you tap them, which is what turns a lead into Speed evidence before a move is used. */
+/** Which four you brought. The page cannot see your back, and the number above two a side needs
+ *  it: once a Pokémon has fainted it is the model and the policy's value of the position combined,
+ *  and that value counts what you have in reserve. It also puts the model's input where it was
+ *  trained, with the two you left out marked as not brought. */
+function YourFour({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
+  const me = view.perspective as Side;
+  const mons = view.sides[me].mons;
+  // Whoever has already been on the field was brought.
+  const [pick, setPick] = useState<string[]>(() => mons.filter((m) => m.state !== "unrevealed").map((m) => m.species));
+  const toggle = (sp: string) => setPick(pick.includes(sp) ? pick.filter((x) => x !== sp) : [...pick, sp]);
+  return (
+    <div className="panel">
+      <h2>Your four</h2>
+      <div className="pad">
+        {mons.map((m) => (
+          <button key={m.species} className="ghost" aria-pressed={pick.includes(m.species)} disabled={busy}
+                  onClick={() => toggle(m.species)}>
+            {m.species}
+          </button>
+        ))}
+        <button disabled={busy || pick.length !== 4}
+                onClick={() => onLog([{ kind: "bring", side: me, species: pick }])}>
+          These four
+        </button>
+      </div>
+      <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
+        Once a Pokémon has fainted, with more than two a side, the number combines the model with the
+        policy's one-turn value of the position, which counts the Pokémon in your back.
+      </p>
+    </div>
+  );
+}
+
 function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
   const [pick, setPick] = useState<{ side: Side; slot: number } | null>(null);
   const filled = (side: Side, slot: number) =>
@@ -322,7 +368,7 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       {pick && (
         <div className="pad" style={{ marginTop: 8 }}>
           {view.sides[pick.side].mons
-            .filter((m) => m.state !== "active" && m.state !== "fainted")
+            .filter((m) => m.state !== "active" && m.state !== "fainted" && m.state !== "not_brought")
             .map((m) => (
               <button key={m.species} className="ghost" disabled={busy}
                       onClick={() => {

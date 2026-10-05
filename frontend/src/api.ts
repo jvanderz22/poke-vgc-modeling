@@ -364,6 +364,11 @@ export type EngineAnswer = {
                 forced?: { side: "p1" | "p2"; choice: string; sweep: number; through_protect: boolean } | null }[];
   /** Two or fewer a side: "2v2", "2v1" or "1v2", answered within a deadline rather than deepened. */
   kind?: string;
+  /** "policy": above two a side, the model and the policy's value of the position combined; `model`
+   *  and `policy` are the two inputs, `value` the combination. */
+  mode?: "policy";
+  model?: number | null;
+  policy?: number | null;
   /** Of the move orders solved, how many the one-turn search finished in time. */
   searched?: number | null;
   elapsed?: number;

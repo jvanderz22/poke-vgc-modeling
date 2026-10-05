@@ -51,6 +51,7 @@ from vgc.regulation import Regulation, to_id
 # than a silently skipped line that makes the state subtly wrong ten turns later.
 ENTRY_KINDS = (
     "lead",        # who starts: {side, slot, species}
+    "bring",       # the four a side brought: {side, species: [four]} — yours, from team preview
     "turn",        # {n}
     "move",        # {side, slot, move, target: {side, slot} | null, spread}
     "switch",      # {side, slot, species}
@@ -249,6 +250,26 @@ def _ident(state: BattleState, m: Mon) -> str:
 
 # --- the handlers -------------------------------------------------------------------------
 
+def _on_bring(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
+    """Which four a side brought. Yours is known to you and to nothing else on the page: a Pokémon
+    in your back has not been seen, and a position that counts your back needs it (the policy's
+    value of a position, `vgc.policy.view.value_position`)."""
+    side = rp.state.sides[e["side"]]
+    chosen = [_named(rp, e["side"], x) for x in e.get("species") or []]
+    if len({id(m) for m in chosen}) != reg.bring:
+        raise EntryError(f"a side brings {reg.bring}, not {len({id(m) for m in chosen})}")
+    # As a player's request does (`Observer.request`): the four are in the back until they come
+    # out, the other two were not brought. The WP model's player rows are built the same way
+    # (`snapshots.player_view`), so this is also the input it was trained on.
+    side.brought = [m.species for m in chosen]
+    side.brought_known = True
+    for m in side.mons:
+        if m not in chosen:
+            m.state, m.position = "not_brought", None
+        elif m.state in ("unrevealed", "not_brought"):
+            m.state = "bench"
+
+
 def _on_lead(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     _bring_in(rp, reg, e["side"], int(e["slot"]), _named(rp, e["side"], e["species"]))
 
@@ -432,7 +453,7 @@ def _on_answer(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 
 _HANDLERS = {
-    "lead": _on_lead, "turn": _on_turn, "move": _on_move, "switch": _on_switch, "swap": _on_swap,
+    "lead": _on_lead, "bring": _on_bring, "turn": _on_turn, "move": _on_move, "switch": _on_switch, "swap": _on_swap,
     "damage": _on_damage, "heal": _on_heal, "faint": _on_faint, "status": _on_status,
     "boost": _on_boost, "field": _on_field, "side": _on_side, "reveal": _on_reveal,
     "consume": _on_consume, "tera": _on_tera, "mega": _on_mega, "answer": _on_answer,

@@ -529,5 +529,14 @@ its own. At 4v4 the point is better than the first run's but the interval still 
 model alone stays the number there. This passes the way the doubles engine passed: on held-out human
 games, per state kind, with a fit made on games the model did not train on.
 
-**What stands before the page:** the player marking their four. The policy's position needs the
-player's own back, and the page does not record it. The step 0 games give a further, separate score.
+**From the player's seat** (`policy_value.py --seat`, `policy_value_seat.json`). The page shows a
+player the model's number from their own seat, not from the stands. With that as the model input,
+refitted on validation games alone, after the first faint gives −0.029 [−0.046, −0.012] on the
+first held-out set and −0.040 [−0.052, −0.028] on the fresh one, with 4v4 level on both. The
+weights are intercept −0.165, 0.482 on the model and 0.523 on the policy. The negative intercept
+pulls each seat down by about 4 points at even, which reads as each player's model being a little
+sure of its own side.
+
+**On the page** (2026-10-04, `vgc.web.solving.PolicySolve`): after the first faint, with more than
+two a side, from a player's seat on open sheets, once the player has marked their four (a `bring`
+tap). The step 0 games give a further, separate score.

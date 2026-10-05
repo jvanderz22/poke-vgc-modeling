@@ -436,10 +436,20 @@ about human games, though (principle 1), so this step gates that first.
     (4v3 −0.031, 3v3 −0.029, 3v2 −0.072, 4v2 −0.035, 3v1 −0.024). At 4v4 it is −0.012
     [−0.024, +0.001], so the model stays the number there. The step 0 score stays a separate, later
     look.
-  - **Then the page:** after the first faint, with more than two a side, the combined number
-    leads, with the model underneath (principle 11). Before that, the player has to mark their four:
-    the policy's position needs the player's own back, and the page does not record it. Then time it
-    on Fly through the MCP server.
+  - **From the player's seat, as the page shows it** (`policy_value.py --seat`). The runs above
+    used the model's number from the stands, and the page shows a player the model's number from
+    their own seat. Refitted on validation games alone, with the policy values unchanged: after the
+    first faint, −0.029 [−0.046, −0.012] on the first held-out set and −0.040 [−0.052, −0.028] on
+    the fresh one; 4v4 level on both. Those weights ship: intercept −0.165, 0.482 on the model,
+    0.523 on the policy.
+  - **On the page, 2026-10-04** ([web-app](web-app.md), "the number above two a side"):
+    - `PolicySolve` leads after the first faint, with more than two a side, from a player's seat on
+      open sheets, the model underneath. It answers within 5 s through the warm pool (2.8 s on the
+      fixture 3v3).
+    - The Your four panel logs a `bring` tap, which sets the states a player's request sets.
+    - It declines if the served open-sheet model is no longer the one the weights were fitted
+      against.
+    - **Left:** time it on Fly through the MCP server after a redeploy.
 - **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
   reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
   `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both

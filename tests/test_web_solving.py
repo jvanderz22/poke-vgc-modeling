@@ -18,8 +18,10 @@ def _battle(reg, fid, vid, upto=None):
 
 
 def test_a_position_that_is_not_a_1v1_starts_nothing(reg):
+    """Above two a side after a faint, nothing starts until the player's four are known, and the
+    page says that is what it is waiting for (the policy's value needs the back)."""
     got = solving.request(reg, "early", _battle(reg, "F2", "B", upto=8))
-    assert got == {"eligible": False, "reason": "the engine answers once neither side has more than two Pokémon left"}
+    assert got == {"eligible": False, "reason": "mark the four you brought to get the policy's value"}
 
 
 @pytest.mark.showdown
@@ -115,3 +117,53 @@ def test_a_refill_keeps_the_speed_and_the_budget(reg):
     assert hp.split("\n")[2] == "EVs: 32 HP / 24 Atk / 10 Spe"
     assert solver.refill(reg, text, "defences").split("\n")[2] == "EVs: 32 HP / 24 Def / 10 Spe"
     assert hp.split("\n\n")[1] == text.split("\n\n")[1]
+
+
+@pytest.mark.showdown
+def test_above_two_a_side_the_model_and_the_policy_combine(reg):
+    """A fixture game tapped from p1's seat, with p1's four marked: before a faint the page waits,
+    and after the first faint (a 3v3) it answers with the model and the policy's value combined,
+    within `DEADLINE`, the model still underneath."""
+    import json
+    import math
+    import sys
+
+    from vgc import paths
+    from vgc.battle import from_log
+    from vgc.battle.entry import Battle
+
+    sys.path.insert(0, str(paths.ROOT / "tests"))
+    import test_policy_entry as T
+
+    replay = json.loads((paths.ROOT / "tests" / "fixtures" / "replays" /
+                         "gen9championsvgc2026regmcbo3-2682837890.json").read_text())
+    lines = replay["log"].split("\n")
+    text = T._team_text(reg, lines, "p1")
+    setup = from_log.setup(reg, lines, "p1", text)
+    full = from_log.journal(reg, lines, setup)
+    four = ["Annihilape", "Metagross", "Salamence", "Sylveon"]     # everyone p1 sent out
+    turn = lambda n: next(i for i, e in enumerate(full) if e.get("kind") == "turn" and e["n"] == n)
+
+    early = Battle(reg, setup, full[:turn(1) + 1] + [{"kind": "bring", "side": "p1", "species": four}])
+    assert solving.reason(reg, early)[1] is not solving.PolicySolve           # 4v4: the model alone
+    unmarked = Battle(reg, setup, full[:turn(2) + 1])
+    assert solving.reason(reg, unmarked)[0].startswith("mark the four")
+
+    battle = Battle(reg, setup, full[:turn(2) + 1] + [{"kind": "bring", "side": "p1", "species": four}])
+    assert not battle.rp.errors
+    assert solving.reason(reg, battle) == (None, solving.PolicySolve)
+    solving.warm()
+    time.sleep(1.5)
+    try:
+        got = solving.request(reg, "pv", battle)
+        assert got["eligible"] and got["mode"] == "policy" and got["kind"] == "3v3"
+        while got["searching"] is not None:
+            time.sleep(0.2)
+            got = solving.request(reg, "pv", battle)
+        assert got["error"] is None and got["elapsed"] <= solving.DEADLINE + 1.0
+        s = solving.POLICY_STACK
+        logit = lambda p: math.log(p / (1 - p))
+        z = s["intercept"] + s["wp"] * logit(got["model"]) + s["value"] * logit(got["policy"])
+        assert abs(got["value"] - 1 / (1 + math.exp(-z))) < 2e-3
+    finally:
+        solving.cancel()

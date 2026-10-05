@@ -234,6 +234,23 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `GET /api/battles/{id}/trajectory` | The WP at every turn so far, with the band over drawn sets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
 
+### The number above two a side: the model and the policy combined
+
+From your seat on open sheets, once a Pokémon has fainted and while either side has more than two
+left, the Battle page leads with **Model + policy** (`vgc.web.solving.PolicySolve`). It combines
+the WP model's number and the policy's one-turn value of the position by weights fitted on past
+games (`POLICY_STACK`). On held-out human games after the first faint the combination beat the
+model alone by 0.03–0.04 nats, including 939 games no fit had seen (phase9-findings, "the policy's
+value of a position"). The model's number stays underneath, and both inputs are shown beside the
+combination. It answers within 5 s through the warm solver processes. At 4v4 the model alone leads,
+because the combination was not distinguishable there.
+
+It needs **your four**: the policy's position counts the Pokémon in your back, and nothing on the
+page can see them. The Your four panel logs a `bring` tap. That does what a player's request does
+in the simulator: the four wait in reserve until they come out, the other two are marked not
+brought, and the switch menu offers only the four. It also puts the model's input where its
+player rows were trained. Until the four are marked, the page says that is what it is waiting for.
+
 ### An agent over the same API (MCP)
 
 `python -m vgc.mcp` is an MCP server whose tools are these endpoints (`vgc.mcp.server`, `pip

@@ -372,3 +372,74 @@ def _emptied(reg: Regulation, f: dict[str, Any], side_sets: dict[str, list[dict[
 
 def combine(jobs: list[dict[str, Any]], results: list[dict[str, Any] | None]) -> dict[str, Any] | None:
     return endgame.combine(jobs, results)
+
+
+# --- the policy's value of a position, as the page shows it above two a side -------------------
+
+def value_reason(reg: Regulation, view: Any) -> str | None:
+    """Why the policy's value is not given for this position, or None. It is given where it was
+    gated: from a player's seat, open sheets, more than two a side and after the first faint, with
+    the player's back known (phase9-findings, "the policy's value of a position")."""
+    state, me = view.o, view.perspective
+    if me not in ("p1", "p2"):
+        return "the policy's value is given from a player's seat"
+    them = "p2" if me == "p1" else "p1"
+    if not state.started or state.ended:
+        return "the battle is not in progress"
+    if not state.sides[them].sheet:
+        return "with a closed sheet the policy's value has not been checked"
+    left = {sid: reg.bring - sum(m.state == "fainted" for m in state.sides[sid].mons) for sid in ("p1", "p2")}
+    if max(left.values()) <= 2 or min(left.values()) == 0:
+        return "the engine answers with two or fewer a side"
+    if all(v == reg.bring for v in left.values()):
+        return "the policy's value adds to the model once a Pokémon has fainted, not before"
+    for sid in ("p1", "p2"):
+        on = doubles.actives(state, sid)
+        if len(on) < min(2, left[sid]):
+            return "a slot is waiting for a replacement"
+        for m in on:
+            if m.volatiles:
+                return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
+        for m in _left(state, sid):
+            if m.status and m.status not in endgame.STATUSES:
+                return f"{m.species} is {m.status}, whose turn counter is not shown"
+    if _unseen(reg, state, me)[1]:
+        return "mark the four you brought to get the policy's value"
+    return None
+
+
+def value_position(reg: Regulation, view: Any, search: dict[str, Any]) -> dict[str, Any]:
+    """The one position the policy's value is read from, built as `policy_value.py` built the
+    positions it was gated on (`policy_vs_people.positions`): both sides on the field and in the
+    back, theirs filled with the heaviest guess at what is unseen, their spreads at the commonest
+    Speed. Your own sets and spreads are the ones you built."""
+    why = value_reason(reg, view)
+    if why:
+        return {"eligible": False, "reason": why}
+    state, me = view.o, view.perspective
+    them = "p2" if me == "p1" else "p1"
+    backs_ = backs(reg, state, them)
+    their_back = list(backs_[0][0]) if backs_ else []
+    mons, sets_ = {}, {}
+    for sid, extra in ((me, []), (them, their_back)):
+        on = doubles.actives(state, sid)
+        seen_back = [m for m in state.sides[sid].mons if m.state == "bench"]
+        mons[sid] = on + seen_back + list(extra)
+        ss = []
+        for m in mons[sid]:
+            if sid == me:
+                x = _own_set(reg, view, m) | {"mega": m.forme if m.mega else None}
+            else:
+                x = _sheet_set(reg, m) | {"mega": m.forme if m.mega else None}
+                x["sp"] = solver.spread(reg, x, _commonest_speed(reg, x))
+            ss.append(x)
+        sets_[sid] = ss
+    if any(endgame.UNSOLVABLE_MOVES & {to_id(x) for x in s.get("moves") or []} for ss in sets_.values() for s in ss):
+        return {"eligible": False, "reason": "Revival Blessing, which would bring back a Pokémon the solver does not have"}
+    f = doubles.facts(reg, view, sets_, mons=mons)
+    on_n = {sid: len(doubles.actives(state, sid)) for sid in ("p1", "p2")}
+    f["bench"] = {sid: len(mons[sid]) - on_n[sid] for sid in ("p1", "p2")}
+    f["megaUsed"] = {sid: True for sid in ("p1", "p2") if any(m.mega for m in state.sides[sid].mons)}
+    left = {sid: reg.bring - sum(m.state == "fainted" for m in state.sides[sid].mons) for sid in ("p1", "p2")}
+    return {"eligible": True, "reason": None, "kind": f"{left[me]}v{left[them]}", "back": [m.species for m in their_back],
+            "position": compose(reg, sets_, f, search)}

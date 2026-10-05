@@ -22,6 +22,10 @@ held-out open-sheet games the search predicted who won better than the model did
 against 0.513); on 349 closed-sheet games it was not distinguishable in any state kind, so there
 the model leads (PLAN-endgame-doubles, stage 3).
 
+Above two a side, from a player's seat on open sheets and once a Pokémon has fainted, the number
+that leads is the WP model and the policy's value of the position combined (`PolicySolve`,
+`POLICY_STACK`). On held-out human games that beat the model alone, and the model stays underneath.
+
 A hidden spread's non-Speed points are a guess (`solver.spread`), and the guess moves the answer by
 0.04-0.07 on average with no shape better than another on held-out games. So once the answer is in,
 the same move orders are solved again with the guessed spreads refilled HP-first and then
@@ -75,6 +79,21 @@ DOUBLES_ASSUMPTIONS = [
 ]
 # The three guesses at a hidden spread's other points, as the page names them; the first is the answer.
 GUESSES = (("assumed", "attacking stat first"), ("hp_first", "HP first"), ("defences", "defences first"))
+# The WP model and the policy's value of the position, stacked: logit p = intercept + wp·logit(the
+# model's number from your seat) + value·logit(the policy's EWP of its own choice). Fitted on the WP
+# model's validation games (10,985 positions); after the first faint it beat the model alone on
+# held-out games, −0.029 [−0.046, −0.012], and on 939 games no fit had seen, −0.040 [−0.052, −0.028]
+# (`scripts/analysis/policy_value.py --seat`, phase9-findings). Fitted against one model: when the
+# served open-sheet model changes, refit, or the page goes back to the model alone.
+POLICY_STACK = {"wp_model": "wp-v1f-idp5", "intercept": -0.1654, "wp": 0.4822, "value": 0.5225}
+POLICY_ASSUMPTIONS = [
+    "The policy plays one turn: both sides' likely choices, theirs weighted by how people choose, "
+    "chance sampled, and what is left after the turn valued by a damage race with the back.",
+    "Their back is filled with the likeliest Pokémon not yet seen; their spreads are the commonest "
+    "for each Speed.",
+    "That value and the model's number are combined by weights fitted on past games, where the "
+    "combination predicted the winner better than the model alone after the first faint.",
+]
 _pool = None
 
 
@@ -304,6 +323,93 @@ class DoublesSolve:
                 "assumptions": DOUBLES_ASSUMPTIONS + self.plan["notes"], "error": self.error}
 
 
+class PolicySolve:
+    """Above two a side: the policy's value of the position, combined with the model's number
+    (`POLICY_STACK`), within `DEADLINE`."""
+
+    def __init__(self, reg: Regulation, battle_id: str, battle):
+        from vgc.policy import ewp as E
+        from vgc.policy import view as V
+
+        self.battle_id, self.key = battle_id, fingerprint(battle)
+        self.reg, self.battle = reg, battle
+        self.started = time.time()
+        self.view = V.EntryView(reg, battle)
+        self.plan = V.value_position(reg, self.view, {**V.SEARCH, "side_k": E.SIDE_K, "root_detail": True})
+        self.answer: dict[str, Any] | None = None
+        self.searching: int | None = None
+        self.error: str | None = None
+        self.cancelled = False
+        if self.plan.get("eligible"):
+            self.searching = 1
+            threading.Thread(target=self._run, daemon=True).start()
+
+    def _run(self) -> None:
+        import math
+
+        import numpy as np
+
+        from vgc.policy import ewp as E
+        from vgc.web import live
+
+        try:
+            model = live.wp(self.reg, self.battle.rp.state, POLICY_STACK["wp_model"], k=0)["wp"]
+            [r] = pool().solve_all([self.plan["position"]], self.started + DEADLINE)
+            if self.cancelled:
+                return
+            if r is None or not r.get("matrix"):
+                self.error = "the policy's search did not finish in time"
+                return
+            me = self.view.perspective
+            them = "p2" if me == "p1" else "p1"
+            M = np.array(r["matrix"], float)
+            if me == "p2":
+                M = 1 - M.T
+            people = (r.get("people") or {}).get(them)
+            scores = None if people is None or any(x is None for x in people) else people
+            value = float(np.max(E.combine([(1.0, M, scores, None)], "people", 4)["ewp"]))
+            logit = lambda p: math.log(min(max(p, 1e-6), 1 - 1e-6) / (1 - min(max(p, 1e-6), 1 - 1e-6)))
+            z = POLICY_STACK["intercept"] + POLICY_STACK["wp"] * logit(model) + POLICY_STACK["value"] * logit(value)
+            self.answer = {"value": 1 / (1 + math.exp(-z)), "model": model, "policy": value,
+                           "elapsed": round(time.time() - self.started, 2)}
+        except Exception as e:                      # shown on the page, not raised into a thread
+            self.error = str(e)
+        finally:
+            self.searching = None
+
+    def cancel(self) -> None:
+        self.cancelled = True
+        if _pool is not None:
+            _pool.cancel()
+
+    def status(self) -> dict[str, Any]:
+        if not self.plan.get("eligible"):
+            return {"eligible": False, "reason": self.plan.get("reason")}
+        a = self.answer
+        return {"eligible": True, "reason": None, "mode": "policy", "kind": self.plan["kind"],
+                "depth": 1 if a else None, "max_depth": 1, "searching": self.searching,
+                "value": round(a["value"], 4) if a else None,
+                "model": round(a["model"], 4) if a else None, "policy": round(a["policy"], 4) if a else None,
+                "leaf_mass": None, "positions": [], "elapsed": round(time.time() - self.started, 1),
+                "unsolved": 0.0, "assumptions": POLICY_ASSUMPTIONS + [
+                    f"Their back is taken to be {', '.join(self.plan['back'])}." if self.plan["back"] else
+                    "Every Pokémon they brought has been seen."],
+                "error": self.error}
+
+
+def policy_reason(reg: Regulation, battle) -> str | None:
+    """Why the policy's value is not given here, or None."""
+    from vgc.policy import view as V
+    from vgc.wp.models import OPEN, in_battle_version
+
+    why = V.value_reason(reg, V.EntryView(reg, battle))
+    if why:
+        return why
+    if in_battle_version(reg.id, OPEN) != POLICY_STACK["wp_model"]:
+        return f"the policy's value was fitted with {POLICY_STACK['wp_model']}, which no longer serves open sheets"
+    return None
+
+
 def reason(reg: Regulation, battle) -> tuple[str | None, type]:
     """Why the engine is not asked about this position (None when it is), and which solve answers
     it: a 1v1's deepening one, or a doubles position's within the deadline."""
@@ -314,6 +420,12 @@ def reason(reg: Regulation, battle) -> tuple[str | None, type]:
     if dwhy is None:
         return None, DoublesSolve
     if "more than two" in dwhy or "in the back" in dwhy:
+        pwhy = policy_reason(reg, battle)
+        if pwhy is None:
+            return None, PolicySolve
+        # Say what would make it answer when there is something to do about it.
+        if pwhy.startswith("mark the four"):
+            return pwhy, Solve
         return "the engine answers once neither side has more than two Pokémon left", Solve
     return (why if dwhy.startswith("a 1v1") else dwhy), Solve
 
@@ -329,7 +441,7 @@ def doubles_reason(reg: Regulation, battle) -> str | None:
     return None
 
 
-_current: Solve | DoublesSolve | None = None
+_current: Solve | DoublesSolve | PolicySolve | None = None
 _guard = threading.Lock()
 
 

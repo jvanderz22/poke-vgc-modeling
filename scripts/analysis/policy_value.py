@@ -23,6 +23,13 @@ The positions are `policy_vs_people.positions`: a player's own back as the repla
 combination is refitted from the saved validation positions, so it is the same fit, frozen.
 
     PYTHONPATH=scripts/analysis .venv/bin/python scripts/analysis/policy_value.py --confirm
+
+`--seat` re-scores both with the WP number the page shows a player: the model's from the player's
+own seat, where the runs above used the number from the stands. The policy values are the saved
+ones (no new solves). The fit is redone on the validation positions alone, and its weights are what
+the page uses (`vgc.web.solving.POLICY_STACK`).
+
+    .venv/bin/python scripts/analysis/policy_value.py --seat
 """
 
 from __future__ import annotations
@@ -40,6 +47,7 @@ from vgc import paths
 
 OUT = paths.DATA / "analysis" / "reg_mc" / "policy_value.json"
 CONFIRM = paths.DATA / "analysis" / "reg_mc" / "policy_value_confirm.json"
+SEAT = paths.DATA / "analysis" / "reg_mc" / "policy_value_seat.json"
 ROWS = paths.DATA / "analysis" / "reg_mc" / "policy_value_rows.json"
 
 
@@ -123,6 +131,72 @@ def confirm(fit_rows: list[dict[str, Any]], rows: list[dict[str, Any]]) -> dict[
                         if sum(r["pooled"] == k for r in after) >= 50}}
 
 
+def _seat_records(job: tuple[dict[str, Any], list[tuple[int, str]]]) -> list[tuple[int, str, dict[str, Any] | None]]:
+    from vgc.data.snapshots import human_snapshots
+    from vgc.regulation import load_regulation
+
+    replay, want = job
+    recs = {(rc["obs"]["turn"], rc["obs"]["perspective"]): rc for rc in human_snapshots(replay, load_regulation("reg_mc"))
+            if rc["kind"] == "turn" and rc["obs"]["perspective"] in ("p1", "p2")}
+    return [(t, sid, recs.get((t, sid))) for t, sid in want]
+
+
+def seat() -> dict[str, Any]:
+    """Both held-out scores again, with the model's number from the player's seat."""
+    from multiprocessing import Pool
+
+    from sklearn.linear_model import LogisticRegression
+
+    from vgc.meta import pool, replays
+    from vgc.regulation import load_regulation
+    from vgc.sim.validity import _logit
+    from vgc.wp.models import OPEN, in_battle_version, predict_records
+    from vgc.wp.tools import _load
+
+    reg = load_regulation("reg_mc")
+    first = json.loads(ROWS.read_text())
+    fresh = json.loads(CONFIRM.with_name("policy_value_confirm_rows.json").read_text())
+    rows = first + [r | {"split": "confirm"} for r in fresh]
+    want: dict[str, list[tuple[int, str]]] = {}
+    for r in rows:
+        want.setdefault(r["id"], []).append((r["turn"], r["sid"]))
+    reps = {r["id"]: r for fmt in pool.formats_for(reg) for r in replays.cached(fmt) if r["id"] in want}
+    with Pool(8) as p:
+        got = {(rid, t, sid): rec for rid, res in zip(want, p.map(_seat_records, [(reps[i], want[i]) for i in want]))
+               for t, sid, rec in res}
+    model, fz = _load(reg, in_battle_version(reg.id, OPEN))
+    keep = [r for r in rows if got.get((r["id"], r["turn"], r["sid"])) is not None]
+    preds = predict_records(model, [got[(r["id"], r["turn"], r["sid"])] for r in keep], fz)
+    for r, p in zip(keep, preds):
+        r["seat_wp"] = float(p)
+
+    def arrays(rs):
+        return (np.stack([_logit(np.array([r["seat_wp"] for r in rs])), _logit(np.array([r["value"] for r in rs]))], 1),
+                np.array([r["won"] for r in rs]), np.array([r["group"] for r in rs]))
+
+    fit = [r for r in keep if r["split"] == "validation"]
+    X, y, _ = arrays(fit)
+    both = LogisticRegression(C=1e6, max_iter=1000).fit(X, y)
+    alone = LogisticRegression(C=1e6, max_iter=1000).fit(X[:, :1], y)
+
+    def score(rs):
+        Xt, yt, gt = arrays(rs)
+        d = _ll(both.predict_proba(Xt)[:, 1], yt) - _ll(alone.predict_proba(Xt[:, :1])[:, 1], yt)
+        return _paired(d, gt) | {"model_logloss": round(float(_ll(1 / (1 + np.exp(-Xt[:, 0])), yt).mean()), 4)}
+
+    out: dict[str, Any] = {"positions_with_a_seat_record": f"{len(keep)} of {len(rows)}",
+                           "stack": {"intercept": round(float(both.intercept_[0]), 4),
+                                     "wp": round(float(both.coef_[0][0]), 4), "value": round(float(both.coef_[0][1]), 4),
+                                     "fitted_on": {"positions": len(fit), "groups": len({r["group"] for r in fit})}}}
+    for name, split in (("first_heldout", "heldout_human"), ("confirm", "confirm")):
+        rs = [r for r in keep if r["split"] == split]
+        after = [r for r in rs if r["pooled"] != "4v4"]
+        out[name] = {"after_first_faint": score(after), "4v4": score([r for r in rs if r["pooled"] == "4v4"]),
+                     "by_kind": {k: score([r for r in after if r["pooled"] == k]) for k in sorted({r["pooled"] for r in after})
+                                 if sum(r["pooled"] == k for r in after) >= 50}}
+    return out
+
+
 def report(rows: list[dict[str, Any]]) -> dict[str, Any]:
     from sklearn.linear_model import LogisticRegression
 
@@ -164,7 +238,13 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=3)
     ap.add_argument("--confirm", action="store_true", help="the held-out games after the first --games, scored "
                     "on the stated hypothesis with the saved validation fit")
+    ap.add_argument("--seat", action="store_true", help="re-score with the WP number from the player's seat")
     a = ap.parse_args()
+    if a.seat:
+        res = seat()
+        SEAT.write_text(json.dumps(res, indent=1) + "\n")
+        print(json.dumps(res, indent=1))
+        return
     import policy_vs_people as PV
     from vgc.data.snapshots import replay_group
     from vgc.data.splits import load_rules

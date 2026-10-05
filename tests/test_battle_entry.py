@@ -361,3 +361,16 @@ def test_ally_switch_trades_the_two_places(battle):
     assert rp.state.at("p2", 0).species == "Milotic" and rp.state.at("p2", 1).species == "Gholdengo"
     battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Make It Rain", "target": None, "spread": True})
     assert battle.named_journal()[-1]["species"] == "Gholdengo"
+
+
+def test_your_four_puts_the_back_in_reserve(battle, team_text):
+    """Marking the four you brought does what a player's request does: the four are in reserve until
+    they come out, the other two were not brought, and the switch menu offers only the four."""
+    mine = [m["species"] for m in entry.from_team(battle.reg, team_text("valid_basic"))]
+    rp = battle.append({"kind": "bring", "side": "p1", "species": mine[:4]})
+    side = rp.state.sides["p1"]
+    assert side.brought_known and side.brought == mine[:4]
+    assert [m.state for m in side.mons] == ["bench"] * 4 + ["not_brought"] * 2
+    assert [m.species for m in rp.state.bench("p1")] == mine[:4]
+    rp = battle.append({"kind": "bring", "side": "p1", "species": mine[:3]})
+    assert rp.errors and "brings 4" in rp.errors[-1]
