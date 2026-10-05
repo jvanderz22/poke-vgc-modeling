@@ -20,6 +20,7 @@ Then open `https://vgc-live-battle-calculator.fly.dev`; the browser asks for use
 | Pinned Showdown, calc sidecar | built in the image from the submodule's source | the local `node_modules` hold macOS builds |
 | Your teams, your battles, the solver's cache | the volume at `/data` (`data/library`, `data/battles`, `.vgc` link to it) | they must survive a restart and a redeploy |
 | Training data (snapshots, features, self-play, analysis) | left out (`.dockerignore`) | about a gigabyte the app never reads |
+| `bring_rates.json`, `endgames.json` from `data/analysis/reg_mc` | the image, as exceptions to the line above | the policy and the Endgames page read them; without them a policy solve is a 500 and the page is empty |
 
 New models or a new regulation reach the cloud the same way: build them locally, then
 `./deploy_fly.sh`.
@@ -51,14 +52,33 @@ is the only thing that bounds a mistake (a machine that never stops, a second vo
   processes warm in the background: three of them, about 55 MB each idle, with the app at about
   65 MB and 1.7 GB of the 2 GB free.
 
+## Measured on the deployed machine (2026-10-04)
+
+Through the MCP server (`vgc.mcp.server`'s tools against the deployed URL,
+`scripts/analysis/fly_timing.py`), on the fixture games' positions from p1's seat, warm machine, 10 s between positions. "First seen" is uncached: the
+solver's cache is on the volume, so a position asked again (even after a redeploy) answers in
+about 0.4 s.
+
+| Call | Time |
+| --- | --- |
+| Reads (`health`, `models`, `pool`, `teams`, `battles`, `endgames`) | 47–79 ms median |
+| Create a battle, append 25–70 taps, read it, its trajectory | 0.2–0.6 s each |
+| Model + policy, 3v3 / 4v3, first seen | 1.9 s / 1.8 s (release v5; a 500 on v4, see above) |
+| 2v2: quick, searched, the other two guesses | 0.7 s, 3.4 s, 8.2 s |
+| 1v2: searched, the other two guesses | 2.5 s, 4.5 s |
+| 1v1: first answer | 1.1–2.0 s; a deep one reached depth 2 at 17 s and depth 3 by 75 s |
+
+Every answer the page leads with landed within 5 s. Once, a single `solve` request on the deep
+1v1 got no reply for 120 s; two more runs of that position (about 300 requests each) never took
+over 0.22 s.
+
 ## Not yet known
 
-- **The 5-second answer on shared cores.** Shared vCPUs run at a small baseline and burst above
-  it on accumulated credit. A doubles answer is a few seconds of all four cores, which should fit
-  in a burst, but it has only been timed on the laptop
-  (`scripts/analysis/page_path.py`). Time a few positions on the deployed page; if answers come
-  in late, either raise the machine (`performance-1x`, 2 GB, is $34 a month running, same
-  per-second rule) or accept the quick answer more often.
+- **The 5-second answer on back-to-back turns.** Shared vCPUs run at a small baseline and burst
+  above it on accumulated credit. One answer a turn fits (above), but the back-to-back round ran
+  on cached answers, so a run of uncached answers has not been timed. If they come in late,
+  either raise the machine (`performance-1x`, 2 GB, is $34 a month running, same per-second
+  rule) or accept the quick answer more often.
 
 ## Password
 

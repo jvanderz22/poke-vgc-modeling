@@ -449,7 +449,11 @@ about human games, though (principle 1), so this step gates that first.
     - The Your four panel logs a `bring` tap, which sets the states a player's request sets.
     - It declines if the served open-sheet model is no longer the one the weights were fitted
       against.
-    - **Left:** time it on Fly through the MCP server after a redeploy.
+    - **Timed on Fly, 2026-10-04,** through the MCP server ([deploy/README](../deploy/README.md),
+      "measured on the deployed machine"). The first try returned 500 on every policy position: the
+      image left out `bring_rates.json`, with the rest of `data/analysis`. With it in (release v5),
+      the answer landed in 1.9 s on the fixture 3v3 and 1.8 s on a 4v3, uncached. Two positions,
+      so a first look and not a p99.
 - **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
   reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
   `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both
@@ -628,9 +632,11 @@ on the shared vocabulary. None of it competes with steps 3–4 for Kaggle CPU.
   than the imputer's (+0.013, +0.018, intervals across zero). The mean of the three is level
   (−0.004 [−0.019, +0.010]). The number keeps the imputer's spread; the page shows the other two
   beside it, with their range on the bar.
-- **Time the doubles answer on the deployed machine.** Carried from v4. An agent can now take it
-  through the MCP server: `solve` returns when each part landed. Redeploy first: Fly still runs
-  the code from before the three guesses, the Protect-counter fix and the Ally Switch button.
+- ~~**Time the doubles answer on the deployed machine.**~~ **Done 2026-10-04** through the MCP
+  server, on fixture positions ([deploy/README](../deploy/README.md)). Uncached, the searched
+  answer landed at 3.4 s in a 2v2 and 2.5 s in a 1v2, and the two other guesses at 8.2 s and
+  4.5 s, on their own budget. A 1v1's first answer landed within 2 s. Still open: back-to-back
+  answers on shared cores (burst credit), since the repeat round ran on cached answers.
 
 ### 7–8. Blocked behind steps 1–3
 
