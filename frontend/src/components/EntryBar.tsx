@@ -157,6 +157,18 @@ export function EntryBar({ view, selected, onSelect, onLog, busy }: {
             </button>
           ))}
           {view.menu[selected.side].bench.length === 0 && <span className="small dim">nobody left to bring in</span>}
+          {/* Ally Switch and friends: the two on the field trade places. Nothing else in the game
+              says where they now stand, so a swap left out crosses every target after it. */}
+          {view.menu[selected.side].actives[1 - selected.slot] && (
+            <button className="ghost" disabled={busy}
+                    onClick={() => {
+                      onLog([{ kind: "swap", side: selected.side, slot: selected.slot }]);
+                      onSelect(null);
+                    }}>
+              Trade places with {view.menu[selected.side].actives[1 - selected.slot]!.species}{" "}
+              <span className="dim">(Ally Switch)</span>
+            </button>
+          )}
         </div>
       )}
 

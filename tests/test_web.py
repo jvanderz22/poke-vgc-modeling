@@ -606,3 +606,12 @@ def test_a_password_guards_everything_but_health(monkeypatch):
     finally:
         monkeypatch.delenv("VGC_WEB_PASSWORD")
         importlib.reload(webapp)
+
+
+def test_ally_switch_is_a_tap(client, started):
+    """The two on a side trade places, and the menu the next tap is made from says so."""
+    entries(client, started["id"],
+            {"kind": "lead", "side": "p2", "slot": 0, "species": "Kingambit"},
+            {"kind": "lead", "side": "p2", "slot": 1, "species": "Milotic"})
+    v = entries(client, started["id"], {"kind": "swap", "side": "p2", "slot": 0})
+    assert [a["species"] for a in v["menu"]["p2"]["actives"]] == ["Milotic", "Kingambit"]

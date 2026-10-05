@@ -188,6 +188,15 @@ results on held-out series. No simulator number reaches the page or Phase 10 any
   already measures this). Keep the humans' brings. If step 2 found an archetype bias, deepen the
   search where it bites, for example two turns while a setup or Trick Room move is legal. Gate:
   the Phase 6 check unchanged, on a fresh draw of series. Kaggle, about 4 sessions.
+  **First look, 2026-10-04** ([phase6-findings](phase6-findings.md) §10,
+  `scripts/analysis/archetype_play.py`):
+  - **Trick Room is mostly unplayed.** In the policy's Phase 6 runs a Trick Room user reached the
+    field for 8% of sides (people 27%), and set it 18% of the time when it did (people 41%, most often
+    on turn 1). When it is set, it wins as often as people's.
+  - **Fake Out is overused.** It comes on turn 1 from 77% of leads, against people's 43%.
+
+  The brings run tests the team-preview half. The leaf not seeing Trick Room's remaining turns is
+  the search half.
 - **3b. Self-play as one input, not the answer.** Promoted by the ceiling: the preview head passes
   alone, so the question is whether self-play adds to it. Stack the self-play WP onto the preview head: a
   logistic over the two logits, fitted out of fold by series on held-out games only. The preview

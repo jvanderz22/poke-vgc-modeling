@@ -329,3 +329,37 @@ undervalues the two archetypes whose payoff comes after the turn they are played
 for PLAN-v5 step 3a: look at how the policy plays Trick Room and Fake Out, and search two turns while
 either is in play. Before a full Phase 6 run, a cheap check is enough: does the Trick Room and Fake
 Out gap close in self-play on a sample of pairings?
+
+**How Trick Room and Fake Out are played** (step 3a's first look, `scripts/analysis/archetype_play.py`,
+`data/analysis/reg_mc/archetype_play.json`). This compares 5,665 open-sheet human battles that
+ended normally with the Phase 9 policy's 12,000 Phase 6 battles. The heuristic's run kept no logs.
+Intervals are bootstrapped by battle.
+
+| | people | policy |
+| --- | --- | --- |
+| sides with a Trick Room user on the field at some point | 27% (3,072 of 11,330) | **8%** (1,956 of 24,000) |
+| of those, set Trick Room | 41% [39, 43] | **18%** [16, 20] |
+| first set on turn 1 (median turn) | 58% (1) | 24% (3) |
+| win rate of a side that set it | 54% [52, 57] | 53% [48, 59] |
+| Fake Out leads that use it on turn 1 | 43% [42, 45] | **77%** [77, 78] |
+| Fake Outs that land | 69% [68, 70] | 76% [75, 76] |
+| win rate when a turn-1 Fake Out landed | 53% [50, 55] | 51% [50, 52] |
+
+**Self-play mostly leaves Trick Room unplayed.** In the Phase 6 runs (the heuristic's team preview)
+a Trick Room user reached the field for 8% of sides, against 27% of human sides. When one did, the
+policy set Trick Room less than half as often as people, and later. When it is set, it wins about as
+often as people's. So the policy gets as much from Trick Room as people do when it plays it, but
+mostly it doesn't play it. That fits the gap in (b): a Trick Room team played without its Trick
+Room is a worse team.
+
+**Fake Out runs the other way.** The policy uses it on turn 1 from almost every lead that has it,
+where people use it under half the time. A one-turn search sees the flinch and the chip and not the
+turn it costs. That would make the policy's Fake Out teams no better for having it. People's use is
+selective.
+
+**What it points to.** Two levers, both cheap to test before any search change:
+- **Team preview.** The brings run (step 1), which plays the humans' own brings and leads, is the
+  direct test: Trick Room teams there bring their setter.
+- **The policy's Trick Room turn.** Search two turns while Trick Room is legal, or value the room's
+  remaining turns at the leaf. Trick Room's payoff is the four turns after the one it is set, which
+  the leaf (a damage race at the current Speed order) does not see.
