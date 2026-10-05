@@ -167,10 +167,27 @@ def menu(reg: Regulation, state, side: str) -> dict[str, Any]:
                        "target": (reg.dex.get_move(mv) or {}).get("target"),
                        "category": (reg.dex.get_move(mv) or {}).get("category")}
                       for mv in moves],
-            "moves_known": bool(m.moves)})
+            "moves_known": bool(m.moves),
+            "megas": megas(reg, state, side, m)})
     out["bench"] = [{"species": m.species, "hp": round(m.hp, 4), "state": m.state}
                     for m in state.bench(side)]
     return out
+
+
+def megas(reg: Regulation, state, side: str, m) -> list[dict[str, str]]:
+    """The Mega formes this Pokémon could become this turn, with the stone each needs.
+
+    One Mega Evolution a side, so once any of the side has evolved the list is empty. An item
+    nobody has seen could be any stone for this species, so each one is offered: Charizard is
+    two answers until its item shows, and picking one is also the reveal.
+    """
+    if not reg.mega or m.mega or any(x.mega for x in state.sides[side].mons):
+        return []
+    base = (reg.dex.get_species(m.species) or {}).get("name", m.species)
+    stones = ([reg.dex.get_item(m.item)] if m.item else
+              [] if m.item == "" else list(reg.dex.items.values()))
+    return [{"forme": stone["megaStone"][base], "item": stone["name"]}
+            for stone in stones if stone and base in (stone.get("megaStone") or {})]
 
 
 def speed_read(reg: Regulation, state, beliefs: dict) -> list[dict[str, Any]]:

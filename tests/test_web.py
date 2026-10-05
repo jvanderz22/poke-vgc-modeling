@@ -615,3 +615,18 @@ def test_ally_switch_is_a_tap(client, started):
             {"kind": "lead", "side": "p2", "slot": 1, "species": "Milotic"})
     v = entries(client, started["id"], {"kind": "swap", "side": "p2", "slot": 0})
     assert [a["species"] for a in v["menu"]["p2"]["actives"]] == ["Milotic", "Kingambit"]
+
+
+def test_the_menu_offers_each_mega_a_hidden_item_allows(client, teams, battles_dir):
+    """An unseen item could be either stone, so a closed-sheet Charizard offers both Megas; once
+    one side has evolved, nobody on that side is offered another."""
+    six = ["Charizard"] + THEIR_SIX[1:]
+    bid = client.post("/api/battles", json={"my_team": teams[0], "their_species": six}).json()["id"]
+    v = entries(client, bid, {"kind": "lead", "side": "p2", "slot": 0, "species": "Charizard"},
+                {"kind": "lead", "side": "p2", "slot": 1, "species": "Milotic"})
+    zard, milotic = v["menu"]["p2"]["actives"]
+    assert {x["forme"] for x in zard["megas"]} == {"Charizard-Mega-X", "Charizard-Mega-Y"}
+    assert milotic["megas"] == []
+    v = entries(client, bid, {"kind": "mega", "side": "p2", "species": "Charizard",
+                              "forme": "Charizard-Mega-Y", "item": "Charizardite Y"})
+    assert all(a["megas"] == [] for a in v["menu"]["p2"]["actives"])

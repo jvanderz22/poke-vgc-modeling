@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
-import { Questions } from "./Questions";
+import { BattleState } from "./BattleState";
+import { Info } from "./Popover";
 import { SpeciesPicker } from "./SpeciesPicker";
+import { TurnStepper } from "./TurnStepper";
+import type { Pos } from "../screen";
 import { linkProps, tabRoute, type Navigate, type Route } from "../router";
 
 type Side = "p1" | "p2";
@@ -13,7 +16,7 @@ type Side = "p1" | "p2";
  *
  *  Everything on this page is one shape: **the journal is the battle.** Each tap appends one
  *  entry, the backend replays the list, and what comes back is the truth — so this component
- *  keeps no battle state of its own beyond which Pokémon you have selected. Undo is popping the
+ *  keeps no battle state of its own beyond the action half-entered in front of you. Undo is popping the
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
@@ -27,6 +30,10 @@ export function BattleSession({ reg, route, navigate, teams }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<{ side: Side; slot: number } | null>(null);
+  // The free-form entry bar, behind "something else…": the escape hatch for whatever the stepper
+  // does not ask about. Clicking the field goes to whichever of the two is in front.
+  const [freeForm, setFreeForm] = useState(false);
+  const fieldPick = useRef<((p: Pos) => void) | null>(null);
 
   const id = route.battle;
   const step = route.step;
@@ -64,8 +71,12 @@ export function BattleSession({ reg, route, navigate, teams }: {
   if (!id) return <BattleList reg={reg} navigate={navigate} teams={teams} />;
   if (!view) return <div className="panel"><p className="small dim">{error ?? "Loading…"}</p></div>;
 
+  // Which four you brought, until you have said: the page cannot see your back.
+  const yourFour = view.perspective !== "spectator" &&
+    !view.sides[view.perspective].mons.some((m) => m.state === "not_brought");
+
   return (
-    <>
+    <div className="battle-page">
       {error && <div className="banner bad">{error}</div>}
       {view.contradictions.map((c, i) => (
         <div key={i} className="banner warn">
@@ -78,55 +89,73 @@ export function BattleSession({ reg, route, navigate, teams }: {
         </div>
       )}
 
-      <div className="panel battle-head">
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <div>
-            <b>{view.name}</b>{" "}
-            <span className="dim small">
-              {modeLabel(view.sheets, view.perspective)} ·{" "}
-              {view.started ? `turn ${view.turn}` : "team preview"} · {view.entries} taps
-            </span>
-          </div>
-          <div className="row">
-            <button className="ghost" onClick={undo} disabled={busy || view.entries === 0}>Undo</button>
-            <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
-          </div>
+      <div className="battle-bar">
+        <div>
+          <b>{view.name}</b>{" "}
+          <span className="dim small">
+            {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
+          </span>
         </div>
-        {/* In a 1v1 the engine leads: on held-out human 1v1s it predicted the winner better than the
-            model (PLAN-v3 step 3.6), which stays underneath as the second opinion. */}
-        {step === null && view.endgame?.eligible && <EngineRow id={id} reg={reg} view={view} />}
-        <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
+        <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
       </div>
-      <BattleGateBanner gates={view.gates} verdict={view.verdict} />
 
-      <Questions questions={view.questions} onAnswer={(e) => log([e])} busy={busy} />
+      {/* The row where you work: the stepper where the eye lands first, and beside it the number
+          and the four on the field, which is everything its questions need. */}
+      <div className="battle-top">
+        <div className="battle-work">
+          {step === null
+            ? <TurnStepper id={id} reg={reg} view={view} busy={busy} onLog={log} onUndo={undo}
+                           onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
+                           onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
+                           preview={<>
+                             {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
+                             <Leads view={view} onLog={log} busy={busy} />
+                           </>} />
+            : <div className="panel row" style={{ justifyContent: "space-between" }}>
+                <span className="small dim">Looking at tap {step} of {view.entries_total}. Log anything to come back to now.</span>
+                <button className="link" onClick={() => navigate({ tab: "battle", battle: id, step: null }, { replace: true })}>
+                  back to now
+                </button>
+              </div>}
 
-      <Field view={view} selected={selected}
-             onPick={(side, slot) => setSelected({ side, slot })}
-             onHp={(side, slot) => setSelected({ side, slot })} />
-
-      {step === null
-        ? <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
-        : <div className="panel"><p className="small dim">
-            Looking at tap {step} of {view.entries_total}. Log anything to come back to now.
-          </p></div>}
-
-      {view.perspective !== "spectator" && step === null &&
-        !view.sides[view.perspective].mons.some((m) => m.state === "not_brought") &&
-        <YourFour view={view} onLog={log} busy={busy} />}
-      {!view.started && <Leads view={view} onLog={log} busy={busy} />}
-
-      <Timeline id={id} reg={reg} view={view} route={route} navigate={navigate} />
-      <Belief view={view} />
-      {view.derived.length > 0 && (
-        <div className="panel">
-          <h2>Worked out for you</h2>
-          <ul className="small dim derived">
-            {view.derived.slice(-8).map((d, i) => <li key={i}>{d}</li>)}
-          </ul>
+          {step === null && freeForm && (
+            <>
+              <div className="row free-form-head">
+                <span className="tiny dim">Something else: the free-form entry bar</span>
+                <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
+              </div>
+              <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
+            </>
+          )}
         </div>
-      )}
-    </>
+
+        <div className="battle-side">
+          <div className="panel win-panel">
+            <h2>Win chance</h2>
+            {/* In a 1v1 the engine leads: on held-out human 1v1s it predicted the winner better than the
+                model (PLAN-v3 step 3.6), which stays underneath as the second opinion. */}
+            {step === null && view.endgame?.eligible && <EngineRow id={id} reg={reg} view={view} />}
+            <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
+            <TurnCurve id={id} reg={reg} view={view} route={route} navigate={navigate} />
+          </div>
+          <Field view={view} selected={freeForm ? selected : null}
+                 onPick={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })}
+                 onHp={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })} />
+        </div>
+      </div>
+
+      <BattleState view={view} extra={{
+        p1: view.started && yourFour && step === null ? <YourFour view={view} onLog={log} busy={busy} /> : undefined,
+        p2: view.derived.length > 0 ? (
+          <details className="worked-out">
+            <summary className="tiny dim">Worked out for you ({view.derived.length})</summary>
+            <ul className="tiny dim derived">
+              {view.derived.slice(-8).map((d, i) => <li key={i}>{d}</li>)}
+            </ul>
+          </details>
+        ) : undefined,
+      }} />
+    </div>
   );
 }
 
@@ -151,22 +180,43 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
   const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
   return (
     <div className={`wp${labelled ? " second" : ""}`}>
+      <div className="row wp-line">
+        <span>
+          {labelled && <>Model: </>}<b className="wp-num big">{pct(wp.wp)}%</b>{" "}
+          <span className="small">{view.perspective === "spectator" ? "P1 wins" : "you win"}</span>
+        </span>
+        <GateTag view={view}>
+          {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 &&
+            <p>{pct(wp.drawn)}% averaged over {wp.k} drawn sets.</p>}
+          <p>{open > 0 ? `${open} of their six still open.` : `Band from ${wp.k} draws.`} {wp.regime}</p>
+        </GateTag>
+      </div>
       <div className="wp-bar">
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
       </div>
-      <div className="row tiny dim" style={{ justifyContent: "space-between", marginTop: 5 }}>
-        <span>
-          {labelled && <>Model: </>}<b className="wp-num">{pct(wp.wp)}%</b>{" "}
-          {view.perspective === "spectator" ? "P1 wins" : "you win"}
-          {wp.hi !== wp.lo && <> · {pct(wp.lo)}–{pct(wp.hi)}% depending on what they are holding</>}
-        </span>
-        <span title={wp.regime}>
-          {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 && <>{pct(wp.drawn)}% averaged over {wp.k} drawn sets · </>}
-          {open > 0 ? `${open} of their six still open` : `band from ${wp.k} draws`}
-        </span>
-      </div>
+      {wp.hi !== wp.lo && <div className="tiny dim" style={{ marginTop: 4 }}>{pct(wp.lo)}–{pct(wp.hi)}%: depends on their sets</div>}
     </div>
+  );
+}
+
+/** The model's verdict as a word beside its number, and the sentence behind it one click away.
+ *  PLAN.md's rule does not bend for layout: a model that misses a gate is never shown without the
+ *  verdict beside it. Only the reasoning moves. */
+function GateTag({ view, children }: { view: LiveView; children?: ReactNode }) {
+  const v = view.verdict;
+  const tag = !view.gates?.known ? ["no model", "bad"]
+    : v?.pass ? ["verified", "ok"]
+    : v && v.failed.length > 0 ? ["rough guide", "warn"]
+    : ["not verified", "warn"];
+  return (
+    <span className="row gate-tag-row">
+      <span className={`gate-tag ${tag[1]}`}>{tag[0]}</span>
+      <Info label="How this number was made">
+        <BattleGateBanner gates={view.gates} verdict={view.verdict} />
+        {children}
+      </Info>
+    </span>
   );
 }
 
@@ -381,16 +431,18 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
         </div>
       )}
       <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
-        Log them in the order they arrived on screen. Abilities announce in Speed order, so that
-        order is a Speed comparison you have before anyone has moved.
+        Any order: the four leads arrive together, so the order you log them in says nothing.
+        What does is the order their abilities announce in, which is Speed order, so answer those
+        in the order you saw them.
       </p>
     </div>
   );
 }
 
-/** Every turn of the game so far, and the call at each one. Clicking a row replays the journal to
- *  that point — the same operation as undo, without throwing anything away. */
-function Timeline({ id, reg, view, route, navigate }: {
+/** The number at every turn so far, as a curve you can click. Clicking a turn replays the journal
+ *  to that point: the same operation as undo, without throwing anything away. Asked for on demand,
+ *  because it replays every prefix through the model. */
+function TurnCurve({ id, reg, view, route, navigate }: {
   id: string; reg: string; view: LiveView;
   route: Extract<Route, { tab: "battle" }>; navigate: Navigate;
 }) {
@@ -403,103 +455,35 @@ function Timeline({ id, reg, view, route, navigate }: {
   }, [id, reg, open, view.entries]);
 
   if (!open) {
-    return (
-      <div className="panel">
-        <button className="link" onClick={() => setOpen(true)}>Walk the game back, turn by turn →</button>
-      </div>
-    );
+    return <button className="link small curve-open" onClick={() => setOpen(true)}>Each turn so far →</button>;
   }
   return (
-    <div className="panel">
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: 8 }}>
-        <h2 style={{ margin: 0 }}>Turn by turn</h2>
-        <button className="link" onClick={() => setOpen(false)}>hide</button>
+    <div className="curve">
+      <div className="row tiny dim" style={{ justifyContent: "space-between" }}>
+        <span>Each turn so far: click one to walk back to it</span>
+        <span className="row">
+          {route.step !== null && (
+            <button className="link tiny" onClick={() => navigate({ tab: "battle", battle: id, step: null }, { replace: true })}>
+              back to now
+            </button>
+          )}
+          <button className="link tiny" onClick={() => setOpen(false)}>hide</button>
+        </span>
       </div>
-      {rows === null && <p className="small dim">Replaying…</p>}
-      {rows?.length === 0 && <p className="small dim">Nothing to walk back yet.</p>}
-      <div className="trajectory">
-        {rows?.map((row, i) => (
-          <button key={i} className={`traj-row${route.step === row.index ? " on" : ""}`}
-                  onClick={() => navigate({ tab: "battle", battle: id, step: row.index }, { replace: true })}>
-            <span className="traj-turn">turn {row.turn}</span>
-            <span className="traj-bar">
-              <span className="wp-range"
-                    style={{ left: `${Math.round(row.lo * 100)}%`,
-                             width: `${Math.round((row.hi - row.lo) * 100)}%` }} />
-              <span className="wp-mark" style={{ left: `${Math.round(row.wp * 100)}%` }} />
-            </span>
-            <span className="traj-wp">{Math.round(row.wp * 100)}%</span>
-            <span className="traj-left dim tiny">{row.left.p1}v{row.left.p2}</span>
-          </button>
-        ))}
-      </div>
-      {route.step !== null && (
-        <button className="link" style={{ marginTop: 8 }}
-                onClick={() => navigate({ tab: "battle", battle: id, step: null }, { replace: true })}>
-          back to now
-        </button>
+      {rows === null && <p className="tiny dim">Replaying…</p>}
+      {rows?.length === 0 && <p className="tiny dim">Nothing to walk back yet.</p>}
+      {!!rows?.length && (
+        <div className="curve-bars">
+          {rows.map((row) => (
+            <button key={row.index} className="curve-bar" aria-current={route.step === row.index}
+                    title={`turn ${row.turn}: ${Math.round(row.wp * 100)}% (${row.left.p1}v${row.left.p2})`}
+                    onClick={() => navigate({ tab: "battle", battle: id, step: row.index }, { replace: true })}>
+              <i style={{ height: `${Math.max(2, Math.round(row.wp * 100))}%` }} />
+              <span className="curve-turn">{row.turn}</span>
+            </button>
+          ))}
+        </div>
       )}
-    </div>
-  );
-}
-
-/** What is still open about their six — the two halves of the belief, side by side, because they
- *  are different kinds of claim and the screen should not blur them.
- *
- *  **The spread** is a bound from this battle's own turn orders: `ruled out` is the share of the
- *  66-point space that is gone, and 0% means nothing has been seen yet rather than something
- *  missing. It can only be wrong because of a bug.
- *
- *  **The set** is a ranking from 15,000 other people's sheets: `sets left` is how many of them are
- *  still consistent with what you have seen, and it falls as items and moves reveal themselves.
- *  It can be wrong because somebody brought something unusual — and when nobody's sheet matches
- *  at all, it says so rather than pretending.
- */
-function Belief({ view }: { view: LiveView }) {
-  const spreads = new Map(view.beliefs.map((b) => [b.species, b]));
-  const rows = view.wp?.belief ?? [];
-  if (!rows.length && !view.beliefs.some((b) => b.narrowed > 0)) return null;
-  return (
-    <div className="panel">
-      <h2>What is still open about their six</h2>
-      <table className="belief">
-        <thead>
-          <tr className="tiny dim">
-            <th>Pokémon</th><th>spread (a bound)</th><th>ruled out</th>
-            <th>set (a ranking)</th><th>from</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((b) => {
-            const sp = spreads.get(b.species);
-            const bounds = sp
-              ? Object.entries(sp.bounds)
-                  .filter(([st, [lo, hi]]) => st !== "_unspent" && (lo > 0 || hi < 32))
-                  .map(([st, [lo, hi]]) => `${st} ${lo}–${hi}`).join(" · ")
-              : "";
-            return (
-              <tr key={b.species}>
-                <td>{b.species}</td>
-                <td className="tiny dim">{bounds || "nothing seen yet"}</td>
-                <td className="tiny dim">{sp ? `${Math.round(sp.narrowed * 100)}%` : "—"}</td>
-                <td className="tiny dim">
-                  {b.off_meta
-                    ? <span className="warn-text">nobody&apos;s sheet matches</span>
-                    : <>{b.sets} set{b.sets === 1 ? "" : "s"} left
-                        {b.sets > 1 && <> · top {Math.round(b.concentration * 100)}%</>}</>}
-                </td>
-                <td className="tiny dim">
-                  {[...(sp ? Object.values(sp.sources) : []), ...b.evidence].join(", ") || "—"}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
-        The spread is a bound — the truth is inside it. The set is a ranking — it can be wrong,
-        and being wrong costs a tap.
-      </p>
     </div>
   );
 }

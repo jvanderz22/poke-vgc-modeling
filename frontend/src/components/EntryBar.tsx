@@ -272,7 +272,7 @@ const SIDE_CONDS = ["reflect", "lightscreen", "auroraveil", "tailwind"];
 /** Field effects that arrive from something the app cannot see — a move, an item, a turn ending.
  *  Setting a terrain here asks the same seed question that a Grassy Surge arriving would, because
  *  it is the same cue and a Grassy Seed does not care what put the grass there. */
-function FieldPad({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
+export function FieldPad({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
   const set = (what: string, value: string | null) =>
     onLog([{ kind: "field", what, value, on: value !== null }]);
   return (

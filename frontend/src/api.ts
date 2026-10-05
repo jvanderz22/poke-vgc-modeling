@@ -246,7 +246,9 @@ export type LiveMon = {
 export type MoveOption = { id: string; name: string; target: string | null; category: string | null };
 
 export type SideMenu = {
-  actives: ({ slot: number; species: string; moves: MoveOption[]; moves_known: boolean } | null)[];
+  actives: ({ slot: number; species: string; moves: MoveOption[]; moves_known: boolean;
+               /** The Mega formes it could become this turn: one per stone its item could be. */
+               megas: { forme: string; item: string }[] } | null)[];
   bench: { species: string; hp: number; state: string }[];
 };
 
