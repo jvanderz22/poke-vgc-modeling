@@ -53,10 +53,12 @@ def _solve(pos: dict[str, Any]) -> dict[str, Any] | None:
     return out.get("result")
 
 
-def _game(replay: dict[str, Any]) -> list[dict[str, Any]]:
+def positions(replay: dict[str, Any]):
+    """Each position this script asks about: a held-out open-sheet game's turn with more than two a
+    side, from one side's view, with the choice the human made there shown whole. Yields the solver
+    input's parts (`sets_`, `f`), the human's joint choice as the solver writes it, and where it was."""
     import prune_vs_people as P
     from vgc.data.snapshots import human_snapshots, replay_group
-    from vgc.policy import ewp as E
     from vgc.policy import view as V
     from vgc.regulation import to_id
     from vgc.web.endgames import is_bot
@@ -66,16 +68,15 @@ def _game(replay: dict[str, Any]) -> list[dict[str, Any]]:
     group = replay_group(replay)
     if _W["rules"].split_of("human", replay["id"], [], group) != "heldout_human" or any(
             is_bot(p) for p in replay.get("players") or []):
-        return []
+        return
     recs = [r for r in human_snapshots(replay, reg) if r["obs"]["perspective"] == "spectator" and not r["meta"]["approx"]]
     if not recs or not recs[0]["meta"]["ots"]:
-        return []
+        return
     label = recs[0]["label"]
     lines = replay["log"].split("\n")
     turn_at = [i for i, x in enumerate(lines) if x.startswith("|turn|")]
     view = V.PlayerView(reg, "spectator", None)
-    search = {**V.SEARCH, "side_k": E.SIDE_K, "root_detail": True}
-    rows, fed = [], 0
+    fed = 0
     for n, at in enumerate(turn_at):
         view.feed(lines[fed: at + 1])
         fed = at + 1
@@ -120,24 +121,37 @@ def _game(replay: dict[str, Any]) -> list[dict[str, Any]]:
                              P._part(reg, slot, sid, made.get(f"{sid}{'ab'[slot]}", {}), sets_[sid]))
             if any(p is None for p in parts):
                 continue                                  # not shown whole
-            human = ", ".join(parts)
-            r = _solve(V.compose(reg, sets_, f, search))
-            if r is None or not r.get("matrix"):
-                continue
-            M = np.array(r["matrix"], float)
-            people = (r.get("people") or {}).get(them)
-            if sid == "p2":
-                M = 1 - M.T
-            scores = None if people is None or any(x is None for x in people) else people
-            rows_ = r["moves"][sid]
-            pe = E.combine([(1.0, M, scores, None)], "people", 4)
-            na = E.combine([(1.0, M, None, None)], "nash", 4)
-            legal = _solve(V.compose(reg, sets_, f, {"list_only": True, "prune": 0, "switches": True, "mega": "both"}))
-            hit = rows_.index(human) if human in rows_ else None
-            rows.append({"id": replay["id"], "group": group, "kind": f"{left[sid]}v{left[them]}",
-                         "kept": hit is not None, "people": int(np.argmax(pe["ewp"])) == hit if hit is not None else False,
-                         "nash": float(na["strategy"][hit]) if hit is not None else 0.0, "model": hit == 0,
-                         "legal": len(legal["all"][sid]) if legal else None, "rows": len(rows_)})
+            yield {"id": replay["id"], "group": group, "kind": f"{left[sid]}v{left[them]}", "sid": sid, "them": them,
+                   "turn": int(lines[at].split("|")[2]), "winner": label.get("winner"),
+                   "sets": sets_, "f": f, "human": ", ".join(parts)}
+
+
+def _game(replay: dict[str, Any]) -> list[dict[str, Any]]:
+    from vgc.policy import ewp as E
+    from vgc.policy import view as V
+
+    reg = _W["reg"]
+    search = {**V.SEARCH, "side_k": E.SIDE_K, "root_detail": True}
+    rows = []
+    for x in positions(replay):
+        sid, them, sets_, f, human = x["sid"], x["them"], x["sets"], x["f"], x["human"]
+        r = _solve(V.compose(reg, sets_, f, search))
+        if r is None or not r.get("matrix"):
+            continue
+        M = np.array(r["matrix"], float)
+        people = (r.get("people") or {}).get(them)
+        if sid == "p2":
+            M = 1 - M.T
+        scores = None if people is None or any(x is None for x in people) else people
+        rows_ = r["moves"][sid]
+        pe = E.combine([(1.0, M, scores, None)], "people", 4)
+        na = E.combine([(1.0, M, None, None)], "nash", 4)
+        legal = _solve(V.compose(reg, sets_, f, {"list_only": True, "prune": 0, "switches": True, "mega": "both"}))
+        hit = rows_.index(human) if human in rows_ else None
+        rows.append({"id": x["id"], "group": x["group"], "kind": x["kind"],
+                     "kept": hit is not None, "people": int(np.argmax(pe["ewp"])) == hit if hit is not None else False,
+                     "nash": float(na["strategy"][hit]) if hit is not None else 0.0, "model": hit == 0,
+                     "legal": len(legal["all"][sid]) if legal else None, "rows": len(rows_)})
     return rows
 
 

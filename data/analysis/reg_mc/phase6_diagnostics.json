@@ -1,0 +1,457 @@
+{
+ "team_level": {
+  "heuristic": {
+   "teams": 3332,
+   "pairing_level": {
+    "games": 4591,
+    "groups": 2690,
+    "auc": 0.5118,
+    "auc_95ci": [
+     0.4955,
+     0.5282
+    ],
+    "logloss_delta": 0.40848,
+    "logloss_delta_95ci": [
+     0.3768,
+     0.4388
+    ]
+   },
+   "team_level_same_games": {
+    "games": 4591,
+    "groups": 2690,
+    "auc": 0.5074,
+    "auc_95ci": [
+     0.4902,
+     0.5241
+    ],
+    "logloss_delta": 0.26597,
+    "logloss_delta_95ci": [
+     0.2405,
+     0.2916
+    ]
+   },
+   "team_level_unsimulated_pairings": {
+    "games": 149,
+    "groups": 92,
+    "auc": 0.5258,
+    "auc_95ci": [
+     0.4212,
+     0.6273
+    ],
+    "logloss_delta": 0.21923,
+    "logloss_delta_95ci": [
+     0.0789,
+     0.3798
+    ]
+   }
+  },
+  "policy": {
+   "teams": 1829,
+   "pairing_level": {
+    "games": 2064,
+    "groups": 1207,
+    "auc": 0.5142,
+    "auc_95ci": [
+     0.4878,
+     0.5421
+    ],
+    "logloss_delta": 0.23216,
+    "logloss_delta_95ci": [
+     0.1937,
+     0.2686
+    ]
+   },
+   "team_level_same_games": {
+    "games": 2064,
+    "groups": 1207,
+    "auc": 0.5111,
+    "auc_95ci": [
+     0.4856,
+     0.5393
+    ],
+    "logloss_delta": 0.16581,
+    "logloss_delta_95ci": [
+     0.1326,
+     0.1957
+    ]
+   },
+   "team_level_unsimulated_pairings": {
+    "games": 721,
+    "groups": 430,
+    "auc": 0.4914,
+    "auc_95ci": [
+     0.4455,
+     0.5344
+    ],
+    "logloss_delta": 0.164,
+    "logloss_delta_95ci": [
+     0.1129,
+     0.2189
+    ]
+   }
+  },
+  "human_team_strength": {
+   "games": 252,
+   "groups": 149,
+   "auc": 0.5493,
+   "auc_95ci": [
+    0.4768,
+    0.621
+   ],
+   "logloss_delta": 0.01201,
+   "logloss_delta_95ci": [
+    -0.0205,
+    0.0464
+   ]
+  },
+  "human_player_strength": {
+   "games": 417,
+   "groups": 254,
+   "auc": 0.5665,
+   "auc_95ci": [
+    0.5101,
+    0.6169
+   ],
+   "logloss_delta": 0.00403,
+   "logloss_delta_95ci": [
+    -0.0201,
+    0.0324
+   ]
+  },
+  "teams_in_two_or_more_series": 1471,
+  "of_those_one_player_only": 0.8314
+ },
+ "archetypes": {
+  "features": [
+   "trick_room",
+   "tailwind",
+   "weather",
+   "setup",
+   "fake_out",
+   "redirection",
+   "intimidate",
+   "mega"
+  ],
+  "prevalence": {
+   "trick_room": 0.37,
+   "tailwind": 0.569,
+   "weather": 0.352,
+   "setup": 0.596,
+   "fake_out": 0.711,
+   "redirection": 0.301,
+   "intimidate": 0.62,
+   "mega": 0.996
+  },
+  "humans": {
+   "games": 4740,
+   "trick_room": {
+    "coef": 0.17,
+    "ci95": [
+     0.063,
+     0.274
+    ]
+   },
+   "tailwind": {
+    "coef": -0.025,
+    "ci95": [
+     -0.109,
+     0.059
+    ]
+   },
+   "weather": {
+    "coef": -0.004,
+    "ci95": [
+     -0.105,
+     0.086
+    ]
+   },
+   "setup": {
+    "coef": -0.101,
+    "ci95": [
+     -0.195,
+     -0.011
+    ]
+   },
+   "fake_out": {
+    "coef": 0.147,
+    "ci95": [
+     0.032,
+     0.26
+    ]
+   },
+   "redirection": {
+    "coef": -0.058,
+    "ci95": [
+     -0.163,
+     0.055
+    ]
+   },
+   "intimidate": {
+    "coef": 0.082,
+    "ci95": [
+     -0.014,
+     0.189
+    ]
+   },
+   "mega": {
+    "coef": 0.619,
+    "ci95": [
+     -0.297,
+     1.704
+    ]
+   }
+  },
+  "heuristic": {
+   "pairings": 3372,
+   "trick_room": {
+    "coef": -0.063,
+    "ci95": [
+     -0.165,
+     0.044
+    ]
+   },
+   "tailwind": {
+    "coef": 0.1,
+    "ci95": [
+     0.016,
+     0.183
+    ]
+   },
+   "weather": {
+    "coef": -0.138,
+    "ci95": [
+     -0.228,
+     -0.052
+    ]
+   },
+   "setup": {
+    "coef": -0.023,
+    "ci95": [
+     -0.109,
+     0.057
+    ]
+   },
+   "fake_out": {
+    "coef": -0.16,
+    "ci95": [
+     -0.263,
+     -0.063
+    ]
+   },
+   "redirection": {
+    "coef": -0.07,
+    "ci95": [
+     -0.177,
+     0.029
+    ]
+   },
+   "intimidate": {
+    "coef": 0.099,
+    "ci95": [
+     -0.003,
+     0.198
+    ]
+   },
+   "mega": {
+    "coef": 0.837,
+    "ci95": [
+     -0.003,
+     2.349
+    ]
+   },
+   "humans_minus_selfplay": {
+    "trick_room": {
+     "diff": 0.233,
+     "z": 3.07,
+     "bonferroni": true
+    },
+    "tailwind": {
+     "diff": -0.126,
+     "z": -2.1,
+     "bonferroni": false
+    },
+    "weather": {
+     "diff": 0.135,
+     "z": 2.09,
+     "bonferroni": false
+    },
+    "setup": {
+     "diff": -0.078,
+     "z": -1.24,
+     "bonferroni": false
+    },
+    "fake_out": {
+     "diff": 0.307,
+     "z": 3.95,
+     "bonferroni": true
+    },
+    "redirection": {
+     "diff": 0.013,
+     "z": 0.16,
+     "bonferroni": false
+    },
+    "intimidate": {
+     "diff": -0.017,
+     "z": -0.23,
+     "bonferroni": false
+    },
+    "mega": {
+     "diff": -0.219,
+     "z": -0.27,
+     "bonferroni": false
+    }
+   }
+  },
+  "policy": {
+   "pairings": 1500,
+   "trick_room": {
+    "coef": 0.001,
+    "ci95": [
+     -0.129,
+     0.134
+    ]
+   },
+   "tailwind": {
+    "coef": 0.13,
+    "ci95": [
+     0.026,
+     0.235
+    ]
+   },
+   "weather": {
+    "coef": -0.186,
+    "ci95": [
+     -0.327,
+     -0.075
+    ]
+   },
+   "setup": {
+    "coef": -0.094,
+    "ci95": [
+     -0.2,
+     0.014
+    ]
+   },
+   "fake_out": {
+    "coef": -0.09,
+    "ci95": [
+     -0.248,
+     0.063
+    ]
+   },
+   "redirection": {
+    "coef": -0.23,
+    "ci95": [
+     -0.383,
+     -0.083
+    ]
+   },
+   "intimidate": {
+    "coef": 0.186,
+    "ci95": [
+     0.063,
+     0.317
+    ]
+   },
+   "mega": {
+    "coef": -0.001,
+    "ci95": [
+     -1.323,
+     1.528
+    ]
+   },
+   "humans_minus_selfplay": {
+    "trick_room": {
+     "diff": 0.169,
+     "z": 1.99,
+     "bonferroni": false
+    },
+    "tailwind": {
+     "diff": -0.156,
+     "z": -2.25,
+     "bonferroni": false
+    },
+    "weather": {
+     "diff": 0.183,
+     "z": 2.35,
+     "bonferroni": false
+    },
+    "setup": {
+     "diff": -0.007,
+     "z": -0.1,
+     "bonferroni": false
+    },
+    "fake_out": {
+     "diff": 0.236,
+     "z": 2.36,
+     "bonferroni": false
+    },
+    "redirection": {
+     "diff": 0.173,
+     "z": 1.83,
+     "bonferroni": false
+    },
+    "intimidate": {
+     "diff": -0.104,
+     "z": -1.26,
+     "bonferroni": false
+    },
+    "mega": {
+     "diff": 0.62,
+     "z": 0.63,
+     "bonferroni": false
+    }
+   }
+  }
+ },
+ "players_fixed": {
+  "heuristic": {
+   "games": 1513,
+   "groups": 1512,
+   "rating_differs": 0.986,
+   "rating_alone": {
+    "games": 1513,
+    "groups": 1512,
+    "auc": 0.5975,
+    "auc_95ci": [
+     0.5701,
+     0.6249
+    ],
+    "logloss_delta": -0.01335,
+    "logloss_delta_95ci": [
+     -0.0223,
+     -0.0043
+    ]
+   },
+   "selfplay_adds": 0.00022,
+   "selfplay_adds_95ci": [
+    -0.0016,
+    0.00206
+   ]
+  },
+  "policy": {
+   "games": 687,
+   "groups": 687,
+   "rating_differs": 0.987,
+   "rating_alone": {
+    "games": 687,
+    "groups": 687,
+    "auc": 0.5553,
+    "auc_95ci": [
+     0.5111,
+     0.5993
+    ],
+    "logloss_delta": -0.00473,
+    "logloss_delta_95ci": [
+     -0.0164,
+     0.0066
+    ]
+   },
+   "selfplay_adds": -0.00147,
+   "selfplay_adds_95ci": [
+    -0.00572,
+    0.00283
+   ]
+  }
+ }
+}

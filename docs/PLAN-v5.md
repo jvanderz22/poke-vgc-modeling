@@ -114,7 +114,7 @@ step settles whether the check can be passed on this corpus at all.
   and the two they led with (`scripts/analysis/step3_brings.py`). Collect with
   `kaggle_selfplay.sh step3b-$i --collect`. The merge replays against the packed code, commit
   `9049d90`, so run it from a worktree at that commit or with the changed `src/vgc` files checked out
-  from it. Then `step3_brings.py score`, written up as [phase6-findings](phase6-findings.md) §10.
+  from it. Then `step3_brings.py score`, written up as [phase6-findings](phase6-findings.md) §11.
 - ~~**The ceiling.**~~ **Done 2026-10-04** ([phase6-findings](phase6-findings.md) §9,
   `scripts/analysis/phase6_ceiling.py`). On held-out games the preview head **passes** Phase 6's
   check: AUC 0.562 [0.537, 0.584], recalibrated −0.0066 [−0.0115, −0.0013]. It beats heuristic
@@ -165,6 +165,16 @@ policy, and 12,000 with the brings. Each one names the remedy in step 3 that it 
   scope where it can be trusted (remedy 3c).
 - **Cost:** the first three take a day on the laptop. The rollouts take two Kaggle nights after a
   day of building.
+- **(a)–(c) done 2026-10-04** ([phase6-findings](phase6-findings.md) §10,
+  `scripts/analysis/phase6_diagnostics.py`):
+  - **Team level:** pooling does not help (heuristic 0.507 against 0.512 per pairing), and 83% of
+    teams in two or more series had one player.
+  - **Archetypes:** self-play undervalues Trick Room and Fake Out against humans (heuristic z 3.1 and
+    4.0 after Bonferroni; the policy leans the same way). Both pay off after the turn they are played
+    in.
+  - **Players:** the rating difference alone reaches AUC 0.598, and self-play adds nothing beside it.
+
+  That points at 3a, aimed at Trick Room and Fake Out. Rollouts (3c) remain.
 
 ### 3. Handling it: a simulator signal that is gated on people
 

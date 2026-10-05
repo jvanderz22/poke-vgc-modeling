@@ -263,3 +263,69 @@ the preview head lacks. Step 3b stays the test for any later policy (3a), becaus
 signal too weak to stand alone. And the team-level diagnostic (step 2a) has
 to account for players. 1,471 teams play in two or more series, and 42% of games have both teams in
 two or more, but a team is mostly one player's.
+
+## 10. Why self-play misses: the diagnostics (PLAN-v5 step 2, 2026-10-04)
+
+`scripts/analysis/phase6_diagnostics.py`, on the battles already played (the heuristic's 3,372
+pairings × 15, the policy's 1,500 × 8), games that ended normally. Result:
+`data/analysis/reg_mc/phase6_diagnostics.json`. Rollouts from human positions, the fourth check,
+need building and are not here.
+
+**(a) Pooling a team's battles does not help.** A Bradley–Terry strength per team, fitted on every
+battle a team played in a run, predicts human games no better than the per-pairing win rate. That
+holds on pairings the run never played, too:
+
+| | games (series) | per pairing | per team (pooled) |
+| --- | --- | --- | --- |
+| heuristic | 4,591 (2,690) | 0.512 [0.496, 0.528] | 0.507 [0.490, 0.524] |
+| policy | 2,064 (1,207) | 0.514 [0.488, 0.542] | 0.511 [0.486, 0.539] |
+| policy, pairings it never played | 721 (430) | | 0.491 [0.446, 0.534] |
+
+So the null is not per-pairing noise. As references, strengths fitted from human training series
+and scored on held-out series give 0.549 [0.477, 0.621] per team (252 games) and 0.567
+[0.510, 0.617] per player (417 games). A team's human record is mostly its player's: of the 1,471
+teams in two or more series, 83% were played by one player only.
+
+**(b) Self-play misjudges two archetypes.** These are logistic coefficients (logit units) on which
+team has the archetype (A has it, minus B has it): for human results, by game with a cluster
+bootstrap by series; for self-play, by pairing over its battles. The last column is humans minus
+self-play, as z, with Bonferroni over the eight archetypes (|z| > 2.73). Mega is left out of the
+table: 99.6% of teams carry one.
+
+| archetype (share of teams) | humans | heuristic | policy | humans − heuristic, policy (z) |
+| --- | --- | --- | --- | --- |
+| **Trick Room** (37%) | **+0.17** [+0.06, +0.27] | −0.06 [−0.17, +0.04] | +0.00 [−0.13, +0.13] | **3.1**, 2.0 |
+| **Fake Out** (71%) | **+0.15** [+0.03, +0.26] | −0.16 [−0.26, −0.06] | −0.09 [−0.25, +0.06] | **4.0**, 2.4 |
+| Tailwind (57%) | −0.03 [−0.11, +0.06] | +0.10 [+0.02, +0.18] | +0.13 [+0.03, +0.23] | −2.1, −2.3 |
+| weather (35%) | −0.00 [−0.10, +0.09] | −0.14 [−0.23, −0.05] | −0.19 [−0.33, −0.07] | 2.1, 2.4 |
+| setup (60%) | −0.10 [−0.20, −0.01] | −0.02 [−0.11, +0.06] | −0.09 [−0.20, +0.01] | −1.2, −0.1 |
+| redirection (30%) | −0.06 [−0.16, +0.06] | −0.07 [−0.18, +0.03] | −0.23 [−0.38, −0.08] | 0.2, 1.8 |
+| Intimidate (62%) | +0.08 [−0.01, +0.19] | +0.10 [−0.00, +0.20] | +0.19 [+0.06, +0.32] | −0.2, −1.3 |
+
+Humans win more with Trick Room and with Fake Out. Self-play rates both lower, and for the
+heuristic the gap clears the correction. The policy leans the same way on fewer pairings. Both pay
+off through turn order and over more than one turn. Trick Room reverses the order for the four turns
+after the one it is set. Fake Out buys a partner a free turn. A one-turn search valued by a damage
+race sees neither past the turn it plays in. Self-play also likes Tailwind and dislikes weather
+more than humans do, short of the correction. One caveat: the human coefficients include who
+pilots these teams, so part of Trick Room's +0.17 could be its players.
+
+**(c) The players matter more than the teams, and self-play adds nothing beside them.** On rated
+games (mostly Bo1 ladder, so each game is its own series), each player's pre-game rating is in the
+log. The test is the rating difference alone against the rating difference plus the self-play
+logit, cross-fitted by series:
+
+| | games | rating alone, AUC | self-play adds (log loss) |
+| --- | --- | --- | --- |
+| heuristic | 1,513 | 0.598 [0.570, 0.625] | +0.0002 [−0.0016, +0.0021] |
+| policy | 687 | 0.555 [0.511, 0.599] | −0.0015 [−0.0057, +0.0028] |
+
+The ratings alone order these games better than anything team-only does (0.60, against the preview
+head's 0.56 in §9).
+
+**What it points to.** Pooling is closed: the signal is not hiding under per-pairing noise.
+Stacking (§9) is closed for both existing policies. What is left is a bias with a mechanism. Self-play
+undervalues the two archetypes whose payoff comes after the turn they are played. That is a target
+for PLAN-v5 step 3a: look at how the policy plays Trick Room and Fake Out, and search two turns while
+either is in play. Before a full Phase 6 run, a cheap check is enough: does the Trick Room and Fake
+Out gap close in self-play on a sample of pairings?
