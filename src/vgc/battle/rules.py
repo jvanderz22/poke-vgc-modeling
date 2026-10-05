@@ -175,10 +175,19 @@ def opposing_slots(sid: str) -> str:
 
 
 def on_switch_in(reg: Regulation, species: str,
-                 known: str | Iterable[str] | None = None) -> list[Outcome]:
-    """What could fire when this Pokémon arrives — one outcome per ability still possible."""
+                 known: str | Iterable[str] | None = None, *,
+                 weather: str | None = None, terrain: str | None = None) -> list[Outcome]:
+    """What could fire when this Pokémon arrives — one outcome per ability still possible.
+
+    A weather or terrain setter arriving to find its own effect already up says nothing: the pinned
+    build's `setWeather` and `setTerrain` fail without a message when the effect is the same. So
+    there it counts with the abilities that never announce, and if that leaves nothing to tell
+    apart, nothing is asked.
+    """
 
     def describe(ability: str):
+        if WEATHER_ON_START.get(ability, "-") == weather or TERRAIN_ON_START.get(ability, "-") == terrain:
+            return None
         if ability in WEATHER_ON_START:
             return (f"weather turns to {WEATHER_ON_START[ability]}",
                     [{"kind": "weather", "value": WEATHER_ON_START[ability]}])
@@ -440,3 +449,334 @@ def still_possible(reg: Regulation, mon: Any) -> list[str]:
     if mon.ability:
         return [to_id(mon.ability)]
     return [a for a in candidate_abilities(reg, mon.species) if a not in mon.ability_ruled_out]
+
+
+# --- what a move does to stats -------------------------------------------------------------
+#
+# The cartridge names the move, and the rest follows: Close Combat lowers its user's Defence and
+# Special Defence once it connects, Snarl lowers each target's Special Attack, Swords Dance raises
+# Attack. Three tables, re-derived from the pinned build's `moves.ts` in
+# `tests/test_battle_rules.py`, because the dex export carries none of `self`, `boosts` or
+# `secondary`:
+#
+# * `MOVE_SELF`: what a move does to its user (`self.boosts`, or `boosts` on a self-target move);
+# * `MOVE_TARGET`: what a status move does to its target (`boosts`, or an `onHit` boost);
+# * `MOVE_SECONDARY`: a damaging move's added effect on a target it hit, or on its user, with its
+#   chance. At 100 it is certain and follows on its own; below that it happened only if you say so.
+#
+# Flinch and confusion are left out: they are volatiles this state model does not carry.
+
+MOVE_SELF = {
+    "acidarmor": {"def": 2}, "agility": {"spe": 2}, "amnesia": {"spd": 2},
+    "armorcannon": {"def": -1, "spd": -1}, "bulkup": {"atk": 1, "def": 1},
+    "calmmind": {"spa": 1, "spd": 1}, "charge": {"spd": 1},
+    "clangoroussoul": {"atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1},
+    "closecombat": {"def": -1, "spd": -1}, "coil": {"accuracy": 1, "atk": 1, "def": 1},
+    "cosmicpower": {"def": 1, "spd": 1}, "cottonguard": {"def": 3}, "doubleteam": {"evasion": 1},
+    "dracometeor": {"spa": -2}, "dragondance": {"atk": 1, "spe": 1},
+    "growth": {"atk": 1, "spa": 1}, "hammerarm": {"spe": -1},
+    "headlongrush": {"def": -1, "spd": -1}, "icehammer": {"spe": -1}, "irondefense": {"def": 2},
+    "leafstorm": {"spa": -2}, "makeitrain": {"spa": -1}, "minimize": {"evasion": 2},
+    "nastyplot": {"spa": 2}, "noretreat": {"atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1},
+    "overheat": {"spa": -2}, "quiverdance": {"spa": 1, "spd": 1, "spe": 1},
+    "rockpolish": {"spe": 2}, "shellsmash": {"atk": 2, "def": -1, "spa": 2, "spd": -1, "spe": 2},
+    "shelter": {"def": 2}, "shiftgear": {"atk": 1, "spe": 2}, "superpower": {"atk": -1, "def": -1},
+    "swordsdance": {"atk": 2},
+}
+MOVE_TARGET = {
+    "aromaticmist": {"spd": 1}, "babydolleyes": {"atk": -1}, "bellydrum": {"atk": 12},
+    "charm": {"atk": -2}, "coaching": {"atk": 1, "def": 1}, "cottonspore": {"spe": -2},
+    "decorate": {"atk": 2, "spa": 2}, "eerieimpulse": {"spa": -2}, "faketears": {"spd": -2},
+    "featherdance": {"atk": -2}, "flatter": {"spa": 1}, "howl": {"atk": 1},
+    "magneticflux": {"def": 1, "spd": 1}, "memento": {"atk": -2, "spa": -2},
+    "metalsound": {"spd": -2}, "nobleroar": {"atk": -1, "spa": -1},
+    "partingshot": {"atk": -1, "spa": -1}, "scaryface": {"spe": -2}, "screech": {"def": -2},
+    "spicyextract": {"atk": 2, "def": -2}, "stockpile": {"def": 1, "spd": 1},
+    "strengthsap": {"atk": -1}, "stringshot": {"spe": -2}, "swagger": {"atk": 2},
+    "sweetscent": {"evasion": -2}, "tearfullook": {"atk": -1, "spa": -1},
+    "tickle": {"atk": -1, "def": -1}, "toxicthread": {"spe": -1},
+}
+MOVE_SECONDARY = {
+    "acidspray": [{"chance": 100, "target": {"spd": -2}}],
+    "ancientpower": [{"chance": 10, "self": {"atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1}}],
+    "appleacid": [{"chance": 100, "target": {"spd": -1}}],
+    "aquastep": [{"chance": 100, "self": {"spe": 1}}],
+    "aurawheel": [{"chance": 100, "self": {"spe": 1}}],
+    "barbbarrage": [{"chance": 50, "status": "psn"}],
+    "bittermalice": [{"chance": 100, "target": {"atk": -1}}],
+    "blazekick": [{"chance": 10, "status": "brn"}], "blizzard": [{"chance": 10, "status": "frz"}],
+    "bodyslam": [{"chance": 30, "status": "par"}], "bounce": [{"chance": 30, "status": "par"}],
+    "breakingswipe": [{"chance": 100, "target": {"atk": -1}}],
+    "bugbuzz": [{"chance": 10, "target": {"spd": -1}}],
+    "bulldoze": [{"chance": 100, "target": {"spe": -1}}],
+    "chargebeam": [{"chance": 70, "self": {"spa": 1}}],
+    "chillingwater": [{"chance": 100, "target": {"atk": -1}}],
+    "crosspoison": [{"chance": 10, "status": "psn"}],
+    "crunch": [{"chance": 20, "target": {"def": -1}}],
+    "crushclaw": [{"chance": 50, "target": {"def": -1}}],
+    "discharge": [{"chance": 30, "status": "par"}],
+    "drumbeating": [{"chance": 100, "target": {"spe": -1}}],
+    "earthpower": [{"chance": 10, "target": {"spd": -1}}],
+    "electroweb": [{"chance": 100, "target": {"spe": -1}}],
+    "energyball": [{"chance": 10, "target": {"spd": -1}}],
+    "fierydance": [{"chance": 50, "self": {"spa": 1}}],
+    "fireblast": [{"chance": 10, "status": "brn"}], "firefang": [{"chance": 10, "status": "brn"}],
+    "firelash": [{"chance": 100, "target": {"def": -1}}],
+    "firepunch": [{"chance": 10, "status": "brn"}],
+    "flamecharge": [{"chance": 100, "self": {"spe": 1}}],
+    "flamethrower": [{"chance": 10, "status": "brn"}],
+    "flareblitz": [{"chance": 10, "status": "brn"}],
+    "flashcannon": [{"chance": 10, "target": {"spd": -1}}],
+    "focusblast": [{"chance": 10, "target": {"spd": -1}}],
+    "freezedry": [{"chance": 10, "status": "frz"}],
+    "gravapple": [{"chance": 100, "target": {"def": -1}}],
+    "gunkshot": [{"chance": 30, "status": "psn"}], "heatwave": [{"chance": 10, "status": "brn"}],
+    "icebeam": [{"chance": 10, "status": "frz"}], "icefang": [{"chance": 10, "status": "frz"}],
+    "icepunch": [{"chance": 10, "status": "frz"}],
+    "icywind": [{"chance": 100, "target": {"spe": -1}}],
+    "infernalparade": [{"chance": 30, "status": "brn"}],
+    "inferno": [{"chance": 100, "status": "brn"}],
+    "irontail": [{"chance": 30, "target": {"def": -1}}],
+    "lavaplume": [{"chance": 30, "status": "brn"}],
+    "liquidation": [{"chance": 20, "target": {"def": -1}}],
+    "lowsweep": [{"chance": 100, "target": {"spe": -1}}],
+    "luminacrash": [{"chance": 100, "target": {"spd": -2}}],
+    "lunge": [{"chance": 100, "target": {"atk": -1}}],
+    "matchagotcha": [{"chance": 20, "status": "brn"}],
+    "meteormash": [{"chance": 20, "self": {"atk": 1}}],
+    "moonblast": [{"chance": 30, "target": {"spa": -1}}],
+    "mortalspin": [{"chance": 100, "status": "psn"}],
+    "muddywater": [{"chance": 30, "target": {"accuracy": -1}}],
+    "mudshot": [{"chance": 100, "target": {"spe": -1}}],
+    "mudslap": [{"chance": 100, "target": {"accuracy": -1}}],
+    "mysticalfire": [{"chance": 100, "target": {"spa": -1}}],
+    "nightdaze": [{"chance": 40, "target": {"accuracy": -1}}],
+    "nuzzle": [{"chance": 100, "status": "par"}],
+    "playrough": [{"chance": 10, "target": {"atk": -1}}],
+    "poisonfang": [{"chance": 50, "status": "tox"}],
+    "poisonjab": [{"chance": 30, "status": "psn"}],
+    "pounce": [{"chance": 100, "target": {"spe": -1}}],
+    "psychic": [{"chance": 10, "target": {"spd": -1}}],
+    "psyshieldbash": [{"chance": 100, "self": {"def": 1}}],
+    "pyroball": [{"chance": 10, "status": "brn"}],
+    "rapidspin": [{"chance": 100, "self": {"spe": 1}}],
+    "razorshell": [{"chance": 50, "target": {"def": -1}}],
+    "rocktomb": [{"chance": 100, "target": {"spe": -1}}],
+    "scald": [{"chance": 30, "status": "brn"}],
+    "scorchingsands": [{"chance": 30, "status": "brn"}],
+    "shadowball": [{"chance": 20, "target": {"spd": -1}}],
+    "shellsidearm": [{"chance": 20, "status": "psn"}],
+    "skittersmack": [{"chance": 100, "target": {"spa": -1}}],
+    "sludgebomb": [{"chance": 30, "status": "psn"}],
+    "sludgewave": [{"chance": 10, "status": "psn"}],
+    "snarl": [{"chance": 100, "target": {"spa": -1}}],
+    "spiritbreak": [{"chance": 100, "target": {"spa": -1}}],
+    "steelwing": [{"chance": 10, "self": {"def": 1}}],
+    "strugglebug": [{"chance": 100, "target": {"spa": -1}}],
+    "thunder": [{"chance": 30, "status": "par"}], "thunderbolt": [{"chance": 10, "status": "par"}],
+    "thunderfang": [{"chance": 10, "status": "par"}],
+    "thunderpunch": [{"chance": 10, "status": "par"}],
+    "torchsong": [{"chance": 100, "self": {"spa": 1}}],
+    "trailblaze": [{"chance": 100, "self": {"spe": 1}}],
+    "triplearrows": [{"chance": 50, "target": {"def": -1}}],
+    "tropkick": [{"chance": 100, "target": {"atk": -1}}],
+    "volttackle": [{"chance": 10, "status": "par"}],
+    "zapcannon": [{"chance": 100, "status": "par"}],
+}
+
+
+# Abilities in `BLOCKS_DROP` that refuse only Intimidate. A move's drop goes straight through them.
+INTIMIDATE_ONLY = {"innerfocus", "oblivious", "owntempo", "scrappy", "guarddog"}
+# Items that answer a drop: White Herb puts lowered stats back and is used up, Clear Amulet
+# refuses a drop another Pokémon caused. Offered for an unseen item when at least this share of
+# the sets still possible hold it.
+DROP_ITEMS = {"whiteherb": "White Herb", "clearamulet": "Clear Amulet"}
+DROP_ITEM_SHARE = 0.03
+
+
+def _stats(boosts: dict[str, int]) -> str:
+    return ", ".join(f"{k} {v:+d}" for k, v in boosts.items())
+
+
+def drop_outcomes(reg: Regulation, species: str, drops: dict[str, int],
+                  known: str | Iterable[str] | None = None, *, by_other: bool,
+                  item: str | None = None, items: Iterable[str] = ()) -> list[Outcome]:
+    """What a move's stat drops could do to this Pokémon: land, or be answered.
+
+    A drop the Pokémon did to itself (Close Combat) is answered by nothing but a White Herb. One
+    another Pokémon caused (Snarl, Parting Shot) can also be refused by Clear Body and its kind,
+    sent back by Mirror Armor, or answered by Defiant and Competitive — but not by the abilities
+    that refuse only Intimidate. `item` is the held item where known (None: unseen), and `items`
+    the reacting items an unseen one could plausibly be.
+    """
+    plain = Outcome(f"{_stats(drops)}, nothing else", [{"kind": "boost", "stat": k, "stages": v} for k, v in drops.items()])
+    if not by_other:
+        out = [plain]
+    else:
+        def describe(ability: str):
+            if ability in INTIMIDATE_ONLY:
+                return None
+            if ability in REFLECTS_DROP:
+                return ("the drops are sent back to whoever caused them",
+                        [{"kind": "reflect", "stat": k, "stages": v} for k, v in drops.items()])
+            guarded = BLOCKS_DROP.get(ability, "missing")
+            if guarded is None or (guarded in drops and len(drops) == 1):
+                return ("the drops are refused", [])
+            if guarded in drops:
+                rest = {k: v for k, v in drops.items() if k != guarded}
+                return (f"{guarded} kept, {_stats(rest)}",
+                        [{"kind": "boost", "stat": k, "stages": v} for k, v in rest.items()])
+            if ability in REBOUND:
+                rstat, rstages = REBOUND[ability]
+                return (f"{_stats(drops)}, then {rstat} {rstages:+d}",
+                        [{"kind": "boost", "stat": k, "stages": v} for k, v in drops.items()]
+                        + [{"kind": "boost", "stat": rstat, "stages": rstages}])
+            return None
+
+        out = _collect(reg, species, known, describe)
+        for o in out:
+            if o.label.startswith("nothing announced"):
+                o.label = plain.label + o.label.removeprefix("nothing announced")
+                o.effects = list(plain.effects)
+        if not out:
+            out = [plain]
+    return with_drop_items(out, item=item, items=items, by_other=by_other)
+
+
+def with_drop_items(outcomes: list[Outcome], *, item: str | None, items: Iterable[str],
+                    by_other: bool) -> list[Outcome]:
+    """Let a held item answer a drop. A known White Herb puts back whatever lands and is used up;
+    a known Clear Amulet refuses another Pokémon's drop outright; an unseen item that could well be
+    either adds that as one more thing that might have happened, and picking it is the reveal."""
+    item = to_id(item or "") if item is not None else None
+    if item == "clearamulet" and by_other:
+        return [Outcome("Clear Amulet: the drops are refused", [], item="clearamulet")]
+
+    def herb(o: Outcome) -> Outcome | None:
+        kept = [e for e in o.effects if not (e["kind"] == "boost" and e["stages"] < 0)]
+        if len(kept) == len(o.effects):
+            return None
+        return Outcome(f"{o.label.split(' — ')[0].removesuffix(', nothing else')}, then White Herb puts them back (used up)",
+                       kept, ability=o.ability, excludes=o.excludes, item="whiteherb", consumed=True)
+
+    if item == "whiteherb":
+        return [herb(o) or o for o in outcomes]
+    if item is not None:
+        return outcomes
+    out = list(outcomes)
+    if "clearamulet" in items and by_other:
+        out.insert(len(out) - 1 if len(out) > 1 else len(out),
+                   Outcome("Clear Amulet: the drops are refused", [], item="clearamulet"))
+    if "whiteherb" in items:
+        plain = next((o for o in outcomes if o.label.split(" — ")[0].endswith("nothing else")), outcomes[-1])
+        h = herb(plain)
+        if h is not None:
+            h.ability, h.excludes = None, frozenset()   # the herb says nothing about the ability
+            out.append(h)
+    return out
+
+
+# --- the end of the turn ------------------------------------------------------------------
+#
+# What could change HP once everyone has moved, in the order the pinned build resolves it
+# (`onResidualOrder`): weather first, then Grassy Terrain's heal, then held items, then poison,
+# then burn. Each is offered for a Pokémon it could apply to and confirmed by a person, who saw
+# whether it did — so this list is a set of possibilities with the HP each would leave, never a
+# prediction applied on their behalf. Within one effect the cartridge goes in Speed order, which is
+# for the person to report and not for this list to suggest.
+
+SAND_IMMUNE_TYPES = {"Rock", "Ground", "Steel"}
+SAND_IMMUNE_ABILITIES = {"overcoat", "sandveil", "sandrush", "sandforce", "magicguard"}
+SAND_IMMUNE_ITEMS = {"safetygoggles"}
+# Heals and drains that come from a held item, as a fraction of max HP.
+RESIDUAL_ITEMS = {"leftovers": ("heal", 1 / 16)}
+# Offer an unseen item's heal when at least this share of the sets still possible hold it. A
+# confirm is then both the heal and the reveal.
+UNSEEN_ITEM_SHARE = 0.1
+
+
+def end_of_turn(reg: Regulation, state: Any, toxic: dict[tuple[str, str], int] | None = None
+                ) -> list[dict[str, Any]]:
+    """Every end-of-turn HP change that could apply now, with the HP it would leave.
+
+    Each is `{key, effect, side, slot, species, kind: damage | heal, expect: {pct} | {hp}, reveal}`:
+    `expect` is a percentage for a side whose HP is shown that way and a real number for your own,
+    and `reveal` names an item the confirm would show (an unseen Leftovers). `toxic` is how many
+    turns each badly poisoned Pokémon has been poisoned for, keyed `(side, species)`.
+    """
+    from vgc.regulation import is_grounded
+
+    toxic = toxic or {}
+    mons = [(sid, slot, m) for sid in ("p1", "p2") for slot in (0, 1)
+            if (m := state.at(sid, slot)) is not None and m.hp > 0]
+    out: list[dict[str, Any]] = []
+
+    def types(m: Any) -> list[str]:
+        return (reg.dex.get_species(m.forme) or {}).get("types") or []
+
+    def add(effect: str, sid: str, slot: int, m: Any, kind: str, frac: float, reveal: str | None = None) -> None:
+        if kind == "heal" and m.hp >= 1:
+            return
+        sign = 1 if kind == "heal" else -1
+        if m.hp_max and state._own(sid):
+            now = round(m.hp * m.hp_max)
+            expect = {"hp": max(0, min(m.hp_max, now + sign * max(1, int(m.hp_max * frac))))}
+        else:
+            expect = {"pct": max(0, min(100, round(100 * m.hp + sign * 100 * frac)))}
+        out.append({"key": f"{to_id(effect)}:{sid}{slot}", "effect": effect, "side": sid, "slot": slot,
+                    "species": m.forme, "kind": kind, "expect": expect, "reveal": reveal})
+
+    def ability(m: Any) -> str:
+        return to_id(state._active_ability(m) or "")
+
+    if state.weather == "sandstorm":
+        for sid, slot, m in mons:
+            if (SAND_IMMUNE_TYPES & set(types(m)) or ability(m) in SAND_IMMUNE_ABILITIES
+                    or to_id(m.item or "") in SAND_IMMUNE_ITEMS):
+                continue
+            add("Sandstorm", sid, slot, m, "damage", 1 / 16)
+    if state.terrain == "grassyterrain":
+        for sid, slot, m in mons:
+            if is_grounded(reg.dex, m.forme, state._active_ability(m), m.item):
+                add("Grassy Terrain", sid, slot, m, "heal", 1 / 16)
+    for sid, slot, m in mons:
+        item = to_id(m.item or "")
+        if item == "blacksludge":
+            poison = "Poison" in types(m)
+            add("Black Sludge", sid, slot, m, "heal" if poison else "damage", 1 / 16 if poison else 1 / 8)
+        elif item in RESIDUAL_ITEMS:
+            kind, frac = RESIDUAL_ITEMS[item]
+            add(reg.dex.get_item(item)["name"], sid, slot, m, kind, frac)
+        elif m.item is None:
+            for unseen in _likely_items(reg, m):
+                kind, frac = RESIDUAL_ITEMS[unseen]
+                add(reg.dex.get_item(unseen)["name"], sid, slot, m, kind, frac, reveal=unseen)
+    for sid, slot, m in mons:
+        if ability(m) == "magicguard":
+            continue
+        if m.status == "psn":
+            if ability(m) == "poisonheal":
+                add("Poison Heal", sid, slot, m, "heal", 1 / 8)
+            else:
+                add("Poison", sid, slot, m, "damage", 1 / 8)
+        elif m.status == "tox":
+            if ability(m) == "poisonheal":
+                add("Poison Heal", sid, slot, m, "heal", 1 / 8)
+            else:
+                n = toxic.get((sid, m.species), 1)
+                add("Bad poison", sid, slot, m, "damage", min(15, max(1, n)) / 16)
+    for sid, slot, m in mons:
+        if m.status == "brn" and ability(m) != "magicguard":
+            add("Burn", sid, slot, m, "damage", 1 / 16)
+    return out
+
+
+def _likely_items(reg: Regulation, mon: Any) -> list[str]:
+    """Residual items an unseen item could well be, by the share of sets still possible."""
+    from vgc.belief import sets as set_belief
+
+    try:
+        p = set_belief.given(reg, mon).item()
+    except Exception:                    # no corpus built: nothing to go on, so offer nothing
+        return []
+    return [i for i in RESIDUAL_ITEMS if p.get(i, 0.0) >= UNSEEN_ITEM_SHARE]

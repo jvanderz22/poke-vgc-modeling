@@ -31,8 +31,10 @@ both sides, and leads only where it beat the model on held-out games (two or few
 sheets). Each model's gate verdicts come with it: a failed gate means the number is not presented
 as calibrated. Open team sheets do not show Stat Points, so an opponent's spread is always a guess.
 
-A battle is a journal of taps (`add_entries`): lead, turn, move, switch, swap, damage, heal, faint,
-status, boost, field, side, reveal, consume, mega, answer, end. The state is replayed from it, so
+A battle is a journal of taps (`add_entries`): lead, turn, move, cant, switch, swap, damage, heal,
+faint, status, boost, field, side, reveal, consume, mega, answer, end. A battle's `turn_progress`
+says who has had their turn, the move still owed its results, and the slots waiting for a
+replacement; `end_of_turn` lists what could change HP once everyone has moved. The state is replayed from it, so
 `undo` pops the last tap and `battle_at` shows any earlier point."""
 
 
@@ -167,7 +169,12 @@ def build(api: Api | None = None):
         """Append taps, e.g. {"kind": "lead", "side": "p2", "slot": 0, "species": "Incineroar"},
         {"kind": "move", "side": "p1", "slot": 0, "move": "Fake Out", "target": {"side": "p2",
         "slot": 0}}, {"kind": "damage", "side": "p2", "slot": 0, "pct": 88}, {"kind": "turn", "n": 2}.
-        Your own HP may be given as {"hp": exact}. Taps that belong together go in one call.
+        Your own HP may be given as {"hp": exact}. A move that did no damage says how with
+        "result": "miss" | "protected" | "immune" | "failed" (a spread move: "results", a list of
+        {side, slot, result}); a chance effect that happened (a Scald burn) is "chance": [{side, slot}]
+        on the move, and certain stat changes (Close Combat, Snarl) follow on their own, raising a
+        question when an ability or item could have answered them; a Pokémon that could not move is {"kind": "cant", "side", "slot",
+        "reason": "flinch" | "par" | "slp" | "frz" | "recharge"}. Taps that belong together go in one call.
         Returns the new view; a tap that makes no sense is kept and reported in its errors."""
         return api.call("POST", f"/api/battles/{battle_id}/entries", json={"entries": entries, "regulation": reg})
 

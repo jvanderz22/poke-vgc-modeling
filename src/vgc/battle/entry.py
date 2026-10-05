@@ -53,11 +53,12 @@ ENTRY_KINDS = (
     "lead",        # who starts: {side, slot, species}
     "bring",       # the four a side brought: {side, species: [four]} — yours, from team preview
     "turn",        # {n}
-    "move",        # {side, slot, move, target: {side, slot} | null, spread}
+    "move",        # {side, slot, move, target: {side, slot} | null, spread, result?, results?, chance?}
+    "cant",        # {side, slot, reason} — took its turn without moving: flinch, par, slp, frz, recharge
     "switch",      # {side, slot, species}
     "swap",        # {side, slot} — Ally Switch: the Pokémon in `slot` and its partner trade places
-    "damage",      # {side, slot, pct | hp, fainted, crit}
-    "heal",        # {side, slot, pct | hp}
+    "damage",      # {side, slot, pct | hp, fainted, crit, eot?}
+    "heal",        # {side, slot, pct | hp, eot?} — `eot`: the end-of-turn effect it confirms
     "faint",       # {side, slot}
     "status",      # {side, slot, status: "brn" | ... | null}
     "boost",       # {side, slot, stat, stages}      — anything the rules do not derive
@@ -73,6 +74,22 @@ ENTRY_KINDS = (
 )
 
 STATUSES = ("brn", "par", "psn", "tox", "slp", "frz")
+TERRAIN_NAMES = {"grassyterrain": "Grassy Terrain", "electricterrain": "Electric Terrain",
+                 "psychicterrain": "Psychic Terrain", "mistyterrain": "Misty Terrain"}
+
+# How a move went for a target it did no damage to. A move with no damage after it already reads as
+# no damage, so none of these changes the state; what they add is *which* no-damage it was, so a
+# miss is not later read as a resisted hit, and so a reload knows the move's results are in.
+# `result` is for the move as a whole (or its one target); a spread move gives `results`, one per
+# target that took no damage: [{side, slot, result}].
+# `hit` with no damage after it says the move hit and its HP was not caught (Fast mode's "didn't
+# catch it"), so the result is in rather than still owed.
+MOVE_RESULTS = ("hit", "miss", "protected", "immune", "failed")
+
+# Moves aimed at one Pokémon, whose results are owed for that one; spread moves owe one per target
+# on the field. Anything else (self, the field, a side) owes none.
+_AIMED = {"normal", "adjacentFoe", "any", "randomNormal", "adjacentAlly", "adjacentAllyOrSelf"}
+_SPREAD = {"allAdjacentFoes": False, "allAdjacent": True}     # value: whether the ally is hit too
 
 
 @dataclass
@@ -111,6 +128,22 @@ class Replay:
     # Which Pokémon each move entry was (by journal index): a tap names a slot, and what reads the
     # journal later (the Protect counter) needs the Pokémon that stood there then.
     movers: dict[int, str] = field(default_factory=dict)
+    # Where the turn has got to (`progress`): who has had their turn since the last `turn` entry,
+    # whether anyone has moved, and the move whose results are still owed, if any.
+    acted: list[tuple[str, str]] = field(default_factory=list)
+    moved: bool = False
+    awaiting: dict[str, Any] | None = None
+    # Who last stood in each slot, for "who came in for X?" once X has fainted.
+    last_in: dict[tuple[str, int], str] = field(default_factory=dict)
+    # When each badly poisoned Pokémon was poisoned, for the toxic counter. Reset on switching in.
+    tox_since: dict[tuple[str, str], int] = field(default_factory=dict)
+    # End-of-turn effects already confirmed this turn (`eot` on a damage or heal), so a reload does
+    # not offer a Leftovers heal that has already been logged.
+    eot_done: set[str] = field(default_factory=set)
+    # The move now connecting, for what follows from it (`_on_connect`): its user, whether its own
+    # stat change has landed, which targets have had its added effect, and which of its chance
+    # effects you said happened (`chance`: [{side, slot}] on the move entry).
+    fx: dict[str, Any] | None = None
     # Where in the journal we are, and how many questions this entry has raised so far. Together
     # they name a question (`_qid`), which is what makes an id stable under an append.
     _index: int = 0
@@ -283,9 +316,17 @@ def _on_switch(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 def _bring_in(rp: Replay, reg: Regulation, side: str, slot: int, m: Mon) -> None:
     rp.state.switch_in(side, slot, m, m.forme)
+    rp.last_in[(side, slot)] = m.species
+    rp.tox_since.pop((side, m.species), None)
+    if rp.state.started:
+        # A Pokémon that comes in mid-turn does not act in it, and nothing is owed any more on a
+        # move once something else has happened in the turn.
+        rp.acted.append((side, m.species))
+        rp.awaiting = None
     # What it announces on arrival, and what a standing terrain does to whatever it is holding.
     _ask(rp, reg, m, "switch_in",
-         rules.on_switch_in(reg, m.species, rules.still_possible(reg, m)), timed=True)
+         rules.on_switch_in(reg, m.species, rules.still_possible(reg, m),
+                            weather=rp.state.weather, terrain=rp.state.terrain), timed=True)
     if rp.state.terrain:
         _ask(rp, reg, m, "terrain", rules.on_terrain_set(reg, rp.state.terrain, m.item))
 
@@ -299,10 +340,19 @@ def _on_swap(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     m.position = 1 - old
     if other is not None:
         other.position = old
+    a, b = rp.last_in.get((e["side"], old)), rp.last_in.get((e["side"], 1 - old))
+    for slot, who in ((1 - old, a), (old, b)):
+        if who is None:
+            rp.last_in.pop((e["side"], slot), None)
+        else:
+            rp.last_in[(e["side"], slot)] = who
 
 
 def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.state.begin_turn(int(e["n"]))
+    rp.acted, rp.moved, rp.awaiting = [], False, None
+    rp.eot_done = set()
+    rp.fx = None
 
 
 def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
@@ -316,13 +366,174 @@ def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.state.record_move(m, move, target=ident, spread=bool(e.get("spread")),
                          called_by=e.get("called_by"))
     rp.movers[rp._index] = m.species
+    if e.get("called_by"):
+        return
+    rp.acted.append((e["side"], m.species))
+    rp.moved = True
+    rp.awaiting = _owed(rp, reg, e, m, move)
+    _move_effects(rp, reg, e, m, move)
+
+
+NO_EFFECT = ("miss", "protected", "immune", "failed")
+
+
+def _move_effects(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: str) -> None:
+    """What a move does to stats, once it is known to have connected (`rules.MOVE_SELF` and
+    friends). A status move connects as it is used unless it says otherwise; a damaging move
+    connects with its first hit, so its effects wait for the damage (`_on_connect`)."""
+    rp.fx = None
+    result = e.get("result")
+    if result in NO_EFFECT:
+        return
+    other = "p2" if e["side"] == "p1" else "p1"
+    settled = {(r["side"], int(r["slot"])) for r in e.get("results") or [] if r.get("result") in NO_EFFECT}
+    if e.get("target"):
+        aimed = [(e["target"]["side"], int(e["target"]["slot"]))]
+    elif e.get("spread"):
+        aimed = [(other, x) for x in (0, 1)]
+    else:
+        aimed = []
+    targets = [t for (s, x) in aimed if (s, x) not in settled and (t := rp.state.at(s, x)) is not None]
+    if (reg.dex.get_move(move) or {}).get("category") == "Status":
+        if move in rules.MOVE_SELF:
+            _stat_change(rp, reg, m, rules.MOVE_SELF[move], source=None, move=move)
+        for t in targets if move in rules.MOVE_TARGET else []:
+            _stat_change(rp, reg, t, rules.MOVE_TARGET[move], source=m, move=move)
+        return
+    rp.fx = {"move": move, "user": m, "self_done": False, "hit": set(),
+             "chance": {(c["side"], int(c["slot"])) for c in e.get("chance") or []}}
+    # "Didn't catch it" on one target: it hit, with no damage entry to say so.
+    if result == "hit" and len(targets) == 1:
+        _on_connect(rp, reg, targets[0])
+
+
+def _on_connect(rp: Replay, reg: Regulation, target: Mon | None) -> None:
+    """A damaging move has hit `target` (None: it hit something that fainted). Its user's own stat
+    change lands once, on the first hit; its added effect lands on each target that is still
+    standing, if it is certain or you said it happened."""
+    fx = rp.fx
+    if fx is None:
+        return
+    user, move = fx["user"], fx["move"]
+    side_of = rp.state._side_of
+    if not fx["self_done"]:
+        fx["self_done"] = True
+        if user.state == "active":
+            change = dict(rules.MOVE_SELF.get(move, {}))
+            for sec in rules.MOVE_SECONDARY.get(move, []):
+                if "self" in sec and (sec["chance"] == 100 or (side_of(user), user.position) in fx["chance"]):
+                    for k, v in sec["self"].items():
+                        change[k] = change.get(k, 0) + v
+            if change:
+                _stat_change(rp, reg, user, change, source=None, move=move)
+    if target is None or target is user or target.state != "active":
+        return
+    key = (side_of(target), target.position)
+    if key in fx["hit"]:
+        return
+    fx["hit"].add(key)
+    for sec in rules.MOVE_SECONDARY.get(move, []):
+        if "self" in sec or not (sec["chance"] == 100 or key in fx["chance"]):
+            continue
+        if "target" in sec:
+            _stat_change(rp, reg, target, sec["target"], source=user, move=move)
+        if "status" in sec and target.status is None:
+            target.status = sec["status"]
+            if sec["status"] == "tox":
+                rp.tox_since[(side_of(target), target.species)] = rp.state.turn
+
+
+def _stat_change(rp: Replay, reg: Regulation, mon: Mon, change: dict[str, int], *,
+                 source: Mon | None, move: str) -> None:
+    """Rises land as they are. Drops are asked about when something could have answered them,
+    and settled silently when nothing could (`_ask`, rule 1)."""
+    for k, v in change.items():
+        if v > 0:
+            rp.state.apply_boost(mon, k, v)
+    drops = {k: v for k, v in change.items() if v < 0}
+    if not drops:
+        return
+    by_other = source is not None and source is not mon
+    outcomes = rules.drop_outcomes(reg, mon.species, drops, rules.still_possible(reg, mon),
+                                   by_other=by_other, item=mon.item, items=_drop_items(reg, mon))
+    name = (reg.dex.get_move(move) or {}).get("name", move)
+    _ask(rp, reg, mon, "move_drop", outcomes, source=source if by_other else None,
+         prompt=f"{name} lowers {mon.species}'s {', '.join(drops)} — what happened?")
+
+
+def _drop_items(reg: Regulation, mon: Mon) -> list[str]:
+    """The drop-answering items an unseen item could well be."""
+    if mon.item is not None:
+        return []
+    from vgc.belief import sets as set_belief
+
+    try:
+        p = set_belief.given(reg, mon).item()
+    except Exception:
+        return []
+    return [i for i in rules.DROP_ITEMS if p.get(i, 0.0) >= rules.DROP_ITEM_SHARE]
+
+
+def _owed(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: str) -> dict[str, Any] | None:
+    """The targets a move still owes a result for: whose HP it changed, or how it did not."""
+    result = e.get("result")
+    if result is not None and result not in MOVE_RESULTS:
+        raise EntryError(f"unknown result {result!r}; one of {', '.join(MOVE_RESULTS)}")
+    settled = set()
+    for r in e.get("results") or []:
+        if r.get("result") not in MOVE_RESULTS:
+            raise EntryError(f"unknown result {r.get('result')!r}; one of {', '.join(MOVE_RESULTS)}")
+        settled.add((r["side"], int(r["slot"])))
+    entry_ = reg.dex.get_move(move) or {}
+    if result not in (None, "hit") or entry_.get("category") == "Status":
+        return None
+    kind = entry_.get("target")
+    side, other = e["side"], "p2" if e["side"] == "p1" else "p1"
+    if e.get("spread") or kind in _SPREAD:
+        hits = [(other, s) for s in (0, 1)]
+        if _SPREAD.get(kind):
+            hits.append((side, 1 - m.position))
+    elif e.get("target") and (kind in _AIMED or kind is None):
+        if result == "hit":               # it hit, and its HP was not caught: nothing more owed
+            return None
+        hits = [(e["target"]["side"], int(e["target"]["slot"]))]
+    else:
+        return None
+    targets = [{"side": s, "slot": x} for s, x in hits
+               if rp.state.at(s, x) is not None and (s, x) not in settled]
+    if not targets:
+        return None
+    return {"index": rp._index, "side": side, "slot": m.position, "species": m.species,
+            "move": move, "targets": targets}
+
+
+def _on_cant(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
+    """A Pokémon that took its turn without moving. It changes nothing on the field; what it says
+    is that the Pokémon has had its turn, and where in the order it came."""
+    m = _active(rp, e)
+    if not to_id(str(e.get("reason") or "")):
+        raise EntryError("needs a reason: flinch, par, slp, frz, recharge")
+    rp.acted.append((e["side"], m.species))
+    rp.moved = True
+    rp.awaiting = None
 
 
 def _on_damage(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     m = _active(rp, e)
     before = m.hp
     _set_hp(rp, m, e)
-    rp.state.record_damage(m, before, crit=bool(e.get("crit")))
+    if e.get("eot"):
+        # An end-of-turn effect is not the last move's output; reading it as one would tell the
+        # damage channel that move hits harder than it does. (The page logs these as `heal`.)
+        rp.eot_done.add(e["eot"])
+    else:
+        rp.state.record_damage(m, before, crit=bool(e.get("crit")))
+        _on_connect(rp, reg, m if m.hp > 0 and not e.get("fainted") else None)
+    if rp.awaiting is not None:
+        here = {"side": e["side"], "slot": int(e["slot"])}
+        rp.awaiting["targets"] = [t for t in rp.awaiting["targets"] if t != here]
+        if not rp.awaiting["targets"]:
+            rp.awaiting = None
     if m.hp == 0.0 or e.get("fainted"):
         rp.state.faint(m)
         return
@@ -336,6 +547,8 @@ def _on_damage(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 def _on_heal(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     _set_hp(rp, _active(rp, e), e)
+    if e.get("eot"):
+        rp.eot_done.add(e["eot"])
 
 
 def _set_hp(rp: Replay, m: Mon, e: dict[str, Any]) -> None:
@@ -360,7 +573,10 @@ def _on_status(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     status = e.get("status")
     if status is not None and status not in STATUSES:
         raise EntryError(f"unknown status {status!r}")
-    _active(rp, e).status = status
+    m = _active(rp, e)
+    m.status = status
+    if status == "tox":
+        rp.tox_since[(e["side"], m.species)] = rp.state.turn
 
 
 def _on_boost(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
@@ -453,7 +669,8 @@ def _on_answer(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 
 _HANDLERS = {
-    "lead": _on_lead, "bring": _on_bring, "turn": _on_turn, "move": _on_move, "switch": _on_switch, "swap": _on_swap,
+    "lead": _on_lead, "bring": _on_bring, "turn": _on_turn, "move": _on_move, "cant": _on_cant,
+    "switch": _on_switch, "swap": _on_swap,
     "damage": _on_damage, "heal": _on_heal, "faint": _on_faint, "status": _on_status,
     "boost": _on_boost, "field": _on_field, "side": _on_side, "reveal": _on_reveal,
     "consume": _on_consume, "tera": _on_tera, "mega": _on_mega, "answer": _on_answer,
@@ -469,7 +686,7 @@ def _empty(outcome: rules.Outcome) -> bool:
 
 
 def _ask(rp: Replay, reg: Regulation, mon: Mon, kind: str, outcomes: list[rules.Outcome],
-         source: Mon | None = None, *, timed: bool = False) -> None:
+         source: Mon | None = None, *, timed: bool = False, prompt: str | None = None) -> None:
     """Queue a question — or settle it now, when there is one answer and no timing to record.
 
     `timed` is what separates a switch-in from everything else. A switch-in ability announces in
@@ -482,7 +699,7 @@ def _ask(rp: Replay, reg: Regulation, mon: Mon, kind: str, outcomes: list[rules.
         _settle(rp, reg, mon, outcomes[0], source, kind=kind, raced=False)
         return
     rp.questions.append(Question(
-        id=_qid(rp), kind=kind, prompt=_prompt(kind, mon, source), side=rp.state._side_of(mon),
+        id=_qid(rp), kind=kind, prompt=prompt or _prompt(kind, mon, source, rp.state.terrain), side=rp.state._side_of(mon),
         species=mon.species, slot=mon.position, outcomes=_likeliest_first(reg, mon, outcomes),
         source=({"side": rp.state._side_of(source), "slot": source.position,
                  "species": source.species} if source is not None else None),
@@ -519,7 +736,7 @@ def _likeliest_first(reg: Regulation, mon: Mon, outcomes: list[rules.Outcome]) -
     return [o for _, o in sorted(enumerate(outcomes), key=key)]
 
 
-def _prompt(kind: str, mon: Mon, source: Mon | None) -> str:
+def _prompt(kind: str, mon: Mon, source: Mon | None, terrain: str | None = None) -> str:
     who = mon.species
     if kind == "switch_in":
         return f"{who} arrives — what announced?"
@@ -528,7 +745,9 @@ def _prompt(kind: str, mon: Mon, source: Mon | None) -> str:
     if kind == "on_hit":
         return f"{who} was hit — what announced?"
     if kind == "terrain":
-        return f"Terrain is up — did {who} pop an item?"
+        # Named, because two terrains in one turn each cue the seeds, and the questions must differ.
+        name = TERRAIN_NAMES.get(terrain or "", "Terrain")
+        return f"{name} is up — did {who} pop an item?"
     return f"{who} — what happened?"
 
 
@@ -558,6 +777,40 @@ def _settle(rp: Replay, reg: Regulation, mon: Mon, outcome: rules.Outcome, sourc
     # A terrain the outcome just put up is the seeds' cue too.
     if any(x["kind"] == "terrain" for x in outcome.effects):
         _terrain_seeds(rp, reg)
+
+
+# --- where the turn has got to ---------------------------------------------------------------
+
+def sendable(reg: Regulation, state: BattleState, side: str) -> list[Mon]:
+    """Who could still come in. Once a side has shown all it brought, the ones never seen sat this
+    game out, so they stop being offered even though nothing has said so outright."""
+    seen = sum(m.state not in ("unrevealed", "not_brought") for m in state.sides[side].mons)
+    return [m for m in state.bench(side) if m.state != "unrevealed" or seen < reg.bring]
+
+
+def progress(rp: Replay, reg: Regulation) -> dict[str, Any]:
+    """The turn so far, for a page that asks for the next thing that happened: who has had their
+    turn, whether anyone has moved yet, the move still owed its results, and the fainted slots
+    waiting for a replacement. Read off the replay, so a reload resumes on the right question."""
+    st = rp.state
+    waiting = []
+    if st.started and not st.ended:
+        for sid in ("p1", "p2"):
+            if not sendable(reg, st, sid):
+                continue
+            for slot in (0, 1):
+                if st.at(sid, slot) is None:
+                    waiting.append({"side": sid, "slot": slot, "was": rp.last_in.get((sid, slot))})
+    return {"turn": st.turn,
+            "acted": [{"side": s, "species": sp} for s, sp in rp.acted],
+            "moved": rp.moved, "awaiting": rp.awaiting, "waiting": waiting}
+
+
+def end_of_turn(rp: Replay, reg: Regulation) -> list[dict[str, Any]]:
+    """What could happen at the end of this turn (`rules.end_of_turn`), with the toxic counter."""
+    st = rp.state
+    counters = {key: st.turn - since + 1 for key, since in rp.tox_since.items()}
+    return [x for x in rules.end_of_turn(reg, st, counters) if x["key"] not in rp.eot_done]
 
 
 # --- the session --------------------------------------------------------------------------

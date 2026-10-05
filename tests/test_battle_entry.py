@@ -374,3 +374,171 @@ def test_your_four_puts_the_back_in_reserve(battle, team_text):
     assert [m.species for m in rp.state.bench("p1")] == mine[:4]
     rp = battle.append({"kind": "bring", "side": "p1", "species": mine[:3]})
     assert rp.errors and "brings 4" in rp.errors[-1]
+
+
+# --- where the turn has got to ----------------------------------------------------------------
+
+def _doubles(battle):
+    lead(battle, ("p1", 0, "Incineroar"), ("p1", 1, "Garchomp"),
+         ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    return battle.append({"kind": "turn", "n": 1})
+
+
+def test_a_spread_move_owes_a_result_for_everyone_it_could_have_hit(battle):
+    """Earthquake hits the ally too, so it owes three results; damage pays one each, and a target
+    it did nothing to is paid by saying how."""
+    _doubles(battle)
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 1, "move": "Earthquake", "spread": True})
+    owed = rp.awaiting["targets"]
+    assert {(t["side"], t["slot"]) for t in owed} == {("p2", 0), ("p2", 1), ("p1", 0)}
+    battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 30})
+    rp = battle.append({"kind": "damage", "side": "p1", "slot": 0, "pct": 70})
+    assert rp.awaiting["targets"] == [{"side": "p2", "slot": 1}]
+    battle.undo(), battle.undo(), battle.undo()
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 1, "move": "Earthquake", "spread": True,
+                        "results": [{"side": "p2", "slot": 1, "result": "protected"}]})
+    assert {(t["side"], t["slot"]) for t in rp.awaiting["targets"]} == {("p2", 0), ("p1", 0)}
+
+
+def test_a_miss_settles_the_move_and_is_not_a_hit_for_nothing(battle):
+    _doubles(battle)
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Flare Blitz",
+                        "target": {"side": "p2", "slot": 0}, "result": "miss"})
+    assert rp.awaiting is None and rp.state.damage_log == [] and len(rp.state.moves_log) == 1
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Flare Blitz",
+                        "target": {"side": "p2", "slot": 0}, "result": "dodged"})
+    assert any("unknown result" in e for e in rp.errors)
+
+
+def test_a_pokemon_that_could_not_move_has_had_its_turn(battle):
+    """A flinch changes nothing on the field, but the Pokémon has acted and the turn has begun."""
+    rp = _doubles(battle)
+    assert rp.acted == [] and not rp.moved
+    hp = rp.state.at("p2", 0).hp
+    rp = battle.append({"kind": "cant", "side": "p2", "slot": 0, "reason": "flinch"})
+    prog = entry.progress(rp, battle.reg)
+    assert prog["acted"] == [{"side": "p2", "species": "Kingambit"}] and prog["moved"]
+    assert rp.state.at("p2", 0).hp == hp and rp.state.moves_log == []
+    rp = battle.append({"kind": "cant", "side": "p2", "slot": 1})
+    assert any("needs a reason" in e for e in rp.errors)
+    rp = battle.append({"kind": "turn", "n": 2})
+    assert entry.progress(rp, battle.reg)["acted"] == []
+
+
+def test_a_fainted_slot_waits_for_a_replacement_and_says_who_fell_there(battle):
+    _doubles(battle)
+    battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Flare Blitz",
+                   "target": {"side": "p2", "slot": 0}})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 0, "fainted": True})
+    assert entry.progress(rp, battle.reg)["waiting"] == [{"side": "p2", "slot": 0, "was": "Kingambit"}]
+    rp = battle.append({"kind": "switch", "side": "p2", "slot": 0, "species": "Pelipper"})
+    assert entry.progress(rp, battle.reg)["waiting"] == []
+
+
+def test_once_four_are_seen_the_other_two_are_not_offered(battle):
+    _doubles(battle)
+    battle.append({"kind": "switch", "side": "p2", "slot": 0, "species": "Archaludon"})
+    assert len(entry.sendable(battle.reg, battle.rp.state, "p2")) == 4   # Kingambit + three unseen
+    battle.append({"kind": "switch", "side": "p2", "slot": 1, "species": "Torkoal"})
+    left = entry.sendable(battle.reg, battle.rp.state, "p2")
+    assert sorted(m.species for m in left) == ["Kingambit", "Milotic"]
+
+
+def test_the_end_of_turn_offers_what_could_apply_with_the_hp_it_would_leave(battle):
+    """Sand chips everyone but the Ground type; your own Leftovers heals by a real number; a burn
+    comes after both, as the cartridge resolves them."""
+    lead(battle, ("p1", 0, "Sinistcha"), ("p1", 1, "Garchomp"), ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    battle.append({"kind": "turn", "n": 1})
+    sinistcha = battle.rp.state.at("p1", 0)
+    battle.append({"kind": "damage", "side": "p1", "slot": 0, "hp": sinistcha.hp_max - 50})
+    battle.append({"kind": "status", "side": "p2", "slot": 1, "status": "brn"})
+    rp = battle.append({"kind": "field", "what": "weather", "value": "sandstorm", "on": True})
+    eot = entry.end_of_turn(rp, battle.reg)
+    effects = [(x["effect"], x["species"]) for x in eot]
+    sand = [sp for e, sp in effects if e == "Sandstorm"]
+    assert "Garchomp" not in sand and "Kingambit" not in sand      # Ground; Steel
+    assert {"Sinistcha", "Milotic"} <= set(sand)
+    lefties = next(x for x in eot if x["effect"] == "Leftovers" and x["side"] == "p1")
+    assert lefties["expect"] == {"hp": sinistcha.hp_max - 50 + sinistcha.hp_max // 16}
+    assert effects.index(("Burn", "Milotic")) > effects.index(("Leftovers", "Sinistcha"))
+    burn = next(x for x in eot if x["effect"] == "Burn")
+    assert burn["expect"] == {"pct": 94} and burn["kind"] == "damage"
+
+
+def test_a_confirmed_end_of_turn_effect_is_not_offered_again_or_put_down_to_a_move(battle):
+    """Leftovers confirmed once stays confirmed through a reload; and sand chip logged after a move
+    must not become that move's damage, or the damage channel reads the move as hitting harder."""
+    lead(battle, ("p1", 0, "Sinistcha"), ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    battle.append({"kind": "turn", "n": 1})
+    battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Scald", "target": {"side": "p1", "slot": 0}})
+    sinistcha = battle.rp.state.at("p1", 0)
+    battle.append({"kind": "damage", "side": "p1", "slot": 0, "hp": sinistcha.hp_max - 60})
+    rp = battle.append({"kind": "field", "what": "weather", "value": "sandstorm", "on": True})
+    keys = {x["key"] for x in entry.end_of_turn(rp, battle.reg)}
+    assert {"leftovers:p10", "sandstorm:p10", "sandstorm:p21"} <= keys
+    battle.append({"kind": "heal", "side": "p1", "slot": 0, "hp": sinistcha.hp_max - 70, "eot": "sandstorm:p10"})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "pct": 94, "eot": "sandstorm:p21"})
+    left = {x["key"] for x in entry.end_of_turn(rp, battle.reg)}
+    assert "sandstorm:p10" not in left and "sandstorm:p21" not in left and "leftovers:p10" in left
+    assert len(rp.state.damage_log) == 1                    # only Scald's
+    replayed = entry.Battle(battle.reg, battle.setup, battle.journal).rp
+    assert {x["key"] for x in entry.end_of_turn(replayed, battle.reg)} == left
+
+
+# --- what follows from a move ------------------------------------------------------------------
+
+def _mixed(battle):
+    lead(battle, ("p1", 0, "Salamence"), ("p1", 1, "Incineroar"), ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    return battle.append({"kind": "turn", "n": 1})
+
+
+def test_a_move_that_lowers_its_users_stats_does_so_once_it_connects(battle):
+    """Draco Meteor's −2 lands with its hit, and also when the hit is a KO; a miss lands nothing.
+    Your own item is known and is no White Herb, so nothing is asked."""
+    _mixed(battle)
+    battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Draco Meteor", "target": {"side": "p2", "slot": 1}})
+    assert battle.rp.state.at("p1", 0).boosts.get("spa", 0) == 0          # not yet: nothing has hit
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "fainted": True})
+    assert rp.state.at("p1", 0).boosts["spa"] == -2 and not [q for q in rp.questions if q.kind == "move_drop"]
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Draco Meteor",
+                        "target": {"side": "p2", "slot": 0}, "result": "miss"})
+    assert rp.state.at("p1", 0).boosts["spa"] == -2
+
+
+def test_a_certain_drop_on_a_target_asks_what_its_ability_did(battle):
+    """Snarl lowers each target it hits, and Kingambit could be Defiant, so that is asked; the
+    target that fainted is not."""
+    _mixed(battle)
+    battle.append({"kind": "move", "side": "p1", "slot": 1, "move": "Snarl", "spread": True})
+    battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 80})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "fainted": True})
+    drops = [q for q in rp.questions if q.kind == "move_drop"]
+    assert [q.species for q in drops] == ["Kingambit"]
+    defiant = next(i for i, o in enumerate(drops[0].outcomes) if o.ability == "defiant")
+    rp = battle.append({"kind": "answer", "question": drops[0].id, "option": defiant})
+    gambit = rp.state.at("p2", 0)
+    assert gambit.boosts == {"spa": -1, "atk": 2} and gambit.ability == "defiant"
+
+
+def test_a_chance_effect_lands_only_when_you_say_it_happened(battle):
+    _mixed(battle)
+    battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Scald", "target": {"side": "p1", "slot": 1}})
+    rp = battle.append({"kind": "damage", "side": "p1", "slot": 1, "pct": 70})
+    assert rp.state.at("p1", 1).status is None
+    battle.undo(), battle.undo()
+    battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Scald", "target": {"side": "p1", "slot": 1},
+                   "chance": [{"side": "p1", "slot": 1}]})
+    rp = battle.append({"kind": "damage", "side": "p1", "slot": 1, "pct": 70})
+    assert rp.state.at("p1", 1).status == "brn"
+
+
+def test_a_status_move_lowers_its_target_as_it_is_used(battle):
+    _mixed(battle)
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 1, "move": "Parting Shot", "target": {"side": "p2", "slot": 1}})
+    q = next(q for q in rp.questions if q.kind == "move_drop")
+    assert q.species == "Milotic" and "atk, spa" in q.prompt
+    assert any(o.ability == "competitive" for o in q.outcomes)

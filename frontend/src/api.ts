@@ -243,12 +243,21 @@ export type LiveMon = {
   ability_unknown: string[];
 };
 
-export type MoveOption = { id: string; name: string; target: string | null; category: string | null };
+/** `follows` is what the move does to stats on its own once it connects (logged for you), and
+ *  `chance` what it might do to a target it hit (ticked on the result, if it happened). */
+export type MoveOption = {
+  id: string; name: string; target: string | null; category: string | null;
+  follows?: string[]; chance?: { label: string; chance: number }[];
+};
 
 export type SideMenu = {
   actives: ({ slot: number; species: string; moves: MoveOption[]; moves_known: boolean;
                /** The Mega formes it could become this turn: one per stone its item could be. */
-               megas: { forme: string; item: string }[] } | null)[];
+               megas: { forme: string; item: string }[];
+               /** Where the sheet does not show the moves: the likeliest unused ones (while fewer
+                *  than four are known), and every move the species can legally have. */
+               likely?: (MoveOption & { share: number })[];
+               legal?: MoveOption[] } | null)[];
   bench: { species: string; hp: number; state: string }[];
 };
 
@@ -324,6 +333,25 @@ export type Verdict = {
   undecided: Record<string, string>;
 };
 
+/** Where the turn has got to (`vgc.battle.entry.progress`): who has had their turn since the last
+ *  `turn` entry, the move still owed its results, and the fainted slots waiting for a replacement. */
+export type TurnProgress = {
+  turn: number;
+  acted: { side: "p1" | "p2"; species: string }[];
+  moved: boolean;
+  awaiting: { index: number; side: "p1" | "p2"; slot: number; species: string; move: string;
+              targets: { side: "p1" | "p2"; slot: number }[] } | null;
+  waiting: { side: "p1" | "p2"; slot: number; was: string | null }[];
+};
+
+/** Something that could change HP at the end of the turn (`vgc.battle.rules.end_of_turn`), with the
+ *  HP it would leave: a percentage, or a real number for your own. `reveal` is an unseen item the
+ *  confirm would show. */
+export type EndOfTurn = {
+  key: string; effect: string; side: "p1" | "p2"; slot: number; species: string;
+  kind: "damage" | "heal"; expect: { pct?: number; hp?: number }; reveal: string | null;
+};
+
 export type LiveView = {
   id: string; name: string; sheets: Sheets; perspective: Perspective;
   turn: number; started: boolean; ended: boolean; winner: string | null;
@@ -334,6 +362,8 @@ export type LiveView = {
   menu: Record<"p1" | "p2", SideMenu>;
   questions: Question[];
   derived: string[];
+  turn_progress?: TurnProgress;
+  end_of_turn?: EndOfTurn[];
   errors: string[];
   speed: SpeedRead[];
   beliefs: SPBelief[];
@@ -456,6 +486,11 @@ export const api = {
     call<LiveView>(`/api/battles/${id}/entries`, {
       method: "POST", body: JSON.stringify({ entries, regulation: reg }),
     }),
+  /** What these entries would lead to, without logging them: the questions left open and any
+   *  entry (by its index in `entries`) that makes no sense. */
+  previewEntries: (id: string, entries: Entry[], reg: string) =>
+    call<{ questions: Question[]; errors: { index: number; message: string }[] }>(
+      `/api/battles/${id}/preview`, { method: "POST", body: JSON.stringify({ entries, regulation: reg }) }),
   undo: (id: string, reg: string, count = 1) =>
     call<LiveView>(`/api/battles/${id}/undo?regulation=${reg}&count=${count}`, { method: "POST" }),
   battleAt: (id: string, index: number, reg: string) =>

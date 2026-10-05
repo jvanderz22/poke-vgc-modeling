@@ -580,6 +580,25 @@ def add_entries(battle_id: str, body: Entries) -> dict[str, Any]:
     return _view(reg, blob, b)
 
 
+@app.post("/api/battles/{battle_id}/preview")
+def preview_entries(battle_id: str, body: Entries) -> dict[str, Any]:
+    """What these entries would lead to, without logging them: the questions they would leave open
+    and any that make no sense. The page uses it to show the consequences of an answer (the seeds a
+    terrain cues) before you confirm the lot, so nothing is written until you do."""
+    from vgc.battle import entry
+
+    reg = _reg(body.regulation)
+    blob, b = _battle(reg, battle_id)
+    rp = entry.replay(reg, blob["setup"], b.journal + list(body.entries))
+    first = len(b.journal)
+    errors = []
+    for err in rp.errors:
+        at = int(err.split()[1]) if err.startswith("entry ") else -1
+        if at >= first:
+            errors.append({"index": at - first, "message": err})
+    return {"questions": [q.to_json() for q in rp.questions], "errors": errors}
+
+
 @app.post("/api/battles/{battle_id}/undo")
 def undo(battle_id: str, regulation: str = "reg_mc", count: int = 1) -> dict[str, Any]:
     reg = _reg(regulation)

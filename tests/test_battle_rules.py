@@ -363,3 +363,94 @@ def test_setting_the_terrain_already_up_leaves_its_turns(reg):
     assert state.terrain == "grassyterrain" and state.terrain_since == 3
     rules.apply(state, rules.Outcome("Seed Sower", effects=[{"kind": "terrain", "value": "psychicterrain"}]), m)
     assert state.terrain == "psychicterrain" and state.terrain_since == 5
+
+
+def test_a_setter_arriving_into_its_own_effect_says_nothing(reg):
+    """The pinned build's setTerrain and setWeather fail silently on the same effect, so a Psychic
+    Surge Indeedee arriving into Psychic Terrain is as quiet as one with Inner Focus: nothing to ask."""
+    assert [o.ability for o in rules.on_switch_in(reg, "Indeedee", terrain="psychicterrain")] == [None]
+    assert rules.on_switch_in(reg, "Indeedee", "psychicsurge", terrain="psychicterrain")[0].effects == []
+    # A different terrain up is no obstacle: it still announces, and replaces it.
+    loud = rules.on_switch_in(reg, "Indeedee", terrain="grassyterrain")
+    assert any(o.ability == "psychicsurge" and o.effects for o in loud)
+
+
+# --- what a move does to stats ----------------------------------------------------------------
+
+def _move_effects(reg) -> tuple[dict, dict, dict]:
+    """`MOVE_SELF`, `MOVE_TARGET` and `MOVE_SECONDARY` as the pinned build's moves.ts has them."""
+    src = (paths.SHOWDOWN / "data" / "moves.ts").read_text()
+
+    def sub(body, key, tabs):
+        m = re.search(rf"^{tabs}{key}: \{{\n(.*?)^{tabs}\}},?$", body, re.S | re.M)
+        return m.group(1) if m else None
+
+    def boosts(text):
+        return {k: int(v) for k, v in re.findall(r"(\w+): (-?\d+),", text or "")}
+
+    selfs, targets, secondary = {}, {}, {}
+    for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if name not in reg.dex.moves:
+            continue
+        target = re.search(r'^\t\ttarget: "(\w+)"', body, re.M).group(1)
+        status_move = '\t\tcategory: "Status"' in body
+        s = sub(body, "self", "\t\t")
+        if s and sub(s, "boosts", "\t\t\t"):
+            selfs[name] = boosts(sub(s, "boosts", "\t\t\t"))
+        b = sub(body, "boosts", "\t\t")
+        if b:
+            (selfs if target in ("self", "adjacentAllyOrSelf") else targets)[name] = boosts(b)
+        hit = re.search(r"this\.boost\(\{([^}]*)\}, target", body)
+        if hit and status_move and name not in targets:
+            targets[name] = {k: int(v) for k, v in re.findall(r"(\w+): (-?\d+)", hit.group(1))}
+        secs = [x for x in [sub(body, "secondary", "\t\t")] if x]
+        many = re.search(r"^\t\tsecondaries: \[\n(.*?)^\t\t\],", body, re.S | re.M)
+        if many:
+            secs += re.findall(r"^\t\t\t\{\n(.*?)^\t\t\t\},", many.group(1), re.S | re.M)
+        for sx in secs:
+            ch = re.search(r"chance: (\d+)", sx)
+            e = {"chance": int(ch.group(1)) if ch else 100}
+            selfb = re.search(r"self: \{\n\t+boosts: \{\n(.*?)^\t+\},", sx, re.S | re.M)
+            sb = re.search(r"^\t+boosts: \{\n(.*?)^\t+\},", sx, re.S | re.M)
+            if selfb:
+                e["self"] = boosts(selfb.group(1))
+            elif sb:
+                e["target"] = boosts(sb.group(1))
+            st = re.search(r"status: '(\w+)'", sx)
+            if st:
+                e["status"] = st.group(1)
+            if len(e) > 1:
+                secondary.setdefault(name, []).append(e)
+    return selfs, targets, secondary
+
+
+def test_the_move_effect_tables_are_exactly_the_pinned_ones(reg):
+    selfs, targets, secondary = _move_effects(reg)
+    assert rules.MOVE_SELF == selfs
+    assert rules.MOVE_TARGET == targets
+    assert rules.MOVE_SECONDARY == secondary
+    # Spot checks a reader can verify against the cartridge.
+    assert rules.MOVE_SELF["closecombat"] == {"def": -1, "spd": -1}
+    assert rules.MOVE_TARGET["partingshot"] == {"atk": -1, "spa": -1}
+    assert rules.MOVE_SECONDARY["snarl"] == [{"chance": 100, "target": {"spa": -1}}]
+
+
+def test_a_moves_drop_goes_through_what_refuses_only_intimidate(reg):
+    """Inner Focus and Scrappy stop Intimidate and nothing else, so against a move's drop they are
+    as silent as no ability at all."""
+    labels = [o.ability for o in rules.drop_outcomes(reg, "Kangaskhan", {"atk": -1}, by_other=True)]
+    assert "innerfocus" not in labels and "scrappy" not in labels
+    intimidate = [o.ability for o in rules.stat_drop_outcomes(reg, "Kangaskhan", "atk", -1)]
+    assert "scrappy" in intimidate
+
+
+def test_a_white_herb_answers_a_drop_and_a_clear_amulet_refuses_anothers(reg):
+    own = rules.drop_outcomes(reg, "Incineroar", {"def": -1, "spd": -1}, by_other=False, item="whiteherb")
+    assert len(own) == 1 and own[0].item == "whiteherb" and own[0].consumed and own[0].effects == []
+    # Your own drop is never Clear Amulet's business.
+    assert rules.drop_outcomes(reg, "Incineroar", {"def": -1}, by_other=False, item="clearamulet")[0].effects
+    theirs = rules.drop_outcomes(reg, "Incineroar", {"atk": -1}, by_other=True, item="clearamulet")
+    assert [o.item for o in theirs] == ["clearamulet"] and theirs[0].effects == []
+    unseen = rules.drop_outcomes(reg, "Incineroar", {"atk": -1}, by_other=True, items=["whiteherb"])
+    assert any(o.item == "whiteherb" and o.consumed for o in unseen)

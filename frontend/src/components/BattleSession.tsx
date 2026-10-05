@@ -195,7 +195,19 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
       </div>
-      {wp.hi !== wp.lo && <div className="tiny dim" style={{ marginTop: 4 }}>{pct(wp.lo)}–{pct(wp.hi)}%: depends on their sets</div>}
+      {/* The band is not a margin around the number: it is the same model asked again with their
+          unseen sets filled in from what people run, so the number can sit outside it. Saying what
+          it is, and when the two disagree, is the point of drawing it. */}
+      {wp.hi !== wp.lo && (
+        <div className="tiny dim wp-band-note">
+          <span className="wp-key band" /> With their unseen sets filled in from what people run:{" "}
+          <b>{pct(wp.lo)}–{pct(wp.hi)}%</b> ({wp.k} draws).
+          {(pct(wp.wp) < pct(wp.lo) || pct(wp.wp) > pct(wp.hi)) && (
+            <> The headline leaves those sets unknown, which predicted better on held-out games with
+              sheets hidden; the gap says their sets matter here.</>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -374,14 +386,15 @@ function YourFour({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) =
       <h2>Your four</h2>
       <div className="pad">
         {mons.map((m) => (
-          <button key={m.species} className="ghost" aria-pressed={pick.includes(m.species)} disabled={busy}
+          <button key={m.species} className="choice check" role="checkbox" aria-checked={pick.includes(m.species)}
+                  disabled={busy || (!pick.includes(m.species) && pick.length >= 4)}
                   onClick={() => toggle(m.species)}>
             {m.species}
           </button>
         ))}
-        <button disabled={busy || pick.length !== 4}
+        <button className="commit" disabled={busy || pick.length !== 4}
                 onClick={() => onLog([{ kind: "bring", side: me, species: pick }])}>
-          These four
+          {pick.length === 4 ? "Confirm these four" : `${pick.length} of 4 selected`}
         </button>
       </div>
       <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
@@ -406,9 +419,10 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
             {[0, 1].map((slot) => {
               const m = filled(side, slot);
               return (
-                <button key={slot} className="ghost" disabled={busy}
+                <button key={slot} className="choice radio" role="radio" disabled={busy}
+                        aria-checked={pick?.side === side && pick.slot === slot}
                         onClick={() => setPick(pick?.side === side && pick.slot === slot ? null : { side, slot })}>
-                  {m ? m.species : `slot ${slot + 1}`}
+                  {m ? m.species : slot === 0 ? "left" : "right"}
                 </button>
               );
             })}
@@ -417,6 +431,9 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       </div>
       {pick && (
         <div className="pad" style={{ marginTop: 8 }}>
+          <span className="tiny dim" style={{ alignSelf: "center" }}>
+            Who led on {sideNames(view.perspective)[pick.side] === "You" ? "your" : `${sideNames(view.perspective)[pick.side]}'s`.replace("Them's", "their")} {pick.slot === 0 ? "left" : "right"}?
+          </span>
           {view.sides[pick.side].mons
             .filter((m) => m.state !== "active" && m.state !== "fainted" && m.state !== "not_brought")
             .map((m) => (

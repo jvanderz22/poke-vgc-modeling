@@ -482,7 +482,8 @@ kbd {
 .stage-opt.ghost[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 /* The default is what ↵ accepts. Stages whose answer is evidence never have one. */
 .stage-opt.is-default { outline: 2px solid var(--accent); outline-offset: 2px; }
-.stage-opt:not(.ghost):not(.danger):not(.is-default) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+.stage-opt.next:not(.ghost):not(.danger) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+.stage-opt.is-default.next:not(.ghost):not(.danger) { background: var(--panel-2); }
 .opt-sub { font-weight: 400; font-size: 11px; opacity: .7; margin-left: 4px; }
 .key-badge {
   position: absolute; top: -7px; left: -7px; min-width: 18px; height: 18px; border-radius: 9px;
@@ -593,3 +594,55 @@ main:has(> .battle-page) { max-width: 1600px; }
 .st-unknown .st-label { font-style: italic; }
 .worked-out { margin-top: 8px; }
 .worked-out summary { cursor: pointer; }
+
+/* --- what a click will do ---------------------------------------------------------------
+   Three looks for three behaviours, and nothing in between:
+   * a row ending in › acts at once and moves on (who moved, which move, an HP);
+   * a radio or a checkbox only selects, and nothing is logged until
+   * the filled button, which logs what is selected. */
+.stage-opt.next::after { content: "›"; margin-left: 10px; opacity: .45; font-weight: 400; }
+.stage-opt.next.danger::after { content: none; }
+button.commit { background: var(--accent); color: #07101f; border: 0; font-weight: 650; }
+button.commit:disabled { background: var(--panel-2); color: var(--dim); border: 1px dashed var(--line); opacity: 1; }
+.stage-opt.commit { min-width: 160px; }
+
+button.choice {
+  display: inline-flex; align-items: center; gap: 8px; text-align: left;
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 500;
+}
+button.choice::before {
+  content: ""; flex: none; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--dim); box-sizing: border-box;
+}
+button.choice.check::before { border-radius: 3px; }
+button.choice[aria-checked="true"] { border-color: var(--accent); background: rgba(106, 169, 255, .14); }
+button.choice[aria-checked="true"]::before {
+  border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px var(--panel-2);
+}
+button.choice.check[aria-checked="true"]::before { box-shadow: none; content: "✓"; color: #07101f; font-size: 11px; line-height: 10px; text-align: center; }
+button.choice:disabled { opacity: .4; }
+
+.order-badge {
+  display: inline-block; min-width: 18px; height: 18px; border-radius: 9px; margin-right: 6px;
+  background: var(--accent); color: #07101f; font: 700 11px/18px ui-monospace, Menlo, monospace; text-align: center;
+}
+.q-batch { display: flex; flex-direction: column; margin-bottom: 10px; }
+.q-batch .q-card.answered .q-prompt { color: var(--text); }
+.q-confirm { margin-top: 10px; gap: 12px; }
+.q-confirm .commit { padding: 11px 18px; }
+
+.batch-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.batch-row { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px; align-items: center; }
+.batch-name { font-weight: 600; }
+.batch-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.batch-choices .choice { padding: 7px 11px; font-size: 13px; }
+@media (max-width: 620px) { .batch-row { grid-template-columns: 1fr; } }
+
+.pending-list { margin: 0 0 10px; padding-left: 22px; font-size: 13px; }
+.pending-list li { padding: 2px 0; }
+.pending-list .link { margin-left: 10px; font-size: 12px; color: var(--dim); }
+.typed-move input[aria-invalid="true"] { border-color: var(--bad); }
+.q-card.knock-on { margin-left: 18px; padding-left: 12px; border-left: 2px solid #2d4467; }
+.wp-band-note { margin-top: 6px; line-height: 1.45; }
+.wp-key.band { display: inline-block; width: 14px; height: 8px; border-radius: 2px; background: rgba(106, 169, 255, .28); vertical-align: 0; }
+.follows { margin: -4px 0 8px; }

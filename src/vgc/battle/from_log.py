@@ -7,7 +7,7 @@ This turns a log into a setup and a journal, for the parity test that checks the
 
 It is written the way someone at the cartridge works, not as a line-by-line translation. The
 structural taps come from the line that shows them: who led and who came in, each move with its
-target, each turn mark, each Mega Evolution, each Ally Switch, and the answer to a switch-in question when the log
+target, each Pokémon that could not move, each turn mark, each Mega Evolution, each Ally Switch, and the answer to a switch-in question when the log
 shows that ability firing (its timing is Speed evidence, so the page asks it as a confirm).
 Everything else, the HP, statuses, stat stages, items, weather, terrain, rooms and side conditions,
 is tapped as whatever differs between an `Observer` fed the same lines and the battle the taps
@@ -151,6 +151,8 @@ def journal(reg: Regulation, lines: list[str], setup_: dict[str, Any], upto_turn
             tap({"kind": "move", "side": parts[2][:2], "slot": "ab".index(parts[2][2]), "move": parts[3],
                  "target": {"side": target.group(1), "slot": "ab".index(target.group(2))} if target else None,
                  "spread": any(x.startswith("[spread]") for x in parts[5:]), "called_by": called})
+        elif kind == "cant" and len(parts) > 3 and _SLOT.match(parts[2]):
+            tap({"kind": "cant", "side": parts[2][:2], "slot": "ab".index(parts[2][2]), "reason": to_id(parts[3])})
         elif kind == "swap" and len(parts) > 3 and _SLOT.match(parts[2]):
             old = "ab".index(parts[2][2])
             if parts[3].isdigit() and int(parts[3]) != old:

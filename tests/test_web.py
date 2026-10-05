@@ -630,3 +630,36 @@ def test_the_menu_offers_each_mega_a_hidden_item_allows(client, teams, battles_d
     v = entries(client, bid, {"kind": "mega", "side": "p2", "species": "Charizard",
                               "forme": "Charizard-Mega-Y", "item": "Charizardite Y"})
     assert all(a["megas"] == [] for a in v["menu"]["p2"]["actives"])
+
+
+def test_the_view_says_where_the_turn_has_got_to(client, started):
+    """The page reads its next question off the view, so a reload resumes mid-turn."""
+    v = entries(client, started["id"],
+                {"kind": "lead", "side": "p2", "slot": 0, "species": "Kingambit"},
+                {"kind": "lead", "side": "p2", "slot": 1, "species": "Milotic"},
+                {"kind": "turn", "n": 1},
+                {"kind": "cant", "side": "p2", "slot": 0, "reason": "flinch"})
+    assert v["turn_progress"]["acted"] == [{"side": "p2", "species": "Kingambit"}]
+    assert v["turn_progress"]["moved"] and v["turn_progress"]["awaiting"] is None
+    assert isinstance(v["end_of_turn"], list)
+
+
+def test_a_preview_shows_what_answers_would_lead_to_without_logging_them(client, started):
+    """The page shows an answer's consequences before you confirm: the dry run raises the same
+    questions logging would, and the journal is untouched."""
+    bid = started["id"]
+    v = entries(client, bid, {"kind": "lead", "side": "p2", "slot": 0, "species": "Kingambit"})
+    q = v["questions"][0]
+    r = client.post(f"/api/battles/{bid}/preview", json={"entries": [{"kind": "answer", "question": q["id"], "option": None}]})
+    assert r.status_code == 200 and all(x["id"] != q["id"] for x in r.json()["questions"])
+    bad = client.post(f"/api/battles/{bid}/preview", json={"entries": [{"kind": "answer", "question": "q99.0", "option": 0}]})
+    assert bad.json()["errors"][0]["index"] == 0
+    assert client.get(f"/api/battles/{bid}").json()["entries"] == v["entries"]
+
+
+def test_an_unseen_moveset_offers_its_likeliest_moves_and_every_legal_one(client, started):
+    v = entries(client, started["id"], {"kind": "lead", "side": "p2", "slot": 0, "species": "Kingambit"})
+    gambit = v["menu"]["p2"]["actives"][0]
+    assert gambit["moves"] == [] and len(gambit["likely"]) > 0
+    assert {"kowtowcleave", "suckerpunch"} <= {m["id"] for m in gambit["legal"]}
+    assert all(m["name"] and "share" in m for m in gambit["likely"])

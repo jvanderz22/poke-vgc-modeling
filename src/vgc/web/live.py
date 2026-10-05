@@ -149,7 +149,8 @@ def mon_view(state, m, own: bool) -> dict[str, Any]:
 
 
 def menu(reg: Regulation, state, side: str) -> dict[str, Any]:
-    """What you can tap next for one side: each active's moves, and who is left to switch to.
+    """What you can tap next for one side: each active's moves, and who is left to switch to
+    (`entry.sendable`: once all four a side brought have been seen, the other two are not offered).
 
     An opponent's moves are the ones you have *seen*, which on turn 1 is nothing — so the move
     picker has to accept a name that is not on any list, and says so by returning `moves_known`.
@@ -165,13 +166,66 @@ def menu(reg: Regulation, state, side: str) -> dict[str, Any]:
             "slot": slot, "species": m.species,
             "moves": [{"id": mv, "name": (reg.dex.get_move(mv) or {}).get("name", mv),
                        "target": (reg.dex.get_move(mv) or {}).get("target"),
-                       "category": (reg.dex.get_move(mv) or {}).get("category")}
+                       "category": (reg.dex.get_move(mv) or {}).get("category"), **move_effects(mv)}
                       for mv in moves],
             "moves_known": bool(m.moves),
-            "megas": megas(reg, state, side, m)})
+            "megas": megas(reg, state, side, m),
+            **({} if m.moves else unseen_moves(reg, m))})
     out["bench"] = [{"species": m.species, "hp": round(m.hp, 4), "state": m.state}
-                    for m in state.bench(side)]
+                    for m in entry.sendable(reg, state, side)]
     return out
+
+
+STATUS_WORDS = {"brn": "burned", "par": "paralysed", "psn": "poisoned", "tox": "badly poisoned",
+                "slp": "asleep", "frz": "frozen"}
+
+
+def move_effects(move: str) -> dict[str, Any]:
+    """What follows from a move on its own (`follows`), and what might (`chance`): the page says
+    the first so it is not entered twice, and offers the second as something to tick."""
+    from vgc.battle import rules
+
+    def stats(b: dict[str, int]) -> str:
+        return ", ".join(f"{k} {v:+d}" for k, v in b.items())
+
+    follows, chance = [], []
+    if move in rules.MOVE_SELF:
+        follows.append(f"user {stats(rules.MOVE_SELF[move])}")
+    if move in rules.MOVE_TARGET:
+        follows.append(f"target {stats(rules.MOVE_TARGET[move])}")
+    for sec in rules.MOVE_SECONDARY.get(move, []):
+        on = "self" if "self" in sec else "target"
+        what = stats(sec[on]) if on in sec else STATUS_WORDS.get(sec.get("status", ""), sec.get("status", ""))
+        if sec["chance"] == 100:
+            follows.append(f"{'user' if on == 'self' else 'target'} {what}")
+        elif on == "target":
+            chance.append({"label": what, "chance": sec["chance"]})
+    return {"follows": follows, "chance": chance}
+
+
+def unseen_moves(reg: Regulation, m) -> dict[str, Any]:
+    """For a Pokémon whose moves the sheet does not show: until all four have been used, the six it
+    most likely has and has not used yet (`likely`, with the share of the sets still possible that
+    run each); and every move it can legally have (`legal`), so a typed move is picked from a list
+    rather than guessed at."""
+    from vgc.belief import sets as set_belief
+
+    def option(mv: str, share: float | None = None) -> dict[str, Any]:
+        d = reg.dex.get_move(mv) or {}
+        out = {"id": mv, "name": d.get("name", mv), "target": d.get("target"), "category": d.get("category"),
+               **move_effects(mv)}
+        return out | ({"share": round(share, 3)} if share is not None else {})
+
+    used = set(m.moves_used)
+    try:
+        belief = set_belief.given(reg, m)
+        # Only while the four are not all known: the six most run among the sets still possible.
+        likely = ([option(mv, p) for mv, p in belief.moves(top=12) if mv not in used][:6]
+                  if len(used) < 4 else [])
+        legal = belief.legal_moves
+    except Exception:                    # no corpus built: the dex still knows what is legal
+        likely, legal = [], set_belief.legal_moves(reg, m.forme)
+    return {"likely": likely, "legal": [option(mv) for mv in legal]}
 
 
 def megas(reg: Regulation, state, side: str, m) -> list[dict[str, str]]:
@@ -469,6 +523,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "menu": {sid: menu(reg, state, sid) for sid in ("p1", "p2")},
         "questions": [q.to_json() for q in battle.rp.questions],
         "derived": battle.rp.derived,
+        "turn_progress": entry.progress(battle.rp, reg),
+        "end_of_turn": entry.end_of_turn(battle.rp, reg),
         "errors": battle.rp.errors,
         "speed": speed_read(reg, state, belief),
         "beliefs": [b.to_json() for k, b in sorted(belief.items()) if k[0] != mine],

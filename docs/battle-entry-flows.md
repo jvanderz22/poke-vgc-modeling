@@ -5,10 +5,24 @@ it serves: **watching** someone else's game, and **playing** your own. It replac
 entry bar (`frontend/src/components/EntryBar.tsx`) as the default way in, and keeps it as the
 escape hatch.
 
-**Status (2026-10-04):** build-order steps 1 and 2 are in: the stepper with today's entries
-(`frontend/src/components/TurnStepper.tsx`, its turn logic in `frontend/src/turn.ts`, left-is-left
-in `frontend/src/screen.ts`) and the two-column page with the battle state below it
-(`BattleState.tsx`). Steps 3–5 (Plan, and the backend items) are not built.
+**Since then (2026-10-05, from use):** the page tells apart what a click does (a row ending in ›
+acts at once; a radio or checkbox only selects; the filled button logs the selection). Ability
+questions, start-of-turn switches and Megas, and "Anything else?" are select-then-confirm: an
+answer's knock-on questions (the seeds a terrain cues) appear before anything is logged, from a
+dry run (`POST /api/battles/{id}/preview`), and the order answers are selected in is the order
+recorded. An opponent's move is picked from its known moves, then its six likeliest unseen ones,
+then an autocomplete limited to moves the species can have. A move's stat changes follow on their
+own (`rules.MOVE_SELF`, `MOVE_TARGET`, `MOVE_SECONDARY`, re-derived from the pinned `moves.ts`),
+with a question when an ability or item could answer the drop (Defiant, Clear Body, Mirror
+Armor, White Herb, Clear Amulet); a chance effect is ticked on the result. A terrain or weather
+setter arriving into its own effect asks nothing, because the game shows nothing.
+
+**Status (2026-10-05):** build-order steps 1, 2, 4 and 5 are in: the stepper
+(`frontend/src/components/TurnStepper.tsx`, its sentences in `frontend/src/turn.ts`, left-is-left
+in `frontend/src/screen.ts`), the two-column page with the battle state below it
+(`BattleState.tsx`), and the four backend items (`vgc.battle.entry.progress`,
+`vgc.battle.rules.end_of_turn`). Step 3, the Plan stage, is not built; steps 6–13 are the gaps
+found while building the rest.
 
 ---
 
@@ -328,7 +342,27 @@ is the split `HpPad` already makes; the stepper only changes how you get there.
 
 ## What the backend needs
 
-The first slice can ship without these. Each one makes the stepper's output more complete.
+All four are built (2026-10-05). As built:
+
+- A move's no-damage outcome is `result` on the move for one target, and `results` (a list of
+  `{side, slot, result}`) for a spread move. `result: "hit"` with no damage after it is Fast
+  mode's "didn't catch it": the move hit and its HP was not caught, so nothing more is owed.
+- `cant` takes any non-empty reason. The page offers flinch, par, slp, frz and recharge, and the
+  log adapter (`vgc.battle.from_log`) passes Showdown's own reason through.
+- `view.turn_progress` is `{turn, acted, moved, awaiting, waiting}`. `menu.bench` leaves out the
+  two a side did not bring once its four have been seen (`entry.sendable`).
+- `view.end_of_turn` lists each effect with the HP it would leave. It also offers a held item that
+  has not been seen, when at least 10% of the sets still possible hold it ("Leftovers, if it holds
+  them"); confirming one also logs the reveal. A confirmed effect is a `heal` carrying
+  `eot: <key>`, and the list leaves out what this turn has already confirmed, so a reload does not
+  offer it again.
+- **HP that changed for any reason but a move is a `heal` entry, whichever way it went.** A
+  `damage` entry is put down to the last move used, so end-of-turn chip logged as `damage` would
+  tell the damage belief that move hits harder than it does. The first slice did this for end-of-turn
+  effects and "HP changed…"; it is fixed, and an `eot`-tagged `damage` is no longer recorded
+  against a move either.
+
+The original spec of each item:
 
 1. **A result on a move.** `move` gets an optional `result: "hit" | "miss" | "protected" |
    "immune" | "failed"`. Today a move with no damage after it already reads as no damage, so the
@@ -348,7 +382,7 @@ The first slice can ship without these. Each one makes the stepper's output more
    each with the HP it expects: "Sandstorm: Amoonguss 88% → about 82%". The user confirms each one
    (with the expected HP as the default) or corrects it. This is the order of end-of-turn effects
    that [web-app.md](web-app.md) lists as something the page cannot enter yet. Each confirm is an
-   ordinary `damage` or `heal` entry.
+   ordinary `heal` entry (see above for why never `damage`).
 
 The ability questions need no backend change. They are already raised in the order things
 happened, and only their placement moves into stage 6.
@@ -364,8 +398,44 @@ happened, and only their placement moves into stage 6.
    could land before the stepper, with the entry bar in the stepper's place.
 3. **The Plan stage.** Browser state only.
 4. **Backend items 1–3**, after which the stepper reads its stage from `turn_progress` instead of
-   working it out in the browser.
-5. **Backend item 4**, the end-of-turn checklist.
+   working it out in the browser. *Built.*
+5. **Backend item 4**, the end-of-turn checklist. *Built.*
+
+The gaps found while building steps 1–5, in the order to fix them:
+
+6. **Recoil, Life Orb and drain.** After a move's results, if the move has recoil or drain, or the
+   attacker holds (or might hold) a Life Orb, ask once more: "Rillaboom is on 150/207. What is it
+   on now?", with "unchanged" as the default. Logged as `heal` (HP alone), never `damage`. Today
+   this goes through "Anything else → HP changed", which is the step most often reached for.
+7. **A result for a move logged earlier.** The stepper resumes a move whose results are owed
+   (`turn_progress.awaiting`), but a no-damage answer to it is only remembered in the browser,
+   because the move entry is already written. Add a tap that gives a logged move a target's
+   result (`{kind: "result", move: <index>, side, slot, result}`), changing nothing else, so a
+   reload does not ask again.
+8. **The end of the turn, as a tap.** Choosing "End of turn →" before everyone has acted, and
+   answering "Didn't happen" or "None of the rest happened", are browser state, so a reload goes
+   back to "Who moved?" or offers those effects again. A tap that marks the moves over, and one
+   for each effect that did not happen (both changing nothing), would make the whole turn
+   resumable.
+9. **Contradictions on the line that caused them.** `view.contradictions` says what cannot all be
+   true but not which entry made it so. The Speed channel knows which observation it was; carry
+   that entry's index into the view and show the note on its line in "turn so far".
+10. **Worked out, under the entry that caused it.** `Replay.derived` keeps the entry index with
+    each fact, and "turn so far" shows them as dim lines under their entry. The collapsed "Worked
+    out for you" list then goes.
+11. **The engine row's detail behind an ⓘ.** Depth, `leaf_mass`, the sets solved, the three bulk
+    guesses spelled out and the assumptions move into a popover, as the gate sentence did. The
+    number, its label, the range on the bar and the disagreement note stay.
+12. **No effect as ability evidence.** "No effect" from a Ground move on a Pokémon that could have
+    Levitate, or a Water move on one that could have Water Absorb or Storm Drain, pins the ability
+    the way an answered question does. A rules table, in `vgc.battle.rules`, re-derived from the
+    pinned build like the others.
+13. **Move effects not yet modelled.** Pivots (U-turn, Parting Shot's switch, Eject Button and
+    Eject Pack) still go through "Switched out…", and HP costs (Clangorous Soul, Belly Drum) and
+    flinch are not derived. A chance effect on the user (Charge Beam) has no tick yet.
+14. **`cant` as Speed evidence.** "X couldn't move" takes its place in the order like a move, so
+    `vgc.belief.speed` can read it as one. Soundness first: flinch only happens to a Pokémon that
+    was hit first, which is itself an ordering, and recharge says nothing about this turn's Speed.
 
 ## How to tell it is better
 
