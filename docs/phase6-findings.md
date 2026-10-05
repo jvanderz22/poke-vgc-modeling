@@ -363,3 +363,73 @@ selective.
 - **The policy's Trick Room turn.** Search two turns while Trick Room is legal, or value the room's
   remaining turns at the leaf. Trick Room's payoff is the four turns after the one it is set, which
   the leaf (a damage race at the current Speed order) does not see.
+
+## 11. With the humans' own brings: it passes (PLAN-v5 step 1, 2026-10-05)
+
+The one lever §8 left untested was team preview. `scripts/analysis/step3_brings.py` plays each human
+game with what its players chose at preview: the four each side brought and the two each led with.
+That is 1,500 games, one a series, every one ended normally and with both sides' four fully seen.
+Each was played 8 times, the Phase 9 policy on both sides, sides alternating: 12,000 battles on four
+Kaggle sessions (7–10 hours each), no errors, none left unplayed. Each part was merged only after its
+three shortest battles replayed on the laptop to the same inputs, choice by choice (12 of 12),
+under the packed code (`9049d90`; hash `aa3cd1de…`, from a worktree at that commit). Results:
+`data/analysis/reg_mc/sim_validity_ewp_brings.json` and `…_brings_stack.json`.
+
+**Against the constant, as §1 and §8 were scored:**
+
+| | games (series) | AUC | log loss − constant | recalibrated − constant |
+| --- | --- | --- | --- | --- |
+| **all, ended normally** | 1,500 (1,500) | **0.590** [0.562, 0.620] | +0.118 [+0.081, +0.155] | **−0.011** [−0.019, −0.002] |
+| rated | 494 | 0.630 [0.581, 0.678] | +0.067 [+0.007, +0.130] | |
+| held-out players | 178 | 0.552 [0.467, 0.635] | +0.165 [+0.056, +0.268] | |
+
+**It passes:** both scale-free tests clear their intervals. That is the first time any self-play
+has. The raw numbers are still too sure: 33% of games beyond 85/15, sd 0.28. So the run is usable
+once recalibrated, not as it stands, as before.
+
+**The brings are what changed.** On the 621 games whose pairing §8 also played (with the heuristic's
+team preview), the same policy goes from AUC 0.511 [0.467, 0.556] to 0.584 [0.537, 0.627], and the
+two runs' win rates correlate at only 0.16. §10's Trick Room reading fits this: a Trick Room team
+played without its setter brought is a worse team.
+
+**Beside the learned models.** The pass alone does not show the simulator adds anything. The brings
+are the players' choices, made after preview and carrying their skill. So the run is set beside
+the two learned numbers available before the backs are seen, on the held-out games only (the
+`heldout_team` and `heldout_human` shards, 579 games). The models trained on the rest:
+- **the preview head** (`wp-v1f-idp5`): both sheets;
+- **the WP model at the start of turn 1** (`wp-v1f-idp5`, from the stands): both sheets and both
+  leads.
+
+| on the 579 held-out games | AUC | recalibrated − constant | passes alone |
+| --- | --- | --- | --- |
+| **self-play with the brings** | **0.628** [0.583, 0.673] | **−0.029** [−0.048, −0.008] | yes |
+| preview head | 0.581 [0.533, 0.629] | −0.014 [−0.030, +0.003] | no |
+| WP model, turn 1 | 0.559 [0.510, 0.608] | −0.005 [−0.020, +0.010] | no |
+
+| paired, the same 579 games | |
+| --- | --- |
+| AUC, self-play − preview head | +0.047 [−0.015, +0.110] |
+| AUC, self-play − WP at turn 1 | **+0.070** [+0.004, +0.131] |
+| log loss, stacked on the preview head (3b) | **−0.020** [−0.036, −0.003] |
+| log loss, stacked on the WP model at turn 1 | **−0.021** [−0.038, −0.003] |
+
+The stacks are fitted out of fold by series on these games, as in §9. Self-play's weight is
+0.26–0.35 in every fold. Here the preview head alone does not pass on these 579 games, unlike on
+§9's 2,518.
+
+**Self-play with the brings adds to both learned numbers.** It adds about 0.02 nats, with the
+whole interval below zero, and it orders these games better than the WP model at turn 1. §9's
+stacks, with the bot's brings, added nothing (+0.0004 and −0.0000).
+
+**What it does not settle.** Neither baseline sees the backs: the preview head sees no brings and
+the turn-1 model sees the leads only. So the gain is the simulator *and* the information in the
+players' choice of their back two, and these tests cannot split the two. Two readings remain:
+- the simulator judges a matchup once it is the matchup people actually play;
+- or the choice of four carries skill and intent that any reader of the brings would pick up.
+
+The within-series test (PLAN-v5 step 3d) separates them. It holds both players and both teams
+fixed and varies the brings between games of one series. It is now the test that decides Phase 10.
+
+**What it means for Phase 10.** The run was told both sides' four. At team preview a player knows
+their own and not their opponent's. Matchup evaluation would average over the opponent's likely
+fours (the bring rates, or the bring head), which this run did not test.

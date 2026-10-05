@@ -1,0 +1,166 @@
+{
+ "policy": "ewp-people vs ewp-people, the humans' brings and leads",
+ "battles_per_game": 8,
+ "subsets": [
+  {
+   "subset": "ended_normal",
+   "games": 1500,
+   "groups": 1500,
+   "base_rate": 0.478,
+   "logloss": 0.81162,
+   "logloss_constant": 0.69315,
+   "logloss_delta": 0.11847,
+   "auc": 0.5901,
+   "accuracy": 0.5707,
+   "brier": 0.28596,
+   "mean_p": 0.4911,
+   "logloss_delta_95ci": [
+    0.0811,
+    0.1549
+   ],
+   "auc_95ci": [
+    0.5624,
+    0.6204
+   ]
+  },
+  {
+   "subset": "rated",
+   "games": 494,
+   "groups": 494,
+   "base_rate": 0.4818,
+   "logloss": 0.7598,
+   "logloss_constant": 0.69315,
+   "logloss_delta": 0.06665,
+   "auc": 0.6303,
+   "accuracy": 0.6032,
+   "brier": 0.26607,
+   "mean_p": 0.4842,
+   "logloss_delta_95ci": [
+    0.0069,
+    0.1297
+   ],
+   "auc_95ci": [
+    0.5811,
+    0.6776
+   ]
+  },
+  {
+   "subset": "heldout_human",
+   "games": 178,
+   "groups": 178,
+   "base_rate": 0.3989,
+   "logloss": 0.85788,
+   "logloss_constant": 0.69315,
+   "logloss_delta": 0.16474,
+   "auc": 0.5521,
+   "accuracy": 0.573,
+   "brier": 0.30416,
+   "mean_p": 0.4708,
+   "logloss_delta_95ci": [
+    0.0559,
+    0.2684
+   ],
+   "auc_95ci": [
+    0.4666,
+    0.6349
+   ]
+  }
+ ],
+ "recalibrated": {
+  "subset": "ended_normal (recalibrated out-of-fold)",
+  "games": 1500,
+  "groups": 1500,
+  "base_rate": 0.478,
+  "logloss": 0.68234,
+  "logloss_constant": 0.69315,
+  "logloss_delta": -0.01081,
+  "auc": 0.5834,
+  "accuracy": 0.5667,
+  "brier": 0.24462,
+  "mean_p": 0.4779,
+  "logloss_delta_95ci": [
+   -0.0193,
+   -0.0022
+  ],
+  "auc_95ci": [
+   0.5547,
+   0.6136
+  ]
+ },
+ "simulated_wp_spread": {
+  "games": 1500,
+  "sd": 0.2838,
+  "share_beyond_85_15": 0.332
+ },
+ "verdict": {
+  "scored_on": "ended_normal",
+  "games": 1500,
+  "groups": 1500,
+  "orders_correctly": true,
+  "auc": 0.5901,
+  "auc_95ci": [
+   0.5624,
+   0.6204
+  ],
+  "recalibrated_beats_constant": true,
+  "recalibrated_logloss_delta": -0.01081,
+  "recalibrated_logloss_delta_95ci": [
+   -0.0193,
+   -0.0022
+  ],
+  "usable_as_is": false,
+  "logloss_delta": 0.11847,
+  "logloss_delta_95ci": [
+   0.0811,
+   0.1549
+  ],
+  "pass": true,
+  "reading": "with the humans' own brings, the Phase 9 policy orders team strength the way real games do"
+ },
+ "against_the_first_run": {
+  "games": 621,
+  "brings": {
+   "subset": "brings",
+   "games": 621,
+   "groups": 621,
+   "base_rate": 0.5008,
+   "logloss": 0.81271,
+   "logloss_constant": 0.69315,
+   "logloss_delta": 0.11957,
+   "auc": 0.5835,
+   "accuracy": 0.5604,
+   "brier": 0.28799,
+   "mean_p": 0.5043,
+   "logloss_delta_95ci": [
+    0.0642,
+    0.178
+   ],
+   "auc_95ci": [
+    0.537,
+    0.6274
+   ]
+  },
+  "heuristic_preview": {
+   "subset": "heuristic preview",
+   "games": 621,
+   "groups": 621,
+   "base_rate": 0.5008,
+   "logloss": 0.92307,
+   "logloss_constant": 0.69315,
+   "logloss_delta": 0.22993,
+   "auc": 0.5112,
+   "accuracy": 0.5153,
+   "brier": 0.32684,
+   "mean_p": 0.491,
+   "logloss_delta_95ci": [
+    0.1692,
+    0.2928
+   ],
+   "auc_95ci": [
+    0.4665,
+    0.556
+   ]
+  },
+  "correlation": 0.158
+ }
+}

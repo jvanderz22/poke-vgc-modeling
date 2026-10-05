@@ -1,0 +1,201 @@
+{
+ "scored_on": "held-out games of the brings run (heldout_human, heldout_team), ended normally",
+ "versions": {
+  "preview": "wp-v1f-idp5",
+  "turn1": "wp-v1f-idp5"
+ },
+ "games": 579,
+ "dropped": 0,
+ "alone": {
+  "selfplay": {
+   "games": 579,
+   "groups": 579,
+   "auc": 0.6284,
+   "auc_95ci": [
+    0.5825,
+    0.673
+   ],
+   "logloss_delta": 0.06987,
+   "logloss_delta_95ci": [
+    0.0124,
+    0.1283
+   ],
+   "recalibrated_delta": -0.02894,
+   "recalibrated_delta_95ci": [
+    -0.0483,
+    -0.0077
+   ],
+   "pass": true
+  },
+  "preview": {
+   "games": 579,
+   "groups": 579,
+   "auc": 0.5814,
+   "auc_95ci": [
+    0.5332,
+    0.629
+   ],
+   "logloss_delta": -0.01118,
+   "logloss_delta_95ci": [
+    -0.0205,
+    -0.0012
+   ],
+   "recalibrated_delta": -0.01405,
+   "recalibrated_delta_95ci": [
+    -0.0301,
+    0.003
+   ],
+   "pass": false
+  },
+  "turn1": {
+   "games": 579,
+   "groups": 579,
+   "auc": 0.559,
+   "auc_95ci": [
+    0.5095,
+    0.6076
+   ],
+   "logloss_delta": -0.00728,
+   "logloss_delta_95ci": [
+    -0.0207,
+    0.0063
+   ],
+   "recalibrated_delta": -0.00493,
+   "recalibrated_delta_95ci": [
+    -0.0196,
+    0.0102
+   ],
+   "pass": false
+  }
+ },
+ "paired": {
+  "selfplay - preview": {
+   "games": 579,
+   "groups": 579,
+   "auc_diff": 0.0471,
+   "auc_diff_95ci": [
+    -0.0146,
+    0.1103
+   ]
+  },
+  "selfplay - turn1": {
+   "games": 579,
+   "groups": 579,
+   "auc_diff": 0.0695,
+   "auc_diff_95ci": [
+    0.0041,
+    0.1312
+   ]
+  }
+ },
+ "stacked": {
+  "preview": {
+   "games": 579,
+   "groups": 579,
+   "logloss": {
+    "preview": 0.67909,
+    "preview+selfplay": 0.6594
+   },
+   "selfplay_adds": -0.01969,
+   "selfplay_adds_95ci": [
+    -0.0363,
+    -0.00255
+   ],
+   "coefficients_by_fold": {
+    "preview": [
+     [
+      1.279
+     ],
+     [
+      1.522
+     ],
+     [
+      1.339
+     ],
+     [
+      1.609
+     ],
+     [
+      0.868
+     ]
+    ],
+    "preview+selfplay": [
+     [
+      1.172,
+      0.279
+     ],
+     [
+      1.413,
+      0.265
+     ],
+     [
+      1.105,
+      0.318
+     ],
+     [
+      1.431,
+      0.262
+     ],
+     [
+      0.717,
+      0.348
+     ]
+    ]
+   }
+  },
+  "turn1": {
+   "games": 579,
+   "groups": 579,
+   "logloss": {
+    "preview": 0.68822,
+    "preview+selfplay": 0.66745
+   },
+   "selfplay_adds": -0.02077,
+   "selfplay_adds_95ci": [
+    -0.03843,
+    -0.0027
+   ],
+   "coefficients_by_fold": {
+    "preview": [
+     [
+      0.641
+     ],
+     [
+      1.086
+     ],
+     [
+      0.741
+     ],
+     [
+      1.069
+     ],
+     [
+      0.346
+     ]
+    ],
+    "preview+selfplay": [
+     [
+      0.577,
+      0.285
+     ],
+     [
+      1.03,
+      0.27
+     ],
+     [
+      0.618,
+      0.328
+     ],
+     [
+      0.977,
+      0.27
+     ],
+     [
+      0.257,
+      0.354
+     ]
+    ]
+   }
+  }
+ }
+}

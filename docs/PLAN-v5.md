@@ -28,7 +28,7 @@ inside steps 3 and 4.
 | Battle policy (Phase 9) | ✅ EWP over pruned joint choices, opponents weighted as people play (`vgc.policy.ewp`, the people reading). Beats the heuristic 0.678 and a held-out opponent 0.692, median 0.74 s a decision on one core; picks a human's exact choice 11.5% of the time. Not on the page |
 | Human corpus | 🟡 33,062 replays: M-B 15,000, M-C 18,062. M-C stops at **2026-09-20**, while the ladder now makes roughly 1,500–4,800 Bo1 and 600–1,800 Bo3 a day. Scrape running (step 0) |
 | Pre-battle (preview) win probability | 🟡 Learnable but too small to show: the preview head passes Phase 6's own check (AUC 0.562, recalibrated −0.0066), worth about 0.007 nats. Preview advice is "what to bring", not "you are favoured" |
-| Simulator as a measure of team strength | ❌ Twice: the heuristic's self-play (AUC 0.512) and the Phase 9 policy's (0.514 [0.488, 0.541]) do not predict human results. With the humans' own brings: running (step 1) |
+| Simulator as a measure of team strength | 🟡 With the bot's brings, twice no (AUC 0.512, 0.514). **With the humans' own brings, it passes** (0.590 [0.562, 0.620], recalibrated −0.011) and adds 0.02 nats to the preview head and to the WP model at turn 1 on held-out games (step 1). Whether that is the simulator or the players' choice of four is step 3d's question |
 | Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed. Deployed at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) behind a password. No move advice above two a side. An MCP server over the same API (`python -m vgc.mcp`) lets an agent drive it |
 
 What got here, in one line each (detail in [PLAN-v4](PLAN-v4.md) and the findings docs):
@@ -137,11 +137,11 @@ of signal. Five changes:
    people-like self-play need.
 
 **Order:**
-- step 0, then collect step 1;
+- step 0, then collect step 1 (done 2026-10-05: it passes);
 - step 4's reliability check and the re-scoring on fresh games (laptop, about a day);
+- step 3d, promoted by step 1's pass (Kaggle, beside the laptop work);
 - step 3a's leaf (laptop, 2–3 days);
-- step 3e (Kaggle GPU);
-- step 3d, only if Phase 10 still matters by then.
+- step 3e (Kaggle GPU).
 
 The full Phase 6 re-run against a temperature-sampled policy, the old 3a, is dropped.
 
@@ -186,12 +186,23 @@ the reused connection.
 Two runs have failed, and both are bounded nulls. Before a third run or a stronger policy, this
 step settles whether the check can be passed on this corpus at all.
 
-- **The brings run.** `step3b-0` to `step3b-3` on Kaggle, started 2026-10-04 about 16:00 (about 9
-  hours each): 1,500 human games, one a series, each played 8 times with the four each player brought
-  and the two they led with (`scripts/analysis/step3_brings.py`). Collect with
-  `kaggle_selfplay.sh step3b-$i --collect`. The merge replays against the packed code, commit
-  `9049d90`, so run it from a worktree at that commit or with the changed `src/vgc` files checked out
-  from it. Then `step3_brings.py score`, written up as [phase6-findings](phase6-findings.md) §11.
+- ~~**The brings run.**~~ **Done 2026-10-05: it passes** ([phase6-findings](phase6-findings.md) §11,
+  `scripts/analysis/step3_brings.py score` and `stack`).
+  - **The run:** 1,500 human games, one a series, each played 8 times by the Phase 9 policy with the
+    four each player brought and the two they led with. 12,000 battles, no errors. Merged from a
+    worktree at `9049d90` after 12 of 12 check battles replayed identically.
+  - **Against the constant:** AUC **0.590** [0.562, 0.620], recalibrated **−0.011**
+    [−0.019, −0.002]. The first self-play to pass. On the 621 games §8 also played, the same policy
+    with the bot's brings scored 0.511.
+  - **Beside the learned models, 579 held-out games:**
+    - self-play alone: AUC 0.628;
+    - the preview head: 0.581;
+    - the WP model at turn 1: 0.559.
+
+    Stacked, self-play adds **−0.020** [−0.036, −0.003] nats to the preview head and **−0.021**
+    [−0.038, −0.003] to the turn-1 model.
+  - **Still open:** neither baseline sees the backs. So the gain is the simulator plus the players'
+    choice of their back two, and these tests cannot split them. Step 3d can.
 - ~~**The ceiling.**~~ **Done 2026-10-04** ([phase6-findings](phase6-findings.md) §9,
   `scripts/analysis/phase6_ceiling.py`). On held-out games the preview head **passes** Phase 6's
   check: AUC 0.562 [0.537, 0.584], recalibrated −0.0066 [−0.0115, −0.0013]. It beats heuristic
@@ -201,17 +212,22 @@ step settles whether the check can be passed on this corpus at all.
   winner 57.7% of the time, which puts an oracle for team plus player near AUC 0.72. The sheets
   alone reach 0.56.
 - **How to read it:**
-  - **The brings run passes.** The policy's self-play measures team strength once it is given what
-    people bring. Phase 10 (on-demand matchup evaluation) is unblocked, with the brings as an input,
-    and the brings model ranks them. **Review caveat:** brings are chosen after team preview and
-    carry the players' skill, so a pass against the constant is not enough. The fair baseline is
-    the WP model once brings and leads are known (turn 1), not the preview head. Stack the self-play
-    logit on that number, as in 3b, before reading a pass as a simulator signal.
+  - **The brings run passes. This is the branch taken (2026-10-05).** The policy's self-play
+    measures team strength once it is given what people bring. **Review caveat:** brings are chosen
+    after team preview and carry the players' skill, so a pass against the constant is not enough.
+    - **Met in part:** stacked on the WP model at turn 1 (both sheets and the leads), self-play
+      still adds 0.021 nats.
+    - **Not met:** no learned baseline sees the backs. So Phase 10 is unblocked only for the
+      question 3d answers: does the simulator rank brings within a matchup with the players held
+      fixed? 3d moves from "only if Phase 10 still matters" to next for Phase 10.
+    - **For the product:** the run knew both sides' four, and a player at preview knows only their
+      own. Matchup evaluation averages over the opponent's likely fours, which still has to be
+      gated.
   - **It fails, and the preview head clears what the policy did not.** The policy is the gap. No
     more Kaggle self-play for team strength until a policy differs in kind, not only in depth.
   - ~~**It fails, and the preview head is no better.**~~ Closed by the ceiling: the preview head
     passes on this corpus.
-- **Cost:** the Kaggle sessions already running.
+- **Cost:** four Kaggle sessions (7–10 hours each), done.
 
 ### 2. Why self-play misses: the Phase 6 diagnostics
 
@@ -335,6 +351,13 @@ results on held-out series. No simulator number reaches the page or Phase 10 any
   - **The predictor:** self-play with each game's actual brings and leads. The brings run plays one
     game a series, so this needs every game of each series, at about the same Kaggle cost. The
     learned baselines (the bring head, the WP model at turn 1) are scored the same way beside it.
+  - **Promoted 2026-10-05 by step 1.** Self-play with the brings passes and adds to both learned
+    numbers, but it cannot tell the simulator from the players' choice of four. Holding the players
+    fixed is what separates them.
+    - **Its games:** the other games of the brings run's series that ended normally with both
+      fours seen, plus the step 0 games once they join the corpus.
+    - **Its export:** `step3_brings.py` already plays a game as its players brought it; it needs a
+      mode that takes every game of a series.
   - **Gate:** the within-series coefficient's interval wholly above zero, and the stack's log loss
     below the WP model at turn 1 alone.
   - Phase 11 (comparing whole teams) still needs the cross-team test. For it, a Bradley–Terry with
