@@ -5,6 +5,13 @@
 #   scripts/cloud/kaggle_sweep.sh [regulation] [dataset]
 #   scripts/cloud/kaggle_sweep.sh [regulation] [dataset] --collect   # skip to step 4
 #   CONFIGS=runs.json scripts/cloud/kaggle_sweep.sh ...              # train these, not the sweep
+#   NO_EVAL=1 scripts/cloud/kaggle_sweep.sh ...                      # bring them home, no more
+#   ACCEL=cpu scripts/cloud/kaggle_sweep.sh ...                      # a 4-core CPU session
+#
+# The GPU has never been granted to this account's kernels: on 2026-10-05, with `enable_gpu`, a
+# T4 machine shape and the latest image, a session came up on the CPU image (`torch …+cpu`) and the
+# week's GPU quota stayed at 0.00h. Five seeds of the set encoder on wp-v1g's 2.1M rows fit one
+# 12-hour CPU session, so ACCEL=cpu is the working path until that is solved.
 #
 # `--collect` fetches and evaluates the output of a kernel that has already run. Use it when the
 # wait timed out, or when you stopped the script and the notebook kept going: the kernel lives on
@@ -37,6 +44,7 @@ POLL_SECONDS="${POLL_SECONDS:-60}"
 # healthy run two thirds of the way through. Kaggle's own ceiling is 12h; sit well inside it and
 # let the deadline mean "something is wrong", not "this is taking as long as it always takes".
 MAX_MINUTES="${MAX_MINUTES:-360}"
+ACCEL="${ACCEL:-gpu}"
 KERNEL="vgc-wp-sweep"
 
 KAGGLE="${KAGGLE:-kaggle}"
@@ -97,12 +105,19 @@ JSON
   fi
 }
 
+# A stamp only this push carries, at the top level of each dataset (not inside the zip of the
+# features folder). Waiting for train.npz or set_torch.py proved nothing: the previous version
+# has files of the same names, and on 2026-10-05 a kernel attached the old features (637,508 rows
+# instead of 2,115,999) while the new configs had landed.
+STAMP="stamp-$(date -u +%Y%m%dT%H%M%SZ)-$$.txt"
+echo "$DATASET $(git rev-parse --short HEAD)" > "$WORK/features/$STAMP"
 push_dataset "$WORK/features" vgc-wp-features "VGC WP features"
 cp src/vgc/wp/set_torch.py "$WORK/src/"
 # CONFIGS=path: a JSON {name: [flags...]} that replaces the notebook's own model and sweep, e.g.
 # several seeds of one recipe for an ensemble. A new dataset version holds only what is pushed,
 # so a run without it gets the notebook's defaults back.
 if [ -n "${CONFIGS:-}" ]; then cp "$CONFIGS" "$WORK/src/configs.json"; echo "==> configs: $CONFIGS"; fi
+cp "$WORK/features/$STAMP" "$WORK/src/$STAMP"
 push_dataset "$WORK/src" vgc-set-torch "VGC set encoder trainer"
 
 # A just-pushed version is not attachable until Kaggle finishes processing it, and a kernel that
@@ -117,8 +132,8 @@ wait_for() {  # slug, filename
   return 1
 }
 echo "==> waiting for datasets to finish processing"
-wait_for vgc-wp-features train.npz
-wait_for vgc-set-torch set_torch.py
+wait_for vgc-wp-features "$STAMP"
+wait_for vgc-set-torch "$STAMP"
 
 # --- 2. the notebook -------------------------------------------------------------------------
 cp scripts/cloud/kaggle_train_wp.ipynb "$WORK/nb/$KERNEL.ipynb"
@@ -130,20 +145,22 @@ cat > "$WORK/nb/kernel-metadata.json" <<JSON
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,
-  "enable_gpu": true,
+  "enable_gpu": $([ "$ACCEL" = gpu ] && echo true || echo false),$([ "$ACCEL" = gpu ] && printf '\n  "machine_shape": "NvidiaTeslaT4",')
+  "docker_image_pinning_type": "latest",
   "enable_internet": false,
   "dataset_sources": ["$KUSER/vgc-wp-features", "$KUSER/vgc-set-torch"],
   "competition_sources": [],
   "kernel_sources": []
 }
 JSON
-echo "==> launching on GPU"
+echo "==> launching on $ACCEL"
 "$KAGGLE" kernels push -p "$WORK/nb"
 
 # --- 3. wait ---------------------------------------------------------------------------------
 DEADLINE=$(( $(date +%s) + MAX_MINUTES * 60 ))
 while :; do
-  STATUS=$("$KAGGLE" kernels status "$KUSER/$KERNEL" 2>&1 || true)
+  # Lowercased: the CLI now says "KernelWorkerStatus.COMPLETE", which `*complete*` never matched.
+  STATUS=$("$KAGGLE" kernels status "$KUSER/$KERNEL" 2>&1 | tr '[:upper:]' '[:lower:]' || true)
   case "$STATUS" in
     *complete*) echo "==> complete"; break ;;
     *error*|*cancel*) echo "$STATUS" >&2; echo "see https://kaggle.com/$KUSER/$KERNEL" >&2; exit 1 ;;
@@ -189,6 +206,10 @@ while IFS= read -r f; do
 done < <(find "$SRC" -name model.onnx | sort)
 [ ${#FOUND[@]} -eq 0 ] && { echo "no models in the output — check https://kaggle.com/$KUSER/$KERNEL" >&2; exit 1; }
 echo "==> got: ${FOUND[*]}"
+
+# NO_EVAL=1 stops here: the models are home, and they are carded and scored by hand (an ensemble
+# is built from them first, or they are compared without `vgc wp eval` writing to other cards).
+if [ -n "${NO_EVAL:-}" ]; then echo "==> NO_EVAL: not carded or evaluated"; exit 0; fi
 
 # --- 5. the part that actually decides ----------------------------------------------------------
 # Against the local frozen split, every time. A sweep ranks on validation loss, which does not
