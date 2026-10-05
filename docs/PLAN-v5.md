@@ -150,9 +150,14 @@ The full Phase 6 re-run against a temperature-sampled policy, the old 3a, is dro
 **Started 2026-10-04 about 21:50.** Both M-C formats are fetched newest-first back to the cached
 range, into a staging directory, `data/replays-new/<format>/`. The runner stops after three
 consecutive pages that are already cached, retries transient errors, skips deleted replays and
-resumes when re-run. It runs on the laptop, bound by the network (0.3 s between replays): about
-50 replays a minute per format, so roughly 8 hours for Bo3 and 12–15 for Bo1, into 2026-10-05. The runner is a one-off; if scraping continues to rotation, `vgc meta scrape` gets its
-stop-at-cached logic.
+resumes when re-run. It runs on the laptop, bound by the network, with 0.3 s between replays. It
+reuses one HTTPS connection, which halves each fetch (0.16 s to 0.08 s) and spares the server a
+handshake per replay. That gives about 150 replays a minute per format, against 60 with a new
+connection each. So roughly 3 hours for Bo3 and 5 for Bo1, by the early hours of 2026-10-05.
+Kaggle was considered and not used: the laptop is not the limit, and going faster there would
+mean several sessions hitting Showdown's volunteer-run replay server at once. The runner is a
+one-off; if scraping continues to rotation, `vgc meta scrape` gets its stop-at-cached logic and
+the reused connection.
 
 - **Why staged, not in `data/replays/`.** Several analyses sample from the cache, and the step 3b
   merge replays against a packed list. New files there would change their inputs silently.
@@ -424,13 +429,17 @@ about human games, though (principle 1), so this step gates that first.
   - **Latency:** median 1.0 s, p99 2.7 s.
 
   **Next:**
-  - **Confirmation, running since 2026-10-04 21:51** (`policy_value.py --confirm`, about 30
-    minutes). The hypothesis was declared before scoring: "after the first faint, with more than two
-    a side, the combined number beats the model". It is scored once, on the 939 held-out games the
-    first run did not touch, with the weights refitted from the saved validation positions (the same
-    fit). Results go to `policy_value_confirm.json`. The step 0 score stays a separate, later look.
-  - **Then the page needs the player to mark their four.** The policy's position needs the
-    player's own back, and the page does not record it.
+  - **Confirmed 2026-10-04** (`policy_value.py --confirm`). The hypothesis was declared before
+    scoring: "after the first faint, with more than two a side, the combined number beats the
+    model". Scored once on the 939 held-out games the first run did not touch, with the same fit:
+    **−0.039 [−0.051, −0.027]** (3,221 positions, 543 series), and every kind clears on its own
+    (4v3 −0.031, 3v3 −0.029, 3v2 −0.072, 4v2 −0.035, 3v1 −0.024). At 4v4 it is −0.012
+    [−0.024, +0.001], so the model stays the number there. The step 0 score stays a separate, later
+    look.
+  - **Then the page:** after the first faint, with more than two a side, the combined number
+    leads, with the model underneath (principle 11). Before that, the player has to mark their four:
+    the policy's position needs the player's own back, and the page does not record it. Then time it
+    on Fly through the MCP server.
 - **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
   reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
   `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both

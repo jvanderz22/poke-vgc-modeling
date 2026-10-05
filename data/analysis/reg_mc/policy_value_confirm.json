@@ -1,0 +1,95 @@
+{
+ "settings": {
+  "heldout_games": 939,
+  "after_the_first": 800,
+  "seed": 3,
+  "wp_model": "wp-v1f-idp5"
+ },
+ "hypothesis": "after the first faint, more than two a side: combined beats the model",
+ "coef": [
+  0.46,
+  0.518
+ ],
+ "after_first_faint": {
+  "positions": 3221,
+  "groups": 543,
+  "delta": -0.03929,
+  "ci95": [
+   -0.05145,
+   -0.02749
+  ],
+  "verdict": "combined better"
+ },
+ "4v4": {
+  "positions": 2668,
+  "groups": 551,
+  "delta": -0.01169,
+  "ci95": [
+   -0.02359,
+   0.00051
+  ],
+  "verdict": "not distinguishable"
+ },
+ "all": {
+  "positions": 5889,
+  "groups": 576,
+  "delta": -0.02678,
+  "ci95": [
+   -0.03646,
+   -0.01722
+  ],
+  "verdict": "combined better"
+ },
+ "by_kind": {
+  "3v1": {
+   "positions": 109,
+   "groups": 65,
+   "delta": -0.02362,
+   "ci95": [
+    -0.04595,
+    -0.00063
+   ],
+   "verdict": "combined better"
+  },
+  "3v2": {
+   "positions": 747,
+   "groups": 317,
+   "delta": -0.07203,
+   "ci95": [
+    -0.09655,
+    -0.04684
+   ],
+   "verdict": "combined better"
+  },
+  "3v3": {
+   "positions": 752,
+   "groups": 275,
+   "delta": -0.02862,
+   "ci95": [
+    -0.04885,
+    -0.00682
+   ],
+   "verdict": "combined better"
+  },
+  "4v2": {
+   "positions": 329,
+   "groups": 158,
+   "delta": -0.03466,
+   "ci95": [
+    -0.0574,
+    -0.00969
+   ],
+   "verdict": "combined better"
+  },
+  "4v3": {
+   "positions": 1249,
+   "groups": 416,
+   "delta": -0.03095,
+   "ci95": [
+    -0.04697,
+    -0.01491
+   ],
+   "verdict": "combined better"
+  }
+ }
+}

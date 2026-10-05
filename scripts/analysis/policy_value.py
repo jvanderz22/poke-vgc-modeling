@@ -17,6 +17,12 @@ The positions are `policy_vs_people.positions`: a player's own back as the repla
 (the page would need the player to mark their four), theirs as the heaviest guess.
 
     PYTHONPATH=scripts/analysis .venv/bin/python scripts/analysis/policy_value.py --games 800
+
+`--confirm` then tests one hypothesis stated after that run, on the held-out games it did not touch:
+"after the first faint, with more than two a side, the combined number beats the model". The
+combination is refitted from the saved validation positions, so it is the same fit, frozen.
+
+    PYTHONPATH=scripts/analysis .venv/bin/python scripts/analysis/policy_value.py --confirm
 """
 
 from __future__ import annotations
@@ -33,6 +39,7 @@ import numpy as np
 from vgc import paths
 
 OUT = paths.DATA / "analysis" / "reg_mc" / "policy_value.json"
+CONFIRM = paths.DATA / "analysis" / "reg_mc" / "policy_value_confirm.json"
 ROWS = paths.DATA / "analysis" / "reg_mc" / "policy_value_rows.json"
 
 
@@ -89,6 +96,33 @@ def _paired(d: np.ndarray, groups: np.ndarray, boots: int = 4000, seed: int = 0)
             "verdict": "combined better" if ci[1] < 0 else "model better" if ci[0] > 0 else "not distinguishable"}
 
 
+def confirm(fit_rows: list[dict[str, Any]], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """The stated hypothesis on fresh held-out positions: every kind but 4v4, pooled."""
+    from sklearn.linear_model import LogisticRegression
+
+    from vgc.sim.validity import _logit
+
+    def arrays(rs):
+        return (np.stack([_logit(np.array([r["wp"] for r in rs])), _logit(np.array([r["value"] for r in rs]))], 1),
+                np.array([r["won"] for r in rs]), np.array([r["group"] for r in rs]))
+
+    X, y, _ = arrays(fit_rows)
+    both = LogisticRegression(C=1e6, max_iter=1000).fit(X, y)
+    alone = LogisticRegression(C=1e6, max_iter=1000).fit(X[:, :1], y)
+
+    def score(rs):
+        Xt, yt, gt = arrays(rs)
+        return _paired(_ll(both.predict_proba(Xt)[:, 1], yt) - _ll(alone.predict_proba(Xt[:, :1])[:, 1], yt), gt)
+
+    after = [r for r in rows if r["pooled"] != "4v4"]
+    return {"hypothesis": "after the first faint, more than two a side: combined beats the model",
+            "coef": [round(float(c), 3) for c in both.coef_[0]],
+            "after_first_faint": score(after), "4v4": score([r for r in rows if r["pooled"] == "4v4"]),
+            "all": score(rows),
+            "by_kind": {k: score([r for r in after if r["pooled"] == k]) for k in sorted({r["pooled"] for r in after})
+                        if sum(r["pooled"] == k for r in after) >= 50}}
+
+
 def report(rows: list[dict[str, Any]]) -> dict[str, Any]:
     from sklearn.linear_model import LogisticRegression
 
@@ -128,6 +162,8 @@ def main() -> None:
     ap.add_argument("--games", type=int, default=800, help="held-out games (all validation games are used)")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--seed", type=int, default=3)
+    ap.add_argument("--confirm", action="store_true", help="the held-out games after the first --games, scored "
+                    "on the stated hypothesis with the saved validation fit")
     a = ap.parse_args()
     import policy_vs_people as PV
     from vgc.data.snapshots import replay_group
@@ -146,6 +182,8 @@ def main() -> None:
     random.Random(a.seed).shuffle(held)
     val = [r for r in reps if split[r["id"]] == "train" and _is_val(replay_group(r), VAL_RATE["human"])]
     jobs = [(r, "validation") for r in val] + [(r, "heldout_human") for r in held[:a.games]]
+    if a.confirm:
+        jobs = [(r, "heldout_human") for r in held[a.games:]]
     with Pool(a.workers, initializer=PV._init) as p:
         rows = [x for rs in p.imap_unordered(_game, jobs, chunksize=2) for x in rs]
     version = in_battle_version(reg.id, OPEN)
@@ -153,6 +191,14 @@ def main() -> None:
     preds = predict_records(model, [r.pop("_rec") for r in rows], fz)
     for r, p1 in zip(rows, preds):
         r["wp"] = float(p1) if r["sid"] == "p1" else 1 - float(p1)
+    if a.confirm:
+        fit_rows = [r for r in json.loads(ROWS.read_text()) if r["split"] == "validation"]
+        res = {"settings": {"heldout_games": len(jobs), "after_the_first": a.games, "seed": a.seed,
+                            "wp_model": version}, **confirm(fit_rows, rows)}
+        CONFIRM.with_name("policy_value_confirm_rows.json").write_text(json.dumps(rows) + "\n")
+        CONFIRM.write_text(json.dumps(res, indent=1) + "\n")
+        print(json.dumps(res, indent=1))
+        return
     ROWS.write_text(json.dumps(rows) + "\n")
     res = {"settings": {"heldout_games": a.games, "validation_games": len(val), "seed": a.seed, "wp_model": version,
                         "workers": a.workers}, **report(rows)}

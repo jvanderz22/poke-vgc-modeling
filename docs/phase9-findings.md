@@ -506,3 +506,28 @@ eight running at once, inside the 5 s an answer has.
   held-out games this run did not touch.
 - **The page knowing the player's four.** The policy's position needs the player's own back, and
   the page does not record which four they brought.
+
+**Confirmed on fresh held-out games** (`policy_value.py --confirm`,
+`data/analysis/reg_mc/policy_value_confirm.json`). One hypothesis, stated before scoring: "after the
+first faint, with more than two a side, the combined number beats the model". It was scored once on
+the 939 held-out games the first run did not touch, with the same fit (0.46 on the model's logit,
+0.52 on the policy's):
+
+| fresh held out | positions (series) | combined − model |
+| --- | --- | --- |
+| **after the first faint** (the hypothesis) | 3,221 (543) | **−0.039** [−0.051, −0.027] |
+| 4v3 | 1,249 (416) | −0.031 [−0.047, −0.015] |
+| 3v3 | 752 (275) | −0.029 [−0.049, −0.007] |
+| 3v2 | 747 (317) | −0.072 [−0.097, −0.047] |
+| 4v2 | 329 (158) | −0.035 [−0.057, −0.010] |
+| 3v1 | 109 (65) | −0.024 [−0.046, −0.001] |
+| 4v4 | 2,668 (551) | −0.012 [−0.024, +0.001] |
+| all | 5,889 (576) | −0.027 [−0.036, −0.017] |
+
+**It holds, and more strongly than on the first sample.** After the first faint, every kind clears on
+its own. At 4v4 the point is better than the first run's but the interval still reaches zero, so the
+model alone stays the number there. This passes the way the doubles engine passed: on held-out human
+games, per state kind, with a fit made on games the model did not train on.
+
+**What stands before the page:** the player marking their four. The policy's position needs the
+player's own back, and the page does not record it. The step 0 games give a further, separate score.
