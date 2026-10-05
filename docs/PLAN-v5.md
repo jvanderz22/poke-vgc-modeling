@@ -463,18 +463,151 @@ about human games, though (principle 1), so this step gates that first.
     - **Ally Switch.** It had no tap, so every read after one crossed the two slots. It is now an
       entry (`swap`), with a button in the Battle page's Switch pad ("Trade places with …").
 
-### 5. Ready for the next regulation
+### 5. The next regulation: what the old data is for, and how the new data phases in
 
-Carried unchanged from v4 step 4. Reg M-C rotates 2026-12-02. There is no deadline, since being
-late costs little, so this is taken when it is wanted.
-- **L0 config for the next regulation** as soon as its rules are public
-  ([regulation-change](regulation-change.md)).
-- **The set encoder's shared vocabulary,** so `wp-v1f`'s successor can warm-start on M-C games.
-  GBT already showed the old regulation's games are worth nearly a new regulation's.
-- **What carries over without retraining:** the team tools, the belief channels (re-gated per
-  regime on the new data), the endgame engine and the policy. The engine and the policy need only
-  the pinned simulator to know the new mechanics; the policy's pruning prior is a people model
-  and does need retraining. List what else does not carry over.
+Reg M-C rotates 2026-12-02; the next regulation is called M-D here. Being a few days late costs
+little. Two questions decide the rotation: what M-C's games are worth on M-D's day 1, 7 and 30, and
+when each component switches to M-D's own data. **They are answered live, on M-D's data as it
+arrives** (decided 2026-10-04: no rehearsal on the M-B → M-C rotation beforehand). Expanded
+2026-10-04 from v4's three bullets.
+
+**A regulation is a regime** (principle 4, extended). Every number is re-gated on the new
+regulation's held-out games. Until it is, the number is shown as *measured on M-C*, not as
+calibrated. A component on M-D is always in one of four states:
+
+| state | means | the page |
+| --- | --- | --- |
+| carried | gated on M-C, not yet on M-D | shown, labelled "measured on M-C" |
+| undecided | M-D's gate run, power under 80% | the same, plus the gate's power |
+| passed | gated on M-D | shown as now |
+| failed | failed on M-D | not presented as calibrated (principle 10) |
+
+The engine keeps leading where it led on M-C while both it and the model are carried. Its edge
+comes from mechanics, which carry; the model's comes from data, which does not. Each state kind
+moves to whatever M-D's own check says once that check has power (principle 11).
+
+#### What M-C's data becomes
+
+The components fall into four kinds by what they learned, and the gates make a fifth row. Each
+has its own route to M-D.
+
+| kind | components | after rotation |
+| --- | --- | --- |
+| **Mechanics, computed** | engine, calc, battle state and adapters, belief arithmetic (speed, damage, bulk, SP budget), the weakness report | carry once the Showdown pin is bumped and the parity, calc-vs-sim and validator tests pass. Their soundness is re-measured on M-D (`silently_wrong`) |
+| **Few-parameter fits on generic features** | the leaves (`BENCH_BLEND`, `MELEE_*`, `FLOOR`), `doubles.TEMPER`, the people logit (`PEOPLE`), the `policy_value` combination, WP calibration | carried as M-C's fit, then refitted on M-D with M-C's fit as the prior (below). They read HP share, the count, damage and KOs, not species, so they should move little |
+| **Counts over identities** | the set prior (`belief.sets`), the spread prior and Speed benchmarks (`belief.prior`), `bring_rates.json`, usage, the team pool | a species that continues starts from its M-C counts, shrunk towards M-D's as they arrive. A new species starts from its generic fallback. Benchmarks are recomputed from M-D usage, since what is worth outrunning moves with the meta |
+| **Learned over identities** | the WP set encoder, the bring head, the preview head, the learned people model (3e) | trained on M-C and M-D together, M-C weighted by a fitted w, and refitted weekly. Needs the shared vocabulary first (below). M-C is dropped when an M-D-only model matches the mix on M-D's held-out games |
+| **Gates and held-out shards** | every gate | regulation-specific, no carry. M-C's frozen held-out shard stays as a permanent benchmark |
+
+#### How the new data phases in
+
+Three mechanisms, one per fitted kind. None has a cliff: on day 1 each is M-C's answer, and it
+moves to M-D's at the rate M-D's data earns it.
+- **Few-parameter fits: a prior on M-C's fit.** Refit on M-D's training games with a Gaussian
+  prior centred on M-C's parameters. The prior's strength is chosen by cross-validation on M-D's
+  validation groups. Calibration (temperature and slope per turn bucket) goes first: it is two
+  numbers a bucket and needs the fewest games.
+- **Counts: shrinkage with a fitted pseudo-count.** The same form as `BRING_PRIOR_SIDES`:
+  (M-D count + k · M-C rate) / (M-D total + k), with k fitted on M-D validation games instead of
+  fixed. Within M-D, older weeks are down-weighted if step 5's drift check says the meta moves
+  within a regulation.
+- **Learned models: old data at a fitted weight.**
+  - Train on M-C plus M-D with M-C's rows weighted by w ∈ {0, ¼, ½, 1}, chosen on M-D's validation
+    groups. Retrain weekly, and retire M-C once w = 0 wins.
+  - The GBT measurement (regulation-change, M-B → M-C) says what to expect. M-B alone came within
+    0.01 of M-C's ceiling. With 3% of M-C, adding M-B was worth −0.052. With 10%, −0.012 open and
+    nothing distinguishable closed. So M-C should carry M-D's first week or two.
+
+#### Fitted live, with defaults until M-D can fit them
+
+The phase-in is not scheduled in advance. Each weekly refit on M-D is the measurement: it chooses
+the prior strength, k and w on M-D's validation groups, and the gates run on M-D's held-out games.
+- **Before M-D has validation games to fit on** (roughly its first week), each mechanism runs at
+  a fixed default:
+  - the few-parameter fits use M-C's fit as it is;
+  - the counts use k = 20, as `BRING_PRIOR_SIDES` does today;
+  - the learned models use w = 1, all of M-C at full weight.
+
+  Every component is "carried" then, so the defaults only have to be reasonable, not right.
+- **Each refit is logged** (`data/analysis/reg_md/phase_in.jsonl`): the date, M-D's game count,
+  the chosen prior strength, k and w per component, and each gate's verdict and power. That log is
+  the phase-in schedule, measured on the rotation that matters. It becomes the runbook's table for
+  the rotation after M-D.
+- **What doing it live gives up:** M-D's first week runs on defaults that were never tested. A
+  rotation that removes Pokémon or changes a mechanic shows up only in M-D's own data. The
+  "carried" label and the weekly refits bound the cost: a bad carry is labelled from day 1 and
+  weighted out within a week or two.
+
+#### Drift inside a regulation (from step 0, nearly free)
+
+Train on M-C games up to 2026-09-20 and score on the step 0 games. Compare with the same model on
+held-out games from before 2026-09-20. The gap is how fast a model ages within a regulation. It
+sets the within-regulation decay above, and says whether models need retraining during M-D, not
+only at its start.
+
+#### What to build before the rules are public
+
+- **The shared vocabulary for the set encoder** (carried from v4): ids keyed by Showdown id across
+  regulations, from Showdown's whole dex, plus about 10% identity dropout so the model leans on
+  base stats, types and move summaries for what it has not seen. Without it, the set encoder cannot
+  be trained on M-C and M-D together, and M-D's first weeks fall back to GBT.
+- **Per-regulation fits out of the solver's source.** `PEOPLE`, `BENCH_BLEND`, the `MELEE_*`
+  blends, `FLOOR` and `TEMPER` are constants in `endgame-solver.js` and `vgc.wp.doubles`. They move
+  to a per-regulation fit file passed in with the search, so M-C and M-D can each be answered with
+  their own fits.
+- **The cache key learns the regulation and the pin.** `position_key` hashes the solver's declared
+  `VERSION` and the position, not the Showdown pin or the regulation's fits. A pin bump for M-D
+  could change an answer without a `VERSION` bump, and `check_cache` would not see it, because
+  it re-solves under the same new pin. Add the pin's SHA and the fit file's hash to the key.
+- **Two Showdown checkouts during the transition.** `check_pin` allows one pin at a time, but the
+  phase-in needs both:
+  - M-C's held-out benchmarks and the solver runs that fit M-C's leaves need M-C's pin;
+  - M-D needs its own.
+
+  Keep the old pin as a second checkout (`vendor/pokemon-showdown-<sha>`), chosen by the
+  regulation's config. Snapshots are observations, so featurizing M-C games needs no pin.
+- **One place for the default regulation.** `reg_mc` is hardcoded in five places:
+  - `vgc.web.app`'s routes;
+  - `frontend/src/App.tsx`'s `REG`;
+  - `vgc.mcp.server`;
+  - the CLI's `-r` default;
+  - `vgc.policy.view.BRING_RATES`.
+
+  `models/served.json` is already per regulation.
+- **Rewrite the runbook** to this plan: the four component states, the five kinds and their
+  defaults, and the weekly refit. [regulation-change](regulation-change.md) has gone stale since
+  Phase 4:
+  - its inventory misses everything after the WP models: the belief priors, the leaves, the
+    people model, the bring rates, `served.json`, the policy and the engine's gates;
+  - its gate list still has the retired "preview WP tracks simulated win rates";
+  - it suggests deleting `data/replays`.
+
+#### The data: keep, scrape, retire
+
+- **Scrape M-C to its last day.** Its final weeks are the most mature meta and the closest in time
+  to M-D. The step 0 runner is folded into `vgc meta scrape` (stop at the cached range, one reused
+  connection) and run weekly. A final sweep runs the week after rotation for late uploads.
+- **Keep every regulation's raw replays.** They are 129 MB today, and perhaps 0.5–1 GB by
+  December. They are the pretraining corpus for every later regulation and cannot be fetched again
+  once Showdown expires them. Only derived data (snapshots, features, self-play) is deleted, and
+  only once M-D's models pass without M-C's.
+- **Keep M-C's frozen split and held-out shard as a fixed benchmark.** A change to anything
+  mechanics-only (engine, belief, adapters) is re-scored on it under M-C's pin. That is a
+  regression check that does not wait for M-D's data.
+- **On M-D's day 1:** freeze M-D's split with the hash rules (never re-freeze), and scrape daily
+  for the first two weeks. Every component starts carried. At M-C's day 10 there were about 800 Bo3
+  games, so expect the in-battle gates to be undecided for one to two weeks. The phase-in log
+  records how long it actually took.
+
+**Order:**
+1. the drift check: on the step 0 games once they are in;
+2. per-regulation fit files and the cache key;
+3. the shared vocabulary;
+4. the runbook rewrite;
+5. day 0, when the rules are public, then a weekly refit.
+
+Items 2 and 3 are code. Item 3 also needs a Kaggle GPU session to train and check the set encoder
+on the shared vocabulary. None of it competes with steps 3–4 for Kaggle CPU.
 
 ### 6. Loose ends, taken when they block something
 
@@ -601,7 +734,11 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | The diagnostics find no single cause | Step 3 is built only where a step 2 check points; otherwise the floor holds and nothing more is spent on self-play |
 | Move advice that misleads | Gated against human results first (step 4); open sheets only; the WP model stays on screen |
 | The policy misses 5 s on shared cores | Fewer rows (K) above two a side, the quick answer kept, or a `performance-1x` machine |
-| Reg M-C rotates 2026-12-02 | Step 5, when it is wanted; being late costs little |
+| Reg M-C rotates 2026-12-02 | Step 5. Every component starts M-D "carried" with a label, so being late costs accuracy, not correctness. The fit files, the cache key and the shared vocabulary have to be built before then |
+| The phase-in defaults are wrong for M-D (no rehearsal tested them) | Every component is labelled "carried" until M-D's own gate decides; the weekly refit chooses the weights on M-D's data |
+| M-D removes Pokémon or changes a mechanic | The runbook's mechanics-changes table; the generic fallback for unseen identities; and M-C's weight w fitted on M-D's own data, so a bad carry is weighted out within a week or two |
+| A Showdown pin bump changes cached answers silently | The pin's SHA and the fit file's hash join the cache key (step 5) |
+| Showdown expires old replays | Raw replays for every regulation are kept on disk (step 5) |
 | The closed-sheet belief does not concentrate enough | Happened (v4 step 1). The model keeps leading closed doubles |
 | The cloud machine never stops, or its solves run long | Auto-stop with no minimum, one machine, a password, and a hard spend cap |
 | Disk (18 GB free) | Retired models and unreferenced eval sets (`vgc wp prune-eval-cache`) go first |
