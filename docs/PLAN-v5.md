@@ -155,9 +155,15 @@ reuses one HTTPS connection, which halves each fetch (0.16 s to 0.08 s) and spar
 handshake per replay. That gives about 150 replays a minute per format, against 60 with a new
 connection each. So roughly 3 hours for Bo3 and 5 for Bo1, by the early hours of 2026-10-05.
 Kaggle was considered and not used: the laptop is not the limit, and going faster there would
-mean several sessions hitting Showdown's volunteer-run replay server at once. The runner is a
-one-off; if scraping continues to rotation, `vgc meta scrape` gets its stop-at-cached logic and
-the reused connection.
+mean several sessions hitting Showdown's volunteer-run replay server at once. The runner is
+now `scripts/scrape_replays.py`, for the weekly scrapes to rotation and M-D's daily ones (step 5).
+**Done 2026-10-05 12:46:** 70,467 replays, no errors, none deleted.
+- **Fresh,** uploaded after the old cache's newest game: 44,146 Bo1 (median rating 1181) and
+  22,820 Bo3 (1102).
+- **Gap-fill,** from the weeks the models trained on: 2,303 Bo1 and 1,198 Bo3. These are training
+  data, not part of the fresh test set.
+
+The edges are 2026-09-20 23:35:48 (Bo1) and 22:49:32 (Bo3).
 
 - **Why staged, not in `data/replays/`.** Several analyses sample from the cache, and the step 3b
   merge replays against a packed list. New files there would change their inputs silently.
