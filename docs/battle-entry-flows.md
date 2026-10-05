@@ -21,8 +21,12 @@ setter arriving into its own effect asks nothing, because the game shows nothing
 (`frontend/src/components/TurnStepper.tsx`, its sentences in `frontend/src/turn.ts`, left-is-left
 in `frontend/src/screen.ts`), the two-column page with the battle state below it
 (`BattleState.tsx`), and the four backend items (`vgc.battle.entry.progress`,
-`vgc.battle.rules.end_of_turn`). Step 3, the Plan stage, is not built; steps 6–13 are the gaps
-found while building the rest.
+`vgc.battle.rules.end_of_turn`).
+
+**Work remaining**, all in "Build order" below: step 3, the Plan stage; steps 6–18, the gaps found
+while building and using the rest, in the order to fix them; and the checks in "How to tell it is
+better", none of which has been run yet. Recoil and Life Orb (step 6) and Intimidate's drop
+answered by an item (step 15) are the two most likely to come up in a real game.
 
 ---
 
@@ -392,16 +396,16 @@ happened, and only their placement moves into stage 6.
 1. **The stepper with today's entries.** Stages 1–8, the "turn so far" list, inline questions,
    Fast mode, and the entry bar behind "something else…". Keyboard shortcuts and their popover
    can come in the same slice or straight after it. The stage is worked out in the
-   browser from the journal since the last `turn` entry.
+   browser from the journal since the last `turn` entry. *Built.*
 2. **The page layout.** The two-column top row, the battle state moved down, the timeline folded
    into the WP curve, and the technical details moved into popovers. This is all frontend work and
-   could land before the stepper, with the entry bar in the stepper's place.
-3. **The Plan stage.** Browser state only.
+   could land before the stepper, with the entry bar in the stepper's place. *Built.*
+3. **The Plan stage.** Browser state only. *Not built.*
 4. **Backend items 1–3**, after which the stepper reads its stage from `turn_progress` instead of
    working it out in the browser. *Built.*
 5. **Backend item 4**, the end-of-turn checklist. *Built.*
 
-The gaps found while building steps 1–5, in the order to fix them:
+The gaps found while building and using steps 1–5, in the order to fix them. None is built.
 
 6. **Recoil, Life Orb and drain.** After a move's results, if the move has recoil or drain, or the
    attacker holds (or might hold) a Life Orb, ask once more: "Rillaboom is on 150/207. What is it
@@ -416,7 +420,9 @@ The gaps found while building steps 1–5, in the order to fix them:
    answering "Didn't happen" or "None of the rest happened", are browser state, so a reload goes
    back to "Who moved?" or offers those effects again. A tap that marks the moves over, and one
    for each effect that did not happen (both changing nothing), would make the whole turn
-   resumable.
+   resumable. A selection not yet confirmed (answers in the question card, the start-of-turn and
+   "Anything else?" lists) is also lost on a reload, and on any tap logged from elsewhere; that
+   one is deliberate, because it was selected against a journal that has since changed.
 9. **Contradictions on the line that caused them.** `view.contradictions` says what cannot all be
    true but not which entry made it so. The Speed channel knows which observation it was; carry
    that entry's index into the view and show the note on its line in "turn so far".
@@ -432,10 +438,25 @@ The gaps found while building steps 1–5, in the order to fix them:
     pinned build like the others.
 13. **Move effects not yet modelled.** Pivots (U-turn, Parting Shot's switch, Eject Button and
     Eject Pack) still go through "Switched out…", and HP costs (Clangorous Soul, Belly Drum) and
-    flinch are not derived. A chance effect on the user (Charge Beam) has no tick yet.
+    flinch are not derived. A chance effect on the user (Charge Beam) has no tick yet. Nothing
+    answers a *rise* (Mirror Herb, Opportunist). A move whose target changes with the field
+    (Expanding Force in Psychic Terrain hits both foes) is asked about as its dex target says.
 14. **`cant` as Speed evidence.** "X couldn't move" takes its place in the order like a move, so
     `vgc.belief.speed` can read it as one. Soundness first: flinch only happens to a Pokémon that
     was hit first, which is itself an ordering, and recharge says nothing about this turn's Speed.
+15. **Intimidate's drop answered by an item.** A move's drop offers White Herb and Clear Amulet
+    (`rules.with_drop_items`), but Intimidate's still goes through `rules.stat_drop_outcomes`,
+    which knows only abilities. Route it through the same helper, so a Clear Amulet refusing
+    Intimidate is one click and pins the item.
+16. **Knock-on questions under their cause.** In the question card, a question raised by a selected
+    answer is labelled "follows from answer N" but listed after every other question. Show it
+    indented directly under the answer that raised it.
+17. **The order a spread move's results are asked in.** The spec says "in the order the bars
+    drained"; the stepper asks in screen order. If the cartridge drains both bars together (to
+    check against footage), screen order is right and the spec line changes; if not, the stepper
+    should ask which bar went first.
+18. **What the Fast mode HP field accepts.** An empty ↵ is "didn't catch it" in Fast mode only. In
+    Normal mode an empty ↵ does nothing and says nothing; it should say why.
 
 ## How to tell it is better
 
@@ -445,6 +466,18 @@ held-out replays, along with how far the pointer travels between them. Report th
 and the worst turns. Then enter two real games by hand, one watched and one played, with the mouse
 alone, and check that "something else…" was rare. If it keeps being used for the same thing,
 that thing needs a stage.
+
+None of this has been run yet. With it, three checks the build left open:
+
+- **Left is left, against footage.** `slotAt` in `frontend/src/screen.ts` assumes the opponent's
+  slot 0 is drawn on the left of the TV. Check a recorded game; if the cartridge mirrors the
+  opponent's side, that one function changes.
+- **The two item shares.** An unseen item is offered at the end of the turn when at least 10% of
+  the sets still possible hold it (`rules.UNSEEN_ITEM_SHARE`), and as an answer to a drop at 3%
+  (`rules.DROP_ITEM_SHARE`). Both are judgment calls. Count, over entered games, how often an
+  offered item was the truth and how often a real one was not offered.
+- **Typed moves.** Count how often a move had to be typed rather than picked from the known and
+  six likeliest. Often means six is too few, or the ranking is off.
 
 ## Open questions
 
