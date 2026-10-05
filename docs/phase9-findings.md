@@ -431,3 +431,44 @@ policy towards what people do, not away from it.
   keeps a battle's own, and `_play` now clears them first.
 - On Kaggle the code archive arrives unpacked and the file listing is paged, so a push is awaited by
   a stamp file that sorts first, and the kernel's slug cannot be its dataset's.
+
+## The policy's numbers against human games (PLAN-v5 step 4, 2026-10-04)
+
+Move advice on the page would show the policy's rows with their EWP. Before that, the question is
+whether those numbers say anything about human games. `scripts/analysis/ewp_vs_people.py` uses
+`policy_vs_people.py`'s positions: 800 held-out open-sheet games, every turn with more than two a
+side, from each side's view, where the log shows the human's joint choice whole. That gives 3,024
+positions in 369 series. Each is solved with the policy's search. The human's choice was among the
+policy's rows 28% of the time; otherwise it was solved again with that choice kept at the root
+(`root_keep`), so every position has a value for what was played. That value is set beside the
+served WP model's number at the same turn, from the stands. Result:
+`data/analysis/reg_mc/ewp_vs_people.json`.
+
+| for this side's result | AUC | log loss (raw) | log loss, recalibrated out of fold |
+| --- | --- | --- | --- |
+| WP model, before the turn | 0.709 [0.664, 0.751] | 0.6205 | 0.6195 |
+| EWP of the human's choice | 0.728 [0.693, 0.762] | 0.6084 | 0.6023 |
+| EWP of the policy's own choice | 0.734 [0.699, 0.768] | 0.6205 | |
+| WP and EWP of the choice, together | | | **0.5948** |
+
+**The gate fails, narrowly.** Recalibrated, the EWP of what the human did against the WP model is
+−0.017 [−0.039, +0.004]: better on the point, but the interval reaches zero.
+
+**As a value of the position, it adds to the model.** Stacked with the WP number it improves on it
+by −0.025 [−0.039, −0.011]. The policy's one-turn search, valued at the leaves by the race with
+reinforcements, knows something about these positions that the model does not.
+
+**As a ranking of actions, it shows nothing.** The gap between the policy's top row and the human's
+choice is zero in 36% of positions and 0.07 on average. Beside the WP number it has the right sign
+(−0.11) but adds nothing: +0.0003 [−0.0000, +0.0007]. A player who picked a row the policy rates
+lower did not lose more often than the position says. That is the claim an action table makes, and
+the human games do not support it.
+
+Raw, the EWP is too sure past 0.6: answers of 0.65, 0.75 and 0.85 won 57%, 64% and 76%. That is
+the over-confidence the pilot found against itself. Below 0.5 it is slightly under-sure.
+
+**So no action table.** What the policy ranks between rows is not yet shown to matter to how human
+games go, and the page does not show it. What passed is narrower: the policy's value of a position
+adds to the WP model's. That is a candidate for the number above two a side (the engine already
+leads at two or fewer), gated as the doubles engine was: per state kind, recalibrated on training
+games, scored on held-out ones.

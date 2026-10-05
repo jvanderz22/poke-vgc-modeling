@@ -1,0 +1,32 @@
+{
+ "settings": {
+  "games": 400,
+  "seed": 7
+ },
+ "counts": {
+  "games": 398,
+  "positions": 5346,
+  "identical": 4675,
+  "speed evidence": 320,
+  "volatile": 324,
+  "other": 1,
+  "illusion games left out": 2,
+  "tap failed": 8,
+  "both decline": 18
+ },
+ "shares": {
+  "identical": 0.8745,
+  "speed evidence": 0.0599,
+  "volatile": 0.0606,
+  "both decline": 0.0034,
+  "tap failed": 0.0015,
+  "other": 0.0002
+ },
+ "other": [
+  [
+   "gen9championsvgc2026regmcbo3-2683845092",
+   "p1",
+   4
+  ]
+ ]
+}

@@ -346,3 +346,20 @@ def test_a_contact_ability_cannot_fire_against_a_move_that_makes_no_contact(reg)
     assert any(o.ability == "roughskin" for o in contact)
     assert not any(o.ability == "roughskin" for o in ranged)
     assert all("roughskin" not in o.excludes for o in ranged)
+
+
+def test_setting_the_terrain_already_up_leaves_its_turns(reg):
+    """Seed Sower hit again under its own Grassy Terrain: the game fails to set it again, so the
+    turns it has left stay as they were. Restarting them made the page's terrain outlast the log's."""
+    from vgc.battle.state import BattleState, Mon
+
+    state = BattleState("p1", reg.dex)
+    m = Mon("Arboliva")
+    state.sides["p1"].mons.append(m)
+    state.begin_turn(3)
+    state.set_terrain("grassyterrain")
+    state.begin_turn(5)
+    rules.apply(state, rules.Outcome("Seed Sower", effects=[{"kind": "terrain", "value": "grassyterrain"}]), m)
+    assert state.terrain == "grassyterrain" and state.terrain_since == 3
+    rules.apply(state, rules.Outcome("Seed Sower", effects=[{"kind": "terrain", "value": "psychicterrain"}]), m)
+    assert state.terrain == "psychicterrain" and state.terrain_since == 5

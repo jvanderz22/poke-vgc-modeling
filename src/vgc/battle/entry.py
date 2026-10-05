@@ -54,6 +54,7 @@ ENTRY_KINDS = (
     "turn",        # {n}
     "move",        # {side, slot, move, target: {side, slot} | null, spread}
     "switch",      # {side, slot, species}
+    "swap",        # {side, slot} — Ally Switch: the Pokémon in `slot` and its partner trade places
     "damage",      # {side, slot, pct | hp, fainted, crit}
     "heal",        # {side, slot, pct | hp}
     "faint",       # {side, slot}
@@ -106,6 +107,9 @@ class Replay:
     questions: list[Question] = field(default_factory=list)
     derived: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    # Which Pokémon each move entry was (by journal index): a tap names a slot, and what reads the
+    # journal later (the Protect counter) needs the Pokémon that stood there then.
+    movers: dict[int, str] = field(default_factory=dict)
     # Where in the journal we are, and how many questions this entry has raised so far. Together
     # they name a question (`_qid`), which is what makes an id stable under an append.
     _index: int = 0
@@ -265,6 +269,17 @@ def _bring_in(rp: Replay, reg: Regulation, side: str, slot: int, m: Mon) -> None
         _ask(rp, reg, m, "terrain", rules.on_terrain_set(reg, rp.state.terrain, m.item))
 
 
+def _on_swap(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
+    """Ally Switch and friends. Nothing else restates the two positions, so a swap left out crosses
+    every target and turn-order read after it (`Observer._on_swap` says the same of a log)."""
+    m = _active(rp, e)
+    old = m.position
+    other = rp.state.at(e["side"], 1 - old)
+    m.position = 1 - old
+    if other is not None:
+        other.position = old
+
+
 def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.state.begin_turn(int(e["n"]))
 
@@ -279,6 +294,7 @@ def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
         ident = _ident(rp.state, t) if t is not None else None
     rp.state.record_move(m, move, target=ident, spread=bool(e.get("spread")),
                          called_by=e.get("called_by"))
+    rp.movers[rp._index] = m.species
 
 
 def _on_damage(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
@@ -416,7 +432,7 @@ def _on_answer(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 
 _HANDLERS = {
-    "lead": _on_lead, "turn": _on_turn, "move": _on_move, "switch": _on_switch,
+    "lead": _on_lead, "turn": _on_turn, "move": _on_move, "switch": _on_switch, "swap": _on_swap,
     "damage": _on_damage, "heal": _on_heal, "faint": _on_faint, "status": _on_status,
     "boost": _on_boost, "field": _on_field, "side": _on_side, "reveal": _on_reveal,
     "consume": _on_consume, "tera": _on_tera, "mega": _on_mega, "answer": _on_answer,
@@ -547,6 +563,12 @@ class Battle:
             self.journal.pop()
         self.rp = replay(self.reg, self.setup, self.journal)
         return self.rp
+
+    def named_journal(self) -> list[dict[str, Any]]:
+        """The journal with each move entry naming the Pokémon that made it, as a log's journal
+        does (`vgc.wp.doubles.from_replay`)."""
+        return [e | {"species": self.rp.movers[i]} if i in self.rp.movers and not e.get("species") else e
+                for i, e in enumerate(self.journal)]
 
     def at(self, upto: int) -> Replay:
         return replay(self.reg, self.setup, self.journal, upto=upto)

@@ -172,10 +172,18 @@ Closed-sheet answers are still weaker than open ones, so prefer an open sheet wh
 
 ## What it does not do yet, and why
 
-**Turn-by-turn move advice.** That needs **Phase 6** (expected WP and search) and the state
-reconstruction work in PLAN.md L5b — turning what you type into a Showdown state the evaluator
-can clone and step. That work needs its own parity tests before any recommendation from it is
-worth showing.
+**Turn-by-turn move advice.** The pieces are built, but the evidence says not to show it yet
+(PLAN-v5 step 4).
+- **The adapter is built.** The Phase 9 policy reads a battle entered here as it reads a log
+  (`vgc.policy.view.EntryView`). A parity test and a sweep over 400 replays hold the two to the same
+  solver positions (`tests/test_policy_entry.py`, `scripts/analysis/entry_parity.py`).
+- **The check against human games failed.** The policy's ranking of one choice over another did not
+  predict how human games went (phase9-findings, "the policy's numbers against human games"). An
+  action table would claim exactly that, so there is none.
+- **What the page cannot enter, which a position for advice would need:** volatiles (confusion,
+  Throat Chop, Encore, Perish Song), a fainted Pokémon brought back (Revival Blessing), and the
+  order end-of-turn effects resolve in (Speed evidence). Ally Switch is now an entry (`swap`), but
+  there is no button for it yet.
 
 ## Reading the banner at the top
 

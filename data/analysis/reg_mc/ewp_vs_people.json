@@ -1,0 +1,186 @@
+{
+ "settings": {
+  "games": 800,
+  "seed": 3,
+  "wp_model": "wp-v1f-idp5"
+ },
+ "positions": 3024,
+ "groups": 369,
+ "kept_share": 0.2804,
+ "raw": {
+  "wp": {
+   "games": 3024,
+   "groups": 369,
+   "auc": 0.7085,
+   "auc_95ci": [
+    0.6643,
+    0.7511
+   ],
+   "logloss": 0.62052,
+   "logloss_delta": -0.07263,
+   "logloss_delta_95ci": [
+    -0.1084,
+    -0.0374
+   ],
+   "positions": 3024
+  },
+  "chosen": {
+   "games": 3024,
+   "groups": 369,
+   "auc": 0.7278,
+   "auc_95ci": [
+    0.693,
+    0.7624
+   ],
+   "logloss": 0.60839,
+   "logloss_delta": -0.08476,
+   "logloss_delta_95ci": [
+    -0.118,
+    -0.05
+   ],
+   "positions": 3024
+  },
+  "best": {
+   "games": 3024,
+   "groups": 369,
+   "auc": 0.7335,
+   "auc_95ci": [
+    0.6989,
+    0.7684
+   ],
+   "logloss": 0.62054,
+   "logloss_delta": -0.07261,
+   "logloss_delta_95ci": [
+    -0.1059,
+    -0.0376
+   ],
+   "positions": 3024
+  }
+ },
+ "recalibrated_logloss": {
+  "wp": 0.61949,
+  "chosen": 0.60232,
+  "wp+chosen": 0.5948,
+  "wp+regret": 0.61983
+ },
+ "gate": {
+  "delta": -0.01718,
+  "ci95": [
+   -0.03855,
+   0.00358
+  ],
+  "pass": false,
+  "reading": "not distinguishable"
+ },
+ "stacked": {
+  "delta": -0.02469,
+  "ci95": [
+   -0.03862,
+   -0.0108
+  ]
+ },
+ "regret": {
+  "coef_beside_wp": -0.106,
+  "adds": {
+   "delta": 0.00033,
+   "ci95": [
+    -2e-05,
+    0.00072
+   ]
+  },
+  "mean": 0.0705,
+  "share_zero": 0.3644
+ },
+ "calibration_chosen": [
+  {
+   "bin": [
+    0.0,
+    0.1
+   ],
+   "n": 173,
+   "mean": 0.053,
+   "won": 0.075
+  },
+  {
+   "bin": [
+    0.1,
+    0.2
+   ],
+   "n": 196,
+   "mean": 0.154,
+   "won": 0.194
+  },
+  {
+   "bin": [
+    0.2,
+    0.3
+   ],
+   "n": 258,
+   "mean": 0.254,
+   "won": 0.322
+  },
+  {
+   "bin": [
+    0.3,
+    0.4
+   ],
+   "n": 373,
+   "mean": 0.353,
+   "won": 0.373
+  },
+  {
+   "bin": [
+    0.4,
+    0.5
+   ],
+   "n": 398,
+   "mean": 0.449,
+   "won": 0.452
+  },
+  {
+   "bin": [
+    0.5,
+    0.6
+   ],
+   "n": 467,
+   "mean": 0.55,
+   "won": 0.501
+  },
+  {
+   "bin": [
+    0.6,
+    0.7
+   ],
+   "n": 437,
+   "mean": 0.649,
+   "won": 0.568
+  },
+  {
+   "bin": [
+    0.7,
+    0.8
+   ],
+   "n": 293,
+   "mean": 0.747,
+   "won": 0.635
+  },
+  {
+   "bin": [
+    0.8,
+    0.9
+   ],
+   "n": 236,
+   "mean": 0.848,
+   "won": 0.763
+  },
+  {
+   "bin": [
+    0.9,
+    1.0
+   ],
+   "n": 193,
+   "mean": 0.949,
+   "won": 0.927
+  }
+ ]
+}

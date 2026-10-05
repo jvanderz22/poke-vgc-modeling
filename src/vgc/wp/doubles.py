@@ -161,8 +161,10 @@ def view_with(battle, reveal: dict[str, dict[str, dict[str, Any]]]):
             if e["species"] in by_species:
                 s = by_species[e["species"]]
                 entries[i] = {"species": e["species"], **{k: s.get(k) for k in ("item", "ability", "moves", "nature")}}
-    return type("Viewed", (), {"rp": replay(battle.reg, setup, battle.journal), "journal": battle.journal,
-                               "setup": setup, "reg": battle.reg})()
+    rp = replay(battle.reg, setup, battle.journal)
+    return type("Viewed", (), {"rp": rp, "journal": battle.journal, "setup": setup, "reg": battle.reg,
+                               "named_journal": lambda self: (battle.named_journal() if hasattr(battle, "named_journal")
+                                                              else battle.journal)})()
 
 
 # --- the state --------------------------------------------------------------------------------
@@ -201,7 +203,9 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
     state = battle.rp.state
     me = state.perspective
     came = endgame.arrivals(battle.journal)
-    stall = stall_counts(battle.journal, state.turn, STALLING)
+    # A hand-entered move names a slot; the Protect counter needs the Pokémon (`Battle.named_journal`).
+    named = battle.named_journal() if hasattr(battle, "named_journal") else battle.journal
+    stall = stall_counts(named, state.turn, STALLING)
 
     def left(since: int | None, duration: int) -> int:
         return max(0, duration - (state.turn - since)) if since is not None else duration

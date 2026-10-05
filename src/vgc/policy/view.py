@@ -99,6 +99,29 @@ class PlayerView:
         self.req = req
 
 
+class EntryView:
+    """The page's battle (`vgc.battle.entry.Battle`, built from taps) as the policy reads one: the
+    state, journal, setup and own six that `PlayerView` builds from a player's channel. The page has
+    no requests, so PP and trapping are not known (`req` is None, as a log without requests gives).
+    `tests/test_policy_entry.py` holds the two to the same solver positions."""
+
+    def __init__(self, reg: Regulation, battle: Any):
+        from vgc.battle.entry import side_entries
+
+        self.reg = reg
+        self.rp = battle.rp
+        self.o = battle.rp.state
+        self.perspective = self.o.perspective
+        self.setup = battle.setup
+        # A tap names a slot; the Protect counter and the rest read the Pokémon (`named_journal`).
+        self.journal = battle.named_journal()
+        self.mine = side_entries(battle.setup, self.perspective) if self.perspective != "spectator" else []
+        self.req: dict[str, Any] | None = None
+
+    def named_journal(self) -> list[dict[str, Any]]:
+        return self.journal
+
+
 # --- the positions -------------------------------------------------------------------------------
 
 def _left(state, sid: str) -> list[Any]:

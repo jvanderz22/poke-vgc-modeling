@@ -411,10 +411,14 @@ def apply(state: Any, outcome: Outcome, on: Any, source: Any = None) -> list[Pen
             them = opposing_slots(state._side_of(on))
             pending += [Pending(mon, effect["stat"], effect["stages"], source=on)
                         for mon in state.sides[them].mons if mon.state == "active"]
+        # Setting the weather or terrain already up fails in the game and leaves its turns as they
+        # were (Seed Sower hit again under its own terrain), so it is not set again here.
         elif kind == "weather":
-            state.set_weather(effect["value"])
+            if state.weather != effect["value"]:
+                state.set_weather(effect["value"])
         elif kind == "terrain":
-            state.set_terrain(effect["value"])
+            if state.terrain != effect["value"]:
+                state.set_terrain(effect["value"])
     if outcome.ability:
         state.reveal(on, "ability", outcome.ability)
     on.ability_ruled_out |= set(outcome.excludes)

@@ -237,6 +237,38 @@ about human games, though (principle 1), so this step gates that first.
   machine has three solver processes on shared cores. Time it as `page_path.py --gap` does
   (principle 12).
 - **Cost:** a few days on the laptop. The human check takes minutes on 8 workers.
+- **The gate, run 2026-10-04: fails, narrowly** ([phase9-findings](phase9-findings.md), "the policy's
+  numbers against human games"; 3,024 positions in 369 series).
+  - **The gate:** recalibrated, the EWP of the human's choice against the WP model is −0.017
+    [−0.039, +0.004].
+  - **What passed:** stacked with the WP number, the EWP adds −0.025 [−0.039, −0.011].
+  - **What an action table claims:** the gap to the policy's top row adds nothing (+0.0003
+    [−0.0000, +0.0007]).
+
+  **No action table.** The policy's value of a position, as the number above two a side, is the
+  candidate left. It would be gated per state kind as the doubles engine was.
+- **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
+  reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
+  `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both
+  seats, on the fixture games with both sheets. Illusion is left out, as the log adapter's parity
+  already records.
+  - **Wider sweep** (`scripts/analysis/entry_parity.py`, 400 replays, 5,346 positions): 87.5%
+    identical. The rest is what taps cannot carry:
+    - Speed evidence from the order of end-of-turn effects: 6.0%;
+    - volatiles the solver cannot set up, which the log path declines on and the page has no tap
+      for: 6.1%;
+    - both paths declining, for different reasons: 0.3%;
+    - Revival Blessing: 0.15%.
+
+    One position (0.02%) is left listed.
+  - **Three bugs found and fixed on the way:**
+    - **The Protect counter.** A move tap names a slot, so the live doubles answer had ignored the
+      Protect counter on hand-entered battles. Entry replay now records each move's Pokémon
+      (`Battle.named_journal`), and `doubles.facts` reads it.
+    - **Seed Sower.** It restarted the Grassy Terrain it was already under: the rules re-set the
+      active weather or terrain, which the game refuses.
+    - **Ally Switch.** It had no tap, so every read after one crossed the two slots. It is now an
+      entry (`swap`), but has no button yet.
 
 ### 5. Ready for the next regulation
 

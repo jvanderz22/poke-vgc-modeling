@@ -352,3 +352,12 @@ def test_a_battle_round_trips_through_json(battle):
     twin = entry.Battle.from_json(battle.reg, json.loads(battle.dumps()))
     assert twin.rp.state.observation() == battle.rp.state.observation()
     assert [q.id for q in twin.rp.questions] == [q.id for q in battle.rp.questions]
+
+
+def test_ally_switch_trades_the_two_places(battle):
+    """A swap left out crosses every target and turn-order read after it, so it is a tap."""
+    lead(battle, ("p2", 0, "Gholdengo"), ("p2", 1, "Milotic"))
+    rp = battle.append({"kind": "swap", "side": "p2", "slot": 0})
+    assert rp.state.at("p2", 0).species == "Milotic" and rp.state.at("p2", 1).species == "Gholdengo"
+    battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Make It Rain", "target": None, "spread": True})
+    assert battle.named_journal()[-1]["species"] == "Gholdengo"
