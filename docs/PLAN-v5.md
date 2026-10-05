@@ -243,11 +243,12 @@ late costs little, so this is taken when it is wanted.
 
 ### 6. Loose ends, taken when they block something
 
-- **The assumed non-Speed spread in doubles.** Spread moves put more KOs on a threshold. Running
-  2026-10-04: the 674 held-out games re-solved with every guessed spread rebuilt HP-first, then
-  defences-first (`solver_vs_humans.py --bulk`). The question is whether the answer moves, and
-  whether the mean over the three spreads predicts better. It is written up here and in
-  [phase8-findings](phase8-findings.md) when it lands.
+- ~~**The assumed non-Speed spread in doubles.**~~ **Done 2026-10-04**
+  ([phase8-findings](phase8-findings.md), "the assumed non-Speed spread in doubles"). The 674 held-out
+  games were re-solved with every guessed spread refilled HP-first and then defences-first. The answer
+  moves (mean 0.04–0.07, the favoured side flips in 6–8% of games), but each refill alone is worse
+  than the imputer's (+0.013, +0.018, intervals across zero). The mean of the three is level
+  (−0.004 [−0.019, +0.010]). Not shipped: the page keeps the imputer's spread.
 - **Time the doubles answer on the deployed machine.** Carried from v4; taken by hand. Step 4
   measures the same machine anyway.
 

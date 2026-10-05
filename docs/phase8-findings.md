@@ -2190,3 +2190,44 @@ nats better than the previous closed model on spectator rows and 0.013 on player
 five network runs a prediction instead of one: a closed-sheet answer on the live page took 0.8 s
 against the open model's 0.5 s, measured with six solver workers busy. Open sheets keep
 `wp-v1f-idp5`, which passes the gate this one misses.
+
+## The assumed non-Speed spread in doubles: it moves the answer, and averaging does not pay
+
+PLAN-v5 loose end (2026-10-04). The page's doubles answer reads each guessed Pokémon at its
+commonest Speed and puts the other points where the imputer does. Spread moves put more KOs on a
+threshold, so that guess could matter. `solver_vs_humans.py --bulk` re-solved the 674 held-out
+open-sheet games under the page's settings (`blend_boosts`, tempered), twice. Each time every
+guessed spread kept its Speed and had the rest refilled up to the cap per stat in one order:
+- **HP-first:** HP, then the attacking stat, then Def and SpD;
+- **defences-first:** HP, then Def and SpD, then the attacking stat.
+
+`scripts/analysis/bulk_spread_compare.py` joins the three runs game by game. Result:
+`data/analysis/reg_mc/bulk_spread_doubles.json`. The baseline reproduces the published 0.3837.
+
+| | HP-first | defences-first | mean of the three |
+| --- | --- | --- | --- |
+| mean shift of the answer | 0.043 | 0.067 | 0.035 |
+| games moved by more than 0.05 | 23% | 35% | 21% |
+| favoured side flipped (of 674) | 39 | 54 | 28 |
+| log loss − the page's | +0.013 [−0.010, +0.036] | +0.018 [−0.010, +0.048] | **−0.004** [−0.019, +0.010] |
+
+By state kind, log loss against the page's 0.485, 0.193 and 0.256:
+
+| | 2v2 (410 games) | 2v1 (122) | 1v2 (142) |
+| --- | --- | --- | --- |
+| HP-first | +0.016 [−0.010, +0.045] | −0.003 [−0.075, +0.062] | +0.017 [−0.029, +0.077] |
+| defences-first | +0.011 [−0.020, +0.044] | −0.014 [−0.086, +0.055] | +0.065 [−0.006, +0.155] |
+| mean of the three | −0.003 [−0.020, +0.015] | −0.020 [−0.077, +0.020] | +0.007 [−0.021, +0.034] |
+
+**The guess matters to a position.** The answer moves by 0.04–0.07 on average, by more than 0.05 in
+a quarter to a third of games, and changes the favoured side in 6–8% of them. In 2v2s it moves by
+more than 0.05 in 30–44% of games. Bulk carries real uncertainty the page does not show.
+
+**But it does not pay to integrate over it.** Either refill alone is worse than the imputer's
+guess (neither interval clears zero), so the imputer's choice is a fair centre. The mean of the
+three is level: −0.004 [−0.019, +0.010] overall and level in every state kind. It would also cost
+three solves an answer, which the 5 s budget does not have in 2v2s.
+
+**Not shipped.** The page keeps the imputer's spread. If the spread of the three answers is ever
+shown, it should be shown as a band ("this could be X–Y depending on their bulk"), not folded into
+the number. That is a display decision, and nothing here gates it.

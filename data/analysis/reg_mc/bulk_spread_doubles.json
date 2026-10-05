@@ -1,0 +1,183 @@
+{
+ "runs": {
+  "baseline": "solver_vs_humans_doubles_live_blend_boosts_tempered.json",
+  "hp_first": "solver_vs_humans_doubles_live_blend_boosts_hp_first_tempered.json",
+  "defences": "solver_vs_humans_doubles_live_blend_boosts_defences_tempered.json"
+ },
+ "all": {
+  "games": 674,
+  "groups": 480,
+  "logloss": {
+   "baseline": 0.3837,
+   "hp_first": 0.3962,
+   "defences": 0.4015,
+   "mean": 0.3799
+  },
+  "model_logloss": 0.5132,
+  "hp_first": {
+   "logloss_minus_baseline": 0.0126,
+   "ci95": [
+    -0.0095,
+    0.0356
+   ],
+   "shift_mean": 0.0431,
+   "shift_p90": 0.1182,
+   "shift_over_0.05": 0.2329,
+   "sides_flipped": 39
+  },
+  "defences": {
+   "logloss_minus_baseline": 0.0179,
+   "ci95": [
+    -0.0096,
+    0.0475
+   ],
+   "shift_mean": 0.0666,
+   "shift_p90": 0.2055,
+   "shift_over_0.05": 0.3501,
+   "sides_flipped": 54
+  },
+  "mean": {
+   "logloss_minus_baseline": -0.0038,
+   "ci95": [
+    -0.0189,
+    0.0099
+   ],
+   "shift_mean": 0.0352,
+   "shift_p90": 0.1007,
+   "shift_over_0.05": 0.2136,
+   "sides_flipped": 28
+  }
+ },
+ "1v2": {
+  "games": 142,
+  "groups": 134,
+  "logloss": {
+   "baseline": 0.2561,
+   "hp_first": 0.273,
+   "defences": 0.3208,
+   "mean": 0.2629
+  },
+  "model_logloss": 0.3534,
+  "hp_first": {
+   "logloss_minus_baseline": 0.0168,
+   "ci95": [
+    -0.0289,
+    0.0768
+   ],
+   "shift_mean": 0.0269,
+   "shift_p90": 0.0552,
+   "shift_over_0.05": 0.1127,
+   "sides_flipped": 3
+  },
+  "defences": {
+   "logloss_minus_baseline": 0.0647,
+   "ci95": [
+    -0.0056,
+    0.1551
+   ],
+   "shift_mean": 0.041,
+   "shift_p90": 0.0866,
+   "shift_over_0.05": 0.1831,
+   "sides_flipped": 6
+  },
+  "mean": {
+   "logloss_minus_baseline": 0.0067,
+   "ci95": [
+    -0.0208,
+    0.0336
+   ],
+   "shift_mean": 0.0219,
+   "shift_p90": 0.0423,
+   "shift_over_0.05": 0.0845,
+   "sides_flipped": 2
+  }
+ },
+ "2v1": {
+  "games": 122,
+  "groups": 116,
+  "logloss": {
+   "baseline": 0.1931,
+   "hp_first": 0.1898,
+   "defences": 0.1795,
+   "mean": 0.1727
+  },
+  "model_logloss": 0.3389,
+  "hp_first": {
+   "logloss_minus_baseline": -0.0033,
+   "ci95": [
+    -0.0747,
+    0.0618
+   ],
+   "shift_mean": 0.0315,
+   "shift_p90": 0.0733,
+   "shift_over_0.05": 0.1311,
+   "sides_flipped": 5
+  },
+  "defences": {
+   "logloss_minus_baseline": -0.0135,
+   "ci95": [
+    -0.0864,
+    0.0549
+   ],
+   "shift_mean": 0.054,
+   "shift_p90": 0.1393,
+   "shift_over_0.05": 0.2541,
+   "sides_flipped": 9
+  },
+  "mean": {
+   "logloss_minus_baseline": -0.0203,
+   "ci95": [
+    -0.077,
+    0.0198
+   ],
+   "shift_mean": 0.0279,
+   "shift_p90": 0.0732,
+   "shift_over_0.05": 0.1475,
+   "sides_flipped": 6
+  }
+ },
+ "2v2": {
+  "games": 410,
+  "groups": 343,
+  "logloss": {
+   "baseline": 0.4846,
+   "hp_first": 0.5004,
+   "defences": 0.4956,
+   "mean": 0.4821
+  },
+  "model_logloss": 0.6205,
+  "hp_first": {
+   "logloss_minus_baseline": 0.0158,
+   "ci95": [
+    -0.0103,
+    0.0453
+   ],
+   "shift_mean": 0.0522,
+   "shift_p90": 0.1479,
+   "shift_over_0.05": 0.3049,
+   "sides_flipped": 31
+  },
+  "defences": {
+   "logloss_minus_baseline": 0.011,
+   "ci95": [
+    -0.0195,
+    0.0435
+   ],
+   "shift_mean": 0.0792,
+   "shift_p90": 0.2223,
+   "shift_over_0.05": 0.4366,
+   "sides_flipped": 39
+  },
+  "mean": {
+   "logloss_minus_baseline": -0.0025,
+   "ci95": [
+    -0.0196,
+    0.0149
+   ],
+   "shift_mean": 0.042,
+   "shift_p90": 0.1171,
+   "shift_over_0.05": 0.278,
+   "sides_flipped": 20
+  }
+ }
+}
