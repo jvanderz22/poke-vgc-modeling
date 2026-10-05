@@ -21,6 +21,12 @@ orders are solved, and the weight of the rest is reported as unsolved. Open shee
 held-out open-sheet games the search predicted who won better than the model did (log loss 0.384
 against 0.513); on 349 closed-sheet games it was not distinguishable in any state kind, so there
 the model leads (PLAN-endgame-doubles, stage 3).
+
+A hidden spread's non-Speed points are a guess (`solver.spread`), and the guess moves the answer by
+0.04-0.07 on average with no shape better than another on held-out games. So once the answer is in,
+the same move orders are solved again with the guessed spreads refilled HP-first and then
+defences-first (`solver.REFILLS`), on a budget of their own, and the page shows all three beside the
+answer, which stays the first.
 """
 
 from __future__ import annotations
@@ -64,8 +70,11 @@ DOUBLES_ASSUMPTIONS = [
     "first and is the answer when there is one.",
     "A hidden spread's Speed is averaged over how people build it, narrowed by this battle's turn "
     "order; the likeliest move orders are solved. Its other Stat Points are assumed: the main "
-    "attacking stat maxed, then HP, then the defences.",
+    "attacking stat maxed, then HP, then the defences. The answer is solved again with HP first and "
+    "with the defences first, and those two are shown beside it.",
 ]
+# The three guesses at a hidden spread's other points, as the page names them; the first is the answer.
+GUESSES = (("assumed", "attacking stat first"), ("hp_first", "HP first"), ("defences", "defences first"))
 _pool = None
 
 
@@ -185,9 +194,15 @@ class DoublesSolve:
 
     def __init__(self, reg: Regulation, battle_id: str, battle):
         self.battle_id, self.key = battle_id, fingerprint(battle)
+        self.reg = reg
         self.started = time.time()
         self.plan = doubles.plan(reg, battle, LIVE)
+        # Whose spreads are guessed: theirs, or both from the stands.
+        me = battle.rp.state.perspective
+        self.hidden = [sid for sid in ("p1", "p2") if sid != me]
         self.answer: dict[str, Any] | None = None
+        self.guesses: dict[str, float] = {}
+        self.guessing = False
         self.depth: int | None = None
         self.searching: int | None = None
         self.error: str | None = None
@@ -210,31 +225,62 @@ class DoublesSolve:
              "leaf_mass": r["leaf_mass"], "forced": r.get("forced")} for j, r in zip(self.jobs, results)]}
         self.depth = depth
 
+    def _solve(self, positions: list[dict[str, Any]], deadline: float, on_quick=None
+               ) -> tuple[list[dict[str, Any] | None], list[dict[str, Any] | None]]:
+        """Each position's quick answer and its searched one (None where it did not finish)."""
+        at = lambda search: [{**p, "search": search} for p in positions]
+        # Side by side: the quick pass would otherwise spend a second or more of the search's
+        # budget. A forced win in the quick pass is found by the search's own check too.
+        with ThreadPoolExecutor(2) as two:
+            later = two.submit(pool().solve_all, at(LIVE), deadline)
+            quick = pool().solve_all(at(QUICK), deadline)
+            if on_quick is not None and not self.cancelled:
+                on_quick(quick)
+            return quick, later.result()
+
     def _run(self) -> None:
-        deadline = self.started + DEADLINE
         try:
-            at = lambda search: [{**j["position"], "search": search} for j in self.jobs]
-            # Side by side: the quick pass would otherwise spend a second or more of the search's
-            # budget. A forced win in the quick pass is found by the search's own check too.
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(2) as two:
-                later = two.submit(pool().solve_all, at(LIVE), deadline)
-                quick = pool().solve_all(at(QUICK), deadline)
-                if self.cancelled:
-                    return
+            def first(quick):
                 self._set(quick, 0)
                 self.searching = 1
-                searched = later.result()
+
+            quick, searched = self._solve([j["position"] for j in self.jobs], self.started + DEADLINE, first)
             if self.cancelled:
                 return
             best = [s if s is not None else q for s, q in zip(searched, quick)]
             if any(s is not None for s in searched) and all(b is not None for b in best):
                 self._set(best, 1)
                 self.answer["searched"] = sum(s is not None for s in searched)
+            # Marked before `searching` clears, so a page polling in between keeps polling.
+            self.guessing = self.answer is not None and bool(self.hidden)
         except Exception as e:                      # shown on the page, not raised into a thread
             self.error = str(e)
         finally:
             self.searching = None
+        if self.guessing:
+            self._guess()
+
+    def _guess(self) -> None:
+        """The answer again under the two other shapes of the guessed spreads, as deep as the answer
+        went, on a `DEADLINE` of their own; a shape whose positions do not all finish is not shown."""
+        try:
+            modes = list(solver.REFILLS)
+            positions = [{**j["position"], **{sid: solver.refill(self.reg, j["position"][sid], m) for sid in self.hidden}}
+                         for m in modes for j in self.jobs]
+            quick, searched = self._solve(positions, time.time() + DEADLINE)
+            if self.cancelled:
+                return
+            n = len(self.jobs)
+            for i, m in enumerate(modes):
+                q, s = quick[i * n:(i + 1) * n], searched[i * n:(i + 1) * n]
+                got = [b if self.depth == 1 and b is not None else a for a, b in zip(q, s)]
+                combined = doubles.combine(self.jobs, got) if all(g is not None for g in got) else None
+                if combined is not None:
+                    self.guesses[m] = doubles.temper(combined["value"])
+        except Exception:                           # the answer stands without them
+            self.guesses = {}
+        finally:
+            self.guessing = False
 
     def cancel(self) -> None:
         self.cancelled = True
@@ -252,6 +298,9 @@ class DoublesSolve:
                 "positions": a["positions"] if a else [], "searched": (a or {}).get("searched"),
                 "elapsed": round(time.time() - self.started, 1),
                 "unsolved": round(min(1.0, self.plan["unsolved"] + self.dropped), 4),
+                "guesses": {"pending": self.guessing, "values": [
+                    {"key": k, "label": label, "value": round(v, 4)} for k, label in GUESSES
+                    if (v := a["value"] if k == "assumed" and a else self.guesses.get(k)) is not None]},
                 "assumptions": DOUBLES_ASSUMPTIONS + self.plan["notes"], "error": self.error}
 
 

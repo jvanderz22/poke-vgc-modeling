@@ -68,36 +68,9 @@ EPS = 1e-3            # log loss clips here: an engine that says 1.0 and loses s
 
 # `--bulk`: every guessed spread in a position rewritten, its Speed kept (loose end, PLAN-v4 step 5).
 # The engine assumes the main attacking stat first, then HP, then the defences (`solver.spread`);
-# nothing shows what people build instead, so these are the two other shapes builds take.
-BULK = {"hp_first": ("hp", "main", "def", "spd"), "defences": ("hp", "def", "spd", "main")}
-
-
-def rebulk(reg, text: str, mode: str) -> str:
-    """A side's set texts with each spread's non-Speed points reallocated in `BULK[mode]`'s order."""
-    from vgc.regulation import to_id
-
-    label = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
-    back = {v: k for k, v in label.items()}
-    out = []
-    for block in text.split("\n\n"):
-        lines = block.split("\n")
-        ev = next((i for i, x in enumerate(lines) if x.startswith("EVs: ")), None)
-        if ev is None:
-            out.append(block)
-            continue
-        sp = {back[part.split()[1]]: int(part.split()[0]) for part in lines[ev][5:].split(" / ")}
-        moves = [to_id(x[2:]) for x in lines if x.startswith("- ")]
-        kinds = [(reg.dex.get_move(m) or {}).get("category") for m in moves]
-        main = "spa" if kinds.count("Special") > kinds.count("Physical") else "atk"
-        left, cap = reg.sp_budget - sp.get("spe", 0), reg.sp_per_stat_cap
-        new = {k: 0 for k in label} | {"spe": sp.get("spe", 0)}
-        for stat in BULK[mode]:
-            stat = main if stat == "main" else stat
-            new[stat] = min(cap, left)
-            left -= new[stat]
-        lines[ev] = "EVs: " + " / ".join(f"{v} {label[k]}" for k, v in new.items() if v)
-        out.append("\n".join(lines))
-    return "\n\n".join(out)
+# nothing shows what people build instead, so these are the two other shapes builds take
+# (`solver.REFILLS`, which the page now shows beside its answer).
+BULK, rebulk = solver.REFILLS, solver.refill
 
 
 def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",

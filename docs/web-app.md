@@ -221,7 +221,7 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/simulate` | Two teams → one seeded battle, narrated turn by turn with spectator WP |
 | `GET /api/endgames` | The decided-endgame set: games, criteria, what they were drawn from, gate verdicts. `only=all\|played_out\|misses` |
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
-| `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), and any forced win |
+| `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
 
 ### Watching someone else's game
 
@@ -261,10 +261,17 @@ page leads with the engine there too (`vgc.wp.doubles`, `vgc.web.solving`). It h
 - **Then**, side by side, a one-turn search over the two or three choices a Pokémon would consider,
   with the race past it. Each move order it finishes within 5 seconds replaces its quick value, and
   the page says "searched one turn".
+- **After it**, on 5 seconds of its own: the same move orders solved again with the guessed
+  spreads' non-Speed points refilled HP-first and then defences-first, their Speed kept. The page
+  shows the three answers ("attacking stat first (shown) · HP first · defences first") and draws
+  their range on the bar. The guess moves the answer by 0.04–0.07 on average, and on held-out games
+  no shape scored better than another, or than their mean (phase8-findings, "the assumed non-Speed
+  spread in doubles"). So the number stays the first guess, and the other two say how much rests
+  on it.
 
 The heaviest three move orders are solved and the rest is reported as unsolved. A forced win is
 named, with its odds when a crit or a flinch is the only way out. On 674 held-out open-sheet games
-this answer predicted the winner better than the model: log loss 0.421 against 0.513 (phase8-findings,
+this answer predicted the winner better than the model: log loss 0.384 against 0.513 (phase8-findings,
 "a horizon that knows a count lead"). With a closed sheet the page says the engine has not yet beaten the model there.
 
 Validation is recomputed whenever a team is saved and never trusted from the file: the

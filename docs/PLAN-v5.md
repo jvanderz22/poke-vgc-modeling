@@ -248,7 +248,8 @@ late costs little, so this is taken when it is wanted.
   games were re-solved with every guessed spread refilled HP-first and then defences-first. The answer
   moves (mean 0.04–0.07, the favoured side flips in 6–8% of games), but each refill alone is worse
   than the imputer's (+0.013, +0.018, intervals across zero). The mean of the three is level
-  (−0.004 [−0.019, +0.010]). Not shipped: the page keeps the imputer's spread.
+  (−0.004 [−0.019, +0.010]). The number keeps the imputer's spread; the page shows the other two
+  beside it, with their range on the bar.
 - **Time the doubles answer on the deployed machine.** Carried from v4; taken by hand. Step 4
   measures the same machine anyway.
 

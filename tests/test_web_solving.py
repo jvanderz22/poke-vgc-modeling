@@ -88,5 +88,30 @@ def test_a_doubles_endgame_is_answered_within_the_deadline(reg):
         assert got["elapsed"] <= solving.DEADLINE + 1.0
         assert got["depth"] in (0, 1) and 0 <= got["value"] <= 1
         assert 1 <= len(got["positions"]) <= solving.TOP_ORDERS
+
+        # Then the answer again under the two other guesses at their bulk, on a budget of their own;
+        # the answer itself is the first of the three and does not move.
+        answer = got["value"]
+        while got["guesses"]["pending"]:
+            time.sleep(0.2)
+            got = solving.request(reg, "d2v2", battle)
+        guesses = got["guesses"]["values"]
+        assert [g["key"] for g in guesses][0] == "assumed" and guesses[0]["value"] == answer == got["value"]
+        assert {g["key"] for g in guesses} <= {k for k, _ in solving.GUESSES}
+        assert all(0 <= g["value"] <= 1 for g in guesses)
+        assert got["elapsed"] <= 2 * solving.DEADLINE + 2.0
     finally:
         solving.cancel()
+
+
+def test_a_refill_keeps_the_speed_and_the_budget(reg):
+    """The two other guesses at a hidden spread: Speed as it was, the rest refilled in order to the
+    per-stat cap, and a set with no spread (a fainted filler) left alone."""
+    from vgc.wp import solver
+
+    text = ("Incineroar @ Sitrus Berry\nAbility: Intimidate\nEVs: 24 HP / 32 Atk / 10 Spe\n- Fake Out\n"
+            "- Flare Blitz\n\nSinistcha\nAbility: Hospitality\n- Protect")
+    hp = solver.refill(reg, text, "hp_first")
+    assert hp.split("\n")[2] == "EVs: 32 HP / 24 Atk / 10 Spe"
+    assert solver.refill(reg, text, "defences").split("\n")[2] == "EVs: 32 HP / 24 Def / 10 Spe"
+    assert hp.split("\n\n")[1] == text.split("\n\n")[1]

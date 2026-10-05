@@ -54,15 +54,46 @@ def spread(reg: Regulation, s: dict[str, Any], spe: int) -> dict[str, int]:
     One offensive stat, the one most of their damaging moves use (Attack on a tie). Maxing every
     live one gave an Incineroar with Snarl 32 Special Attack and 2 HP, which is nobody's
     Incineroar, and turned F11's crit-or-lose position into a plain KO."""
-    moves = [to_id(m) for m in s.get("moves", [])]
+    return _fill(reg, s.get("moves", []), spe, ("main", "hp", "def", "spd"))
+
+
+# The two other shapes a build's non-Speed points take (`spread` is the first). The guess moves a
+# doubles answer by 0.04-0.07 on average and is no better or worse than either of these on held-out
+# games, so the page shows all three (phase8-findings, "the assumed non-Speed spread in doubles").
+REFILLS = {"hp_first": ("hp", "main", "def", "spd"), "defences": ("hp", "def", "spd", "main")}
+_LABEL = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
+
+
+def _fill(reg: Regulation, moves: list[str], spe: int, order: tuple[str, ...]) -> dict[str, int]:
+    """`spe` Speed SP, the rest filled to the per-stat cap in `order`, where "main" is the offensive
+    stat most of the damaging moves use (Attack on a tie)."""
+    kinds = [(reg.dex.get_move(to_id(m)) or {}).get("category") for m in moves]
+    main = "spa" if kinds.count("Special") > kinds.count("Physical") else "atk"
     left, cap = reg.sp_budget - spe, reg.sp_per_stat_cap
     out = {k: 0 for k in ("hp", "atk", "def", "spa", "spd")} | {"spe": spe}
-    kinds = [(reg.dex.get_move(m) or {}).get("category") for m in moves]
-    main = "spa" if kinds.count("Special") > kinds.count("Physical") else "atk"
-    for stat in (main, "hp", "def", "spd"):
+    for stat in order:
+        stat = main if stat == "main" else stat
         out[stat] = min(cap, left)
         left -= out[stat]
     return out
+
+
+def refill(reg: Regulation, text: str, mode: str) -> str:
+    """A side's set texts with every spread's non-Speed points refilled in `REFILLS[mode]`'s order,
+    its Speed kept. A set with no spread line (a fainted filler) is left as it is."""
+    back = {v: k for k, v in _LABEL.items()}
+    out = []
+    for block in text.split("\n\n"):
+        lines = block.split("\n")
+        ev = next((i for i, x in enumerate(lines) if x.startswith("EVs: ")), None)
+        if ev is None:
+            out.append(block)
+            continue
+        sp = {back[part.split()[1]]: int(part.split()[0]) for part in lines[ev][5:].split(" / ")}
+        new = _fill(reg, [x[2:] for x in lines if x.startswith("- ")], sp.get("spe", 0), REFILLS[mode])
+        lines[ev] = "EVs: " + " / ".join(f"{v} {_LABEL[k]}" for k, v in new.items() if v)
+        out.append("\n".join(lines))
+    return "\n\n".join(out)
 
 
 def speed(reg: Regulation, s: dict[str, Any], sp: dict[str, int]) -> float:

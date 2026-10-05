@@ -371,6 +371,9 @@ export type EngineAnswer = {
   sets?: Record<"p1" | "p2", { set: SolvedSet; weight: number }[]>;
   /** The belief's weight on sets that were not solved. */
   unsolved?: number;
+  /** Doubles: the answer under three guesses at a hidden spread's non-Speed points, the first being
+   *  the answer itself; the other two land after it, on a budget of their own. */
+  guesses?: { pending: boolean; values: { key: string; label: string; value: number }[] };
   assumptions?: string[];
   error?: string | null;
 };

@@ -188,7 +188,8 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       if (!live) return;
       setAns(a);
       // A doubles answer has seconds, not minutes: ask again often enough to show it as it lands.
-      if (a.eligible && a.searching != null) timer = setTimeout(tick, a.kind ? 500 : 2000);
+      // The guesses at their bulk land after the answer, so keep asking until they have.
+      if (a.eligible && (a.searching != null || a.guesses?.pending)) timer = setTimeout(tick, a.kind ? 500 : 2000);
     }).catch(() => { if (live) timer = setTimeout(tick, 5000); });
     setAns(null);
     tick();
@@ -209,10 +210,17 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const doubles = !!ans.kind;
   const forced = (ans.positions ?? []).find((p) => p.forced)?.forced;
   const horizon = doubles ? "the damage race" : "HP share";
+  // The answer under three guesses at a hidden spread's other points: shown as a range on the bar
+  // and spelled out, because the guess moves the answer and none of the three is the better one.
+  const guesses = ans.guesses?.values ?? [];
+  const lo = guesses.length > 1 ? Math.min(...guesses.map((g) => g.value)) : null;
+  const hi = guesses.length > 1 ? Math.max(...guesses.map((g) => g.value)) : null;
   return (
     <div className="engine lead tiny dim">
       {ans.value != null && (
         <div className="wp-bar">
+          {lo != null && hi != null &&
+            <span className="wp-range" style={{ left: `${pct(lo)}%`, width: `${Math.max(1, pct(hi) - pct(lo))}%` }} />}
           <span className="wp-mark" style={{ left: `${pct(ans.value)}%` }} />
         </div>
       )}
@@ -241,6 +249,17 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {names[forced.side] === "Them" ? "They" : names[forced.side]} can force the win this turn
           {forced.through_protect ? ", once Protect runs out" : ""}
           {forced.sweep < 0.995 && <> ({pct(forced.sweep)}%: a crit or a flinch is the way out)</>}.
+        </div>
+      )}
+      {doubles && ans.guesses?.pending && guesses.length < 2 && ans.value != null && (
+        <div>Trying two other guesses at {hidden.length > 1 ? "the hidden" : "their"} bulk…</div>
+      )}
+      {guesses.length > 1 && (
+        <div>
+          {hidden.length > 1 ? "The hidden spreads' other points are" : "Their other Stat Points are"} a guess:{" "}
+          {guesses.map((g, i) => (
+            <span key={g.key}>{i > 0 && " · "}{g.label} <b>{pct(g.value)}%</b>{g.key === "assumed" && " (shown)"}</span>
+          ))}.
         </div>
       )}
       {guessed && (

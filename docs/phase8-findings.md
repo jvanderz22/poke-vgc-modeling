@@ -2228,6 +2228,7 @@ guess (neither interval clears zero), so the imputer's choice is a fair centre. 
 three is level: −0.004 [−0.019, +0.010] overall and level in every state kind. It would also cost
 three solves an answer, which the 5 s budget does not have in 2v2s.
 
-**Not shipped.** The page keeps the imputer's spread. If the spread of the three answers is ever
-shown, it should be shown as a band ("this could be X–Y depending on their bulk"), not folded into
-the number. That is a display decision, and nothing here gates it.
+**The number is not changed, and the three are shown beside it** (2026-10-04, `vgc.web.solving`).
+The page keeps the imputer's spread for its answer. Once that answer is in, it solves the same move
+orders under the other two refills on a 5 s budget of their own (`solver.REFILLS`, `solver.refill`).
+It names all three and draws their range on the bar. On the fixture 2v2 they read 23%, 27% and 57%.
