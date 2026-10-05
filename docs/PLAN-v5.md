@@ -8,6 +8,10 @@ are the older archives.
 
 v5 restates only what is needed to decide what to do next. Steps restart at 1.
 
+**Revised 2026-10-04 evening, after a review of the open steps** ("Next, in order" opens with what
+changed). Step numbers are kept, because code cites them; the new work is step 0 and new items
+inside steps 3 and 4.
+
 ---
 
 ## Where things stand
@@ -22,9 +26,10 @@ v5 restates only what is needed to decide what to do next. Steps restart at 1.
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
 | Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against the model's 0.513 (674 games), median 2.8 s through the page's own path. 🟡 Closed sheets: the model leads |
 | Battle policy (Phase 9) | ✅ EWP over pruned joint choices, opponents weighted as people play (`vgc.policy.ewp`, the people reading). Beats the heuristic 0.678 and a held-out opponent 0.692, median 0.74 s a decision on one core; picks a human's exact choice 11.5% of the time. Not on the page |
-| Pre-battle (preview) win probability | ❌ Not learnable from this corpus. Preview advice is "what to bring", not "you are favoured" |
+| Human corpus | 🟡 33,062 replays: M-B 15,000, M-C 18,062. M-C stops at **2026-09-20**, while the ladder now makes roughly 1,500–4,800 Bo1 and 600–1,800 Bo3 a day. Scrape running (step 0) |
+| Pre-battle (preview) win probability | 🟡 Learnable but too small to show: the preview head passes Phase 6's own check (AUC 0.562, recalibrated −0.0066), worth about 0.007 nats. Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | ❌ Twice: the heuristic's self-play (AUC 0.512) and the Phase 9 policy's (0.514 [0.488, 0.541]) do not predict human results. With the humans' own brings: running (step 1) |
-| Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed. Deployed at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) behind a password. No move advice above two a side |
+| Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed. Deployed at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) behind a password. No move advice above two a side. An MCP server over the same API (`python -m vgc.mcp`) lets an agent drive it |
 
 What got here, in one line each (detail in [PLAN-v4](PLAN-v4.md) and the findings docs):
 
@@ -47,6 +52,9 @@ These come from measurements or explicit decisions. Each one has been broken at 
 2. **A WP model must use revealed set information.** A set-blind model is not served, however
    good its log loss.
 3. **Never put an opponent's spread into a model input.** It is `None` in every training row.
+   A solver output computed under the imputed spread (the stack in step 4, a learned leaf in
+   step 3a) is allowed when it is computed the same way in training and serving. The spread itself
+   never reaches the model, and the number is gated like any other.
 4. **Every number is a property of the regime it was measured in:** open team sheets (OTS) or
    team preview only (TPO). A channel that was 0% wrong under OTS was 4.3% wrong under TPO.
 5. **Count independent units, not rows.** The unit is the Bo3 series or player pair. Anything
@@ -104,6 +112,70 @@ and the answer's temperature (`doubles.TEMPER`) are fitted on training games by
 
 ## Next, in order
 
+**What the review changed (2026-10-04 evening).** The open steps were rigorous gate by gate but
+aimed badly between gates. Most of the effort left went to Phase 6, a check whose ceiling sits near
+its pass line and which asks a harder question than Phase 10 needs. Meanwhile the checks that would
+put move advice on the page failed for lack of power and on noisy labels, not necessarily for lack
+of signal. Five changes:
+
+1. **Fresh data first (step 0).** The corpus is two weeks stale. Games after 2026-09-20 are unseen
+   by every model and fit, so they are a free test set for each gate that stalled on power.
+2. **Trick Room is a leaf problem before it is a depth problem (step 3a).** The race at the leaf
+   already runs Trick Room and Tailwind out by their turns left, but carries weight 0.137 against
+   HP share's 1.725 (`BENCH_BLEND`). Setting Trick Room moves no HP, count or stage, so it is worth
+   almost nothing at the leaf. That fits the policy setting it 18% of the time against people's 41%.
+   A leaf that learns from features comes before two-turn search.
+3. **The action-table null has not shown its predictor was measured (step 4).** The gap is built
+   from 4 draws and an argmax over near-ties (median best-to-second gap 0.003), so measure its
+   test–retest reliability first. Score advantages against the next turn, not only against the
+   end of the game.
+4. **Phase 10's validity question is within a matchup (step 3d).** A Bo3 series holds the players
+   and teams fixed while the brings change. Testing within series removes the player effect that
+   dominates the cross-team test (rating alone: AUC 0.598).
+5. **The people model is behaviour cloning, reframed (step 3e).** "BC clones ~1100 play" is a
+   reason it cannot make a strong policy. It is exactly what an opponent model, pruning and
+   people-like self-play need.
+
+**Order:**
+- step 0, then collect step 1;
+- step 4's reliability check and the re-scoring on fresh games (laptop, about a day);
+- step 3a's leaf (laptop, 2–3 days);
+- step 3e (Kaggle GPU);
+- step 3d, only if Phase 10 still matters by then.
+
+The full Phase 6 re-run against a temperature-sampled policy, the old 3a, is dropped.
+
+### 0. Fresh data: the corpus since 2026-09-20
+
+**Started 2026-10-04 about 21:50.** Both M-C formats are fetched newest-first back to the cached
+range, into a staging directory, `data/replays-new/<format>/`. The runner stops after three
+consecutive pages that are already cached, retries transient errors, skips deleted replays and
+resumes when re-run. It runs on the laptop, bound by the network (0.3 s between replays): about
+50 replays a minute per format, so roughly 8 hours for Bo3 and 12–15 for Bo1, into 2026-10-05. The runner is a one-off; if scraping continues to rotation, `vgc meta scrape` gets its
+stop-at-cached logic.
+
+- **Why staged, not in `data/replays/`.** Several analyses sample from the cache, and the step 3b
+  merge replays against a packed list. New files there would change their inputs silently.
+- **Rates, sampled the evening of 2026-10-04:** about 4,800 Bo1 a day (median rating 1206) and
+  1,800 Bo3 a day. That was a Sunday evening, so read these as an upper range. Even a third of it
+  doubles or triples the M-C corpus, and the regulation runs to 2026-12-02.
+- **What the new games are for:**
+  - **A fresh test set.** No model or fit has seen a game after 2026-09-20. Each re-test is
+    declared here before it is scored, scored once on the new games alone, and reported beside the
+    old result, so that it is not a second look at the same gate. Candidates:
+    - the EWP gate, −0.017 [−0.039, +0.004] on 369 series;
+    - `policy_value`;
+    - closed-sheet 2v2, 135 games;
+    - self-play stacked on the preview head, 767 policy games.
+  - **More training rows**, the frozen split's hash rule deciding train or held out as before:
+    the leaf (3a), the people model (3e), the WP model, and the closed-sheet set prior (more open
+    sheets).
+  - **Not a fix for preview WP.** That needs orders of magnitude more data (phase4-findings §1).
+- **Before use:**
+  - check the new games against the corpus population: ratings, forfeits, bots (practice 2);
+  - decide whether they join `data/replays/` or stay separate as the fresh shard;
+  - tag the snapshots with the scrape date.
+
 ### 1. Close out Phase 6: the brings run, and the ceiling
 
 Two runs have failed, and both are bounded nulls. Before a third run or a stronger policy, this
@@ -126,7 +198,10 @@ step settles whether the check can be passed on this corpus at all.
 - **How to read it:**
   - **The brings run passes.** The policy's self-play measures team strength once it is given what
     people bring. Phase 10 (on-demand matchup evaluation) is unblocked, with the brings as an input,
-    and the brings model ranks them.
+    and the brings model ranks them. **Review caveat:** brings are chosen after team preview and
+    carry the players' skill, so a pass against the constant is not enough. The fair baseline is
+    the WP model once brings and leads are known (turn 1), not the preview head. Stack the self-play
+    logit on that number, as in 3b, before reading a pass as a simulator signal.
   - **It fails, and the preview head clears what the policy did not.** The policy is the gap. No
     more Kaggle self-play for team strength until a policy differs in kind, not only in depth.
   - ~~**It fails, and the preview head is no better.**~~ Closed by the ceiling: the preview head
@@ -176,6 +251,14 @@ policy, and 12,000 with the brings. Each one names the remedy in step 3 that it 
 
   That points at 3a, aimed at Trick Room and Fake Out. Rollouts (3c) remain.
 
+  **A mechanism, from the review.** At the policy's leaf (`BENCH_BLEND`,
+  `sidecar/showdown/endgame-solver.js`), the race is the only term that sees field conditions, and
+  its weight is 0.137 on logit(race) against 1.725 on logit(HP share). The fit shrank it because
+  the raw race is far too sure (log loss 1.04), and that also shrank what only the race knows:
+  speed control, field turns left, KO order. Setting Trick Room changes no HP, count or stage, so
+  the leaf values it at almost nothing. Fake Out's chip moves HP share directly. This is an
+  inference from the weights and the archetype rates, not yet a measurement. Step 3a tests it.
+
 ### 3. Handling it: a simulator signal that is gated on people
 
 Each candidate is built only if a step 2 check points at it, and each is gated against human
@@ -197,6 +280,28 @@ results on held-out series. No simulator number reaches the page or Phase 10 any
 
   The brings run tests the team-preview half. The leaf not seeing Trick Room's remaining turns is
   the search half.
+
+  **Revised by the review: a leaf that learns, before depth or temperature.** The plan above
+  samples at a temperature and then re-runs Phase 6 in full. That is about four Kaggle sessions
+  against a check whose ceiling (0.56 for anything that sees only the two teams) sits near its pass
+  line. It is dropped. The leaf is the cheaper target, and it sits under the policy, the value
+  number in step 4, and any action table.
+  - **The features**, each cheap to compute inside the solver:
+    - the race's margin (turns to KO, HP left at the end), not only its saturated win fraction;
+    - the field's share of the race: the race with and without Trick Room, Tailwind and screens;
+    - field turns left, per side;
+    - KO threats on the field and in the back, and priority available;
+    - HP share, the count and stages, as now.
+  - **The fit:** a logistic, or a small GBT exported to JS, on `bench_race.py`'s training states,
+    with the step 0 games added. Score held-out log loss against `BENCH_BLEND` and the served model,
+    per state kind.
+  - **The check that it fixed the right thing:** a self-play sample of Trick Room pairings, read
+    by `archetype_play.py`. The Trick Room set rate should move towards people's 41%, and the turn-1
+    Fake Out rate towards 43%. Fake Out is the less certain half: the leaf explains Trick Room more
+    clearly than it explains Fake Out.
+  - **Then depth,** two turns while Trick Room is legal, only if the learned leaf leaves the gap.
+  - A change of answers takes a new `race_doubles` name, and the step 4 gates re-run on it.
+  - **Cost:** 2–3 laptop days. The self-play sample takes an evening on 8 workers.
 - **3b. Self-play as one input, not the answer.** Promoted by the ceiling: the preview head passes
   alone, so the question is whether self-play adds to it. Stack the self-play WP onto the preview head: a
   logistic over the two logits, fitted out of fold by series on held-out games only. The preview
@@ -213,9 +318,41 @@ results on held-out series. No simulator number reaches the page or Phase 10 any
   "from team preview", and the move advice in step 4 gets a deeper check than one turn. The scope
   is a gate like the engine's per state kind (principle 11): by turn and regime, re-measured on
   every new policy.
+- **3d. Brings within a series: Phase 10's own question** (review). Phase 10 asks whether the
+  simulator ranks brings and leads *within one matchup*. Phase 6 asks whether it ranks *matchups
+  across teams and players*. The second question is dominated by the players: rating alone reaches
+  AUC 0.598 and the sheets alone 0.56. A Bo3 series holds both players and both teams fixed while
+  the brings and leads change between games.
+  - **The test:** conditional logistic regression with one stratum per series. In a split series,
+    did each player win the game where the simulator favoured their brings? Only split series
+    inform it: about 690 in the old data (game 2 went to game 1's winner 57.7% of 1,628 series),
+    and more after step 0.
+  - **The predictor:** self-play with each game's actual brings and leads. The brings run plays one
+    game a series, so this needs every game of each series, at about the same Kaggle cost. The
+    learned baselines (the bring head, the WP model at turn 1) are scored the same way beside it.
+  - **Gate:** the within-series coefficient's interval wholly above zero, and the stack's log loss
+    below the WP model at turn 1 alone.
+  - Phase 11 (comparing whole teams) still needs the cross-team test. For it, a Bradley–Terry with
+    a player term on the larger corpus is the human-data alternative to self-play.
+- **3e. A people model, learned** (review; reframes the "behaviour cloning" row under Deferred).
+  Today's people model is a conditional logit on hand features. Its first pick matches people 34%
+  of the time per Pokémon, and pruning keeps 54% of people's pairs at the top 12.
+  - **The model:** a choice model per Pokémon over the observation, conditioned on rating, trained
+    on M-B, M-C and the step 0 games. Kaggle GPU, free. It is a model of ~1100 opponents, which is
+    what π_opp is meant to be.
+  - **What it feeds:**
+    - the root prior: scores passed into the solver, depth 1 only, so cheap;
+    - the opponent model in EWP;
+    - pruning recall;
+    - people-like self-play, the goal of the old 3a.
+  - **Gates:**
+    - held-out log-likelihood against the conditional logit (1.833 nats);
+    - pruning recall at the top 6, 8 and 12;
+    - the policy gate (≥ 0.60 against the heuristic), unchanged.
 - **What it unblocks.** Phase 10 takes whichever form passed: matchup evaluation from preview (3a),
-  as a shift on the learned preview number (3b), or from a position (3c). Phase 11 needs 3a or 3b,
-  because team building compares whole teams. If none passes, the deterministic stack stays the
+  as a shift on the learned preview number (3b), from a position (3c), or as a ranking of brings
+  and leads within the matchup (3d, the form Phase 10 actually needs). Phase 11 needs 3a or 3b, or
+  the player-adjusted human fit under 3d, because team building compares whole teams. If none passes, the deterministic stack stays the
   floor, and the Deferred row for a stronger reference corpus is the remaining route.
 
 ### 4. Move advice on the live page (W4), gated against people
@@ -256,6 +393,28 @@ about human games, though (principle 1), so this step gates that first.
 
   **No action table.** The policy's value of a position, as the number above two a side, is the
   candidate left. It would be gated per state kind as the doubles engine was.
+- **Review: the action-table null is not yet a measured null** (practice 5). The gap between the
+  policy's top row and the human's comes from four draws and an argmax over near-ties. At stage 1,
+  four draws picked the 32-draw reference's row in only 13–15 of 20 roots, and the median gap
+  between the best and second row was 0.003. Much of the measured gap may be the winner's curse.
+  If the gaps were real and calibrated, a mean of 0.07 should be worth roughly 0.01–0.02 nats
+  beside the WP number, not +0.0003. Before an action table is ruled out:
+  - **Reliability:** solve the same positions twice with independent dice, and correlate the two
+    gaps, as Phase 6 §3 did for self-play. A low correlation makes the null a measurement null.
+    Then re-solve a sample at 16–32 draws (Kaggle) and repeat the test.
+  - **A lower-variance label:** the result of a game of about 7 turns is a very noisy verdict on
+    one choice. Score the predicted advantage, EWP(human's row) − EWP(top row), against the
+    realised one, the WP model after the turn minus before it. The WP model shares nothing with the
+    solver's leaf, so this is not circular. The game's result stays the primary gate. The
+    next-turn label says whether a signal is there to be powered.
+  - **If the gaps hold at 32 draws,** the product problem becomes speed: that many draws within
+    5 s. The levers already found are a cheaper battle copy (deserialising is 39% of a replay)
+    and more solver processes.
+- **`policy_value.py` (committed `2c02946`, results in the next item; the review's note).** It values the position by the
+  policy's own choice (`ewp.max()`), so it does not condition on the human's action (principle 7).
+  It is fitted on the WP model's validation games and scored on held-out games, per state kind.
+  The review adds a second score, once, on the step 0 games. It and the learned leaf (3a) are the
+  same number with different leaves, so they are run as a pair once 3a exists.
 - **The policy's value as the number above two a side, run 2026-10-04**
   ([phase9-findings](phase9-findings.md), "the policy's value of a position"). The combination is
   fitted on the WP model's validation games and scored on 800 held-out games.
@@ -264,8 +423,14 @@ about human games, though (principle 1), so this step gates that first.
     Only 4v3 clears alone, one of six intervals.
   - **Latency:** median 1.0 s, p99 2.7 s.
 
-  **Next:** confirm "after the first faint" on the 939 untouched held-out games, with the weights
-  frozen. Then the page needs the player to mark their four.
+  **Next:**
+  - **Confirmation, running since 2026-10-04 21:51** (`policy_value.py --confirm`, about 30
+    minutes). The hypothesis was declared before scoring: "after the first faint, with more than two
+    a side, the combined number beats the model". It is scored once, on the 939 held-out games the
+    first run did not touch, with the weights refitted from the saved validation positions (the same
+    fit). Results go to `policy_value_confirm.json`. The step 0 score stays a separate, later look.
+  - **Then the page needs the player to mark their four.** The policy's position needs the
+    player's own back, and the page does not record it.
 - **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
   reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
   `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both
@@ -287,7 +452,7 @@ about human games, though (principle 1), so this step gates that first.
     - **Seed Sower.** It restarted the Grassy Terrain it was already under: the rules re-set the
       active weather or terrain, which the game refuses.
     - **Ally Switch.** It had no tap, so every read after one crossed the two slots. It is now an
-      entry (`swap`), but has no button yet.
+      entry (`swap`), with a button in the Battle page's Switch pad ("Trade places with …").
 
 ### 5. Ready for the next regulation
 
@@ -311,8 +476,9 @@ late costs little, so this is taken when it is wanted.
   than the imputer's (+0.013, +0.018, intervals across zero). The mean of the three is level
   (−0.004 [−0.019, +0.010]). The number keeps the imputer's spread; the page shows the other two
   beside it, with their range on the bar.
-- **Time the doubles answer on the deployed machine.** Carried from v4; taken by hand. Step 4
-  measures the same machine anyway.
+- **Time the doubles answer on the deployed machine.** Carried from v4. An agent can now take it
+  through the MCP server: `solve` returns when each part landed. Redeploy first: Fly still runs
+  the code from before the three guesses, the Protect-counter fix and the Ally Switch button.
 
 ### 7–8. Blocked behind steps 1–3
 
@@ -377,9 +543,9 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 | --- | --- |
 | Phase 6 against a stronger reference (results between known team lists at a higher rating, e.g. tournaments, if they exist for Champions) | Steps 1–3 showing this corpus cannot judge, or nothing in step 3 passing |
 | The Nash reading of the policy | A gate it passes (0.584 against the heuristic) |
-| Learned preview / team-strength WP | A corpus 3+ orders of magnitude larger |
-| Behaviour cloning | A higher-rated corpus. The highest rating seen is 1578 |
-| Self-play generation for WP training | A policy that passes Phase 6 (step 3a) |
+| Learned preview / team-strength WP worth showing | A corpus 3+ orders of magnitude larger. Step 0 adds a few times the corpus, not orders of magnitude |
+| Behaviour cloning *for strength* | A higher-rated corpus. The highest rating seen is 1610 (M-C). As a model of people, the opponent the policy assumes, it is not deferred: step 3e |
+| Self-play generation for WP training | A policy that passes Phase 6, or the within-series test (step 3d) |
 | The belief's own P(faster) as a model input | Training rows where a spread is known (self-play only) |
 | Damage and bulk channels on the live page | A sweep cheap enough to run between taps |
 | Double oracle over the full doubles matrix | A pruning gap too large to accept |
@@ -408,6 +574,10 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
     test.** Phase 6 ran twice before its ceiling was asked about (step 1).
 12. **A Kaggle merge replays against the code that was packed.** Note the commit when packing, and
     merge from it.
+13. **Check that the corpus is current before a power-limited gate.** The M-C cache stopped at
+    2026-09-20 while every gate in step 4 ran short of power (step 0).
+14. **Ask whether a test asks the question the product needs.** Phase 6 tests matchups across
+    teams; Phase 10 needs brings within one matchup (step 3d).
 
 ---
 
@@ -415,7 +585,10 @@ Independent of the steps above. Design and API: [web-app](web-app.md).
 
 | Risk | Handling |
 | --- | --- |
-| Phase 6 cannot be passed on this corpus by anything | Step 1 measures the ceiling before more self-play is spent; step 3b can pass on a signal too weak to stand alone |
+| Phase 6 cannot be passed on this corpus by anything | Step 1 measured the ceiling (0.56, near the pass line). The full re-run is dropped; step 3d tests what Phase 10 needs with the players held fixed |
+| Re-testing a narrowly failed gate on more data becomes a second look | Each re-test is declared in step 0 before scoring, scored once on the new games alone, and reported beside the old result |
+| The new games differ from the old (a later meta, a shifted rating mix) | Checked against the corpus population before use (practice 2). A shift is reported, and a gate that holds across it is the stronger for it |
+| The scrape is refused or rate-limited | Polite rate (0.3 s a replay), resumable; the staging directory keeps whatever arrived |
 | The diagnostics find no single cause | Step 3 is built only where a step 2 check points; otherwise the floor holds and nothing more is spent on self-play |
 | Move advice that misleads | Gated against human results first (step 4); open sheets only; the WP model stays on screen |
 | The policy misses 5 s on shared cores | Fewer rows (K) above two a side, the quick answer kept, or a `performance-1x` machine |
