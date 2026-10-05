@@ -311,8 +311,11 @@ late costs little, so this is taken when it is wanted.
 - **Phase 11: team building.** Slot completion and moveset/SP search, verified by recovering a
   removed member of 10 strong teams in the top 5.
 
-Phase 12 (an MCP server wrapping the CLI, every numeric claim traced to a tool call) is not
-blocked and can be taken whenever it is wanted.
+Phase 12 (an MCP server, every numeric claim traced to a tool call). **Built 2026-10-04** over the
+web API rather than the CLI, so an agent sees exactly what the page sees and can test the deployed
+server: `python -m vgc.mcp`, 20 tools, registered in `.mcp.json` as `vgc` (deployed) and
+`vgc-local` ([web-app](web-app.md), "an agent over the same API"). `solve` returns its timeline,
+which times the doubles answer on the deployed machine (the open item in step 6).
 
 ---
 

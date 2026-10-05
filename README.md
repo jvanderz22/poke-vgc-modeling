@@ -71,6 +71,7 @@ vgc belief sets Incineroar                       # ...and what that says about o
 
 vgc web                                          # battle companion on localhost:8001
                                                  #   /battle — log a game as you play it
+python -m vgc.mcp                                # MCP server over the same API (.mcp.json: vgc, vgc-local)
 ```
 
 `make` wraps the pipeline: `make data` (scrape → pool → self-play → snapshots → features),

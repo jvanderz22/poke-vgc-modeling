@@ -229,7 +229,20 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/simulate` | Two teams → one seeded battle, narrated turn by turn with spectator WP |
 | `GET /api/endgames` | The decided-endgame set: games, criteria, what they were drawn from, gate verdicts. `only=all\|played_out\|misses` |
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
+| `GET /api/battles`, `POST /api/battles`, `GET/DELETE /api/battles/{id}` | Saved battles; start one (yours against an open or closed sheet, or watching someone else's game); one as it stands, with its WP and gate verdicts |
+| `POST /api/battles/{id}/entries`, `POST /api/battles/{id}/undo`, `GET /api/battles/{id}/at/{index}` | Append taps, pop the last, or see the battle after its first `index` taps |
+| `GET /api/battles/{id}/trajectory` | The WP at every turn so far, with the band over drawn sets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
+
+### An agent over the same API (MCP)
+
+`python -m vgc.mcp` is an MCP server whose tools are these endpoints (`vgc.mcp.server`, `pip
+install -e '.[mcp]'`). It is registered for Claude Code in `.mcp.json`: `vgc` talks to the deployed
+app (the password comes from `VGC_WEB_PASSWORD` or `.env`), and `vgc-local` to
+`http://127.0.0.1:8001`. An agent sees what the page sees and quotes numbers from tool results. It
+is also how a deploy is checked. `solve` waits for the engine's answer to settle and returns when
+each part landed (`timeline`, with the server's own `elapsed`), which is the doubles answer timed
+on the machine that serves it.
 
 ### Watching someone else's game
 

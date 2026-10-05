@@ -32,6 +32,9 @@ web = [
   "fastapi>=0.110",
   "uvicorn[standard]>=0.27",
 ]
+mcp = [
+  "mcp>=2.3",        # src/vgc/mcp: an MCP server over the web API (MCPServer is the 2.x name)
+]
 
 [project.scripts]
 vgc = "vgc.cli.main:main"

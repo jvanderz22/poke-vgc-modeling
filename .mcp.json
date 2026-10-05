@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "vgc": {
+      "command": ".venv/bin/python",
+      "args": ["-m", "vgc.mcp"],
+      "env": {"VGC_API_URL": "https://vgc-live-battle-calculator.fly.dev"}
+    },
+    "vgc-local": {
+      "command": ".venv/bin/python",
+      "args": ["-m", "vgc.mcp"],
+      "env": {"VGC_API_URL": "http://127.0.0.1:8001"}
+    }
+  }
+}
