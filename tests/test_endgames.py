@@ -67,6 +67,17 @@ def test_bot_accounts_are_excluded_but_joke_names_are_not(reg):
         assert not endgames.is_bot(human), human
 
 
+def test_automated_accounts_are_the_bot_pattern_and_the_listed_ones(reg):
+    """Training leaves out games with an automated player: the bot pattern, or an account on the
+    regulation's list of those that play too much to be people. A name alone does not list one."""
+    from vgc.meta.replays import is_automated
+
+    assert is_automated({"players": ["pcrlbot12d159c39a", "someone"]}, reg)
+    assert is_automated({"players": ["someone", "Scorecard-Pokemon"]}, reg)  # listed, any case
+    assert not is_automated({"players": ["mizuki-ai", "krimzus"]}, reg)      # under the rate
+    assert not is_automated({"players": []}, reg)
+
+
 def test_nicknames_are_narrated_as_the_species_on_the_board(reg):
     """Human replays are full of nicknames. "Mr. VGC used Fake Out" next to a board that lists
     Incineroar is two names for one Pokémon, and the reader has to do the join."""

@@ -1,0 +1,434 @@
+{
+ "gen9championsvgc2026regmcbo3": {
+  "edge": 1789962572,
+  "old": {
+   "games": 10417,
+   "rated_share": 0.3744,
+   "rating": {
+    "p10": 1016.0,
+    "p25": 1051.0,
+    "p50": 1106.0,
+    "p75": 1172.0,
+    "p90": 1246.0,
+    "p99": 1352.0099999999998
+   },
+   "forfeit_share": 0.4041,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 7.0,
+    "p75": 9.0
+   },
+   "bot_games": 153,
+   "players": 2996,
+   "one_game_players": 0.1152,
+   "games_per_player_median": 3.0,
+   "top10_player_share": 0.1312,
+   "both_sheets": 1.0,
+   "both_legal": 1.0,
+   "split": {
+    "heldout_human": 0.1135,
+    "heldout_team": 0.2848,
+    "train": 0.6017
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 19.0,
+     "p50": 32.0,
+     "p75": 38.0
+    }
+   }
+  },
+  "gap_fill": {
+   "games": 1198,
+   "rated_share": 0.3748,
+   "rating": {
+    "p10": 1001.8,
+    "p25": 1035.0,
+    "p50": 1073.0,
+    "p75": 1129.0,
+    "p90": 1181.0,
+    "p99": 1265.52
+   },
+   "forfeit_share": 0.3932,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 7.0,
+    "p75": 9.0
+   },
+   "bot_games": 0,
+   "players": 671,
+   "one_game_players": 0.1773,
+   "games_per_player_median": 3.0,
+   "top10_player_share": 0.2078,
+   "both_sheets": 1.0,
+   "both_legal": 1.0,
+   "split": {
+    "heldout_human": 0.1219,
+    "heldout_team": 0.2871,
+    "train": 0.591
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 19.0,
+     "p50": 32.0,
+     "p75": 38.0
+    }
+   }
+  },
+  "fresh": {
+   "games": 22920,
+   "rated_share": 0.3633,
+   "rating": {
+    "p10": 1011.0,
+    "p25": 1049.0,
+    "p50": 1102.0,
+    "p75": 1175.0,
+    "p90": 1264.0,
+    "p99": 1393.0
+   },
+   "forfeit_share": 0.3683,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 8.0,
+    "p75": 9.0
+   },
+   "bot_games": 67,
+   "players": 5742,
+   "one_game_players": 0.1102,
+   "games_per_player_median": 4.0,
+   "top10_player_share": 0.0942,
+   "both_sheets": 0.9995,
+   "both_legal": 0.9984,
+   "split": {
+    "heldout_human": 0.0986,
+    "heldout_team": 0.3343,
+    "train": 0.5671
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 21.0,
+     "p50": 32.0,
+     "p75": 41.0
+    }
+   }
+  },
+  "players_seen": {
+   "both_seen": 0.2374,
+   "one_seen": 0.4407,
+   "neither_seen": 0.3219
+  },
+  "meta": {
+   "tv_distance": 0.1277,
+   "top_movers": [
+    {
+     "species": "Salamence",
+     "old": 0.0548,
+     "fresh": 0.0323
+    },
+    {
+     "species": "Garchomp",
+     "old": 0.0252,
+     "fresh": 0.0441
+    },
+    {
+     "species": "Raichu",
+     "old": 0.0319,
+     "fresh": 0.0485
+    },
+    {
+     "species": "Sneasler",
+     "old": 0.0732,
+     "fresh": 0.0596
+    },
+    {
+     "species": "Volcarona",
+     "old": 0.0124,
+     "fresh": 0.0255
+    },
+    {
+     "species": "Basculegion",
+     "old": 0.0315,
+     "fresh": 0.0195
+    },
+    {
+     "species": "Kingambit",
+     "old": 0.0447,
+     "fresh": 0.0348
+    },
+    {
+     "species": "Incineroar",
+     "old": 0.053,
+     "fresh": 0.0622
+    },
+    {
+     "species": "Arcanine-Hisui",
+     "old": 0.0332,
+     "fresh": 0.027
+    },
+    {
+     "species": "Floette-Eternal",
+     "old": 0.0242,
+     "fresh": 0.0187
+    },
+    {
+     "species": "Primarina",
+     "old": 0.0043,
+     "fresh": 0.0093
+    },
+    {
+     "species": "Staraptor",
+     "old": 0.014,
+     "fresh": 0.0189
+    }
+   ],
+   "new_species": [
+    "Vivillon-Monsoon",
+    "Machamp",
+    "Vivillon-High Plains",
+    "Tauros-Paldea-Aqua",
+    "Slurpuff",
+    "Appletun",
+    "Zoroark",
+    "Vivillon-Archipelago",
+    "Avalugg",
+    "Florges-Blue",
+    "Mabosstiff",
+    "Aromatisse",
+    "Vivillon-Elegant",
+    "Decidueye",
+    "Squawkabilly-Yellow",
+    "Goodra",
+    "Flutter Mane",
+    "Ursaluna",
+    "Vivillon-Polar",
+    "Tyrantrum"
+   ],
+   "new_species_share": 0.0019
+  }
+ },
+ "gen9championsvgc2026regmc": {
+  "edge": 1789965348,
+  "old": {
+   "games": 7645,
+   "rated_share": 0.9424,
+   "rating": {
+    "p10": 1051.0,
+    "p25": 1118.0,
+    "p50": 1233.0,
+    "p75": 1332.0,
+    "p90": 1401.0,
+    "p99": 1517.96
+   },
+   "forfeit_share": 0.4603,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 7.0,
+    "p75": 9.0
+   },
+   "bot_games": 215,
+   "players": 4933,
+   "one_game_players": 0.6434,
+   "games_per_player_median": 1.0,
+   "top10_player_share": 0.1725,
+   "both_sheets": 0.0353,
+   "both_legal": 0.0353,
+   "split": {
+    "heldout_human": 0.1423,
+    "heldout_team": 0.0101,
+    "train": 0.8476
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 19.0,
+     "p50": 32.0,
+     "p75": 38.0
+    }
+   }
+  },
+  "gap_fill": {
+   "games": 2303,
+   "rated_share": 0.881,
+   "rating": {
+    "p10": 1018.0,
+    "p25": 1052.0,
+    "p50": 1099.0,
+    "p75": 1172.0,
+    "p90": 1256.2,
+    "p99": 1399.0
+   },
+   "forfeit_share": 0.373,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 7.0,
+    "p75": 9.0
+   },
+   "bot_games": 397,
+   "players": 2488,
+   "one_game_players": 0.6969,
+   "games_per_player_median": 1.0,
+   "top10_player_share": 0.2588,
+   "both_sheets": 0.0491,
+   "both_legal": 0.0491,
+   "split": {
+    "heldout_human": 0.1524,
+    "heldout_team": 0.0178,
+    "train": 0.8298
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 19.0,
+     "p50": 32.0,
+     "p75": 38.0
+    }
+   }
+  },
+  "fresh": {
+   "games": 44246,
+   "rated_share": 0.9059,
+   "rating": {
+    "p10": 1037.0,
+    "p25": 1087.0,
+    "p50": 1182.0,
+    "p75": 1302.0,
+    "p90": 1386.0,
+    "p99": 1555.0
+   },
+   "forfeit_share": 0.3438,
+   "turns_played_out": {
+    "p25": 6.0,
+    "p50": 7.0,
+    "p75": 9.0
+   },
+   "bot_games": 4202,
+   "players": 19579,
+   "one_game_players": 0.438,
+   "games_per_player_median": 2.0,
+   "top10_player_share": 0.3799,
+   "both_sheets": 0.0354,
+   "both_legal": 0.0353,
+   "split": {
+    "heldout_human": 0.1455,
+    "heldout_team": 0.0089,
+    "train": 0.8456
+   },
+   "parse": {
+    "sampled": 400,
+    "raised": 0.0,
+    "errors": {},
+    "snapshots_a_game": {
+     "p25": 19.0,
+     "p50": 32.0,
+     "p75": 41.0
+    }
+   }
+  },
+  "players_seen": {
+   "both_seen": 0.0841,
+   "one_seen": 0.3842,
+   "neither_seen": 0.5317
+  },
+  "meta": {
+   "tv_distance": 0.1654,
+   "top_movers": [
+    {
+     "species": "Politoed",
+     "old": 0.0077,
+     "fresh": 0.0294
+    },
+    {
+     "species": "Rillaboom",
+     "old": 0.0729,
+     "fresh": 0.0522
+    },
+    {
+     "species": "Grimmsnarl",
+     "old": 0.0071,
+     "fresh": 0.0271
+    },
+    {
+     "species": "Charizard",
+     "old": 0.0183,
+     "fresh": 0.0382
+    },
+    {
+     "species": "Salamence",
+     "old": 0.044,
+     "fresh": 0.0256
+    },
+    {
+     "species": "Archaludon",
+     "old": 0.0201,
+     "fresh": 0.0382
+    },
+    {
+     "species": "Sneasler",
+     "old": 0.062,
+     "fresh": 0.0461
+    },
+    {
+     "species": "Farigiraf",
+     "old": 0.0304,
+     "fresh": 0.0424
+    },
+    {
+     "species": "Indeedee-F",
+     "old": 0.0387,
+     "fresh": 0.0287
+    },
+    {
+     "species": "Kingambit",
+     "old": 0.0378,
+     "fresh": 0.0283
+    },
+    {
+     "species": "Basculegion",
+     "old": 0.0304,
+     "fresh": 0.0215
+    },
+    {
+     "species": "Garchomp",
+     "old": 0.0227,
+     "fresh": 0.0307
+    }
+   ],
+   "new_species": [
+    "Leafeon",
+    "Squawkabilly-Yellow",
+    "Vivillon-Ocean",
+    "Tauros",
+    "Tauros-Paldea-Combat",
+    "Simisear",
+    "Alcremie-Ruby-Swirl",
+    "Vivillon-High Plains",
+    "Simipour",
+    "Samurott",
+    "Watchog",
+    "Garbodor",
+    "Gourgeist-Large",
+    "Alcremie-Matcha-Cream",
+    "Florges-Blue",
+    "Vivillon-Sandstorm",
+    "Gourgeist",
+    "Vivillon-Modern",
+    "Florges-White",
+    "Tornadus"
+   ],
+   "new_species_share": 0.0011
+  }
+ }
+}

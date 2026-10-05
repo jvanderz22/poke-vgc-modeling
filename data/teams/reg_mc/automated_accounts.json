@@ -1,0 +1,128 @@
+{
+ "regulation": "reg_mc",
+ "rule": ">= 100 games and > 60 a day over the active span",
+ "read_from": [
+  "data/replays",
+  "data/replays-new"
+ ],
+ "accounts": {
+  "pcrlbot12d159c39a": {
+   "games": 4798,
+   "active_days": 25.6,
+   "per_day": 187.2,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": true
+  },
+  "scorecard-pokemon": {
+   "games": 3292,
+   "active_days": 13.8,
+   "per_day": 238.7,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "sc-sme": {
+   "games": 2833,
+   "active_days": 11.8,
+   "per_day": 240.9,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "sc-control": {
+   "games": 2540,
+   "active_days": 11.8,
+   "per_day": 215.9,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "kevdan42": {
+   "games": 2120,
+   "active_days": 12.8,
+   "per_day": 165.4,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "mikumiku37": {
+   "games": 661,
+   "active_days": 3.8,
+   "per_day": 173.4,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "kvdn64": {
+   "games": 368,
+   "active_days": 1.0,
+   "per_day": 368.0,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "regmc_aipilot_13": {
+   "games": 272,
+   "active_days": 3.3,
+   "per_day": 82.8,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "humania2": {
+   "games": 267,
+   "active_days": 1.0,
+   "per_day": 267.0,
+   "formats": [
+    "bo3"
+   ],
+   "bot_pattern": false
+  },
+  "jj1ne": {
+   "games": 237,
+   "active_days": 3.6,
+   "per_day": 65.4,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "humania1": {
+   "games": 223,
+   "active_days": 1.0,
+   "per_day": 223.0,
+   "formats": [
+    "bo1",
+    "bo3"
+   ],
+   "bot_pattern": false
+  },
+  "ai_paku": {
+   "games": 174,
+   "active_days": 2.2,
+   "per_day": 79.9,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  },
+  "mikumiku38": {
+   "games": 156,
+   "active_days": 1.1,
+   "per_day": 144.0,
+   "formats": [
+    "bo1"
+   ],
+   "bot_pattern": false
+  }
+ }
+}

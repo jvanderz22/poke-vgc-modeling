@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import gzip
 import json
+import re
 import statistics
 import time
 import urllib.parse
 import urllib.request
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
@@ -27,6 +29,31 @@ from vgc.teams.validate import is_legal, validate_team
 BASE = "https://replay.pokemonshowdown.com"
 REPLAYS = paths.ROOT / "data" / "replays"
 USER_AGENT = "vgc-advisor/0.1 (research; local cache)"
+
+# Scripted ladder alts, which are not "a human-built team" on either side. The *shape* is what
+# identifies them — "bot" followed by a hex serial or a `#n` — because the bare substring also
+# matches people who called themselves robotarmadillo or bottomplayer.
+_BOT = re.compile(r"bot(?:[0-9a-f]{4,}|#\d+)$", re.IGNORECASE)
+
+
+def is_bot(player: str) -> bool:
+    return bool(_BOT.search(player))
+
+
+def automated_path(reg: Regulation) -> Path:
+    return paths.ROOT / "data" / "teams" / reg.id / "automated_accounts.json"
+
+
+@lru_cache(maxsize=None)
+def _automated(reg_id: str, path: Path) -> frozenset[str]:
+    return frozenset(json.loads(path.read_text())["accounts"]) if path.exists() else frozenset()
+
+
+def is_automated(replay: dict, reg: Regulation) -> bool:
+    """A game with a player who is not a person: the bot pattern, or an account on the regulation's
+    list of those that play too much to be people (`scripts/analysis/automated_accounts.py`)."""
+    listed = _automated(reg.id, automated_path(reg))
+    return any(is_bot(p) or p.lower() in listed for p in replay.get("players") or [])
 
 
 def _get_json(url: str) -> object:

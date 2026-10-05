@@ -100,7 +100,11 @@ def extract_human(fmt: str, reg: Regulation, out_dir: Path | None = None) -> dic
     out_dir = out_dir or SNAPSHOTS / reg.id / "human" / fmt
     t0 = time.perf_counter()
     items = []
+    automated = 0
     for rep in replays.cached(fmt):
+        if replays.is_automated(rep, reg):  # not people: left out of every split, train and held out
+            automated += 1
+            continue
         try:
             ids = human_team_ids(rep, reg)
             items.append((rep | {"_teams": ids}, [dumps(r) for r in human_snapshots(rep, reg, ids)]))
@@ -108,7 +112,7 @@ def extract_human(fmt: str, reg: Regulation, out_dir: Path | None = None) -> dic
             items.append((rep, f"{type(e).__name__}: {e}"))
     return _write(out_dir, rules, items,
                   lambda r: rules.split_of("human", r["id"], r["_teams"].values(), replay_group(r)),
-                  source=fmt, seconds=time.perf_counter() - t0)
+                  source=fmt, seconds=time.perf_counter() - t0) | {"automated": automated}
 
 
 def snapshot_files(reg: Regulation, split: str = "train") -> list[Path]:

@@ -4,6 +4,7 @@
 #
 #   scripts/cloud/kaggle_sweep.sh [regulation] [dataset]
 #   scripts/cloud/kaggle_sweep.sh [regulation] [dataset] --collect   # skip to step 4
+#   CONFIGS=runs.json scripts/cloud/kaggle_sweep.sh ...              # train these, not the sweep
 #
 # `--collect` fetches and evaluates the output of a kernel that has already run. Use it when the
 # wait timed out, or when you stopped the script and the notebook kept going: the kernel lives on
@@ -98,6 +99,10 @@ JSON
 
 push_dataset "$WORK/features" vgc-wp-features "VGC WP features"
 cp src/vgc/wp/set_torch.py "$WORK/src/"
+# CONFIGS=path: a JSON {name: [flags...]} that replaces the notebook's own model and sweep, e.g.
+# several seeds of one recipe for an ensemble. A new dataset version holds only what is pushed,
+# so a run without it gets the notebook's defaults back.
+if [ -n "${CONFIGS:-}" ]; then cp "$CONFIGS" "$WORK/src/configs.json"; echo "==> configs: $CONFIGS"; fi
 push_dataset "$WORK/src" vgc-set-torch "VGC set encoder trainer"
 
 # A just-pushed version is not attachable until Kaggle finishes processing it, and a kernel that

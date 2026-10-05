@@ -461,6 +461,8 @@ def _print_extract(r: dict) -> None:
     print(f"{r['source']}: {sum(r['battles'].values())} battles → {r['out_dir']} ({r['seconds']}s)")
     for split, n in sorted(r["records"].items()):
         print(f"  {split:15} {r['battles'][split]:6} battles {n:8} snapshots")
+    if r.get("automated"):
+        print(f"  {r['automated']} games with an automated player left out")
     if r["errors"]:
         print(f"  {r['errors']} errors, e.g. {r['error_examples'][:2]}")
 

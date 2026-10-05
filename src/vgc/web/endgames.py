@@ -7,7 +7,7 @@ browsable set of them and the web app lets you step through each game turn by tu
 
 Every game in the set satisfies all of:
 
-  * **human vs human.** Both accounts are people, not the scripted ladder alts (`_BOT`), and
+  * **human vs human.** Both accounts are people, not the scripted ladder alts (`is_bot`), and
     both teams are ones those people built. Nothing here is self-play.
   * **held out.** The replay's group falls on the held-out side of the frozen split, recomputed
     from `data/splits/<reg>.json` rather than trusted from any file, so the model never saw the
@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import re
 from pathlib import Path
 from typing import Any, Callable
 
@@ -39,10 +38,6 @@ from vgc.regulation import Regulation
 ANALYSIS = paths.DATA / "analysis"
 REPLAY_URL = "https://replay.pokemonshowdown.com"
 
-# Scripted ladder alts, which are not "a human-built team" on either side. The *shape* is what
-# identifies them — "bot" followed by a hex serial or a `#n` — because the bare substring also
-# matches people who called themselves robotarmadillo or bottomplayer.
-_BOT = re.compile(r"bot(?:[0-9a-f]{4,}|#\d+)$", re.IGNORECASE)
 
 DEFAULTS = {"min_wp": 0.90, "hold": 3, "min_turns": 4}
 
@@ -57,7 +52,10 @@ def load_index(reg: Regulation) -> dict[str, Any] | None:
 
 
 def is_bot(player: str) -> bool:
-    return bool(_BOT.search(player))
+    """Scripted ladder alts (`vgc.meta.replays.is_bot`, where the pattern lives)."""
+    from vgc.meta.replays import is_bot as bot
+
+    return bot(player)
 
 
 def _left(side: dict[str, Any]) -> int:
