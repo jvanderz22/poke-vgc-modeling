@@ -22,11 +22,14 @@ vendor/pokemon-showdown/dist
 vendor/pokemon-showdown/logs
 vendor/pokemon-showdown/databases
 
-# Training data and analysis: about a gigabyte, none of it read by the app
+# Training data and analysis: about a gigabyte, none of it read by the app except the two
+# analysis files below (the policy's bring rates, and the Endgames page's index)
 data/snapshots
 data/features
 data/selfplay
-data/analysis
+data/analysis/**
+!data/analysis/reg_mc/bring_rates.json
+!data/analysis/reg_mc/endgames.json
 data/battles
 data/library
 data/champions-data

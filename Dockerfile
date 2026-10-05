@@ -48,6 +48,7 @@ COPY data/regulations/ ./data/regulations/
 COPY data/teams/ ./data/teams/
 COPY data/splits/ ./data/splits/
 COPY data/replays/ ./data/replays/
+COPY data/analysis/reg_mc/bring_rates.json data/analysis/reg_mc/endgames.json ./data/analysis/reg_mc/
 
 # What the app writes lives on the volume at /data: your teams, your battles, and the solver's
 # cache (.vgc). The links dangle until the volume is mounted; the entrypoint makes their targets.
