@@ -472,3 +472,37 @@ games go, and the page does not show it. What passed is narrower: the policy's v
 adds to the WP model's. That is a candidate for the number above two a side (the engine already
 leads at two or fewer), gated as the doubles engine was: per state kind, recalibrated on training
 games, scored on held-out ones.
+
+## The policy's value of a position as the number above two a side (2026-10-04)
+
+The EWP gate left one candidate: the policy's value of a position, beside the WP model.
+`scripts/analysis/policy_value.py` takes the policy's value (the people reading's EWP of its own
+choice) at every position `policy_vs_people` builds, from each seat. It fits a logistic over the
+WP logit and the policy-value logit on the WP model's validation games (10,985 positions in 792
+series: training games the model did not train on), and scores it on 800 held-out games against
+the model alone. Mirrored kinds are pooled (a 4v3 is a 3v4 from the other seat). Results:
+`data/analysis/reg_mc/policy_value.json` and the per-position `policy_value_rows.json`.
+
+Fitted weights: 0.46 on the model's logit and 0.52 on the policy's, so about equal.
+
+| held out | positions (series) | model log loss | combined − model |
+| --- | --- | --- | --- |
+| **all** | 5,066 (520) | 0.620 | **−0.015** [−0.027, −0.002] |
+| 4v4 | 2,344 (501) | 0.690 | −0.002 [−0.014, +0.010] |
+| 4v3 | 1,004 (352) | 0.597 | **−0.032** [−0.055, −0.010] |
+| 3v3 | 656 (257) | 0.664 | −0.016 [−0.045, +0.012] |
+| 3v2 | 683 (292) | 0.536 | −0.031 [−0.067, +0.006] |
+| 4v2 | 258 (138) | 0.431 | −0.027 [−0.053, +0.002] |
+| 3v1 | 89 (54) | 0.128 | −0.005 [−0.018, +0.009] |
+
+**Overall it passes.** By state kind, there is no gain at 4v4, and about −0.03 in every kind once
+a side has lost a Pokémon. Only 4v3 clears on its own, and that is one of six intervals, so it is
+not read as a pass by itself. The solve took a median 1.0 s (p90 1.7 s, p99 2.7 s) on one core with
+eight running at once, inside the 5 s an answer has.
+
+**Not shipped yet.** Two things stand before the page:
+- **One stated hypothesis, confirmed on fresh games:** "after the first faint, with more than two
+  a side, the combined number beats the model". It uses the fitted weights as they are, on the 939
+  held-out games this run did not touch.
+- **The page knowing the player's four.** The policy's position needs the player's own back, and
+  the page does not record which four they brought.

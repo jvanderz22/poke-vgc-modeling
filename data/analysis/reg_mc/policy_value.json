@@ -1,0 +1,103 @@
+{
+ "settings": {
+  "heldout_games": 800,
+  "validation_games": 1804,
+  "seed": 3,
+  "wp_model": "wp-v1f-idp5",
+  "workers": 8
+ },
+ "fitted_on": {
+  "positions": 10985,
+  "groups": 792,
+  "coef": [
+   0.46,
+   0.518
+  ],
+  "intercept": -0.225
+ },
+ "all": {
+  "positions": 5066,
+  "groups": 520,
+  "delta": -0.01501,
+  "ci95": [
+   -0.02738,
+   -0.0023
+  ],
+  "verdict": "combined better",
+  "model_logloss": 0.6201
+ },
+ "by_kind": {
+  "4v4": {
+   "positions": 2344,
+   "groups": 501,
+   "delta": -0.00198,
+   "ci95": [
+    -0.01398,
+    0.0104
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.6899
+  },
+  "4v3": {
+   "positions": 1004,
+   "groups": 352,
+   "delta": -0.03157,
+   "ci95": [
+    -0.0552,
+    -0.00994
+   ],
+   "verdict": "combined better",
+   "model_logloss": 0.597
+  },
+  "3v3": {
+   "positions": 656,
+   "groups": 257,
+   "delta": -0.01627,
+   "ci95": [
+    -0.04455,
+    0.01173
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.664
+  },
+  "4v2": {
+   "positions": 258,
+   "groups": 138,
+   "delta": -0.02701,
+   "ci95": [
+    -0.05324,
+    0.00184
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.4309
+  },
+  "3v2": {
+   "positions": 683,
+   "groups": 292,
+   "delta": -0.03093,
+   "ci95": [
+    -0.06666,
+    0.00615
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.5359
+  },
+  "3v1": {
+   "positions": 89,
+   "groups": 54,
+   "delta": -0.00518,
+   "ci95": [
+    -0.01847,
+    0.00929
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.1284
+  }
+ },
+ "solve_seconds": {
+  "median": 1.04,
+  "p90": 1.68,
+  "p99": 2.72,
+  "workers_at_once": "see settings"
+ }
+}

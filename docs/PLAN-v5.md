@@ -256,6 +256,16 @@ about human games, though (principle 1), so this step gates that first.
 
   **No action table.** The policy's value of a position, as the number above two a side, is the
   candidate left. It would be gated per state kind as the doubles engine was.
+- **The policy's value as the number above two a side, run 2026-10-04**
+  ([phase9-findings](phase9-findings.md), "the policy's value of a position"). The combination is
+  fitted on the WP model's validation games and scored on 800 held-out games.
+  - **Overall it passes:** −0.015 [−0.027, −0.002].
+  - **By state kind:** nothing at 4v4 (−0.002), and about −0.03 once a side has lost a Pokémon.
+    Only 4v3 clears alone, one of six intervals.
+  - **Latency:** median 1.0 s, p99 2.7 s.
+
+  **Next:** confirm "after the first faint" on the 939 untouched held-out games, with the weights
+  frozen. Then the page needs the player to mark their four.
 - **The adapter, built 2026-10-04.** `vgc.policy.view.EntryView` reads a page battle as `PlayerView`
   reads a log. `vgc.battle.from_log` turns a log into the taps a careful person would make, and
   `tests/test_policy_entry.py` holds the two to the same solver positions at every turn, from both

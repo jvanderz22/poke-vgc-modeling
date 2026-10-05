@@ -53,10 +53,12 @@ def _solve(pos: dict[str, Any]) -> dict[str, Any] | None:
     return out.get("result")
 
 
-def positions(replay: dict[str, Any]):
+def positions(replay: dict[str, Any], split: str = "heldout_human"):
     """Each position this script asks about: a held-out open-sheet game's turn with more than two a
     side, from one side's view, with the choice the human made there shown whole. Yields the solver
-    input's parts (`sets_`, `f`), the human's joint choice as the solver writes it, and where it was."""
+    input's parts (`sets_`, `f`), the human's joint choice as the solver writes it, and where it was.
+    `split="validation"` walks the WP model's validation games instead (training games in its 20% of
+    groups, `vgc.wp.dataset`), for anything fitted beside the model."""
     import prune_vs_people as P
     from vgc.data.snapshots import human_snapshots, replay_group
     from vgc.policy import view as V
@@ -66,8 +68,13 @@ def positions(replay: dict[str, Any]):
 
     reg = _W["reg"]
     group = replay_group(replay)
-    if _W["rules"].split_of("human", replay["id"], [], group) != "heldout_human" or any(
-            is_bot(p) for p in replay.get("players") or []):
+    shard = _W["rules"].split_of("human", replay["id"], [], group)
+    if split == "validation":
+        from vgc.wp.dataset import VAL_RATE, _is_val
+        ok = shard == "train" and _is_val(group, VAL_RATE["human"])
+    else:
+        ok = shard == split
+    if not ok or any(is_bot(p) for p in replay.get("players") or []):
         return
     recs = [r for r in human_snapshots(replay, reg) if r["obs"]["perspective"] == "spectator" and not r["meta"]["approx"]]
     if not recs or not recs[0]["meta"]["ots"]:
