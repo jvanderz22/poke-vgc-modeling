@@ -2232,3 +2232,73 @@ three solves an answer, which the 5 s budget does not have in 2v2s.
 The page keeps the imputer's spread for its answer. Once that answer is in, it solves the same move
 orders under the other two refills on a 5 s budget of their own (`solver.REFILLS`, `solver.refill`).
 It names all three and draws their range on the bar. On the fixture 2v2 they read 23%, 27% and 57%.
+
+## wp-v1g: four times the human games, and the served models fail on them
+
+PLAN-v5 step 0 (2026-10-05/06). The scrape brought 70,467 M-C replays from 2026-09-19 to
+2026-10-05 (`scripts/scrape_replays.py`). Bo3 was the same population as the cache
+(`scripts/analysis/fresh_corpus.py`, `data/analysis/reg_mc/fresh_corpus.json`: forfeits 37% against
+40%, both sheets legal 99.8%, every sampled replay parses, species shares a total-variation distance
+of 0.13 away). Bo1 was not. Accounts playing 65–368 games a day had arrived after 2026-09-20 and
+were in about 40% of its new games, and the bot pattern caught only one of them.
+`scripts/analysis/automated_accounts.py` lists 13 accounts: at least 100 games, more than 60 a day
+over their active span. That is twice the busiest person in the cache before the surge.
+`extract_human` now leaves their games out of every split: 17,334 Bo1 and 489 Bo3. Training never
+dropped bots before; only the analyses did.
+
+**The dataset.** `wp-v1g` uses `wp-v1f`'s recipe on the new corpus: the same self-play run, human
+validation at 20% of groups, and the same featurizer (3) and vocabulary.
+
+| | wp-v1f | wp-v1g |
+| --- | --- | --- |
+| human training battles | 12,682 | 50,613 |
+| training rows | 869,377 | 2,115,999 |
+| validation rows | 122,206 | 430,990 |
+| held-out rows, open / closed sheets | 47,617 / 43,271 | 147,122 / 220,115 |
+
+**The models.** Five seeds of `idp5` (d 64, 2 layers, identity dropout 0.5 on every row, human
+weight 4) were trained on a Kaggle CPU session, about 40 minutes each. The GPU was never granted;
+see `kaggle_sweep.sh`. Each stopped at epoch 2 or 3, as before. They are `wp-v1g-idp5` (seed 0)
+and `-s1`…`-s4`, read together as `wp-v1g-ens5`, each calibrated on `wp-v1g`'s validation. The
+fitted temperatures were near 1 (0.95–1.16 on human rows), against `wp-v1f`'s 1.27 at turn 0.
+
+**Scored on wp-v1g's held-out games, all four on the same rows** (`scripts/analysis/wp_compare.py`,
+`data/analysis/reg_mc/wp_compare_wp-v1g.json`). Every gate is computed as `vgc wp eval` computes it,
+but without writing to the served models' cards.
+
+| | wp-v1f-idp5 | wp-v1f-ens5 | wp-v1g-idp5 | **wp-v1g-ens5** |
+| --- | --- | --- | --- | --- |
+| open spectator log loss / ECE | 0.5543 / 0.013 | 0.5500 / 0.017 | 0.5319 / 0.009 | **0.5264 / 0.008** |
+| closed spectator log loss / ECE | 0.5824 / 0.020 | 0.5766 / 0.026 | 0.5566 / 0.011 | **0.5522 / 0.011** |
+| `in_battle_pass` (open) | fail: t7+ | fail: t5-6, t7+ | pass | **pass** |
+| `closed_sheet_pass` | fail: t1-2, t7+ | fail: t1-2, t7+ | pass | **pass** |
+| `player_beats_spectator` | pass | pass | fail | **pass** |
+| `all_pass` | fail | fail | fail | **pass** |
+
+Paired against `wp-v1f-idp5`, spectator rows from turn 1 on, resampling battles:
+
+| | open: all (14,301 battles) | open: before the edge / after | closed: all (5,870) | closed: before / after |
+| --- | --- | --- | --- | --- |
+| wp-v1f-ens5 | −0.005 [−0.007, −0.003] | −0.005 / −0.004 | −0.007 [−0.010, −0.003] | −0.012 / −0.005 |
+| wp-v1g-idp5 | −0.024 [−0.028, −0.021] | −0.021 / −0.026 | −0.028 [−0.035, −0.022] | −0.022 / −0.031 |
+| **wp-v1g-ens5** | **−0.030** [−0.033, −0.027] | −0.028 / −0.031 | **−0.033** [−0.040, −0.027] | −0.026 / −0.036 |
+
+- **More human games is worth 0.03 nats in both regimes.** Phase 4 bought 0.0035 at preview by
+  quadrupling the corpus; in battle, quadrupling buys ten times that.
+- **The gain is not only the new meta.** On held-out games from before 2026-09-20, the ones the
+  served models were gated on, the new ensemble is better by 0.028 (open) and 0.026 (closed).
+- **The served models fail their calibration gate here.** These held-out sets are three to five
+  times larger, and the test has more power on them. On closed sheets the served model's log loss
+  is 0.582 against its card's 0.567. The new Bo1 games are a different ladder from the one it was
+  calibrated on.
+- **The ensemble's own card** (`vgc wp eval`, the constant as the only baseline): every gate passes.
+  The bring head's top-4 overlap is 0.702 against usage's 0.688, and the preview head beats the
+  constant by [−0.0103, −0.0071].
+
+**Not pinned yet.** Things fitted or gated against the served number:
+- the policy-value stack (`vgc.web.solving.POLICY_STACK`, fitted with `wp-v1f-idp5`'s logit; the
+  page falls back to the model alone when the pin changes);
+- the engine's per-kind lead over the model (`solver_vs_humans.py`, principle 11);
+- the endgames index.
+
+The live answer costs five models, not one, as `wp-v1f-ens5` already does on closed sheets (0.8 s).

@@ -1,0 +1,111 @@
+{
+ "version": "wp-v1g-idp5-s2",
+ "kind": "set",
+ "regulation": "reg_mc",
+ "created": "2026-10-05T22:40:59",
+ "perspectives": [
+  "spectator",
+  "player"
+ ],
+ "info_regime": "ots",
+ "dataset": {
+  "name": "wp-v1g",
+  "regulation": "reg_mc",
+  "manifest": "data/snapshots/reg_mc/manifests/wp-v1g-train.json",
+  "manifest_battles": 88480,
+  "eval_manifest": "data/snapshots/reg_mc/manifests/wp-v1g-eval.json",
+  "eval_cache": {
+   "human_ots": {
+    "key": "ca391e4de841fdbf",
+    "cached": false
+   },
+   "human_ots_team": {
+    "key": "7f715f577f0b59ff",
+    "cached": false
+   },
+   "human_closed": {
+    "key": "1f5fffbd4b37c869",
+    "cached": false
+   },
+   "human_closed_team": {
+    "key": "972f64b2f6314746",
+    "cached": false
+   },
+   "selfplay_battle": {
+    "key": "d7ad426d1dc2401f",
+    "cached": false
+   },
+   "selfplay_team": {
+    "key": "e0622cad19aa21b1",
+    "cached": false
+   }
+  },
+  "featurizer_version": 3,
+  "n_num": 166,
+  "n_glob": 44,
+  "rows": {
+   "train": 2115999,
+   "val": 430990,
+   "eval_human_ots": 147122,
+   "eval_human_ots_team": 458116,
+   "eval_human_closed": 220115,
+   "eval_human_closed_team": 19247,
+   "eval_selfplay_battle": 168790,
+   "eval_selfplay_team": 713376
+  },
+  "val_rate": {
+   "human": 0.2,
+   "selfplay": 0.05
+  },
+  "seconds": 1544.9
+ },
+ "training_manifest": {
+  "path": "data/snapshots/reg_mc/manifests/wp-v1g-train.json",
+  "sha256": "5a2d7231f56faec166795622578283c5c367a4f7146aab0dff974be7e56daf23"
+ },
+ "training_data": {
+  "files": [
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmc/train.jsonl.gz",
+   "data/snapshots/reg_mc/human/gen9championsvgc2026regmcbo3/train.jsonl.gz",
+   "data/snapshots/reg_mc/selfplay/gen-heuristic-heuristic-s7-p3000x20/train.jsonl.gz"
+  ],
+  "battles_by_source": {
+   "selfplay": 38145,
+   "human": 50335
+  }
+ },
+ "git": {
+  "sha": "6946713855fb4b65368a2021f7c3d2082e4d84d5",
+  "dirty": true
+ },
+ "training": {
+  "hyperparams": {
+   "d": 64,
+   "layers": 2,
+   "heads": 4,
+   "dropout": 0.3,
+   "epochs": 12,
+   "bs": 2048,
+   "lr": 0.0003,
+   "bring_weight": 0.3,
+   "seed": 2,
+   "weight_decay": 0.05,
+   "id_dropout": 0.5,
+   "id_dropout_preview": 0.5,
+   "preview_wp_weight": 1.0,
+   "human_weight": 4.0
+  },
+  "best_epoch": 2,
+  "val_wp_logloss": 0.56578,
+  "selection_metric": 0.56595,
+  "selected_on": "human",
+  "temperature": 1.1366,
+  "val_wp_logloss_calibrated": 0.56436,
+  "val_wp_logloss_human": 0.56595,
+  "parameters": 154898,
+  "torch": "2.11.0+cpu",
+  "device": "cpu",
+  "train_rows": 2115999,
+  "val_rows": 430990
+ }
+}

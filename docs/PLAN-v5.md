@@ -22,11 +22,11 @@ inside steps 3 and 4.
 | Battle state (L1b) | ✅ One state object, two adapters: Showdown logs (`Observer`) and a person's taps (`battle.entry`) |
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound in both regimes (closed sheets: 0.12% and 0.21% silently wrong, by the union over what the set belief allows) but run offline only; the live page runs the Speed channel |
-| In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1f-ens5` closed. Both pass their regime's powered calibration test. Neither follows what decides an endgame |
+| In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1f-ens5` closed. 🟡 Both **fail** their calibration gate on `wp-v1g`'s larger held-out sets. `wp-v1g-ens5` (trained on four times the human games) passes every gate and is better by 0.030 nats open and 0.033 closed: built, not pinned (step 0). Neither follows what decides an endgame |
 | Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
 | Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against the model's 0.513 (674 games), median 2.8 s through the page's own path. 🟡 Closed sheets: the model leads |
 | Battle policy (Phase 9) | ✅ EWP over pruned joint choices, opponents weighted as people play (`vgc.policy.ewp`, the people reading). Beats the heuristic 0.678 and a held-out opponent 0.692, median 0.74 s a decision on one core; picks a human's exact choice 11.5% of the time. Not on the page |
-| Human corpus | 🟡 33,062 replays: M-B 15,000, M-C 18,062. M-C stops at **2026-09-20**, while the ladder now makes roughly 1,500–4,800 Bo1 and 600–1,800 Bo3 a day. Scrape running (step 0) |
+| Human corpus | ✅ 103,529 replays: M-B 15,000, M-C 88,729, scraped to 2026-10-05 (step 0). 13 automated accounts' games (17,823) are left out of training. Weekly scrapes with `scripts/scrape_replays.py` |
 | Pre-battle (preview) win probability | 🟡 Learnable but too small to show: the preview head passes Phase 6's own check (AUC 0.562, recalibrated −0.0066), worth about 0.007 nats. Preview advice is "what to bring", not "you are favoured" |
 | Simulator as a measure of team strength | 🟡 With the bot's brings, twice no (AUC 0.512, 0.514). **With the humans' own brings, it passes** (0.590 [0.562, 0.620], recalibrated −0.011) and adds 0.02 nats to the preview head and to the WP model at turn 1 on held-out games (step 1). Whether that is the simulator or the players' choice of four is step 3d's question |
 | Web app | 🟡 Library, brings ranking, and the live Battle page in open, closed and Watching modes, with the engine leading in endgames where it passed. Deployed at [vgc-live-battle-calculator.fly.dev](https://vgc-live-battle-calculator.fly.dev) behind a password. No move advice above two a side. An MCP server over the same API (`python -m vgc.mcp`) lets an agent drive it |
@@ -182,10 +182,24 @@ The edges are 2026-09-20 23:35:48 (Bo1) and 22:49:32 (Bo3).
     the leaf (3a), the people model (3e), the WP model, and the closed-sheet set prior (more open
     sheets).
   - **Not a fix for preview WP.** That needs orders of magnitude more data (phase4-findings §1).
-- **Before use:**
-  - check the new games against the corpus population: ratings, forfeits, bots (practice 2);
-  - decide whether they join `data/replays/` or stay separate as the fresh shard;
-  - tag the snapshots with the scrape date.
+- ~~**Before use.**~~ **Done 2026-10-05** (`scripts/analysis/fresh_corpus.py`).
+  - **Bo3 is the same population.** Bo1 is not: accounts playing 65–368 games a day had arrived
+    after 2026-09-20 and were in about 40% of its new games.
+    `scripts/analysis/automated_accounts.py` lists 13 of them, and `extract_human` leaves their
+    games out of every split.
+  - **The games joined `data/replays/`.** The fresh shard is a filter on upload time against each
+    format's edge, recorded in `fresh_corpus.json`, not a separate folder.
+- **New models: `wp-v1g`, done 2026-10-06** ([phase8-findings](phase8-findings.md), "wp-v1g").
+  - **Built:** the same recipe on 50,613 human training battles instead of 12,682. Five seeds
+    trained on a Kaggle CPU session, read as `wp-v1g-ens5`.
+  - **On `wp-v1g`'s held-out games** (`scripts/analysis/wp_compare.py`, all four models on the
+    same rows), against the served open-sheet model: **−0.030** [−0.033, −0.027] nats on open
+    sheets and **−0.033** [−0.040, −0.027] on closed. It is better on games before the edge as well
+    as after. `wp-v1g-ens5` passes every gate, and both served models fail their calibration gate
+    there.
+  - **Pinning it is a separate decision.** It switches off the page's policy-value stack until
+    `policy_value.py` is refitted on the new model, it needs the engine's per-kind lead re-measured
+    (principle 11), and it needs the endgames index rebuilt.
 
 ### 1. Close out Phase 6: the brings run, and the ceiling
 

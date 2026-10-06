@@ -1,0 +1,72 @@
+{
+ "hyperparams": {
+  "d": 64,
+  "layers": 2,
+  "heads": 4,
+  "dropout": 0.3,
+  "epochs": 12,
+  "bs": 2048,
+  "lr": 0.0003,
+  "bring_weight": 0.3,
+  "seed": 3,
+  "weight_decay": 0.05,
+  "id_dropout": 0.5,
+  "id_dropout_preview": 0.5,
+  "preview_wp_weight": 1.0,
+  "human_weight": 4.0
+ },
+ "best_epoch": 3,
+ "val_wp_logloss": 0.56391,
+ "selection_metric": 0.56465,
+ "selected_on": "human",
+ "temperature": 1.2809,
+ "val_wp_logloss_calibrated": 0.55837,
+ "val_wp_logloss_human": 0.56465,
+ "history": [
+  {
+   "epoch": 1,
+   "train_wp_logloss": 0.62319,
+   "val_wp_logloss": 0.59216,
+   "val_wp_logloss_human": 0.59285,
+   "selected_on": 0.59285,
+   "seconds": 518.1
+  },
+  {
+   "epoch": 2,
+   "train_wp_logloss": 0.57779,
+   "val_wp_logloss": 0.56787,
+   "val_wp_logloss_human": 0.56842,
+   "selected_on": 0.56842,
+   "seconds": 1032.1
+  },
+  {
+   "epoch": 3,
+   "train_wp_logloss": 0.55048,
+   "val_wp_logloss": 0.56391,
+   "val_wp_logloss_human": 0.56465,
+   "selected_on": 0.56465,
+   "seconds": 1548.6
+  },
+  {
+   "epoch": 4,
+   "train_wp_logloss": 0.53663,
+   "val_wp_logloss": 0.57511,
+   "val_wp_logloss_human": 0.57678,
+   "selected_on": 0.57678,
+   "seconds": 2063.5
+  },
+  {
+   "epoch": 5,
+   "train_wp_logloss": 0.52567,
+   "val_wp_logloss": 0.57619,
+   "val_wp_logloss_human": 0.57802,
+   "selected_on": 0.57802,
+   "seconds": 2595.9
+  }
+ ],
+ "parameters": 154898,
+ "torch": "2.11.0+cpu",
+ "device": "cpu",
+ "train_rows": 2115999,
+ "val_rows": 430990
+}
