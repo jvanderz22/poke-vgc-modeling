@@ -19,8 +19,9 @@ and the calibrated damage race (`QUICK`); then the one-turn search (`LIVE`), eac
 replacing its quick one if it finishes before the deadline. Only the heaviest `TOP_ORDERS` move
 orders are solved, and the weight of the rest is reported as unsolved. Open sheets only: on 674
 held-out open-sheet games the search predicted who won better than the model did (log loss 0.384
-against 0.513); on 349 closed-sheet games it was not distinguishable in any state kind, so there
-the model leads (PLAN-endgame-doubles, stage 3).
+against 0.474 for `wp-v1g-ens5`, and in each of 2v2, 2v1 and 1v2); on 349 closed-sheet games it was
+better on Brier only (log loss −0.038 [−0.111, 0.043]), and no state kind but 2v1 on both, so
+there the model leads (PLAN-endgame-doubles, stage 3; `solver_vs_humans --remodel`, 2026-10-06).
 
 Above two a side, from a player's seat on open sheets and once a Pokémon has fainted, the number
 that leads is the WP model and the policy's value of the position combined (`PolicySolve`,
@@ -81,11 +82,13 @@ DOUBLES_ASSUMPTIONS = [
 GUESSES = (("assumed", "attacking stat first"), ("hp_first", "HP first"), ("defences", "defences first"))
 # The WP model and the policy's value of the position, stacked: logit p = intercept + wp·logit(the
 # model's number from your seat) + value·logit(the policy's EWP of its own choice). Fitted on the WP
-# model's validation games (10,985 positions); after the first faint it beat the model alone on
-# held-out games, −0.029 [−0.046, −0.012], and on 939 games no fit had seen, −0.040 [−0.052, −0.028]
-# (`scripts/analysis/policy_value.py --seat`, phase9-findings). Fitted against one model: when the
-# served open-sheet model changes, refit, or the page goes back to the model alone.
-POLICY_STACK = {"wp_model": "wp-v1f-idp5", "intercept": -0.1654, "wp": 0.4822, "value": 0.5225}
+# model's validation games (10,985 positions). Refitted for `wp-v1g-ens5` (2026-10-06): after the
+# first faint it beat that model alone on held-out games, −0.014 [−0.024, −0.003], and on the 939
+# games of the confirm run, −0.022 [−0.031, −0.014] (`scripts/analysis/policy_value.py --seat`,
+# `policy_value_seat_wp-v1g-ens5.json`; with `wp-v1f-idp5` it was −0.029 and −0.040, against a
+# weaker model). Fitted against one model: when the served open-sheet model changes, refit, or the
+# page goes back to the model alone.
+POLICY_STACK = {"wp_model": "wp-v1g-ens5", "intercept": -0.0221, "wp": 0.693, "value": 0.3788}
 POLICY_ASSUMPTIONS = [
     "The policy plays one turn: both sides' likely choices, theirs weighted by how people choose, "
     "chance sampled, and what is left after the turn valued by a damage race with the back.",

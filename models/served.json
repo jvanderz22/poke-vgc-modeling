@@ -1,13 +1,13 @@
 {
  "reg_mc": {
-  "decided": "2026-10-04",
-  "bring": "wp-v1f-idp5",
-  "in_battle_open": "wp-v1f-idp5",
-  "in_battle_closed": "wp-v1f-ens5",
+  "decided": "2026-10-06",
+  "bring": "wp-v1g-ens5",
+  "in_battle_open": "wp-v1g-ens5",
+  "in_battle_closed": "wp-v1g-ens5",
   "why": {
-   "bring": "Passes bring_beats_usage (top-4 overlap 0.702 vs usage 0.672) and is the first model whose preview interval clears zero by more than a rounding error ([-0.0107, -0.0036]). wp-v1d: 0.688, [-0.0092, -0.0003].",
-   "in_battle_open": "Passes in_battle_ece under the powered test (4,127 battles, power 1.0 at 1.5x), fixing the early-turn miss: t1-2 ECE 0.019 vs wp-v1d's 0.024. Passes t7+ by 0.0001. Open log loss 0.5528 vs 0.5523. Calibrated on 20% of human groups.",
-   "in_battle_closed": "Passes closed_sheet_pass and scores 0.008 nats better on closed-sheet spectator rows than wp-v1d-sw-split-small (0.5557 vs 0.5633) and 0.013 better on player rows (0.5783 vs 0.5910), with lower closed ECE (0.010 vs 0.017). Five seeds of wp-v1f-idp5 read as one (mean raw logits, own temperatures). Not pinned for open sheets: it misses in_battle_ece at t7+ by 0.001 (2026-10-04)."
+   "bring": "Passes every gate on wp-v1g's held-out games (three to five times the rows wp-v1f was gated on): bring_beats_usage, top-4 overlap 0.702 vs usage 0.688; preview_beats_constant [-0.0103, -0.0071]. Trained on 50,613 human battles (wp-v1f: 12,682), automated accounts left out.",
+   "in_battle_open": "Passes in_battle_ece under the powered test on wp-v1g's held-out games (14,301 battles, power 1.0), where wp-v1f-idp5 now fails at t7+. Open spectator log loss 0.5264 vs wp-v1f-idp5's 0.5543 on the same rows: -0.030 [-0.033, -0.027] from turn 1, on games before the 2026-09-20 edge (-0.028) as well as after (-0.031). Five seeds of idp5, own temperatures, ~0.8 s a live answer. scripts/analysis/wp_compare.py.",
+   "in_battle_closed": "Passes closed_sheet_pass on wp-v1g's held-out games (5,870 battles), where wp-v1f-ens5 now fails at t1-2 and t7+. Closed spectator log loss 0.5522 vs wp-v1f-ens5's 0.5766: -0.033 [-0.040, -0.027] against wp-v1f-idp5 from turn 1. The Bo1 ladder changed after 2026-09-20 and the old pin's calibration did not hold on it."
   }
  }
 }

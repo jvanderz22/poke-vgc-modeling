@@ -2295,10 +2295,29 @@ Paired against `wp-v1f-idp5`, spectator rows from turn 1 on, resampling battles:
   The bring head's top-4 overlap is 0.702 against usage's 0.688, and the preview head beats the
   constant by [−0.0103, −0.0071].
 
-**Not pinned yet.** Things fitted or gated against the served number:
-- the policy-value stack (`vgc.web.solving.POLICY_STACK`, fitted with `wp-v1f-idp5`'s logit; the
-  page falls back to the model alone when the pin changes);
-- the engine's per-kind lead over the model (`solver_vs_humans.py`, principle 11);
-- the endgames index.
+**Pinned 2026-10-06** for all three roles (`models/served.json`). Three things were fitted or gated
+against the served number, and each was redone against the new one:
+- **The policy-value stack** (`vgc.web.solving.POLICY_STACK`), refitted with `wp-v1g-ens5`'s logit
+  (`scripts/analysis/policy_value.py --seat`, `policy_value_seat_wp-v1g-ens5.json`). After the first
+  faint it still beats the model alone: −0.014 [−0.024, −0.003] on held-out games and −0.022
+  [−0.031, −0.014] on the confirm run's 939 games. Half the margin it had over `wp-v1f-idp5`
+  (−0.029, −0.040): the better model already carries some of what the policy added. The weight on
+  the model rose from 0.48 to 0.69.
+- **The engine's lead over the model** (principle 11), re-scored on the same solved positions with
+  `solver_vs_humans.py --remodel` (the engine's numbers are unchanged; only the model's are new):
+
+  | Where | Games | Engine | Model before | Model now | Engine − model now | Verdict |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | 1v1, open | 192 | 0.364 | 0.601 (`wp-v1f-idp5`) | 0.555 | −0.191 [−0.319, −0.038] | engine leads |
+  | 1v1, closed | 86 | 0.345 | 0.649 (`wp-v1d-sw-split-small`) | 0.610 | −0.265 [−0.379, −0.146] | engine leads |
+  | 2v2 / 2v1 / 1v2, open | 674 | 0.384 | 0.513 | 0.474 | −0.091 [−0.122, −0.058], and in each kind | engine leads |
+  | 2v2 / 2v1 / 1v2, closed | 349 | 0.474 | 0.540 | 0.512 | −0.038 [−0.111, 0.043]; Brier only | model leads |
+
+  No verdict changes. Every margin narrows, by the model's own improvement. Closed doubles is
+  better on Brier only (−0.026 [−0.050, −0.001]), as before, and of its state kinds only 2v1 is
+  better on both (−0.169 log loss), as before. The page has led closed doubles with the model on
+  that evidence, and still does.
+- **The endgames index**, rebuilt with `make endgames`: 1,445 games where the favoured side was at
+  90% or more, from 5,113 held-out human open-sheet games; it went on to win 1,442 (99.8%).
 
 The live answer costs five models, not one, as `wp-v1f-ens5` already does on closed sheets (0.8 s).

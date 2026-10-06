@@ -22,9 +22,9 @@ inside steps 3 and 4.
 | Battle state (L1b) | ✅ One state object, two adapters: Showdown logs (`Observer`) and a person's taps (`battle.entry`) |
 | Deterministic team tools | ✅ `vgc team weakness` (breakpoints in Stat Points), `vgc meta usage` |
 | Belief over hidden sets | ✅ Speed (reads the item), switch-in order, damage, bulk, SP budget, set prior. Damage and bulk are sound in both regimes (closed sheets: 0.12% and 0.21% silently wrong, by the union over what the set belief allows) but run offline only; the live page runs the Speed channel |
-| In-battle win probability | ✅ Pinned per regime: `wp-v1f-idp5` open, `wp-v1f-ens5` closed. 🟡 Both **fail** their calibration gate on `wp-v1g`'s larger held-out sets. `wp-v1g-ens5` (trained on four times the human games) passes every gate and is better by 0.030 nats open and 0.033 closed: built, not pinned (step 0). Neither follows what decides an endgame |
-| Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes: open Brier 0.095 against 0.206, closed log loss 0.345 against 0.649 |
-| Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against the model's 0.513 (674 games), median 2.8 s through the page's own path. 🟡 Closed sheets: the model leads |
+| In-battle win probability | ✅ `wp-v1g-ens5` pinned in both regimes (2026-10-06): trained on four times the human games, passes every gate, and beats the previous pins by 0.030 nats open and 0.033 closed on the same held-out games, where both previous pins fail their calibration gate (step 0). It does not follow what decides an endgame |
+| Endgame engine, 1v1 | ✅ Depth 3 on real games. Leads the page in both regimes against `wp-v1g-ens5`: open Brier 0.095 against 0.188, closed log loss 0.345 against 0.610 |
+| Endgame engine, 2v1 / 1v2 / 2v2 | ✅ Open sheets: leads the page, log loss 0.384 against `wp-v1g-ens5`'s 0.474 (674 games), median 2.8 s through the page's own path. 🟡 Closed sheets: the model leads |
 | Battle policy (Phase 9) | ✅ EWP over pruned joint choices, opponents weighted as people play (`vgc.policy.ewp`, the people reading). Beats the heuristic 0.678 and a held-out opponent 0.692, median 0.74 s a decision on one core; picks a human's exact choice 11.5% of the time. Not on the page |
 | Human corpus | ✅ 103,529 replays: M-B 15,000, M-C 88,729, scraped to 2026-10-05 (step 0). 13 automated accounts' games (17,823) are left out of training. Weekly scrapes with `scripts/scrape_replays.py` |
 | Pre-battle (preview) win probability | 🟡 Learnable but too small to show: the preview head passes Phase 6's own check (AUC 0.562, recalibrated −0.0066), worth about 0.007 nats. Preview advice is "what to bring", not "you are favoured" |
@@ -99,9 +99,11 @@ solver behaviour goes behind an opt-in `setup` or `search` key, so cached answer
 
 | Role | Model | Status |
 | --- | --- | --- |
-| `bring` | `wp-v1f-idp5` | Top-4 overlap 0.702 vs usage 0.672 |
-| `in_battle_open` | `wp-v1f-idp5` | Passes `in_battle_ece` (4,127 battles, power 1.0); t7+ passes by 0.0001 |
-| `in_battle_closed` | `wp-v1f-ens5` | Passes `closed_sheet_pass`; closed log loss 0.5557 against the previous pin's 0.5633. Five seeds of `wp-v1f-idp5` read as one; 0.8 s a live answer |
+| `bring` | `wp-v1g-ens5` | Top-4 overlap 0.702 vs usage 0.688; preview beats the constant by [−0.0103, −0.0071] |
+| `in_battle_open` | `wp-v1g-ens5` | Passes `in_battle_ece` (14,301 battles, power 1.0), where `wp-v1f-idp5` now fails at t7+. Open log loss −0.030 [−0.033, −0.027] against it on the same rows |
+| `in_battle_closed` | `wp-v1g-ens5` | Passes `closed_sheet_pass` (5,870 battles), where `wp-v1f-ens5` now fails. Closed log loss −0.033 [−0.040, −0.027]. Five seeds of `idp5` read as one; 0.8 s a live answer |
+
+Pinned 2026-10-06. The previous pins (`wp-v1f-idp5`, `wp-v1f-ens5`) stay registered.
 
 The endgame engine is not a registered model. Where it leads is decided per state kind and regime
 in `vgc.web.solving` (`doubles_reason`). Its doubles horizon (`MELEE_BLEND_BOOSTS` in the solver)
@@ -197,9 +199,14 @@ The edges are 2026-09-20 23:35:48 (Bo1) and 22:49:32 (Bo3).
     sheets and **−0.033** [−0.040, −0.027] on closed. It is better on games before the edge as well
     as after. `wp-v1g-ens5` passes every gate, and both served models fail their calibration gate
     there.
-  - **Pinning it is a separate decision.** It switches off the page's policy-value stack until
-    `policy_value.py` is refitted on the new model, it needs the engine's per-kind lead re-measured
-    (principle 11), and it needs the endgames index rebuilt.
+  - **Pinned 2026-10-06 for all three roles**, with what was fitted against the old pin redone:
+    - the policy-value stack, refitted: still better than the model alone after the first faint,
+      −0.014 [−0.024, −0.003] held out and −0.022 [−0.031, −0.014] on the confirm run;
+    - the engine's lead (principle 11), re-scored on the same solved positions
+      (`solver_vs_humans.py --remodel`). No verdict changes, though every margin narrows: 1v1 open
+      −0.191 and closed −0.265; doubles open −0.091 and in each kind; doubles closed still Brier
+      only, so the model keeps it;
+    - the endgames index, rebuilt: 1,445 games, the favoured side won 1,442.
 
 ### 1. Close out Phase 6: the brings run, and the ceiling
 

@@ -18,6 +18,8 @@ either way. That is the point of running it.
 
     .venv/bin/python scripts/analysis/solver_vs_humans.py --workers 6 --cap 180 --depths 2,3
     .venv/bin/python scripts/analysis/solver_vs_humans.py --score-only
+    .venv/bin/python scripts/analysis/solver_vs_humans.py --remodel <saved.json> --tag <version> ...
+                                                     # the same games and answers, the served model
     .venv/bin/python scripts/analysis/solver_vs_humans.py --sheets closed ...   # the same, on closed sheets
 
 `--endgame doubles` asks the same of the first turn where neither side has more than two Pokémon
@@ -139,6 +141,26 @@ def collect(reg, version: str, sheets: str = "open", endgame_kind: str = "1v1",
                              for j in plan["jobs"]] for d in depths},
             })
     return rows, counts | {"dropped": dropped}
+
+
+def remodel(reg, rows: list[dict[str, Any]], version: str, endgame_kind: str) -> dict[str, int]:
+    """Each saved game's model number again, from its own replay at the same turn, with `version`.
+    The engine's answers are kept as solved: when the served model changes, what the page leads with
+    is decided again on the same games without solving anything (principle 11)."""
+    from vgc.meta import pool, replays
+    from vgc.web.live import wp
+
+    adapter = doubles if endgame_kind == "doubles" else endgame
+    want = {r["id"] for r in rows}
+    reps = {r["id"]: r for fmt in pool.formats_for(reg) for r in replays.cached(fmt) if r["id"] in want}
+    moved = 0
+    for r in rows:
+        state = adapter.from_replay(reg, reps[r["id"]]).rp.state
+        assert state.turn == r["turn"], (r["id"], state.turn, r["turn"])
+        r["model_before"] = r["model"]
+        r["model"] = round(wp(reg, state, version, k=4)["wp"], 4)
+        moved += r["model"] != r["model_before"]
+    return {"games": len(rows), "model_changed": moved}
 
 
 def run_capped(pos: dict[str, Any], cap: float) -> dict[str, Any] | None:
@@ -269,6 +291,8 @@ def main() -> None:
     ap.add_argument("--cap", type=float, default=180, help="seconds a position may take")
     ap.add_argument("--depths", default="2", help="depths to solve, comma-separated (of 2,3)")
     ap.add_argument("--score-only", action="store_true", help="re-score the saved rows")
+    ap.add_argument("--remodel", metavar="SAVED", help="a saved run's games and engine answers, the model's "
+                    "number recomputed with the served model; use --tag to name the output")
     ap.add_argument("--export", metavar="JOBS", help="write the uncached positions to solve elsewhere, and stop")
     ap.add_argument("--sheets", choices=("open", "closed"), default="open",
                     help="the regime: open-sheet games, or closed-sheet games with both sides' sets from the belief")
@@ -303,9 +327,18 @@ def main() -> None:
         positions = [j["position"] for d in depths for r in rows for j in r["jobs"][d]]
         print(json.dumps({"games": counts["games"], **offload.export(positions, Path(args.export))}))
         return
-    if args.score_only:
-        blob = json.loads(out_path.read_text())
+    if args.score_only or args.remodel:
+        from pathlib import Path
+
+        blob = json.loads((Path(args.remodel) if args.remodel else out_path).read_text())
         rows, counts = blob["rows"], blob["counts"]
+        if args.remodel:
+            from vgc.wp.models import in_battle_version
+
+            version = in_battle_version(reg.id, args.sheets)
+            counts = counts | {"version_before": counts.get("version"), "version": version,
+                               "remodelled_from": Path(args.remodel).name,
+                               **remodel(reg, rows, version, args.endgame)}
     else:
         from vgc.wp.models import in_battle_version
 

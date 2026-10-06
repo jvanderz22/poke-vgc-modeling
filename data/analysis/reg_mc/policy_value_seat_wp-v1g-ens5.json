@@ -1,0 +1,174 @@
+{
+ "positions_with_a_seat_record": "21940 of 21940",
+ "stack": {
+  "intercept": -0.0221,
+  "wp": 0.693,
+  "value": 0.3788,
+  "fitted_on": {
+   "positions": 10985,
+   "groups": 792
+  }
+ },
+ "first_heldout": {
+  "after_first_faint": {
+   "positions": 2722,
+   "groups": 482,
+   "delta": -0.01356,
+   "ci95": [
+    -0.02399,
+    -0.00309
+   ],
+   "verdict": "combined better",
+   "model_logloss": 0.5525
+  },
+  "4v4": {
+   "positions": 2344,
+   "groups": 501,
+   "delta": -0.00238,
+   "ci95": [
+    -0.01068,
+    0.00607
+   ],
+   "verdict": "not distinguishable",
+   "model_logloss": 0.6892
+  },
+  "by_kind": {
+   "3v1": {
+    "positions": 89,
+    "groups": 54,
+    "delta": -0.00161,
+    "ci95": [
+     -0.00819,
+     0.00628
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.128
+   },
+   "3v2": {
+    "positions": 683,
+    "groups": 292,
+    "delta": -0.01845,
+    "ci95": [
+     -0.04241,
+     0.00756
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.5323
+   },
+   "3v3": {
+    "positions": 656,
+    "groups": 257,
+    "delta": -0.01047,
+    "ci95": [
+     -0.02896,
+     0.00764
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.6658
+   },
+   "4v2": {
+    "positions": 258,
+    "groups": 138,
+    "delta": -0.01511,
+    "ci95": [
+     -0.03275,
+     0.00343
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.4272
+   },
+   "4v3": {
+    "positions": 1004,
+    "groups": 352,
+    "delta": -0.01311,
+    "ci95": [
+     -0.02594,
+     -0.00033
+    ],
+    "verdict": "combined better",
+    "model_logloss": 0.579
+   }
+  }
+ },
+ "confirm": {
+  "after_first_faint": {
+   "positions": 3221,
+   "groups": 543,
+   "delta": -0.02222,
+   "ci95": [
+    -0.03069,
+    -0.01388
+   ],
+   "verdict": "combined better",
+   "model_logloss": 0.5483
+  },
+  "4v4": {
+   "positions": 2668,
+   "groups": 551,
+   "delta": -0.0095,
+   "ci95": [
+    -0.01773,
+    -0.00121
+   ],
+   "verdict": "combined better",
+   "model_logloss": 0.6754
+  },
+  "by_kind": {
+   "3v1": {
+    "positions": 109,
+    "groups": 65,
+    "delta": -0.00513,
+    "ci95": [
+     -0.02419,
+     0.01621
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.1919
+   },
+   "3v2": {
+    "positions": 747,
+    "groups": 317,
+    "delta": -0.04034,
+    "ci95": [
+     -0.05771,
+     -0.02303
+    ],
+    "verdict": "combined better",
+    "model_logloss": 0.5386
+   },
+   "3v3": {
+    "positions": 752,
+    "groups": 275,
+    "delta": -0.02125,
+    "ci95": [
+     -0.03739,
+     -0.00565
+    ],
+    "verdict": "combined better",
+    "model_logloss": 0.6193
+   },
+   "4v2": {
+    "positions": 329,
+    "groups": 158,
+    "delta": -0.01473,
+    "ci95": [
+     -0.03169,
+     0.00122
+    ],
+    "verdict": "not distinguishable",
+    "model_logloss": 0.3719
+   },
+   "4v3": {
+    "positions": 1249,
+    "groups": 416,
+    "delta": -0.01661,
+    "ci95": [
+     -0.02687,
+     -0.00618
+    ],
+    "verdict": "combined better",
+    "model_logloss": 0.5818
+   }
+  }
+ }
+}
