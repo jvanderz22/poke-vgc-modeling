@@ -215,13 +215,15 @@ families:
     variants:
       A: {sheets: open, locked_into: Rage Fist, expected: 0.0,
           why: "they move first and Rage Fist KOs"}
-      B: {sheets: open, locked_into: Close Combat, expected: 1.0,
+      B: {sheets: open, locked_into: Close Combat, boosts: {def: -1, spd: -1}, expected: 1.0,
           why: "Fighting cannot touch Gholdengo and they cannot switch (last Pokémon); we 2HKO"}
       C: {sheets: open, locked_into: null, expected: 0.0,
           why: "not locked yet (just came in): they choose Rage Fist — same as A"}
     note: >
       The realistic route to B is an endgame where Annihilape locked into Close Combat to KO
-      something else, and Gholdengo is what is left. The pair A/B differs only in move order.
+      something else, and Gholdengo is what is left. Close Combat lowered its Defence and Special
+      Defence on the way, and a Choice Scarf with no switch left keeps them lowered, so B carries
+      the drop. The pair A/B differs in the move locked in and what that move did to its user.
 
   # ---------------------------------------------------------------------------------------------
   - id: F3

@@ -206,9 +206,18 @@ def build(reg: Regulation, spec: dict[str, Any], fid: str, vid: str) -> tuple[di
         if s.get("hp", 100) < 100:
             hp = ({"hp": round(s["hp"] / 100 * our_end["stats"]["hp"])} if sid == "p1" else {"pct": s["hp"]})
             journal.append({"kind": "damage", "side": sid, "slot": slots[sid].index(end[sid])} | hp)
-    for stat, stages in (var.get("boosts") or b.get("boosts") or {}).items():
-        journal.append({"kind": "boost", "side": "p2", "slot": slots["p2"].index(end["p2"]),
-                        "stat": stat, "stages": stages})
+    # The stages are the position's. A move in the journal may already have set some (Close Combat
+    # locked in, F2-B), so only what the moves leave unexplained is entered by hand.
+    want = var.get("boosts") or b.get("boosts") or {}
+    if want:
+        from vgc.battle.entry import Battle
+
+        slot = slots["p2"].index(end["p2"])
+        have = Battle(reg, setup, journal).rp.state.at("p2", slot).boosts
+        for stat, stages in want.items():
+            if stages - have.get(stat, 0):
+                journal.append({"kind": "boost", "side": "p2", "slot": slot, "stat": stat,
+                                "stages": stages - have.get(stat, 0)})
     consumed = var.get("consumed") or b.get("consumed")
     if consumed:
         journal.append({"kind": "consume", "side": "p2", "species": end["p2"], "item": consumed})
