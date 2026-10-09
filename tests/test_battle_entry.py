@@ -542,3 +542,39 @@ def test_a_status_move_lowers_its_target_as_it_is_used(battle):
     q = next(q for q in rp.questions if q.kind == "move_drop")
     assert q.species == "Milotic" and "atk, spa" in q.prompt
     assert any(o.ability == "competitive" for o in q.outcomes)
+
+
+def _garchomp(battle):
+    lead(battle, ("p1", 0, "Garchomp"), ("p1", 1, "Incineroar"), ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    return battle.append({"kind": "turn", "n": 1})
+
+
+def test_life_orb_takes_a_tenth_once_the_move_hits_and_says_so(battle):
+    """Your Garchomp's Life Orb is known: one hit costs a tenth of its HP, rounded down, once for
+    a spread move and not at all for a miss."""
+    rp = _garchomp(battle)
+    full = rp.state.at("p1", 0).hp_max
+    battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Dragon Claw", "target": {"side": "p2", "slot": 1}})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "pct": 60})
+    chomp = rp.state.at("p1", 0)
+    assert round(chomp.hp * chomp.hp_max) == full - full // 10
+    assert rp.applied == {len(battle.journal) - 2: [f"Life Orb: Garchomp on {full - full // 10} HP"]}
+    battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Rock Slide", "spread": True})
+    battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 80})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "pct": 40})
+    assert round(rp.state.at("p1", 0).hp * full) == full - 2 * (full // 10)
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Dragon Claw",
+                        "target": {"side": "p2", "slot": 0}, "result": "miss"})
+    assert round(rp.state.at("p1", 0).hp * full) == full - 2 * (full // 10)
+
+
+def test_a_first_protect_is_up_until_feint_and_a_second_in_a_row_is_not_assumed(battle):
+    rp = _garchomp(battle)
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Protect", "target": None})
+    assert entry.progress(rp, battle.reg)["shielded"] == [{"side": "p2", "slot": 1}]
+    rp = battle.append({"kind": "move", "side": "p1", "slot": 1, "move": "Feint", "target": {"side": "p2", "slot": 1}})
+    assert entry.progress(rp, battle.reg)["shielded"] == []
+    battle.append({"kind": "turn", "n": 2})
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Protect", "target": None})
+    assert entry.progress(rp, battle.reg)["shielded"] == []

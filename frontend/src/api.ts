@@ -248,6 +248,8 @@ export type LiveMon = {
 export type MoveOption = {
   id: string; name: string; target: string | null; category: string | null;
   follows?: string[]; chance?: { label: string; chance: number }[];
+  /** Protect certainly stops it, from this user. */
+  blocked?: boolean;
 };
 
 export type SideMenu = {
@@ -342,6 +344,8 @@ export type TurnProgress = {
   awaiting: { index: number; side: "p1" | "p2"; slot: number; species: string; move: string;
               targets: { side: "p1" | "p2"; slot: number }[] } | null;
   waiting: { side: "p1" | "p2"; slot: number; was: string | null }[];
+  /** Whose Protect is up now: used this turn, not straight after another, and not lifted since. */
+  shielded?: { side: "p1" | "p2"; slot: number }[];
 };
 
 /** Something that could change HP at the end of the turn (`vgc.battle.rules.end_of_turn`), with the
@@ -362,6 +366,10 @@ export type LiveView = {
   menu: Record<"p1" | "p2", SideMenu>;
   questions: Question[];
   derived: string[];
+  /** What each move in the journal does on its own once it hits, and its chance effects, by id. */
+  move_effects?: Record<string, Pick<MoveOption, "follows" | "chance">>;
+  /** What the replay did on its own after a move (Life Orb's recoil), by the move's journal index. */
+  applied?: Record<string, string[]>;
   turn_progress?: TurnProgress;
   end_of_turn?: EndOfTurn[];
   errors: string[];

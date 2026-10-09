@@ -96,7 +96,10 @@ export function BattleSession({ reg, route, navigate, teams }: {
             {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
           </span>
         </div>
-        <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
+        <div className="row">
+          {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} />}
+          <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
+        </div>
       </div>
 
       {/* The row where you work: the stepper where the eye lands first, and beside it the number
@@ -378,26 +381,48 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
 function YourFour({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
   const me = view.perspective as Side;
   const mons = view.sides[me].mons;
-  // Whoever has already been on the field was brought.
-  const [pick, setPick] = useState<string[]>(() => mons.filter((m) => m.state !== "unrevealed").map((m) => m.species));
+  // Whoever has already been on the field was brought: the leads first, left then right.
+  const [pick, setPick] = useState<string[]>(() => mons.filter((m) => m.state !== "unrevealed")
+    .sort((a, b) => Number(a.state !== "active") - Number(b.state !== "active") || (a.slot ?? 2) - (b.slot ?? 2))
+    .map((m) => m.species));
   const toggle = (sp: string) => setPick(pick.includes(sp) ? pick.filter((x) => x !== sp) : [...pick, sp]);
+  // Before turn 1 the first two selected are the leads, left then right, so the leads question
+  // only has their side left to ask. Lead order is not Speed evidence, so nothing is lost by it.
+  const leading = !view.started;
+  const confirm = () => {
+    const entries: Entry[] = [{ kind: "bring", side: me, species: pick }];
+    if (leading) {
+      const on = (slot: number) => mons.find((m) => m.state === "active" && m.slot === slot)?.species;
+      const waiting = pick.slice(0, 2).filter((sp) => sp !== on(0) && sp !== on(1));
+      for (const slot of [0, 1]) {
+        if (!on(slot) && waiting.length) entries.push({ kind: "lead", side: me, slot, species: waiting.shift()! });
+      }
+    }
+    onLog(entries);
+  };
   return (
     <div className="panel">
       <h2>Your four</h2>
       <div className="pad">
-        {mons.map((m) => (
-          <button key={m.species} className="choice check" role="checkbox" aria-checked={pick.includes(m.species)}
-                  disabled={busy || (!pick.includes(m.species) && pick.length >= 4)}
-                  onClick={() => toggle(m.species)}>
-            {m.species}
-          </button>
-        ))}
-        <button className="commit" disabled={busy || pick.length !== 4}
-                onClick={() => onLog([{ kind: "bring", side: me, species: pick }])}>
-          {pick.length === 4 ? "Confirm these four" : `${pick.length} of 4 selected`}
+        {mons.map((m) => {
+          const at = pick.indexOf(m.species);
+          return (
+            <button key={m.species} className="choice check" role="checkbox" aria-checked={at >= 0}
+                    disabled={busy || (at < 0 && pick.length >= 4)}
+                    onClick={() => toggle(m.species)}>
+              {at >= 0 && <span className="order-badge">{at + 1}</span>}
+              {m.species}
+              {leading && at >= 0 && at < 2 && <span className="opt-sub"> leads {at === 0 ? "left" : "right"}</span>}
+            </button>
+          );
+        })}
+        <button className="commit" disabled={busy || pick.length !== 4} onClick={confirm}>
+          {pick.length === 4 ? (leading ? "Confirm these four and the two leads" : "Confirm these four")
+            : `${pick.length} of 4 selected`}
         </button>
       </div>
       <p className="tiny dim" style={{ margin: "8px 2px 0" }}>
+        {leading && <>Select in order: your first two are your leads, left then right. </>}
         Once a Pokémon has fainted, with more than two a side, the number combines the model with the
         policy's one-turn value of the position, which counts the Pokémon in your back.
       </p>
@@ -453,6 +478,27 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
         in the order you saw them.
       </p>
     </div>
+  );
+}
+
+/** Ending the game early, for either side. The other side wins; it is one `end` entry like any
+ *  other, so undo takes it back. */
+function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
+  const names = sideNames(view.perspective);
+  const label: Record<Side, string> = view.perspective === "spectator"
+    ? { p1: "P1 forfeits", p2: "P2 forfeits" } : { p1: "I forfeit", p2: "They forfeit" };
+  const quit = (loser: Side) => {
+    const winner: Side = loser === "p1" ? "p2" : "p1";
+    if (confirm(`${label[loser]}: end the battle with ${names[winner]} as the winner?`)) {
+      onLog([{ kind: "end", winner, by: "forfeit" }]);
+    }
+  };
+  return (
+    <>
+      {(["p1", "p2"] as Side[]).map((s) => (
+        <button key={s} className="danger small-btn" disabled={busy} onClick={() => quit(s)}>{label[s]}</button>
+      ))}
+    </>
   );
 }
 

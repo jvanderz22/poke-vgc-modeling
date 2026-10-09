@@ -19,7 +19,7 @@ const STATUSES: [string, string][] = [
 ];
 const STATS: [string, string][] = [["atk", "Atk"], ["def", "Def"], ["spa", "SpA"], ["spd", "SpD"], ["spe", "Spe"]];
 
-type MoveChoice = Pick<MoveOption, "id" | "name" | "target" | "category"> & Pick<MoveOption, "follows" | "chance">;
+type MoveChoice = Pick<MoveOption, "id" | "name" | "target" | "category"> & Pick<MoveOption, "follows" | "chance" | "blocked">;
 
 /** One answer on screen. Options are numbered left to right for the keyboard, in this order. */
 /** One answer on screen. Its look says what a click does: `next` (the default) acts at once and
@@ -204,7 +204,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     if (a.logged != null) {
       setSkipped((x) => [...x, ...none.map((r) => `${a.logged}:${posKey(r)}`)]);
       if (damage.length) await log(damage);
-      upd({ after: !fast });
       return;
     }
     const single = !a.spread && targets.length === 1 ? targets[0] : null;
@@ -217,8 +216,18 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       ...(a.chanced?.length ? { chance: targets.filter((p) => a.chanced!.includes(posKey(p)))
                                                  .map((p) => ({ side: p.side, slot: p.slot })) } : {}),
     }, ...damage]);
-    upd({ after: !fast });
   };
+
+  /** A target behind a Protect this move cannot get through has its result already: the next
+   *  ones in a row are filled in as protected, so only the targets that could have been hit are asked. */
+  const shielded = (p: Pos) => (view.turn_progress?.shielded ?? []).some((q) => posKey(q) === posKey(p));
+  const fill = (a: Act): Act => {
+    if (!a.move?.blocked || !a.targets) return a;
+    const results = [...a.results];
+    while (results.length < a.targets.length && shielded(a.targets[results.length])) results.push({ result: "protected" });
+    return { ...a, results };
+  };
+  const done = (a: Act) => !!a.targets?.length && a.results.length >= a.targets.length;
 
   const foesOf = (p: Pos) => actives.filter((q) => q.side === other(p.side));
   const allyOf = (p: Pos) => actives.filter((q) => q.side === p.side && q.slot !== p.slot);
@@ -241,14 +250,14 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     } else {
       targets = [];
     }
-    const next: Act = { ...a, move: m, targets, spread, aiming, results: [] };
-    if (targets !== null && (m.category === "Status" || targets.length === 0)) return commit(next, []);
+    const next = fill({ ...a, move: m, targets, spread, aiming, results: [] });
+    if (targets !== null && (m.category === "Status" || targets.length === 0 || done(next))) return commit(next, next.results);
     setAct(next);
   };
 
   const chooseTargets = (a: Act, targets: Pos[], spread: boolean) => {
-    const next = { ...a, targets, spread, aiming: false, results: [] };
-    if (a.move?.category === "Status" || targets.length === 0) return commit(next, []);
+    const next = fill({ ...a, targets, spread, aiming: false, results: [] });
+    if (a.move?.category === "Status" || targets.length === 0 || done(next)) return commit(next, next.results);
     setAct(next);
   };
 
@@ -276,9 +285,9 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   };
 
   const record = (a: Act, r: Outcome) => {
-    const results = [...a.results, r];
-    if (results.length >= (a.targets?.length ?? 0)) return commit(a, results);
-    setAct({ ...a, results, crit: false });
+    const next = fill({ ...a, results: [...a.results, r], crit: false });
+    if (next.results.length >= (a.targets?.length ?? 0)) return commit(a, next.results);
+    setAct(next);
   };
 
   // --- the stages --------------------------------------------------------------------------
@@ -353,7 +362,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
           pick: async () => {
             setAct(null);
             await log([{ kind: "cant", side: a.pos.side, slot: a.pos.slot, reason }]);
-            upd({ after: !fast });
           },
         })),
         back,
@@ -690,9 +698,20 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     };
   }
 
+  /** "Anything else?" is never asked on its own: it is a link under every question, and `a`. */
+  const canAdd = view.started && !view.ended && !t.after && !sub;
+  const addMore = () => upd({ after: true });
+
   function stage(): Stage {
+    const st = stageNow();
+    return canAdd ? { ...st, keys: { a: addMore, ...st.keys } } : st;
+  }
+
+  function stageNow(): Stage {
     if (view.ended) {
-      return { id: "ended", prompt: <>The game is over{view.winner ? `: ${names[view.winner as Side]} won` : ""}.</>, options: [] };
+      const forfeit = view.journal.some((e) => e.kind === "end" && e.by === "forfeit");
+      return { id: "ended", options: [],
+               prompt: <>The game is over{view.winner ? `: ${names[view.winner as Side]} won` : ""}{forfeit ? " by forfeit" : ""}.</> };
     }
     const base = baseStage();
     if (!view.questions.length && !staged.length) return base;
@@ -715,6 +734,8 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     }
 
     if (sub?.kind === "extra") return extraStage(sub);
+    // Opened from anywhere in the turn; confirming it goes back to where you were.
+    if (t.after) return anythingElse();
     if (act) return actStage(act, false);
 
     // A move logged elsewhere (the entry bar, a reload between taps) whose results are still owed.
@@ -728,7 +749,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
         logged: aw.index,
       }, false);
     }
-    if (t.after) return anythingElse();
 
     const lost = loser(view);
     if (lost) {
@@ -1061,6 +1081,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
         {!s.hp && s.body}
         <div className="stage-foot">
           {s.back && <button className="link" onClick={s.back}>← back</button>}
+          {canAdd && <button className="link" onClick={addMore}>anything else happened…</button>}
           <button className="link" onClick={onSomethingElse}>something else…</button>
         </div>
       </div>
@@ -1075,6 +1096,7 @@ function Shortcuts({ popRef }: { popRef: MutableRefObject<HTMLDivElement | null>
     ["digits, ↵", "On an HP question: 45% for theirs, 45 HP for yours"],
     ["k · m · p · n", "KO · Missed · Protected · No effect"],
     ["c", "Toggle crit"],
+    ["a", "Anything else happened: a status, a stat change, HP, an item, a switch…"],
     [".", "Nothing else: go to the next stage"],
     ["Backspace", "Back one stage within this action. Logs nothing, undoes nothing"],
     ["⌘Z", "Undo the last entry"],

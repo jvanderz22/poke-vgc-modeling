@@ -156,6 +156,7 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
           i++;
           text += ` ${hp(journal[i], i)}`;
         }
+        text += worked(view.move_effects?.[toId(String(e.move))], e, who, view.applied?.[String(at)] ?? []);
         break;
       }
       case "damage": text = hp(e, i); break;
@@ -192,10 +193,28 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
         break;
       case "cant": text = `${who(e.side, e.slot)} couldn't move (${CANT_WORDS[String(e.reason)] ?? e.reason}).`; break;
       case "note": text = String(e.text ?? ""); break;
-      case "end": text = e.winner ? `${names[e.winner as Side]} won.` : "The game ended."; break;
+      case "end": text = (e.winner ? `${names[e.winner as Side]} won` : "The game ended")
+        + (e.by === "forfeit" ? " by forfeit." : "."); break;
       default: text = e.kind;
     }
     lines.push({ index: at, text, error: err });
   }
   return lines;
+}
+
+/** What a move did that nobody typed in: what follows on its own once it hits (Close Combat's
+ *  drops), the chance effects you ticked, and what the replay applied itself (Life Orb). The stepper says the first before the HP question
+ *  and then stops asking, so the line keeps it on screen once the move is logged. */
+function worked(fx: Pick<MoveOption, "follows" | "chance"> | undefined, e: Entry,
+                who: (side: unknown, slot: unknown) => string, applied: string[]): string {
+  if (!fx) return applied.length ? ` Worked out: ${applied.join("; ")}.` : "";
+  const t = e.target as Pos | null;
+  const hit = !e.result || e.result === "hit";
+  const parts = hit ? (fx.follows ?? []).map((f) => f
+    .replace(/^user /, `${who(e.side, e.slot)} `)
+    .replace(/^target /, t ? `${who(t.side, t.slot)} ` : "each target hit: ")) : [];
+  const chance = (fx.chance ?? []).map((c) => c.label).join(" or ");
+  for (const c of (e.chance as Pos[] | undefined) ?? []) parts.push(`${who(c.side, c.slot)} ${chance}`);
+  parts.push(...applied);
+  return parts.length ? ` Worked out: ${parts.join("; ")}.` : "";
 }

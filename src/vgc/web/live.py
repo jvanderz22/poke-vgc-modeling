@@ -166,7 +166,8 @@ def menu(reg: Regulation, state, side: str) -> dict[str, Any]:
             "slot": slot, "species": m.species,
             "moves": [{"id": mv, "name": (reg.dex.get_move(mv) or {}).get("name", mv),
                        "target": (reg.dex.get_move(mv) or {}).get("target"),
-                       "category": (reg.dex.get_move(mv) or {}).get("category"), **move_effects(mv)}
+                       "category": (reg.dex.get_move(mv) or {}).get("category"), **move_effects(mv),
+                       "blocked": blocked_by_protect(reg, mv, m)}
                       for mv in moves],
             "moves_known": bool(m.moves),
             "megas": megas(reg, state, side, m),
@@ -203,6 +204,17 @@ def move_effects(move: str) -> dict[str, Any]:
     return {"follows": follows, "chance": chance}
 
 
+def blocked_by_protect(reg: Regulation, move: str, m) -> bool:
+    """Whether Protect certainly stops this move from this Pokémon: it is one Protect stops, and
+    it is not a contact move from something that could have Unseen Fist."""
+    from vgc.battle import rules
+
+    flags = (reg.dex.get_move(move) or {}).get("flags") or []
+    if "protect" not in flags:
+        return False
+    return not ("contact" in flags and "unseenfist" in rules.still_possible(reg, m))
+
+
 def unseen_moves(reg: Regulation, m) -> dict[str, Any]:
     """For a Pokémon whose moves the sheet does not show: until all four have been used, the six it
     most likely has and has not used yet (`likely`, with the share of the sets still possible that
@@ -213,7 +225,7 @@ def unseen_moves(reg: Regulation, m) -> dict[str, Any]:
     def option(mv: str, share: float | None = None) -> dict[str, Any]:
         d = reg.dex.get_move(mv) or {}
         out = {"id": mv, "name": d.get("name", mv), "target": d.get("target"), "category": d.get("category"),
-               **move_effects(mv)}
+               **move_effects(mv), "blocked": blocked_by_protect(reg, mv, m)}
         return out | ({"share": round(share, 3)} if share is not None else {})
 
     used = set(m.moves_used)
@@ -523,6 +535,11 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "menu": {sid: menu(reg, state, sid) for sid in ("p1", "p2")},
         "questions": [q.to_json() for q in battle.rp.questions],
         "derived": battle.rp.derived,
+        "applied": {str(i): notes for i, notes in battle.rp.applied.items()},
+        # What each move in the journal does on its own once it hits, so "turn so far" can say
+        # what was applied for you after the stepper stops asking about it.
+        "move_effects": {mv: move_effects(mv) for mv in
+                         sorted({to_id(e["move"]) for e in battle.journal if e.get("kind") == "move"})},
         "turn_progress": entry.progress(battle.rp, reg),
         "end_of_turn": entry.end_of_turn(battle.rp, reg),
         "errors": battle.rp.errors,

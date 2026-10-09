@@ -69,7 +69,7 @@ ENTRY_KINDS = (
     "tera",        # {side, species, type}
     "mega",        # {side, species, forme}
     "answer",      # {question, option: int | null}  — null means "not sure"
-    "end",         # {winner: "p1" | "p2" | null}
+    "end",         # {winner: "p1" | "p2" | null, by?: "forfeit"}
     "note",        # {text} — carried for the timeline, changes nothing
 )
 
@@ -140,6 +140,16 @@ class Replay:
     # End-of-turn effects already confirmed this turn (`eot` on a damage or heal), so a reload does
     # not offer a Leftovers heal that has already been logged.
     eot_done: set[str] = field(default_factory=set)
+    # Protect this turn, keyed (side, species): who used it and it did not fail (`guarded`), who
+    # used it last turn (`guarded_before`), and whose is still up (`shielded`). Only a first
+    # Protect is counted as up: one used again straight after can fail, and a move logged without
+    # a result does not say whether it did. Feint and its like take it down again.
+    guarded: set[tuple[str, str]] = field(default_factory=set)
+    guarded_before: set[tuple[str, str]] = field(default_factory=set)
+    shielded: set[tuple[str, str]] = field(default_factory=set)
+    # What the replay did on its own after a move, by the move's journal index (Life Orb's recoil),
+    # so the page can say so on the move's line.
+    applied: dict[int, list[str]] = field(default_factory=dict)
     # The move now connecting, for what follows from it (`_on_connect`): its user, whether its own
     # stat change has landed, which targets have had its added effect, and which of its chance
     # effects you said happened (`chance`: [{side, slot}] on the move entry).
@@ -353,6 +363,7 @@ def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.acted, rp.moved, rp.awaiting = [], False, None
     rp.eot_done = set()
     rp.fx = None
+    rp.guarded_before, rp.guarded, rp.shielded = rp.guarded, set(), set()
 
 
 def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
@@ -371,10 +382,28 @@ def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.acted.append((e["side"], m.species))
     rp.moved = True
     rp.awaiting = _owed(rp, reg, e, m, move)
+    _protect(rp, e, m, move)
     _move_effects(rp, reg, e, m, move)
 
 
 NO_EFFECT = ("miss", "protected", "immune", "failed")
+
+PROTECT_MOVES = {"protect", "detect", "spikyshield", "kingsshield", "banefulbunker", "silktrap",
+                 "burningbulwark", "obstruct"}
+# Moves that take a Protect down when they land.
+LIFTS_PROTECT = {"feint", "shadowforce", "phantomforce", "hyperspacefury", "hyperspacehole"}
+
+
+def _protect(rp: Replay, e: dict[str, Any], m: Mon, move: str) -> None:
+    if move in PROTECT_MOVES and e.get("result") != "failed":
+        key = (e["side"], m.species)
+        rp.guarded.add(key)
+        if key not in rp.guarded_before:
+            rp.shielded.add(key)
+    elif move in LIFTS_PROTECT and e.get("target") and e.get("result") not in NO_EFFECT:
+        t = rp.state.at(e["target"]["side"], int(e["target"]["slot"]))
+        if t is not None:
+            rp.shielded.discard((e["target"]["side"], t.species))
 
 
 def _move_effects(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: str) -> None:
@@ -400,7 +429,7 @@ def _move_effects(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: 
         for t in targets if move in rules.MOVE_TARGET else []:
             _stat_change(rp, reg, t, rules.MOVE_TARGET[move], source=m, move=move)
         return
-    rp.fx = {"move": move, "user": m, "self_done": False, "hit": set(),
+    rp.fx = {"move": move, "user": m, "self_done": False, "hit": set(), "index": rp._index,
              "chance": {(c["side"], int(c["slot"])) for c in e.get("chance") or []}}
     # "Didn't catch it" on one target: it hit, with no damage entry to say so.
     if result == "hit" and len(targets) == 1:
@@ -426,6 +455,7 @@ def _on_connect(rp: Replay, reg: Regulation, target: Mon | None) -> None:
                         change[k] = change.get(k, 0) + v
             if change:
                 _stat_change(rp, reg, user, change, source=None, move=move)
+            _life_orb(rp, reg, user, move, fx["index"])
     if target is None or target is user or target.state != "active":
         return
     key = (side_of(target), target.position)
@@ -441,6 +471,31 @@ def _on_connect(rp: Replay, reg: Regulation, target: Mon | None) -> None:
             target.status = sec["status"]
             if sec["status"] == "tox":
                 rp.tox_since[(side_of(target), target.species)] = rp.state.turn
+
+
+def _life_orb(rp: Replay, reg: Regulation, user: Mon, move: str, index: int) -> None:
+    """Life Orb's recoil once the move has hit something: a tenth of its maximum HP, when the item
+    is known. Magic Guard takes none, and Sheer Force none on a move with an added effect, so while
+    either could still be its ability nothing is taken and the HP is left for you to enter."""
+    if to_id(user.item or "") != "lifeorb" or user.state != "active" or user.hp <= 0:
+        return
+    ability = rp.state._active_ability(user)
+    possible = [to_id(ability)] if ability else rules.still_possible(reg, user)
+    if "magicguard" in possible or ("sheerforce" in possible and move in rules.MOVE_SECONDARY):
+        return
+    side = rp.state._side_of(user)
+    if user.hp_max and rp.state._own(side):
+        hp = max(0, round(user.hp * user.hp_max) - max(1, user.hp_max // 10))
+        rp.state.set_hp(user, hp, user.hp_max, user.status)
+        left = f"{hp} HP"
+    else:
+        hp = max(0, round(user.hp * 100) - 10)
+        rp.state.set_hp(user, hp, 100, user.status)
+        left = f"{hp}%"
+    if hp == 0:
+        rp.state.faint(user)
+        left = "fainted"
+    rp.applied.setdefault(index, []).append(f"Life Orb: {user.species} on {left}")
 
 
 def _stat_change(rp: Replay, reg: Regulation, mon: Mon, change: dict[str, int], *,
@@ -801,9 +856,11 @@ def progress(rp: Replay, reg: Regulation) -> dict[str, Any]:
             for slot in (0, 1):
                 if st.at(sid, slot) is None:
                     waiting.append({"side": sid, "slot": slot, "was": rp.last_in.get((sid, slot))})
+    shielded = [{"side": sid, "slot": slot} for sid in ("p1", "p2") for slot in (0, 1)
+                if (m := st.at(sid, slot)) is not None and (sid, m.species) in rp.shielded]
     return {"turn": st.turn,
             "acted": [{"side": s, "species": sp} for s, sp in rp.acted],
-            "moved": rp.moved, "awaiting": rp.awaiting, "waiting": waiting}
+            "moved": rp.moved, "awaiting": rp.awaiting, "waiting": waiting, "shielded": shielded}
 
 
 def end_of_turn(rp: Replay, reg: Regulation) -> list[dict[str, Any]]:
