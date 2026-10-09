@@ -559,7 +559,7 @@ def test_life_orb_takes_a_tenth_once_the_move_hits_and_says_so(battle):
     rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "pct": 60})
     chomp = rp.state.at("p1", 0)
     assert round(chomp.hp * chomp.hp_max) == full - full // 10
-    assert rp.applied == {len(battle.journal) - 2: [f"Life Orb: Garchomp on {full - full // 10} HP"]}
+    assert rp.applied == {len(battle.journal) - 1: [f"Life Orb: Garchomp on {full - full // 10} HP"]}
     battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Rock Slide", "spread": True})
     battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 80})
     rp = battle.append({"kind": "damage", "side": "p2", "slot": 1, "pct": 40})
@@ -578,3 +578,62 @@ def test_a_first_protect_is_up_until_feint_and_a_second_in_a_row_is_not_assumed(
     battle.append({"kind": "turn", "n": 2})
     rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Protect", "target": None})
     assert entry.progress(rp, battle.reg)["shielded"] == []
+
+
+def test_recoil_is_a_share_of_the_damage_dealt(battle):
+    """Your Rillaboom's Wood Hammer takes a third of what it dealt. Kingambit's HP is a percentage
+    of a max HP its sheet does not show, so the amount rests on a guess and says so."""
+    lead(battle, ("p1", 0, "Rillaboom"), ("p1", 1, "Incineroar"), ("p2", 0, "Kingambit"), ("p2", 1, "Milotic"))
+    answer_all(battle)
+    rp = battle.append({"kind": "turn", "n": 1})
+    full = rp.state.at("p1", 0).hp_max
+    dealt = round(0.6 * rules.max_hp(rp.state, rp.state.at("p2", 0))[0])
+    battle.append({"kind": "move", "side": "p1", "slot": 0, "move": "Wood Hammer", "target": {"side": "p2", "slot": 0}})
+    rp = battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 40})
+    answer_all(battle)
+    left = full - round(dealt * 33 / 100)
+    assert round(battle.rp.state.at("p1", 0).hp * full) == left
+    assert rp.applied[len(battle.journal) - 1 - len(rp.questions)] == [f"Wood Hammer recoil: Rillaboom on about {left} HP"]
+
+
+def test_their_recoil_and_your_rough_skin_take_their_hp(battle):
+    rp = _garchomp(battle)
+    gambit = rules.max_hp(rp.state, rp.state.at("p2", 0))[0]
+    # Kingambit makes contact with your Garchomp, whose Rough Skin is known: no question, an eighth.
+    battle.append({"kind": "move", "side": "p2", "slot": 0, "move": "Iron Head", "target": {"side": "p1", "slot": 0}})
+    rp = battle.append({"kind": "damage", "side": "p1", "slot": 0, "hp": 100})
+    assert not [q for q in rp.questions if q.kind == "on_hit"]
+    assert round(rp.state.at("p2", 0).hp * 100) == round(100 - 100 * (gambit // 8) / gambit)
+    # Earthquake makes none, so nothing is taken.
+    hp = rp.state.at("p2", 0).hp
+    battle.append({"kind": "move", "side": "p2", "slot": 0, "move": "Earthquake", "spread": True})
+    rp = battle.append({"kind": "damage", "side": "p1", "slot": 0, "hp": 80})
+    assert rp.state.at("p2", 0).hp == hp
+
+
+def test_steel_beam_costs_half_whatever_it_did(battle):
+    rp = _garchomp(battle)
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 0, "move": "Steel Beam",
+                        "target": {"side": "p1", "slot": 1}, "result": "miss"})
+    assert 49 <= round(rp.state.at("p2", 0).hp * 100) <= 50
+
+
+def test_picking_rocky_helmet_reveals_it_and_hurts_the_attacker(reg, team_text):
+    """A third of Indeedee-F run Rocky Helmet, so after your Incineroar's Flare Blitz makes contact
+    it is one of the answers; picking it is both the reveal and the sixth off Incineroar."""
+    b = entry.Battle(reg, {"perspective": "p1", "mine": entry.from_team(reg, team_text("valid_basic")),
+                           "theirs": [{"species": s} for s in ["Indeedee-F"] + THEIRS[1:]]})
+    lead(b, ("p1", 0, "Garchomp"), ("p1", 1, "Incineroar"), ("p2", 0, "Indeedee-F"), ("p2", 1, "Milotic"))
+    answer_all(b)
+    b.append({"kind": "turn", "n": 1})
+    b.append({"kind": "move", "side": "p1", "slot": 1, "move": "Flare Blitz", "target": {"side": "p2", "slot": 0}})
+    rp = b.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 70})
+    q = next(q for q in rp.questions if q.kind == "on_hit")
+    inc = rp.state.at("p1", 1)
+    after_recoil = round(inc.hp * inc.hp_max)
+    i = next(i for i, o in enumerate(q.outcomes) if o.label == "Rocky Helmet hurt the attacker")
+    rp = b.append({"kind": "answer", "question": q.id, "option": i})
+    inc = rp.state.at("p1", 1)
+    assert rp.state.at("p2", 0).item == "rockyhelmet"
+    assert round(inc.hp * inc.hp_max) == after_recoil - inc.hp_max // 6
+    assert rp.applied[len(b.journal) - 1] == [f"Rocky Helmet: Incineroar on {after_recoil - inc.hp_max // 6} HP"]

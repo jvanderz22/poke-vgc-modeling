@@ -152,11 +152,15 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
         for (const r of (e.results as { side: Side; slot: number; result: string }[] | undefined) ?? []) {
           if (r.result !== "hit") text += ` ${who(r.side, r.slot)}: ${(RESULT_WORDS[r.result] ?? r.result).toLowerCase()}`;
         }
+        // What the replay applied on its own lands on the move or on the damage that caused it
+        // (recoil, Rough Skin), and all of it belongs to this one sentence.
+        const applied = [...(view.applied?.[String(at)] ?? [])];
         while (journal[i + 1]?.kind === "damage" && !errors.has(i + 1)) {
           i++;
           text += ` ${hp(journal[i], i)}`;
+          applied.push(...(view.applied?.[String(i)] ?? []));
         }
-        text += worked(view.move_effects?.[toId(String(e.move))], e, who, view.applied?.[String(at)] ?? []);
+        text += worked(view.move_effects?.[toId(String(e.move))], e, who, applied);
         break;
       }
       case "damage": text = hp(e, i); break;
@@ -197,6 +201,8 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
         + (e.by === "forfeit" ? " by forfeit." : "."); break;
       default: text = e.kind;
     }
+    // A Rocky Helmet picked as an answer, say: what it did is on the line that picked it.
+    if (e.kind !== "move" && view.applied?.[String(at)]?.length) text += ` Worked out: ${view.applied[String(at)].join("; ")}.`;
     lines.push({ index: at, text, error: err });
   }
   return lines;

@@ -60,7 +60,8 @@ def test_the_stat_drop_answers_are_exactly_the_pinned_ones(reg):
 def test_every_on_hit_ability_is_covered(reg):
     modelled = (set(rules.HIT_BOOST_SELF) | set(rules.HIT_DROP_SELF)
                 | set(rules.HIT_BOOST_SELF_IF_TYPE) | set(rules.HIT_DROP_ATTACKER)
-                | set(rules.HIT_WEATHER) | set(rules.HIT_TERRAIN) | rules.ANNOUNCES_ON_HIT)
+                | set(rules.HIT_WEATHER) | set(rules.HIT_TERRAIN) | rules.ANNOUNCES_ON_HIT
+                | set(rules.HIT_CHIP_ATTACKER))
     hooked = _hooked(reg, "onDamagingHit")
     assert not hooked - modelled, f"unhandled on-hit abilities: {sorted(hooked - modelled)}"
 
@@ -276,7 +277,8 @@ def _needs_contact(reg) -> set[str]:
 def test_the_contact_table_is_derived_from_the_pinned_build(reg):
     """A hand-written list of which abilities need contact is the same trap as a hand-written
     list of which abilities exist — quietly wrong two regulations from now."""
-    modelled = rules.ANNOUNCES_ON_HIT | set(rules.HIT_DROP_ATTACKER) | set(rules.HIT_BOOST_SELF)
+    modelled = (rules.ANNOUNCES_ON_HIT | set(rules.HIT_DROP_ATTACKER) | set(rules.HIT_BOOST_SELF)
+                | set(rules.HIT_CHIP_ATTACKER))
     # Compared over what is legal here: the table deliberately keeps entries for abilities this
     # regulation happens to exclude (Tangling Hair), because the next one may bring them back and
     # a table that shrinks to fit one format is how a silent hole gets made.
@@ -454,3 +456,44 @@ def test_a_white_herb_answers_a_drop_and_a_clear_amulet_refuses_anothers(reg):
     assert [o.item for o in theirs] == ["clearamulet"] and theirs[0].effects == []
     unseen = rules.drop_outcomes(reg, "Incineroar", {"atk": -1}, by_other=True, items=["whiteherb"])
     assert any(o.item == "whiteherb" and o.consumed for o in unseen)
+
+
+def test_the_recoil_tables_are_exactly_the_pinned_ones(reg):
+    """`RECOIL` and `HALF_HP_COST` as the pinned build's moves.ts has them, over what is legal."""
+    src = (paths.SHOWDOWN / "data" / "moves.ts").read_text()
+    recoil, half = {}, set()
+    for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
+        name, body = m.group(1), m.group(2)
+        if name not in reg.dex.moves:
+            continue
+        if r := re.search(r"^\t\trecoil: \[(\d+), (\d+)\]", body, re.M):
+            recoil[name] = (int(r.group(1)), int(r.group(2)))
+        if re.search(r"^\t\t(mindBlownRecoil|chloroblastRecoil): true", body, re.M):
+            half.add(name)
+    assert rules.RECOIL == recoil
+    assert rules.HALF_HP_COST == half
+    assert rules.RECOIL["doubleedge"] == (33, 100) and rules.RECOIL["headsmash"] == (1, 2)
+
+
+def test_rough_skin_always_fires_on_contact_so_silence_rules_it_out(reg):
+    out = rules.on_damaging_hit(reg, "Garchomp", "Close Combat")
+    skin = next(o for o in out if o.ability == "roughskin")
+    assert not skin.conditional and skin.effects == [{"kind": "chip_attacker", "part": 8, "cause": "Rough Skin"}]
+    quiet = next(o for o in out if o.label.startswith("nothing announced"))
+    assert quiet.ability == "sandveil" or "roughskin" in quiet.excludes
+    # Unless the attacker might have Long Reach, which makes no move a contact move.
+    maybe = rules.on_damaging_hit(reg, "Garchomp", "Close Combat", reach=None)
+    assert next(o for o in maybe if o.ability == "roughskin").conditional
+    assert not any(o.ability == "roughskin" for o in rules.on_damaging_hit(reg, "Garchomp", "Close Combat", reach=True))
+
+
+def test_a_rocky_helmet_hurts_every_contact_attacker_and_an_unseen_one_is_offered(reg):
+    known = rules.on_damaging_hit(reg, "Garchomp", "Close Combat", "roughskin", item="rockyhelmet")
+    assert len(known) == 1 and [x["cause"] for x in known[0].effects] == ["Rough Skin", "Rocky Helmet"]
+    ranged = rules.on_damaging_hit(reg, "Garchomp", "Earthquake", "roughskin", item="rockyhelmet")
+    assert not any(o.effects for o in ranged)              # no contact: nothing fired
+    unseen = rules.on_damaging_hit(reg, "Garchomp", "Close Combat", items=["rockyhelmet"])
+    labels = [o.label for o in unseen]
+    assert "Rocky Helmet hurt the attacker" in labels and labels[-1].startswith("nothing announced")
+    both = next(o for o in unseen if "both" in o.label)
+    assert both.item == "rockyhelmet" and len(both.effects) == 2

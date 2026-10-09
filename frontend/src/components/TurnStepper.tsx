@@ -19,7 +19,7 @@ const STATUSES: [string, string][] = [
 ];
 const STATS: [string, string][] = [["atk", "Atk"], ["def", "Def"], ["spa", "SpA"], ["spd", "SpD"], ["spe", "Spe"]];
 
-type MoveChoice = Pick<MoveOption, "id" | "name" | "target" | "category"> & Pick<MoveOption, "follows" | "chance" | "blocked">;
+type MoveChoice = Pick<MoveOption, "id" | "name" | "target" | "category"> & Pick<MoveOption, "follows" | "chance" | "blocked" | "costs">;
 
 /** One answer on screen. Options are numbered left to right for the keyboard, in this order. */
 /** One answer on screen. Its look says what a click does: `next` (the default) acts at once and
@@ -466,7 +466,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       { label: "Crit", tone: "toggle", pressed: a.crit, pick: () => setAct({ ...a, crit: !a.crit }) },
       ...(fast ? [{ label: "Didn't catch it", tone: "ghost" as const, pick: how("hit") }] : []),
     ];
-    const follows = a.move.follows ?? [];
+    const follows = [...(a.move.follows ?? []), ...(a.move.costs ?? [])];
     const st = hpStage(p, {
       id: `result:${posKey(a.pos)}:${i}`,
       lead: <>{a.species} used {a.move.name}{n > 1 ? ` (${i + 1} of ${n})` : ""}. </>,

@@ -40,6 +40,7 @@ tapped the wrong thing under time pressure is worse than one that stayed wide.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -384,6 +385,10 @@ def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.awaiting = _owed(rp, reg, e, m, move)
     _protect(rp, e, m, move)
     _move_effects(rp, reg, e, m, move)
+    if move in rules.HALF_HP_COST:
+        # Steel Beam costs half its user's max HP whether it hit, missed or was blocked.
+        mx, _ = rules.max_hp(rp.state, m)
+        _chip(rp, reg, m, (mx + 1) // 2, (reg.dex.get_move(move) or {}).get("name", move))
 
 
 NO_EFFECT = ("miss", "protected", "immune", "failed")
@@ -429,7 +434,7 @@ def _move_effects(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: 
         for t in targets if move in rules.MOVE_TARGET else []:
             _stat_change(rp, reg, t, rules.MOVE_TARGET[move], source=m, move=move)
         return
-    rp.fx = {"move": move, "user": m, "self_done": False, "hit": set(), "index": rp._index,
+    rp.fx = {"move": move, "user": m, "self_done": False, "hit": set(),
              "chance": {(c["side"], int(c["slot"])) for c in e.get("chance") or []}}
     # "Didn't catch it" on one target: it hit, with no damage entry to say so.
     if result == "hit" and len(targets) == 1:
@@ -455,7 +460,7 @@ def _on_connect(rp: Replay, reg: Regulation, target: Mon | None) -> None:
                         change[k] = change.get(k, 0) + v
             if change:
                 _stat_change(rp, reg, user, change, source=None, move=move)
-            _life_orb(rp, reg, user, move, fx["index"])
+            _life_orb(rp, reg, user, move)
     if target is None or target is user or target.state != "active":
         return
     key = (side_of(target), target.position)
@@ -473,29 +478,74 @@ def _on_connect(rp: Replay, reg: Regulation, target: Mon | None) -> None:
                 rp.tox_since[(side_of(target), target.species)] = rp.state.turn
 
 
-def _life_orb(rp: Replay, reg: Regulation, user: Mon, move: str, index: int) -> None:
+def _abilities(rp: Replay, reg: Regulation, mon: Mon) -> list[str]:
+    """What its ability is, or could still be."""
+    ability = rp.state._active_ability(mon)
+    return [to_id(ability)] if ability else rules.still_possible(reg, mon)
+
+
+def _chip(rp: Replay, reg: Regulation, mon: Mon, hp: int, cause: str, *, about: bool = False) -> None:
+    """HP a Pokémon lost to something other than a move's damage: recoil, Life Orb, Rough Skin,
+    Rocky Helmet. Applied here because it is certain, and said on the line of the entry that caused
+    it. Magic Guard takes none of it, so while it could still be the ability nothing is taken and
+    the HP is left for you to enter. `about`: the amount rests on a max HP guessed (`rules.max_hp`)."""
+    if "magicguard" in _abilities(rp, reg, mon):
+        return
+    left = rules.lose_hp(rp.state, mon, hp)
+    if left:
+        rp.applied.setdefault(rp._index, []).append(
+            f"{cause}: {mon.species} on {'about ' if about and left != 'fainted' else ''}{left}")
+
+
+def _life_orb(rp: Replay, reg: Regulation, user: Mon, move: str) -> None:
     """Life Orb's recoil once the move has hit something: a tenth of its maximum HP, when the item
-    is known. Magic Guard takes none, and Sheer Force none on a move with an added effect, so while
-    either could still be its ability nothing is taken and the HP is left for you to enter."""
+    is known. Sheer Force takes none on a move with an added effect, so while it could still be
+    the ability nothing is taken."""
     if to_id(user.item or "") != "lifeorb" or user.state != "active" or user.hp <= 0:
         return
-    ability = rp.state._active_ability(user)
-    possible = [to_id(ability)] if ability else rules.still_possible(reg, user)
-    if "magicguard" in possible or ("sheerforce" in possible and move in rules.MOVE_SECONDARY):
+    if "sheerforce" in _abilities(rp, reg, user) and move in rules.MOVE_SECONDARY:
         return
-    side = rp.state._side_of(user)
-    if user.hp_max and rp.state._own(side):
-        hp = max(0, round(user.hp * user.hp_max) - max(1, user.hp_max // 10))
-        rp.state.set_hp(user, hp, user.hp_max, user.status)
-        left = f"{hp} HP"
-    else:
-        hp = max(0, round(user.hp * 100) - 10)
-        rp.state.set_hp(user, hp, 100, user.status)
-        left = f"{hp}%"
-    if hp == 0:
-        rp.state.faint(user)
-        left = "fainted"
-    rp.applied.setdefault(index, []).append(f"Life Orb: {user.species} on {left}")
+    mx, _ = rules.max_hp(rp.state, user)
+    _chip(rp, reg, user, max(1, mx // 10), "Life Orb")
+
+
+def _recoil(rp: Replay, reg: Regulation, target: Mon, before: float) -> None:
+    """A recoil move's cost, a share of the damage it just dealt (`rules.RECOIL`), rounded as the
+    pinned build rounds it. Each recoil move hits one target, so each damage entry is the whole
+    of it. Rock Head takes none."""
+    fx = rp.fx
+    if fx is None or fx["move"] not in rules.RECOIL:
+        return
+    user = fx["user"]
+    if target is user or user.state != "active" or "rockhead" in _abilities(rp, reg, user):
+        return
+    mx, exact = rules.max_hp(rp.state, target)
+    dealt = round((before - target.hp) * mx)
+    if dealt <= 0:
+        return
+    num, den = rules.RECOIL[fx["move"]]
+    name = (reg.dex.get_move(fx["move"]) or {}).get("name", fx["move"])
+    _chip(rp, reg, user, max(1, math.floor(dealt * num / den + 0.5)), f"{name} recoil",
+          about=not (exact and rules.max_hp(rp.state, user)[1]))
+
+
+def _chip_items(reg: Regulation, mon: Mon) -> list[str]:
+    """The chip items (Rocky Helmet) an unseen item could well be."""
+    if mon.item is not None:
+        return []
+    from vgc.belief import sets as set_belief
+
+    try:
+        p = set_belief.given(reg, mon).item()
+    except Exception:
+        return []
+    return [i for i in rules.CHIP_ITEMS if p.get(i, 0.0) >= rules.CHIP_ITEM_SHARE]
+
+
+def _could_have(rp: Replay, reg: Regulation, mon: Mon, ability: str) -> bool | None:
+    """True if it has this ability, False if it cannot, None if it might."""
+    possible = _abilities(rp, reg, mon)
+    return False if ability not in possible else True if len(possible) == 1 else None
 
 
 def _stat_change(rp: Replay, reg: Regulation, mon: Mon, change: dict[str, int], *,
@@ -584,20 +634,29 @@ def _on_damage(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     else:
         rp.state.record_damage(m, before, crit=bool(e.get("crit")))
         _on_connect(rp, reg, m if m.hp > 0 and not e.get("fainted") else None)
+        _recoil(rp, reg, m, before)
     if rp.awaiting is not None:
         here = {"side": e["side"], "slot": int(e["slot"])}
         rp.awaiting["targets"] = [t for t in rp.awaiting["targets"] if t != here]
         if not rp.awaiting["targets"]:
             rp.awaiting = None
-    if m.hp == 0.0 or e.get("fainted"):
+    fainted = m.hp == 0.0 or bool(e.get("fainted"))
+    if fainted:
         rp.state.faint(m)
-        return
     last = rp.state._resolving
-    if last is not None and not last.called_by:
-        source = rp.state.at(last.side, last.slot)
-        _ask(rp, reg, m, "on_hit",
-             rules.on_damaging_hit(reg, m.species, last.move, rules.still_possible(reg, m)),
-             source=source)
+    if e.get("eot") or last is None or last.called_by:
+        return
+    source = rp.state.at(last.side, last.slot)
+    outcomes = rules.on_damaging_hit(
+        reg, m.species, last.move, rules.still_possible(reg, m), item=m.item, items=_chip_items(reg, m),
+        reach=None if source is None else _could_have(rp, reg, source, "longreach"))
+    if fainted:
+        # Nothing a fainted Pokémon might have announced is asked about, but a Rough Skin or a Rocky
+        # Helmet that certainly fired still hurt the attacker.
+        if len(outcomes) == 1 and any(x["kind"] == "chip_attacker" for x in outcomes[0].effects):
+            _settle(rp, reg, m, outcomes[0], source, kind="on_hit", raced=False)
+        return
+    _ask(rp, reg, m, "on_hit", outcomes, source=source)
 
 
 def _on_heal(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
@@ -816,6 +875,11 @@ def _settle(rp: Replay, reg: Regulation, mon: Mon, outcome: rules.Outcome, sourc
     as a sound channel and is not one.
     """
     pendings = rules.apply(rp.state, outcome, mon, source)
+    # Rough Skin and Rocky Helmet hurt the attacker: HP, which is this module's to apply.
+    for x in outcome.effects:
+        if x["kind"] == "chip_attacker" and source is not None:
+            mx, _ = rules.max_hp(rp.state, source)
+            _chip(rp, reg, source, max(1, mx // x["part"]), x["cause"])
     if outcome.ability:
         rp.state.record_ability(
             mon, outcome.ability,

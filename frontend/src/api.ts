@@ -250,6 +250,8 @@ export type LiveMon = {
 export type MoveOption = {
   id: string; name: string; target: string | null; category: string | null;
   follows?: string[]; chance?: { label: string; chance: number }[];
+  /** What it costs its user, taken for you: recoil, Steel Beam's half. */
+  costs?: string[];
   /** Protect certainly stops it, from this user. */
   blocked?: boolean;
 };

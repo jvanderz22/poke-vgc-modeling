@@ -303,18 +303,29 @@ HIT_TERRAIN = {"seedsower": "grassyterrain"}
 
 
 def on_damaging_hit(reg: Regulation, species: str, move: str,
-                    known: str | Iterable[str] | None = None) -> list[Outcome]:
+                    known: str | Iterable[str] | None = None, *, item: str | None = None,
+                    items: Iterable[str] = (), reach: bool | None = False) -> list[Outcome]:
     """What the Pokémon you just hit could announce, one outcome per ability still possible.
 
     Stamina matters twice over: it is a reveal, and it moves the Defence the bulk channel is
-    about to read the next hit against.
+    about to read the next hit against. `item` is its held item where known (None: unseen) and
+    `items` the chip items an unseen one could well be; `reach` is whether the attacker has Long
+    Reach (None: it might), which makes no move a contact move.
     """
     entry = reg.dex.get_move(move) or {}
     mtype, category = entry.get("type"), entry.get("category")
-    contact = "contact" in (entry.get("flags") or [])   # the export gives flags as a list
+    flagged = "contact" in (entry.get("flags") or [])   # the export gives flags as a list
+    contact = flagged and not reach
 
     def describe(ability: str):
         effects: list[dict[str, Any]] = []
+        if ability in HIT_CHIP_ATTACKER:
+            if not contact:
+                return None
+            n = HIT_CHIP_ATTACKER[ability]
+            # Certain on contact, unless the attacker might have Long Reach.
+            return (f"hurt the attacker (1/{n} of its HP)",
+                    [{"kind": "chip_attacker", "part": n, "cause": _name(reg, ability)}], reach is None)
         for table in (HIT_BOOST_SELF, HIT_DROP_SELF):
             if ability in table:
                 # Weak Armor reads the move's category, not just that a hit landed: a special
@@ -353,7 +364,42 @@ def on_damaging_hit(reg: Regulation, species: str, move: str,
             return ("announced, no stat or field change modelled", [], True)
         return None
 
-    return _collect(reg, species, known, describe)
+    return with_chip_items(_collect(reg, species, known, describe), item=item, items=items,
+                           contact=contact)
+
+
+def with_chip_items(outcomes: list[Outcome], *, item: str | None, items: Iterable[str],
+                    contact: bool) -> list[Outcome]:
+    """Let a held Rocky Helmet hurt the attacker too. A known one fires on every contact hit, so it
+    joins every outcome; an unseen one that could well be there is one more thing that might have
+    happened, and picking it is the reveal."""
+    if not contact:
+        return outcomes
+    item = to_id(item or "") if item is not None else None
+    if item is not None:
+        if item not in CHIP_ITEMS:
+            return outcomes
+        chip = {"kind": "chip_attacker", "part": CHIP_ITEMS[item], "cause": "Rocky Helmet"}
+        if not outcomes:
+            return [Outcome("Rocky Helmet hurt the attacker", [chip], item=item)]
+        return [Outcome(f"{o.label}; Rocky Helmet hurt the attacker", o.effects + [chip], ability=o.ability,
+                        excludes=o.excludes, item=item, consumed=o.consumed, conditional=o.conditional)
+                for o in outcomes]
+    out = list(outcomes)
+    for unseen in (i for i in items if i in CHIP_ITEMS):
+        chip = {"kind": "chip_attacker", "part": CHIP_ITEMS[unseen], "cause": "Rocky Helmet"}
+        # As well as whatever its ability did: one per outcome that announced something, and one
+        # for the helmet alone.
+        loud = [o for o in outcomes if not o.label.startswith("nothing announced")]
+        out[len(loud):len(loud)] = [Outcome(f"{o.label.split(' — ')[0]} and Rocky Helmet — both hurt the attacker",
+                                            o.effects + [chip], ability=o.ability, item=unseen)
+                                    for o in loud if any(e["kind"] == "chip_attacker" for e in o.effects)]
+        quiet = next((o for o in outcomes if o.label.startswith("nothing announced")), None)
+        helmet = Outcome("Rocky Helmet hurt the attacker", [chip], item=unseen)
+        out.insert(len(out) - 1 if quiet is not None else len(out), helmet)
+        if quiet is None:
+            out.append(Outcome("nothing announced"))
+    return out
 
 
 def _describe(effect: dict[str, Any]) -> str:
@@ -369,15 +415,63 @@ def _describe(effect: dict[str, Any]) -> str:
 # one still records which ability it was, which is the point of the pop-up.
 ANNOUNCES_ON_HIT = {"aftermath", "cursedbody", "cutecharm", "effectspore", "electromorphosis",
                     "flamebody", "gulpmissile", "illusion", "innardsout", "mummy", "poisonpoint",
-                    "roughskin", "spicyspray", "static", "toxicdebris", "wanderingspirit"}
+                    "spicyspray", "static", "toxicdebris", "wanderingspirit"}
+
+# Hurt whoever made contact, by a share of the attacker's max HP (`baseMaxhp / n`, rounded down),
+# every time: so unlike Static, a contact hit that drew nothing rules them out.
+HIT_CHIP_ATTACKER = {"roughskin": 8, "ironbarbs": 8}
+# The item that does the same, at a sixth.
+CHIP_ITEMS = {"rockyhelmet": 6}
+# Offer an unseen Rocky Helmet after a contact hit when at least this share of the sets still
+# possible hold one.
+CHIP_ITEM_SHARE = 0.1
 
 # ...and of those, the ones that need the move to make contact. Against Earthquake, Rough Skin
 # could not have fired at all — which is a stronger statement than "might not have", and the
 # difference decides whether silence is allowed to rule the other candidates in. Derived from
 # `checkMoveMakesContact` in the pinned build and re-derived by `tests/test_battle_rules.py`
 # rather than trusted, like every other table here.
-CONTACT_ON_HIT = {"aftermath", "cutecharm", "effectspore", "flamebody", "gooey", "mummy",
+CONTACT_ON_HIT = {"aftermath", "cutecharm", "effectspore", "flamebody", "gooey", "ironbarbs", "mummy",
                   "poisonpoint", "roughskin", "static", "tanglinghair", "wanderingspirit"}
+
+# A move's recoil, as a share of the damage it dealt (`recoil` in the pinned build's moves.ts),
+# and the moves that cost half the user's max HP whatever they did (`mindBlownRecoil`). Re-derived
+# by `tests/test_battle_rules.py`.
+RECOIL = {"bravebird": (33, 100), "doubleedge": (33, 100), "flareblitz": (33, 100),
+          "headsmash": (1, 2), "lightofruin": (1, 2), "volttackle": (33, 100),
+          "wavecrash": (33, 100), "wildcharge": (1, 4), "woodhammer": (33, 100)}
+HALF_HP_COST = {"steelbeam"}
+
+
+def max_hp(state: Any, mon: Any) -> tuple[int, bool]:
+    """A Pokémon's max HP, and whether it is exact. Your own is; theirs depends on Stat Points the
+    sheet never shows, so it is base + 75 + 16, the middle of the 0-32 they could have put in."""
+    if mon.hp_max and state._own(state._side_of(mon)):
+        return mon.hp_max, True
+    entry = state.dex.get_species(mon.forme) or state.dex.get_species(mon.species) or {}
+    base = (entry.get("baseStats") or {}).get("hp", 80)
+    return (1 if base == 1 else base + 75 + 16), False
+
+
+def lose_hp(state: Any, mon: Any, hp: int) -> str | None:
+    """Take `hp` from a Pokémon for something no move dealt it (recoil, Rough Skin, Life Orb): in
+    real HP for your own and as a percentage for theirs, the split the cartridge shows. Returns
+    what it is left on, as the page writes it."""
+    if mon.state != "active" or mon.hp <= 0:
+        return None
+    mx, exact = max_hp(state, mon)
+    if exact:
+        now = max(0, round(mon.hp * mx) - hp)
+        state.set_hp(mon, now, mx, mon.status)
+        left = f"{now} HP"
+    else:
+        now = max(0, round(100 * mon.hp - 100 * hp / mx))
+        state.set_hp(mon, now, 100, mon.status)
+        left = f"{now}%"
+    if now == 0:
+        state.faint(mon)
+        return "fainted"
+    return left
 
 
 # --- applying one -------------------------------------------------------------------------

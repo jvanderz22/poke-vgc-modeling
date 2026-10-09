@@ -202,7 +202,15 @@ def move_effects(move: str) -> dict[str, Any]:
             follows.append(f"{'user' if on == 'self' else 'target'} {what}")
         elif on == "target":
             chance.append({"label": what, "chance": sec["chance"]})
-    return {"follows": follows, "chance": chance}
+    # What it costs its user, which the replay takes too (`entry._recoil`, Steel Beam).
+    costs = []
+    if move in rules.RECOIL:
+        num, den = rules.RECOIL[move]
+        share = {(33, 100): "a third", (1, 2): "half", (1, 4): "a quarter"}.get((num, den), f"{num}/{den}")
+        costs.append(f"recoil, {share} of the damage dealt")
+    if move in rules.HALF_HP_COST:
+        costs.append("half the user's max HP")
+    return {"follows": follows, "chance": chance, **({"costs": costs} if costs else {})}
 
 
 def likely_used_up(reg: Regulation, m) -> list[dict[str, Any]]:
