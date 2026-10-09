@@ -159,6 +159,9 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   const [pending, setPending] = useState<{ key: string; text: string; entries: Entry[] }[]>([]);
 
   useEffect(() => { setFast(readFast(id)); }, [id]);
+  // What "item used up" can be, for its autocomplete. Static for the regulation, so fetched once.
+  const [usedUp, setUsedUp] = useState<string[]>([]);
+  useEffect(() => { api.pool(reg).then((p) => setUsedUp(p.used_up ?? [])).catch(() => {}); }, [reg]);
   // Anything logged settles whatever was selected against the old journal.
   useEffect(() => { setStaged([]); setOpenAfter(null); setPending([]); }, [view.entries]);
   useEffect(() => {
@@ -533,17 +536,40 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
           ),
         };
       case "consume": {
-        const known = m.item && m.item !== "" ? [m.item] : [];
+        // Item ids come back from the battle (`sitrusberry`); the list has the names to show.
+        const named = (it: string) => usedUp.find((x) => toId(x) === toId(it)) ?? it;
+        const used = (it: string) => logAndClose([{ kind: "consume", side: p.side, species: m.species, item: it }], `${m.forme} used up ${it}`);
+        const known = m.item ? [named(m.item)] : [];
+        const likely = m.item == null ? view.menu[p.side].actives[p.slot]?.used_up ?? [] : [];
+        // A typed item has to be one that can be used up, however it was spelled.
+        const match = (text: string) => usedUp.find((x) => toId(x) === toId(text)) ?? null;
+        const unknown = !!typed.trim() && usedUp.length > 0 && !match(typed);
+        const listed = [...likely.map((x) => x.name), ...usedUp.filter((x) => !likely.some((l) => l.name === x))];
         return {
           id: `extra:consume:${posKey(p)}`, prompt: <>Which item did {m.forme} use up?</>, back,
-          options: known.map((it) => ({ label: it, pick: () => logAndClose([{ kind: "consume", side: p.side, species: m.species, item: it }], `${m.forme} used up ${it}`) })),
+          options: [
+            ...known.map((it) => ({ label: it, pick: () => used(it) })),
+            ...likely.map((x) => ({
+              label: <>{x.name} <span className="opt-sub">{Math.round(x.share * 100)}% hold it</span></>,
+              tone: "ghost" as const, title: "not seen yet: how many of the sets still possible hold it",
+              pick: () => used(x.name),
+            })),
+          ],
           body: (
             <form className="row typed-move" onSubmit={(e) => {
               e.preventDefault();
-              if (typed.trim()) { logAndClose([{ kind: "consume", side: p.side, species: m.species, item: typed.trim() }], `${m.forme} used up ${typed.trim()}`); setTyped(""); }
+              const text = typed.trim();
+              if (!text || unknown) return;
+              used(match(text) ?? text);
+              setTyped("");
             }}>
-              <input type="text" value={typed} placeholder="Type the item (Sitrus Berry, Focus Sash…)" onChange={(e) => setTyped(e.target.value)} />
-              <button className="ghost" disabled={busy || !typed.trim()}>Log</button>
+              <input type="text" value={typed} list={`used-up-${posKey(p)}`} autoComplete="off" aria-invalid={unknown}
+                     placeholder="Type the item (Colbur Berry, Focus Sash…)" onChange={(e) => setTyped(e.target.value)} />
+              <datalist id={`used-up-${posKey(p)}`}>
+                {listed.map((x) => <option key={x} value={x} />)}
+              </datalist>
+              <button className="ghost" disabled={busy || !typed.trim() || unknown}>Log</button>
+              {unknown && <span className="tiny err">Not an item that can be used up.</span>}
             </form>
           ),
         };

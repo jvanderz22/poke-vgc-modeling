@@ -171,6 +171,7 @@ def menu(reg: Regulation, state, side: str) -> dict[str, Any]:
                       for mv in moves],
             "moves_known": bool(m.moves),
             "megas": megas(reg, state, side, m),
+            "used_up": likely_used_up(reg, m),
             **({} if m.moves else unseen_moves(reg, m))})
     out["bench"] = [{"species": m.species, "hp": round(m.hp, 4), "state": m.state}
                     for m in entry.sendable(reg, state, side)]
@@ -202,6 +203,24 @@ def move_effects(move: str) -> dict[str, Any]:
         elif on == "target":
             chance.append({"label": what, "chance": sec["chance"]})
     return {"follows": follows, "chance": chance}
+
+
+def likely_used_up(reg: Regulation, m) -> list[dict[str, Any]]:
+    """For a Pokémon whose item is not known: the items it could use up, likeliest first, with the
+    share of the sets still possible that hold each. A known item is offered as itself."""
+    from vgc.battle import rules
+    from vgc.belief import sets as set_belief
+
+    if m.item is not None:
+        return []
+    try:
+        odds = set_belief.given(reg, m).item()
+    except Exception:                    # no corpus built: nothing to go on
+        return []
+    out = [{"name": (reg.dex.get_item(i) or {}).get("name", i), "share": round(p, 3)}
+           for i, p in sorted(odds.items(), key=lambda kv: -kv[1])
+           if i and p >= rules.USED_UP_SHARE and rules.used_up(reg, i)]
+    return out[:6]
 
 
 def blocked_by_protect(reg: Regulation, move: str, m) -> bool:

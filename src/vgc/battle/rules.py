@@ -690,6 +690,20 @@ SAND_IMMUNE_ABILITIES = {"overcoat", "sandveil", "sandrush", "sandforce", "magic
 SAND_IMMUNE_ITEMS = {"safetygoggles"}
 # Heals and drains that come from a held item, as a fraction of max HP.
 RESIDUAL_ITEMS = {"leftovers": ("heal", 1 / 16)}
+
+# Items that are gone once they have done their thing, besides every berry and gem: what "item
+# used up" offers.
+USED_UP_ITEMS = {"focussash", "whiteherb", "mentalherb", "airballoon", "ejectbutton", "redcard",
+                 "electricseed", "grassyseed", "mistyseed", "psychicseed"}
+# Offer an unseen item as a one-tap "used up" when at least this share of the sets still possible
+# hold it.
+USED_UP_SHARE = 0.02
+
+
+def used_up(reg: Regulation, item: str) -> bool:
+    """Whether this item can be used up: a berry, a gem, or one of `USED_UP_ITEMS`."""
+    d = reg.dex.get_item(item) or {}
+    return bool(d.get("isBerry") or d.get("isGem")) or to_id(item) in USED_UP_ITEMS
 # Offer an unseen item's heal when at least this share of the sets still possible hold it. A
 # confirm is then both the heal and the reveal.
 UNSEEN_ITEM_SHARE = 0.1

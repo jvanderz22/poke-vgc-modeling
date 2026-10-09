@@ -85,6 +85,12 @@ def test_pool_is_ordered_by_usage(client):
     assert all(not s.get("battleOnly") for s in p["species"])
 
 
+def test_the_items_that_can_be_used_up_are_berries_gems_and_the_one_shot_items(client):
+    used_up = client.get("/api/pool").json()["used_up"]
+    assert {"Colbur Berry", "Sitrus Berry", "Focus Sash", "White Herb", "Normal Gem", "Grassy Seed"} <= set(used_up)
+    assert not {"Leftovers", "Life Orb", "Choice Scarf", "Rocky Helmet"} & set(used_up)
+
+
 def test_compose_builds_a_legal_team_from_species_alone(client, teams):
     del teams  # only needed for the pool fixture's skip
     names = ["Incineroar", "Rillaboom", "Gholdengo", "Sylveon", "Staraptor", "Raichu"]

@@ -56,7 +56,9 @@ export type Species = {
   name: string; id: string; types: string[]; abilities: string[]; is_mega: boolean; seen: number;
 };
 
-export type Pool = { species: Species[]; items: string[]; moves: string[]; natures: string[] };
+export type Pool = { species: Species[]; items: string[]; moves: string[]; natures: string[];
+                     /** The items that can be used up: berries, gems, Focus Sash and the like. */
+                     used_up: string[] };
 
 /** A set the backend guessed for a closed-sheet opponent. `share` is how often that exact set was
  *  the one actually used, so 0.15 means the guess is one of many. */
@@ -256,6 +258,8 @@ export type SideMenu = {
   actives: ({ slot: number; species: string; moves: MoveOption[]; moves_known: boolean;
                /** The Mega formes it could become this turn: one per stone its item could be. */
                megas: { forme: string; item: string }[];
+               /** Where its item is not known: the likeliest items it could use up. */
+               used_up?: { name: string; share: number }[];
                /** Where the sheet does not show the moves: the likeliest unused ones (while fewer
                 *  than four are known), and every move the species can legally have. */
                likely?: (MoveOption & { share: number })[];

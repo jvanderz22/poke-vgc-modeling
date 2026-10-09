@@ -29,6 +29,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from vgc.battle import rules
 from vgc.regulation import load_regulation, to_id
 from vgc.web import library, live
 
@@ -256,6 +257,7 @@ def pool(regulation: str = "reg_mc") -> dict[str, Any]:
     species.sort(key=lambda s: (-s["seen"], s["name"]))
     return {"species": species,
             "items": sorted({i["name"] for i in reg.dex.items.values()}),
+            "used_up": sorted({i["name"] for k, i in reg.dex.items.items() if rules.used_up(reg, k)}),
             "moves": sorted({m["name"] for m in reg.dex.moves.values()}),
             "natures": NATURES}
 
