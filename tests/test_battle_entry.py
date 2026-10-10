@@ -637,3 +637,28 @@ def test_picking_rocky_helmet_reveals_it_and_hurts_the_attacker(reg, team_text):
     assert rp.state.at("p2", 0).item == "rockyhelmet"
     assert round(inc.hp * inc.hp_max) == after_recoil - inc.hp_max // 6
     assert rp.applied[len(b.journal) - 1] == [f"Rocky Helmet: Incineroar on {after_recoil - inc.hp_max // 6} HP"]
+
+
+def test_trick_room_used_is_trick_room_up_for_five_turns(battle):
+    """The move alone puts it up, with no field tap, and it is gone on the sixth turn; used again
+    while it is up, it ends."""
+    _mixed(battle)
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Trick Room", "target": None})
+    assert "trickroom" in rp.state.pseudo
+    assert rp.applied[len(battle.journal) - 1] == ["Trick Room is up through turn 5"]
+    for n in range(2, 6):
+        rp = battle.append({"kind": "turn", "n": n})
+        assert "trickroom" in rp.state.pseudo, f"still up on turn {n}"
+    rp = battle.append({"kind": "turn", "n": 6})
+    assert "trickroom" not in rp.state.pseudo
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Trick Room", "target": None})
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Trick Room", "target": None})
+    assert "trickroom" not in rp.state.pseudo
+
+
+def test_a_move_under_trick_room_is_read_as_trick_room(battle):
+    _mixed(battle)
+    battle.append({"kind": "move", "side": "p2", "slot": 1, "move": "Trick Room", "target": None})
+    battle.append({"kind": "turn", "n": 2})
+    rp = battle.append({"kind": "move", "side": "p2", "slot": 0, "move": "Kowtow Cleave", "target": {"side": "p1", "slot": 1}})
+    assert rp.state.moves_log[-1].trick_room       # what the Speed read orders this turn by

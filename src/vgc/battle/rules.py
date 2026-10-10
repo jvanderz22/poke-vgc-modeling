@@ -442,6 +442,12 @@ RECOIL = {"bravebird": (33, 100), "doubleedge": (33, 100), "flareblitz": (33, 10
           "wavecrash": (33, 100), "wildcharge": (1, 4), "woodhammer": (33, 100)}
 HALF_HP_COST = {"steelbeam"}
 
+# Moves that put up a field-wide effect for five turns, the turn they are used included. Using a
+# room again while it is up ends it; Gravity just fails.
+FIELD_MOVES = {"trickroom", "magicroom", "wonderroom", "gravity"}
+FIELD_TURNS = 5
+TOGGLES = {"trickroom", "magicroom", "wonderroom"}
+
 
 def max_hp(state: Any, mon: Any) -> tuple[int, bool]:
     """A Pokémon's max HP, and whether it is exact. Your own is; theirs depends on Stat Points the

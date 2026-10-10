@@ -360,7 +360,13 @@ def _on_swap(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 
 def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
-    rp.state.begin_turn(int(e["n"]))
+    n = int(e["n"])
+    # Trick Room and its kind end after their fifth turn. Before the turn starts, because its
+    # switches are read in Speed order too.
+    for effect, since in list(rp.state.pseudo.items()):
+        if effect in rules.FIELD_MOVES and n >= since + rules.FIELD_TURNS:
+            rp.state.set_pseudo(effect, False)
+    rp.state.begin_turn(n)
     rp.acted, rp.moved, rp.awaiting = [], False, None
     rp.eot_done = set()
     rp.fx = None
@@ -378,6 +384,7 @@ def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.state.record_move(m, move, target=ident, spread=bool(e.get("spread")),
                          called_by=e.get("called_by"))
     rp.movers[rp._index] = m.species
+    _field_move(rp, reg, e, move)
     if e.get("called_by"):
         return
     rp.acted.append((e["side"], m.species))
@@ -397,6 +404,22 @@ PROTECT_MOVES = {"protect", "detect", "spikyshield", "kingsshield", "banefulbunk
                  "burningbulwark", "obstruct"}
 # Moves that take a Protect down when they land.
 LIFTS_PROTECT = {"feint", "shadowforce", "phantomforce", "hyperspacefury", "hyperspacehole"}
+
+
+def _field_move(rp: Replay, reg: Regulation, e: dict[str, Any], move: str) -> None:
+    """Trick Room used is Trick Room up (or, used again while it is, Trick Room ended), without a
+    separate field tap: every turn order under it reads the other way round."""
+    if move not in rules.FIELD_MOVES or e.get("result") in NO_EFFECT:
+        return
+    name = (reg.dex.get_move(move) or {}).get("name", move)
+    if move in rp.state.pseudo:
+        if move in rules.TOGGLES:
+            rp.state.set_pseudo(move, False)
+            rp.applied.setdefault(rp._index, []).append(f"{name} ended")
+        return
+    rp.state.set_pseudo(move, True)
+    last = rp.state.turn + rules.FIELD_TURNS - 1
+    rp.applied.setdefault(rp._index, []).append(f"{name} is up through turn {last}")
 
 
 def _protect(rp: Replay, e: dict[str, Any], m: Mon, move: str) -> None:
