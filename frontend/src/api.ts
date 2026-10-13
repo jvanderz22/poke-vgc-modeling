@@ -62,6 +62,18 @@ export type Pool = { species: Species[]; items: string[]; moves: string[]; natur
 
 /** A set the backend guessed for a closed-sheet opponent. `share` is how often that exact set was
  *  the one actually used, so 0.15 means the guess is one of many. */
+/** `POST /api/sheet/read`: what OCR read off a team-sheet screenshot. A field that did not read
+ *  clearly is null and its text is in `unread`; nothing is guessed. */
+export type SheetRead = {
+  title: string | null;
+  entries: { species: string | null; ability: string | null; nature: string | null;
+             item: string | null; moves: string[] }[];
+  unread: { text: string; x0: number; y0: number }[];
+  notes: string[];
+  problems: Problem[];
+  showdown: string;
+};
+
 export type InferredSet = {
   species: string; item: string | null; ability: string | null; moves: string[];
   source: "usage" | "default"; share: number | null; seen: number;
@@ -473,7 +485,8 @@ export class ApiError extends Error {}
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, {
     ...init,
-    headers: init?.body ? { "content-type": "application/json" } : undefined,
+    // A string body is JSON. Anything else (an image) carries its own type.
+    headers: typeof init?.body === "string" ? { "content-type": "application/json" } : init?.headers,
   });
   const body = await r.json().catch(() => ({}));
   // FastAPI puts the message in `detail`; Showdown's validator messages arrive this way and are
@@ -522,6 +535,11 @@ export const api = {
     their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
     best_of?: 1 | 3;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
+  /** An open team sheet read off a screenshot. Slow: a few seconds of OCR on the server. */
+  readSheet: (image: Blob, reg: string) =>
+    call<SheetRead>(`/api/sheet/read?regulation=${reg}`, {
+      method: "POST", body: image, headers: { "content-type": image.type || "application/octet-stream" },
+    }),
   species: (name: string, reg: string) =>
     call<SpeciesOptions>(`/api/species/${encodeURIComponent(name)}?regulation=${reg}`),
   battle: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}`),

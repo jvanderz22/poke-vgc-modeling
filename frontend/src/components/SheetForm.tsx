@@ -5,6 +5,7 @@ import {
   type SheetEntry,
 } from "../sheet";
 import { Combo, type ComboOption } from "./Combo";
+import { SheetFromImage } from "./SheetFromImage";
 
 // Asked once per species and per page load: the lists do not change while the app runs.
 const optionsCache = new Map<string, Promise<SpeciesOptions>>();
@@ -61,6 +62,7 @@ export function SheetForm({ reg, pool, value, onChange, label }: {
   label: string;
 }) {
   const [paste, setPaste] = useState<string | null>(null);
+  const [shot, setShot] = useState(false);
   const abilitiesOf = new Map(pool.map((s) => [s.name, [...new Set(s.abilities)]]));
   const speciesList: ComboOption[] = pool.map((s) => ({
     name: s.name, hint: `${s.types.join("/")}${s.seen ? ` · ${s.seen.toLocaleString()}` : ""}`,
@@ -76,12 +78,17 @@ export function SheetForm({ reg, pool, value, onChange, label }: {
         <label style={{ margin: 0 }}>{label}</label>
         <span className="row">
           <span className="tiny dim">{n}/{SHEET_SIZE}{n === SHEET_SIZE && gaps > 0 ? `, ${gaps} field${gaps === 1 ? "" : "s"} empty` : ""}</span>
-          <button type="button" className="link tiny" onClick={() => setPaste(paste === null ? "" : null)}>
+          <button type="button" className="link tiny" onClick={() => { setShot(!shot); setPaste(null); }}>
+            {shot ? "close screenshot" : "from screenshot"}
+          </button>
+          <button type="button" className="link tiny" onClick={() => { setPaste(paste === null ? "" : null); setShot(false); }}>
             {paste === null ? "import text" : "close import"}
           </button>
           {n > 0 && <button type="button" className="link tiny" onClick={() => onChange(emptySheet())}>clear</button>}
         </span>
       </div>
+
+      {shot && <SheetFromImage reg={reg} onFill={onChange} />}
 
       {paste !== null && (
         <div className="sheet-import">

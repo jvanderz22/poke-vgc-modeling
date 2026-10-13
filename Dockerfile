@@ -36,7 +36,9 @@ COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
 # Editable, so the package runs from /app/src: the app serves the frontend from its own directory.
-RUN pip install --no-cache-dir -e ".[web]"
+RUN pip install --no-cache-dir -e ".[web,video]"
+# RapidOCR fetches its models on first use; fetch them now, so the first sheet read isn't a download.
+RUN python -c "from rapidocr import RapidOCR; RapidOCR()"
 
 COPY --from=frontend /app/src/vgc/web/static ./src/vgc/web/static
 COPY --from=node /app/vendor/pokemon-showdown ./vendor/pokemon-showdown

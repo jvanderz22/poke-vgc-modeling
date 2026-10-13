@@ -808,3 +808,27 @@ def test_species_options_rank_what_is_run_and_keep_what_is_legal(client):
     assert shares == sorted(shares, reverse=True)
     assert {"Leech Life", "Sucker Punch"} <= {m["name"] for m in r["moves"]}
     assert client.get("/api/species/Missingno").status_code == 404
+
+
+# --- a team sheet read off a screenshot -----------------------------------------------------
+
+def test_sheet_read_fills_the_form_from_a_screenshot(client):
+    pytest.importorskip("rapidocr")
+    image = (paths.ROOT / "tests" / "fixtures" / "sheets" / "broadcast-confer.jpg").read_bytes()
+    r = client.post("/api/sheet/read", content=image, headers={"content-type": "image/jpeg"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["title"] == "CARSON CONFER"
+    assert [e["species"] for e in body["entries"]] == [
+        "Golisopod", "Raichu", "Archaludon", "Basculegion-F", "Pelipper", "Sneasler"]
+    assert body["entries"][1] == {"species": "Raichu", "ability": "Lightning Rod", "nature": "Timid",
+                                  "item": "Raichunite Y",
+                                  "moves": ["Zap Cannon", "Focus Blast", "Fake Out", "Protect"]}
+    assert body["unread"] == [] and body["notes"] == [] and body["problems"] == []
+
+
+def test_sheet_read_refuses_what_is_not_an_image(client):
+    pytest.importorskip("rapidocr")
+    assert client.post("/api/sheet/read", content=b"").status_code == 422
+    r = client.post("/api/sheet/read", content=b"Golisopod @ Golisopite", headers={"content-type": "image/png"})
+    assert r.status_code == 422

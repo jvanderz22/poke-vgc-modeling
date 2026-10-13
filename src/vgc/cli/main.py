@@ -1174,6 +1174,32 @@ def cmd_web(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sheet_read(args: argparse.Namespace) -> int:
+    from vgc.video.sheet import problems, read_sheet
+
+    reg = _reg(args)
+    try:
+        read = read_sheet(Path(args.image), reg)
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        return 1
+    found = problems(read, reg)
+    if args.json:
+        print(json.dumps({**read.as_dict(), "problems": [p.__dict__ for p in found]}, indent=2))
+    else:
+        if read.title:
+            print(f"# {read.title}\n")
+        print(read.showdown())
+        for note in read.notes:
+            print(f"! {note}")
+        for ln in read.unread:
+            print(f"? unread {ln.text!r} at ({ln.x0:.0f}, {ln.y0:.0f})")
+        for p in found:
+            print(p)
+    complete = len(read.entries) == reg.team_size and not read.notes and not read.unread
+    return 0 if complete and is_legal(found) else 1
+
+
 def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
@@ -1246,7 +1272,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("team")
     p.set_defaults(func=cmd_team_stats)
 
-    p = with_reg(sub.add_parser("calc", help="damage calc (Champions rules, doubles by default)"))
+    sheet = sub.add_parser("sheet", help="open team sheets").add_subparsers(dest="sheet_cmd", required=True)
+    p = with_reg(sheet.add_parser("read", help="read a team sheet off a screenshot (OCR; needs '.[video]')"))
+    p.add_argument("image", help="a screenshot or video frame showing the sheet")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_sheet_read)
+
+    p = with_reg(sub.add_parser("calc",help="damage calc (Champions rules, doubles by default)"))
     p.add_argument("--attacker", required=True, help='set spec, lines joined by "|"')
     p.add_argument("--defender", required=True)
     p.add_argument("--move", required=True)

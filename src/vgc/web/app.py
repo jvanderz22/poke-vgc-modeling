@@ -24,7 +24,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -239,6 +240,46 @@ def models(regulation: str = "reg_mc") -> dict[str, Any]:
 @app.post("/api/validate")
 def validate(body: TeamText) -> dict[str, Any]:
     return _validate(body.text, _reg(body.regulation))
+
+
+SHEET_IMAGE_LIMIT = 15 * 1024 * 1024
+
+
+@app.post("/api/sheet/read")
+async def sheet_read(request: Request, regulation: str = "reg_mc") -> dict[str, Any]:
+    """An open team sheet read off a screenshot, sent as the request body (any image type).
+
+    What is read only fills the form: a name that didn't read clearly is left blank and listed in
+    `unread`, never guessed, and `problems` is the validator's verdict without the Stat Point
+    checks a sheet can't meet. PLAN-video decision 3.
+    """
+    reg = _reg(regulation)
+    data = await request.body()
+    if not data:
+        raise HTTPException(422, "no image in the request")
+    if len(data) > SHEET_IMAGE_LIMIT:
+        raise HTTPException(413, f"image over {SHEET_IMAGE_LIMIT // (1024 * 1024)} MB")
+    try:
+        from vgc.video.sheet import problems, read_sheet
+    except ImportError as e:
+        raise HTTPException(501, f"this server can't read images: {e}") from e
+
+    def run() -> dict[str, Any]:
+        import io
+
+        from PIL import Image, UnidentifiedImageError
+
+        try:
+            Image.open(io.BytesIO(data)).verify()
+        except (UnidentifiedImageError, OSError) as e:
+            raise HTTPException(422, "that isn't an image this server can read") from e
+        read = read_sheet(data, reg)
+        return {**read.as_dict(), "problems": [asdict(p) for p in problems(read, reg)]}
+
+    try:
+        return await run_in_threadpool(run)  # about three seconds of OCR: off the event loop
+    except RuntimeError as e:  # RapidOCR missing: the server was built without '.[video]'
+        raise HTTPException(501, str(e)) from e
 
 
 @app.get("/api/pool")

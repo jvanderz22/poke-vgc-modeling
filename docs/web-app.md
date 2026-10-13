@@ -302,6 +302,14 @@ number is player 1's chance, and the page names the sides P1 and P2. It runs the
 and that model's gate is scored from exactly this seat (spectator rows). The Speed read and the
 engine's answer in a 1v1 average over both players' hidden spreads.
 
+**A sheet can be read off a screenshot.** Every open-sheet form has *from screenshot*: paste (⌘V),
+drop or choose an image of the sheet, such as a broadcast's team list, and the form is filled from
+it (`POST /api/sheet/read`, `vgc.video.sheet`, OCR by RapidOCR). Each line is matched only against
+the regulation's own names. A field that doesn't read clearly is left empty and its text listed,
+never filled with the nearest name, so an empty field is the one to check. On one broadcast frame
+it read all 42 fields from 720p up; below that, heavy compression leaves fields empty but never
+wrong. That is one broadcast's layout; other sources haven't been tried.
+
 ### The engine's answer in a 1v1
 
 When each side has one Pokémon left, the Battle page leads with the engine's number: the value of

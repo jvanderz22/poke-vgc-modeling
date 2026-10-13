@@ -678,6 +678,8 @@ button.choice:disabled { opacity: .4; }
 .nature-arrows .up { color: var(--bad); }
 .nature-arrows .down { color: var(--accent); }
 .sheet-import { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.sheet-drop { border: 1px dashed var(--line); border-radius: 6px; padding: 14px 12px; text-align: center; font-size: 13px; color: var(--dim); }
+.sheet-drop.over { border-color: currentColor; color: inherit; }
 .combo { position: relative; }
 @media (max-width: 520px) { .sheet-row { grid-template-columns: 1fr; } }
 
