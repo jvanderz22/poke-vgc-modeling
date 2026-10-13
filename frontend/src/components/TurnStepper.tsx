@@ -299,6 +299,8 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   const hpStage = (p: Pos, opts: {
     id: string; lead?: ReactNode; submit: (v: number) => void; extra: Opt[]; prefill?: string;
     keys?: Record<string, () => void>; empty?: () => void; back?: () => void; dflt?: number;
+    /** A move's hit: a crit is marked beside the HP, before the number that logs it. */
+    crit?: { on: boolean; toggle: () => void };
   }): Stage => {
     const m = mon(p);
     const mine = p.side === own && m?.hp_max != null;
@@ -325,6 +327,10 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
             {/* Not disabled when empty: a form whose only submit button is disabled ignores ↵,
                 and an empty ↵ is how Fast mode says "didn't catch it". */}
             <button disabled={busy}>Log</button>
+            {opts.crit && (
+              <button type="button" className="choice check" role="checkbox" aria-checked={opts.crit.on}
+                      title="a critical hit (c)" disabled={busy} onClick={opts.crit.toggle}>Crit</button>
+            )}
           </form>
           {!mine && (
             <div className="pad hp-pad">
@@ -463,7 +469,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       { label: "Protected", tone: "ghost", pick: how("protected") },
       { label: "No effect", tone: "ghost", pick: how("immune") },
       { label: "Failed", tone: "ghost", pick: how("failed") },
-      { label: "Crit", tone: "toggle", pressed: a.crit, pick: () => setAct({ ...a, crit: !a.crit }) },
       ...(fast ? [{ label: "Didn't catch it", tone: "ghost" as const, pick: how("hit") }] : []),
     ];
     const follows = [...(a.move.follows ?? []), ...(a.move.costs ?? [])];
@@ -473,6 +478,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       submit: (v) => record(a, { entry: hpEntry(p, v, a.crit) }),
       empty: fast ? how("hit") : undefined,
       extra,
+      crit: { on: a.crit, toggle: () => setAct({ ...a, crit: !a.crit }) },
       keys: { k: ko, m: how("miss"), p: how("protected"), n: how("immune"), c: () => setAct({ ...a, crit: !a.crit }) },
       back,
     });

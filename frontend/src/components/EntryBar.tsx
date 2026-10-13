@@ -189,6 +189,7 @@ function HpPad({ view, sel, onLog, onDone, busy }: {
 }) {
   const mon = view.sides[sel.side].mons.find((m) => m.state === "active" && m.slot === sel.slot);
   const [exact, setExact] = useState("");
+  const [crit, setCrit] = useState(false);
   if (!mon) return null;
   const own = sel.side === "p1";
 
@@ -199,23 +200,25 @@ function HpPad({ view, sel, onLog, onDone, busy }: {
 
   return (
     <div>
-      <div className="small dim" style={{ marginBottom: 6 }}>
-        {mon.forme} is on {Math.round(mon.hp * 100)}% — what is it on now?
+      <div className="row" style={{ marginBottom: 6 }}>
+        <span className="small dim">{mon.forme} is on {Math.round(mon.hp * 100)}% — what is it on now?</span>
+        <button type="button" className="choice check" role="checkbox" aria-checked={crit} disabled={busy}
+                onClick={() => setCrit(!crit)}>Crit</button>
       </div>
       <div className="pad hp-pad">
         {HP_STEPS.filter((p) => p < Math.round(mon.hp * 100)).map((p) => (
           <button key={p} className="ghost" disabled={busy}
-                  onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, pct: p })}>{p}%</button>
+                  onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, pct: p, crit })}>{p}%</button>
         ))}
         <button className="danger" disabled={busy}
-                onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, fainted: true })}>KO</button>
+                onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, fainted: true, crit })}>KO</button>
       </div>
       {own && mon.hp_max != null && (
         <form className="row" style={{ marginTop: 8 }}
               onSubmit={(e) => {
                 e.preventDefault();
                 const hp = Number(exact);
-                if (Number.isFinite(hp)) log({ kind: "damage", side: sel.side, slot: sel.slot, hp });
+                if (Number.isFinite(hp)) log({ kind: "damage", side: sel.side, slot: sel.slot, hp, crit });
               }}>
           <input type="text" value={exact} inputMode="numeric" style={{ width: 110 }}
                  placeholder={`of ${mon.hp_max}`} onChange={(e) => setExact(e.target.value)} />

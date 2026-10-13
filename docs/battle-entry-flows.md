@@ -89,7 +89,7 @@ answer.
 | 2 | **Who moved?** | Which Pokémon acted next. | One Pokémon left to act |
 | 3 | **Which move?** | The move, or that it **couldn't move** (flinch, full paralysis, sleep, freeze, recharge). | Battle mode, when you confirm the plan |
 | 4 | **Which target?** | The target. | It can only be one (as today) |
-| 5 | **Result** | Once per Pokémon hit: HP left, **KO**, **Missed**, **Protected**, **No effect**. **Crit** is a toggle on the same screen. | Status moves with no target HP |
+| 5 | **Result** | Once per Pokémon hit: HP left, **KO**, **Missed**, **Protected**, **No effect**. **Crit** is a toggle beside the HP field, set before the number that logs it; the entry bar's HP form has one too. | Status moves with no target HP |
 | 6 | **Anything else?** | Status, stat change, a consumed item, and the **backend's ability questions, here**, at the point in the turn where they popped up. | Nothing is pending; default is "nothing else" |
 | → | back to 2 | | everyone has acted |
 | 7 | **End of turn** | A checklist of effects that could apply: weather, terrain heal, Leftovers, burn, poison. Confirm each **in the order shown**. | None could apply |
