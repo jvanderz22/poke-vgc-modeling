@@ -525,6 +525,8 @@ export const api = {
   species: (name: string, reg: string) =>
     call<SpeciesOptions>(`/api/species/${encodeURIComponent(name)}?regulation=${reg}`),
   battle: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}`),
+  /** The battle without its WP, for when only the journal or the board is wanted. */
+  battleLite: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}&wp=false`),
   /** Several entries in one call when they belong together — a spread move and both its damage
    *  numbers — so the screen never renders the half-applied state in between. */
   log: (id: string, entries: Entry[], reg: string) =>

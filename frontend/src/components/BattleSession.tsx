@@ -8,6 +8,7 @@ import { Info } from "./Popover";
 import { SheetForm, useSheetDraft } from "./SheetForm";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import { SpeciesPicker } from "./SpeciesPicker";
+import { TurnReview } from "./TurnReview";
 import { TurnStepper } from "./TurnStepper";
 import type { Pos } from "../screen";
 import { linkProps, tabRoute, type Navigate, type Route } from "../router";
@@ -119,12 +120,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
                              {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
                              <Leads view={view} onLog={log} busy={busy} />
                            </>} />
-            : <div className="panel row" style={{ justifyContent: "space-between" }}>
-                <span className="small dim">Looking at tap {step} of {view.entries_total}. Log anything to come back to now.</span>
-                <button className="link" onClick={() => navigate({ tab: "battle", battle: id, step: null }, { replace: true })}>
-                  back to now
-                </button>
-              </div>}
+            : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
 
           {step === null && freeForm && (
             <>
