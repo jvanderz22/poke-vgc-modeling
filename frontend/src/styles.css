@@ -646,3 +646,15 @@ button.choice:disabled { opacity: .4; }
 .wp-band-note { margin-top: 6px; line-height: 1.45; }
 .wp-key.band { display: inline-block; width: 14px; height: 8px; border-radius: 2px; background: rgba(106, 169, 255, .28); vertical-align: 0; }
 .follows { margin: -4px 0 8px; }
+
+/* A Bo3: the next game, and each game's line. */
+.series-next { border-color: var(--accent); }
+.series-games { display: flex; flex-direction: column; gap: 6px; }
+.series-game {
+  display: grid; grid-template-columns: 64px 90px 1fr; gap: 8px; align-items: baseline;
+  padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--text);
+  background: var(--panel-2); text-decoration: none;
+}
+.series-game.current { border-color: var(--accent); }
+.series-game-n { font-weight: 600; }
+@media (max-width: 520px) { .series-game { grid-template-columns: 1fr; gap: 2px; } }

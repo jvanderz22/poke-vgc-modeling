@@ -362,6 +362,32 @@ export type EndOfTurn = {
   kind: "damage" | "heal"; expect: { pct?: number; hp?: number }; reveal: string | null;
 };
 
+/** One game of a Bo3 as its history line: who won, and what each side led and was seen to bring. */
+export type SeriesGame = {
+  id: string; name: string; game: number; result: "p1" | "p2" | null; ended: boolean; turn: number;
+  led: Record<"p1" | "p2", string[]>; brought: Record<"p1" | "p2", string[]>;
+};
+
+/** The Bo3 a battle is a game of (`web.live.series_view`). `next` is the next game once it has been
+ *  set up, which ending this one does. `carried` is what this game started out knowing from the
+ *  games before it: their races, for the Speed belief, and on a hidden sheet what was revealed. */
+export type Series = {
+  id: string; name: string; game: number; best_of: number;
+  score: Record<"p1" | "p2", number>; decided: boolean; next: string | null;
+  games: SeriesGame[];
+  carried: { races: number;
+             reveals: { side: "p1" | "p2"; species: string; item: string | null; ability: string | null; moves: string[] }[] };
+};
+
+/** What a sheet can say about one species, each list ordered by how often people run it. */
+export type SpeciesOptions = {
+  name: string; types: string[]; seen: number;
+  abilities: { name: string; share: number }[];
+  moves: { name: string; share: number }[];
+  items: { name: string; share: number }[];
+  natures: { name: string; share: number }[];
+};
+
 export type LiveView = {
   id: string; name: string; sheets: Sheets; perspective: Perspective;
   turn: number; started: boolean; ended: boolean; winner: string | null;
@@ -394,6 +420,7 @@ export type LiveView = {
   /** Only on `/at/<index>`: which prefix this is, out of how many taps. */
   at?: number;
   entries_total?: number;
+  series?: Series | null;
 };
 
 /** The engine's answer to a 1v1 (`/api/battles/<id>/solve`): best play on both sides, searched
@@ -432,6 +459,7 @@ export type EngineAnswer = {
 export type BattleRow = {
   id: string; name: string; created: string; updated: string;
   turn: number; entries: number; theirs: string[]; sheets: Sheets; perspective: Perspective; result: string | null;
+  series?: { id: string; game: number; best_of: number; name: string } | null;
 };
 
 export type TrajectoryRow = {
@@ -492,7 +520,10 @@ export const api = {
   newBattle: (body: {
     name?: string; my_team?: string; team_id?: string;
     their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
+    best_of?: 1 | 3;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
+  species: (name: string, reg: string) =>
+    call<SpeciesOptions>(`/api/species/${encodeURIComponent(name)}?regulation=${reg}`),
   battle: (id: string, reg: string) => call<LiveView>(`/api/battles/${id}?regulation=${reg}`),
   /** Several entries in one call when they belong together — a spread move and both its damage
    *  numbers — so the screen never renders the half-applied state in between. */

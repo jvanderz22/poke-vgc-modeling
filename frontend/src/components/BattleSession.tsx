@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -93,6 +93,8 @@ export function BattleSession({ reg, route, navigate, teams }: {
         <div>
           <b>{view.name}</b>{" "}
           <span className="dim small">
+            {view.series && <>game {view.series.game} of a Bo{view.series.best_of}{" "}
+              ({view.series.score.p1}–{view.series.score.p2}) · </>}
             {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
           </span>
         </div>
@@ -106,6 +108,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
           and the four on the field, which is everything its questions need. */}
       <div className="battle-top">
         <div className="battle-work">
+          {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
           {step === null
             ? <TurnStepper id={id} reg={reg} view={view} busy={busy} onLog={log} onUndo={undo}
                            onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
@@ -130,6 +133,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
               <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
             </>
           )}
+          {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
         </div>
 
         <div className="battle-side">
@@ -372,6 +376,89 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   );
 }
 
+/** Where the series goes from here, once this game is over: the next game, set up when this one
+ *  ended, or the series' result. */
+function SeriesNext({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
+  const names = sideNames(view.perspective);
+  if (series.decided) {
+    const winner = series.score.p1 > series.score.p2 ? "p1" : "p2";
+    return (
+      <div className="panel series-next">
+        <b>{names[winner] === "You" ? "You won" : `${names[winner]} won`} the series {Math.max(series.score.p1, series.score.p2)}–{Math.min(series.score.p1, series.score.p2)}.</b>
+      </div>
+    );
+  }
+  if (!series.next) return null;
+  return (
+    <div className="panel series-next row" style={{ justifyContent: "space-between" }}>
+      <span>
+        <b>Game {series.game + 1} is set up</b>{" "}
+        <span className="small dim">({names.p1} {series.score.p1}–{series.score.p2} {names.p2}): same teams, and what this game showed carries over.</span>
+      </span>
+      <a className="btn-link" {...linkProps({ tab: "battle", battle: series.next, step: null }, navigate)}>
+        Open game {series.game + 1} →
+      </a>
+    </div>
+  );
+}
+
+/** The series this battle is a game of: each game's line, and what this one started out knowing
+ *  from the ones before it. */
+function SeriesPanel({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
+  const names = sideNames(view.perspective);
+  const hidden: ("p1" | "p2")[] = view.perspective === "spectator" ? ["p1", "p2"] : ["p2"];
+  const { races, reveals } = series.carried;
+  return (
+    <div className="panel">
+      <h2>Bo{series.best_of}: {names.p1} {series.score.p1}–{series.score.p2} {names.p2}</h2>
+      <div className="series-games">
+        {series.games.map((g) => {
+          const here = g.id === view.id;
+          const line = (
+            <>
+              <span className="series-game-n">Game {g.game}</span>
+              <span className="small">
+                {g.result ? `${names[g.result as "p1" | "p2"]} won` : g.ended ? "ended" : here ? "this game" : g.turn ? `turn ${g.turn}` : "not started"}
+              </span>
+              <span className="tiny dim">
+                {hidden.map((sid) => g.led[sid].length > 0 && (
+                  <span key={sid}>
+                    {names[sid] === "Them" ? "They" : names[sid]} led {g.led[sid].join(" + ")}
+                    {g.brought[sid].length > g.led[sid].length &&
+                      <>, then {g.brought[sid].filter((x) => !g.led[sid].includes(x)).join(", ")}</>}
+                    {". "}
+                  </span>
+                ))}
+              </span>
+            </>
+          );
+          return here
+            ? <div key={g.id} className="series-game current">{line}</div>
+            : <a key={g.id} className="series-game" {...linkProps({ tab: "battle", battle: g.id, step: null }, navigate)}>{line}</a>;
+        })}
+      </div>
+      {series.game > 1 && (
+        <div className="tiny dim" style={{ marginTop: 8 }}>
+          <b>Carried from earlier games:</b>{" "}
+          {races > 0
+            ? <>{races} race{races === 1 ? "" : "s"} in turn order, which bound the same Stat Points in this game (the
+                Speed read and the engine use them; the model's number does not, since it has only seen one game at a time).</>
+            : <>no races in turn order yet.</>}
+          {reveals.length > 0 && (
+            <ul className="derived">
+              {reveals.map((r) => (
+                <li key={`${r.side}${r.species}`}>
+                  {r.species}: {[r.item, r.ability, ...r.moves].filter(Boolean).join(", ")}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Who starts. Four taps and the game is under way — and the arrivals ask their questions in the
  *  order you tap them, which is what turns a lead into Speed evidence before a move is used. */
 /** Which four you brought. The page cannot see your back, and the number above two a side needs
@@ -570,6 +657,7 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   const sheets = mode?.sheets ?? null;
   const watching = mode?.perspective === "spectator";
   const [name, setName] = useState("");
+  const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -596,8 +684,8 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     try {
       const opponent = sheets === "open" ? { their_team: theirSheet } : { their_species: chosen };
       const v = watching
-        ? await api.newBattle({ name, p1_team: p1Sheet, their_team: theirSheet, regulation: reg })
-        : await api.newBattle({ name, team_id: teamId, regulation: reg, ...opponent });
+        ? await api.newBattle({ name, p1_team: p1Sheet, their_team: theirSheet, regulation: reg, best_of: bestOf })
+        : await api.newBattle({ name, team_id: teamId, regulation: reg, best_of: bestOf, ...opponent });
       navigate({ tab: "battle", battle: v.id, step: null });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
@@ -620,6 +708,18 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
               {MODE_BUTTONS[m.id] ?? m.id}
             </button>
           ))}
+        </div>
+        <div className="row" style={{ marginBottom: 10 }}>
+          <span className="dim small">Format</span>
+          <div className="toggle" role="group" aria-label="Best of">
+            <button className="seg" aria-pressed={bestOf === 1} onClick={() => setBestOf(1)}>Bo1</button>
+            <button className="seg" aria-pressed={bestOf === 3} onClick={() => setBestOf(3)}>Bo3</button>
+          </div>
+          {bestOf === 3 && (
+            <span className="tiny dim">
+              Ending a game sets up the next with the same teams, starting from what the earlier games showed.
+            </span>
+          )}
         </div>
         {!watching && teams.length === 0
           ? <p className="small dim">Save a team on the <b>Teams</b> page first, or watch someone else's game.</p>
@@ -694,6 +794,7 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
                 <span><b>{b.name}</b> <span className="dim tiny">{b.updated.replace("T", " ")}</span></span>
                 <span className="dim tiny">{b.theirs.join(" · ")}</span>
                 <span className="dim tiny">
+                  {b.series && <>game {b.series.game} of a Bo{b.series.best_of} · </>}
                   {modeLabel(b.sheets, b.perspective)} · {b.turn ? `turn ${b.turn}` : "preview"} · {b.entries} taps
                 </span>
                 <button className="danger" onClick={async (e) => {
