@@ -29,7 +29,7 @@ export function TurnReview({ id, reg, view, step, navigate }: {
   const [total, setTotal] = useState<number>(view.entries_total ?? 0);
   const [ends, setEnds] = useState<{ start: LiveView; end: LiveView } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
 
   // Where every turn starts, from the whole journal: the view on screen is only a prefix of it.
   useEffect(() => {
@@ -106,7 +106,7 @@ function Snapshot({ title, view, names, wp }: {
     <div className="review-block">
       <div className="review-title row" style={{ justifyContent: "space-between" }}>
         <span>{title}</span>
-        {wp && <span className="tiny dim">{view.perspective === "spectator" ? "P1" : "you"} {wp}</span>}
+        {wp && <span className="tiny dim">{view.perspective === "spectator" ? names.p1 : "you"} {wp}</span>}
       </div>
       {(["p2", "p1"] as Side[]).map((sid) => {
         const side = view.sides[sid];

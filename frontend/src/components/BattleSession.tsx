@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, modeLabel, possessive, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -188,7 +188,7 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
       <div className="row wp-line">
         <span>
           {labelled && <>Model: </>}<b className="wp-num big">{pct(wp.wp)}%</b>{" "}
-          <span className="small">{view.perspective === "spectator" ? "P1 wins" : "you win"}</span>
+          <span className="small">{view.perspective === "spectator" ? `${sideNames(view).p1} wins` : "you win"}</span>
         </span>
         <GateTag view={view}>
           {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 &&
@@ -273,7 +273,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const model = view.wp?.wp;
   const apart = ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
   const hidden = view.perspective === "spectator" ? (["p1", "p2"] as const) : (["p2"] as const);
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
   const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
   // Above two a side, after the first faint: the model and the policy's value combined.
@@ -301,7 +301,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {policy ? "Model + policy:" : "Engine:"}{" "}
           {ans.value != null
             ? <><b className="wp-num">{pct(ans.value)}%</b>{" "}
-                {view.perspective === "spectator" ? "P1 wins" : "you win"}
+                {view.perspective === "spectator" ? `${sideNames(view).p1} wins` : "you win"}
                 {policy ? <> (the policy's one-turn value {pct(ans.policy ?? 0)}%, the model {pct(ans.model ?? 0)}%)</>
                         : <> with best play from both sides</>}</>
             : <>searching…</>}
@@ -321,7 +321,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       </div>
       {forced && (
         <div>
-          {names[forced.side] === "Them" ? "They" : names[forced.side]} can force the win this turn
+          {names[forced.side]} can force the win this turn
           {forced.through_protect ? ", once Protect runs out" : ""}
           {forced.sweep < 0.995 && <> ({pct(forced.sweep)}%: a crit or a flinch is the way out)</>}.
         </div>
@@ -377,12 +377,12 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
 /** Where the series goes from here, once this game is over: the next game, set up when this one
  *  ended, or the series' result. */
 function SeriesNext({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   if (series.decided) {
     const winner = series.score.p1 > series.score.p2 ? "p1" : "p2";
     return (
       <div className="panel series-next">
-        <b>{names[winner] === "You" ? "You won" : `${names[winner]} won`} the series {Math.max(series.score.p1, series.score.p2)}–{Math.min(series.score.p1, series.score.p2)}.</b>
+        <b>{names[winner]} won the series {Math.max(series.score.p1, series.score.p2)}–{Math.min(series.score.p1, series.score.p2)}.</b>
       </div>
     );
   }
@@ -403,7 +403,7 @@ function SeriesNext({ view, series, navigate }: { view: LiveView; series: Series
 /** The series this battle is a game of: each game's line, and what this one started out knowing
  *  from the ones before it. */
 function SeriesPanel({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const hidden: ("p1" | "p2")[] = view.perspective === "spectator" ? ["p1", "p2"] : ["p2"];
   const { races, reveals } = series.carried;
   return (
@@ -421,7 +421,7 @@ function SeriesPanel({ view, series, navigate }: { view: LiveView; series: Serie
               <span className="tiny dim">
                 {hidden.map((sid) => g.led[sid].length > 0 && (
                   <span key={sid}>
-                    {names[sid] === "Them" ? "They" : names[sid]} led {g.led[sid].join(" + ")}
+                    {names[sid]} led {g.led[sid].join(" + ")}
                     {g.brought[sid].length > g.led[sid].length &&
                       <>, then {g.brought[sid].filter((x) => !g.led[sid].includes(x)).join(", ")}</>}
                     {". "}
@@ -525,7 +525,11 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       <div className="lead-grid">
         {(["p2", "p1"] as Side[]).map((side) => (
           <div key={side} className="row">
-            <span className="dim small" style={{ width: 54 }}>{sideNames(view.perspective)[side]}</span>
+            {/* Wide enough for "Your opponent"; a long player name is cut, and its title has it whole. */}
+            <span className="dim small" title={sideNames(view)[side]}
+                  style={{ width: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {sideNames(view)[side]}
+            </span>
             {[0, 1].map((slot) => {
               const m = filled(side, slot);
               return (
@@ -542,7 +546,7 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       {pick && (
         <div className="pad" style={{ marginTop: 8 }}>
           <span className="tiny dim" style={{ alignSelf: "center" }}>
-            Who led on {sideNames(view.perspective)[pick.side] === "You" ? "your" : `${sideNames(view.perspective)[pick.side]}'s`.replace("Them's", "their")} {pick.slot === 0 ? "left" : "right"}?
+            Who led on {possessive(sideNames(view)[pick.side])} {pick.slot === 0 ? "left" : "right"}?
           </span>
           {view.sides[pick.side].mons
             .filter((m) => m.state !== "active" && m.state !== "fainted" && m.state !== "not_brought")
@@ -569,9 +573,9 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
 /** Ending the game early, for either side. The other side wins; it is one `end` entry like any
  *  other, so undo takes it back. */
 function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const label: Record<Side, string> = view.perspective === "spectator"
-    ? { p1: "P1 forfeits", p2: "P2 forfeits" } : { p1: "I forfeit", p2: "They forfeit" };
+    ? { p1: `${names.p1} forfeits`, p2: `${names.p2} forfeits` } : { p1: "I forfeit", p2: "Your opponent forfeits" };
   const quit = (loser: Side) => {
     const winner: Side = loser === "p1" ? "p2" : "p1";
     if (confirm(`${label[loser]}: end the battle with ${names[winner]} as the winner?`)) {
@@ -655,6 +659,7 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   const sheets = mode?.sheets ?? null;
   const watching = mode?.perspective === "spectator";
   const [name, setName] = useState("");
+  const [players, setPlayers] = useState({ p1: "", p2: "" });
   const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -681,8 +686,11 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     setError(null);
     try {
       const opponent = sheets === "open" ? { their_team: toShowdown(theirSheet) } : { their_species: chosen };
+      const [n1, n2] = [players.p1.trim(), players.p2.trim()];
       const v = watching
-        ? await api.newBattle({ name, p1_team: toShowdown(p1Sheet), their_team: toShowdown(theirSheet), regulation: reg, best_of: bestOf })
+        ? await api.newBattle({ name: name || (n1 || n2 ? `${n1 || "Player 1"} vs ${n2 || "Player 2"}` : ""),
+                                names: { p1: n1, p2: n2 }, p1_team: toShowdown(p1Sheet), their_team: toShowdown(theirSheet),
+                                regulation: reg, best_of: bestOf })
         : await api.newBattle({ name, team_id: teamId, regulation: reg, best_of: bestOf, ...opponent });
       navigate({ tab: "battle", battle: v.id, step: null });
     } catch (e) {
@@ -746,8 +754,14 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
               ) : (
                 <>
                   {watching && (
-                    <SheetForm reg={reg} pool={pool} value={p1Sheet} onChange={setP1Sheet}
-                               label="Player 1's open team sheet" />
+                    <>
+                      <input type="text" value={players.p1} placeholder="Player 1's name (optional)"
+                             onChange={(e) => setPlayers({ ...players, p1: e.target.value })} />
+                      <SheetForm reg={reg} pool={pool} value={p1Sheet} onChange={setP1Sheet}
+                                 label="Player 1's open team sheet" />
+                      <input type="text" value={players.p2} placeholder="Player 2's name (optional)"
+                             style={{ marginTop: 10 }} onChange={(e) => setPlayers({ ...players, p2: e.target.value })} />
+                    </>
                   )}
                   <SheetForm reg={reg} pool={pool} value={theirSheet} onChange={setTheirSheet}
                              label={`${watching ? "Player 2's" : "Their"} open team sheet`} />

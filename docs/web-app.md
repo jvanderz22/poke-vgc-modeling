@@ -298,7 +298,9 @@ game 3. Undoing the end of a game takes the next game away again while nothing h
 The third mode in the new-battle form, **Watching (both open)**, is for a game you are not in: on
 stream, at an event, or a replay. Enter both players' open sheets instead of choosing a team. Both
 sides are then entered the way theirs always were: HP as a percentage, Stat Points unknown. The
-number is player 1's chance, and the page names the sides P1 and P2. It runs the open-sheet model,
+number is player 1's chance. Each sheet has an optional name field, and the page names each side
+by it, or Player 1 and Player 2 without one. The names go on the battle's setup, so the later games
+of a Bo3 keep them. In your own games the sides are You and Your opponent. It runs the open-sheet model,
 and that model's gate is scored from exactly this seat (spectator rows). The Speed read and the
 engine's answer in a 1v1 average over both players' hidden spreads.
 

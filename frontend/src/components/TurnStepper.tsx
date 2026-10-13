@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode } from "react";
-import { api, sideNames, type EndOfTurn, type Entry, type LiveView, type MoveOption, type Question } from "../api";
+import { api, possessive, sideNames, type EndOfTurn, type Entry, type LiveView, type MoveOption, type Question } from "../api";
 import { across, screenOrder, type Pos, type Side } from "../screen";
 import {
   CANT_REASONS, actedSet, active, benchFor, endOfTurn, loser, moveName, posKey, toId, turnLines, turnStart,
@@ -135,7 +135,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   fieldPick: MutableRefObject<((p: Pos) => void) | null>;
   preview: ReactNode;
 }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const own: Side | null = view.perspective === "spectator" ? null : "p1";
   const [ui, setUi] = useState<TurnUi>(() => freshTurn(view.turn));
   const t = ui.turn === view.turn ? ui : freshTurn(view.turn);
@@ -944,7 +944,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       const { was, ...p } = [...reps].sort((x, y) => order.indexOf(posKey(x)) - order.indexOf(posKey(y)))[0];
       return {
         id: `replace:${posKey(p)}`,
-        prompt: <>Who came in {was ? <>for {was}</> : <>on {names[p.side]}'s {across(p.side, p.slot)}</>}?</>,
+        prompt: <>Who came in {was ? <>for {was}</> : <>on {possessive(names[p.side])} {across(p.side, p.slot)}</>}?</>,
         options: benchFor(view, p.side).map((b) => ({
           label: <>{b.species} <span className="opt-sub">{Math.round(b.hp * 100)}%</span></>,
           pick: () => void log([{ kind: "switch", side: p.side, slot: p.slot, species: b.species }]),

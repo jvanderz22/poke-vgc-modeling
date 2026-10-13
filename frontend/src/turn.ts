@@ -4,6 +4,7 @@
 // question. What is left here is presentation: who stood where for a sentence, and screen order.
 
 import type { Entry, EndOfTurn, LiveMon, LiveView, MoveOption } from "./api";
+import { midSentence } from "./api";
 import { across, screenOrder, type Pos, type Side } from "./screen";
 
 export const BRING = 4;
@@ -125,9 +126,9 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
     const m = /^entry (\d+)/.exec(err);
     if (m) errors.set(Number(m[1]), err.replace(/^entry \d+ \([^)]*\): /, ""));
   }
-  // "Them" is a label; a sentence wants "They" and "them".
-  const subj = (side: unknown) => (names[side as Side] === "Them" ? "They" : names[side as Side] ?? String(side));
-  const obj = (side: unknown) => (names[side as Side] === "Them" ? "them" : names[side as Side] ?? String(side));
+  // A label opens a sentence as it is; inside one, "Your opponent" is "your opponent".
+  const subj = (side: unknown) => names[side as Side] ?? String(side);
+  const obj = (side: unknown) => midSentence(names[side as Side] ?? String(side));
   const lines: Line[] = [];
   const start = turnStart(journal) + 1;
   for (let i = start; i < journal.length; i++) {

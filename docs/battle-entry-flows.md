@@ -248,7 +248,8 @@ enter things, and past both to reach the history.
   it stacks into one column in the order stepper, win chance, battle state, which is still the
   order of what matters.
 
-Watching uses the same layout, with the sides labelled P1 and P2 and the number as P1's chance.
+Watching uses the same layout, with the sides labelled by the players' names (Player 1 and Player 2
+when none was given) and the number as player 1's chance.
 
 ### What is dropped, and what moves behind an ⓘ
 

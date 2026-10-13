@@ -91,7 +91,7 @@ export function Field({ view, onHp, onPick, selected }: {
   return (
     <div className="panel field-panel">
       <div className="field-head">
-        <span className="dim tiny">{sideNames(view.perspective).p2}</span>
+        <span className="dim tiny">{sideNames(view).p2}</span>
         {field.length > 0 && <span className="chips">{field.map((f) => <span key={f} className="chip field">{f}</span>)}</span>}
       </div>
       <div className="field-row">
@@ -113,7 +113,7 @@ export function Field({ view, onHp, onPick, selected }: {
                         selected={selected?.side === "p1" && selected.slot === i} />
           : <div key={i} className="active-card empty">empty</div>)}
       </div>
-      <div className="field-head"><span className="dim tiny">{sideNames(view.perspective).p1}</span></div>
+      <div className="field-head"><span className="dim tiny">{sideNames(view).p1}</span></div>
     </div>
   );
 }

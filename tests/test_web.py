@@ -570,6 +570,16 @@ def test_a_watched_battle_knows_both_sheets_and_neither_spread(watched):
         assert all(m["stats"] is None and m["hp_max"] is None for m in mons)
 
 
+def test_a_watched_battle_carries_the_players_names_into_the_next_game(client, two_sheets, battles_dir):
+    r = client.post("/api/battles", json={"p1_team": two_sheets[0], "their_team": two_sheets[1],
+                                          "names": {"p1": " Wolfe ", "p2": ""}})
+    assert r.status_code == 200, r.text
+    view = r.json()
+    assert view["sides"]["p1"]["name"] == "Wolfe" and view["sides"]["p2"]["name"] is None
+    g2 = client.post(f"/api/battles/{view['id']}/next").json()
+    assert g2["sides"]["p1"]["name"] == "Wolfe"
+
+
 def test_watching_needs_both_sheets(client, two_sheets, battles_dir):
     r = client.post("/api/battles", json={"p1_team": two_sheets[0]})
     assert r.status_code == 422

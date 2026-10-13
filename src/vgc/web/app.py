@@ -186,6 +186,9 @@ class NewBattle(BaseModel):
     their_team: str = Field(default="", description="Open Team Sheets: their six sets as text")
     p1_team: str = Field(default="", description="Watching someone else's game: player 1's open "
                          "sheet as text, with `their_team` as player 2's. No team of yours.")
+    names: dict[str, str] = Field(default_factory=dict,
+                                  description="Watching: the players' names, {p1, p2}, which the page "
+                                  "uses for each side in place of player 1 and player 2")
     best_of: int = Field(default=1, description="1, or 3 for game 1 of a series: ending a game sets "
                          "up the next, which starts out knowing what the earlier games showed")
     version: str = ""
@@ -653,7 +656,8 @@ def _watch(reg, body: NewBattle) -> dict[str, Any]:
         raise HTTPException(422, "watching needs both players' sheets")
     p1, p2 = _sheet(reg, body.p1_team, "player 1's"), _sheet(reg, body.their_team, "player 2's")
     version = body.version or in_battle_version(reg.id, OPEN)
-    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1, best_of=_best_of(body.best_of))
+    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1, best_of=_best_of(body.best_of),
+                       names=body.names)
     return battle_view(blob["id"], reg.id)
 
 

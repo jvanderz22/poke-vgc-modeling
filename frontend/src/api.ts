@@ -336,9 +336,21 @@ export type Perspective = "p1" | "spectator";
 /** One battle mode the app can offer, and the model a battle in it would run. */
 export type Mode = { id: string; sheets: Sheets; perspective: Perspective; version: string | null; gate: string };
 
-/** How a battle's two sides are named on screen. */
-export function sideNames(perspective: Perspective | undefined): Record<"p1" | "p2", string> {
-  return perspective === "spectator" ? { p1: "P1", p2: "P2" } : { p1: "You", p2: "Them" };
+/** How a battle's two sides are named on screen: "You" and "Your opponent" in your own game, and
+ *  the players' names when watching, where they were given. */
+export function sideNames(view: Pick<LiveView, "perspective" | "sides">): Record<"p1" | "p2", string> {
+  if (view.perspective !== "spectator") return { p1: "You", p2: "Your opponent" };
+  return { p1: view.sides.p1.name || "Player 1", p2: view.sides.p2.name || "Player 2" };
+}
+
+/** A side's name inside a sentence rather than opening one: "you", "your opponent". */
+export function midSentence(name: string): string {
+  return name === "You" || name === "Your opponent" ? name.toLowerCase() : name;
+}
+
+/** Whose: "your", "your opponent's", "Wolfe's". */
+export function possessive(name: string): string {
+  return name === "You" ? "your" : `${midSentence(name)}'s`;
 }
 
 /** A battle's mode in a few words, for lists and headers. */
@@ -405,7 +417,9 @@ export type LiveView = {
   turn: number; started: boolean; ended: boolean; winner: string | null;
   entries: number;
   journal: Entry[];
-  sides: Record<"p1" | "p2", { mons: LiveMon[]; conditions: Record<string, number>; sheet: boolean }>;
+  sides: Record<"p1" | "p2", { mons: LiveMon[]; conditions: Record<string, number>; sheet: boolean;
+                                /** The player's name, when watching and it was given. */
+                                name?: string | null }>;
   field: { weather: string | null; terrain: string | null; pseudo: Record<string, number> };
   menu: Record<"p1" | "p2", SideMenu>;
   questions: Question[];
@@ -532,7 +546,7 @@ export const api = {
   battles: (reg: string) => call<{ battles: BattleRow[] }>(`/api/battles?regulation=${reg}`),
   newBattle: (body: {
     name?: string; my_team?: string; team_id?: string;
-    their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
+    their_species?: string[]; their_team?: string; p1_team?: string; names?: { p1?: string; p2?: string }; regulation: string;
     best_of?: 1 | 3;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
   /** An open team sheet read off a screenshot. Slow: a few seconds of OCR on the server. */

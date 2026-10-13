@@ -117,12 +117,17 @@ def _other(setup: dict[str, Any]) -> str:
 
 def create(reg: Regulation, name: str, my_team: str, theirs: list[dict[str, Any]],
            version: str | None, p1_sheet: list[dict[str, Any]] | None = None,
-           best_of: int = 1) -> dict[str, Any]:
+           best_of: int = 1, names: dict[str, str] | None = None) -> dict[str, Any]:
     """A battle of yours, or with `p1_sheet`, someone else's: two open sheets watched from outside,
-    neither side's Stat Points known. `best_of=3` makes it game 1 of a series."""
+    neither side's Stat Points known, with the players' `names` if given. `best_of=3` makes it
+    game 1 of a series."""
     now = dt.datetime.now().isoformat(timespec="seconds")
     if p1_sheet is not None:
         setup = {"perspective": "spectator", "p1": p1_sheet, "p2": theirs}
+        # On the setup, so the next game of a series copies them with the sheets.
+        given = {sid: n.strip() for sid, n in (names or {}).items() if sid in ("p1", "p2") and n.strip()}
+        if given:
+            setup["names"] = given
     else:
         setup = {"perspective": "p1", "mine": entry.from_team(reg, my_team), "theirs": theirs}
     bid = uuid.uuid4().hex[:12]
@@ -754,7 +759,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "entries": len(battle.journal), "journal": battle.journal,
         "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
                         "conditions": dict(sorted(state.sides[sid].conditions.items())),
-                        "sheet": state.sides[sid].sheet}
+                        "sheet": state.sides[sid].sheet, "name": state.sides[sid].name}
                   for sid in ("p1", "p2")},
         "field": {"weather": state.weather, "terrain": state.terrain,
                   "pseudo": dict(sorted(state.pseudo.items()))},

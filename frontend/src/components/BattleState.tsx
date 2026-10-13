@@ -32,14 +32,14 @@ function hpClass(hp: number) {
  *  who was not brought and who might not have been, and what is known about each set. This is
  *  what changes slowly and matters when planning, so it sits under the row where you work. */
 export function BattleState({ view, extra }: { view: LiveView; extra?: Partial<Record<Side, ReactNode>> }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const own: Side | null = view.perspective === "spectator" ? null : "p1";
   const order: Side[] = ["p1", "p2"];
   return (
     <div className="panel battle-state">
       <div className="state-grid">
         {order.map((side) => <SideState key={side} view={view} side={side} own={side === own}
-                                        title={names[side] === "You" ? "Your side" : names[side] === "Them" ? "Their side" : names[side]}
+                                        title={names[side] === "You" ? "Your side" : `${names[side]}'s side`}
                                         extra={extra?.[side]} />)}
       </div>
     </div>
