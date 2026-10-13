@@ -439,8 +439,8 @@ function SeriesPanel({ view, series, navigate }: { view: LiveView; series: Serie
         <div className="tiny dim" style={{ marginTop: 8 }}>
           <b>Carried from earlier games:</b>{" "}
           {races > 0
-            ? <>{races} race{races === 1 ? "" : "s"} in turn order, which bound the same Stat Points in this game (the
-                Speed read and the engine use them; the model's number does not, since it has only seen one game at a time).</>
+            ? <>{races} race{races === 1 ? "" : "s"} in turn order, which bound the same Stat Points in this game: the
+                Speed read, the engine and the model's number all use them.</>
             : <>no races in turn order yet.</>}
           {reveals.length > 0 && (
             <ul className="derived">

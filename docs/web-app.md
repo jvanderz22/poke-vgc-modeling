@@ -278,10 +278,12 @@ the score is their results.
 
 A team is locked for the series, so the next game starts out knowing what the earlier ones showed:
 
-- **The races**, for the Speed belief. A turn-order bound on their Stat Points from game 1 holds in
-  game 2, so the Speed read, the belief panel and the engine all start from it
-  (`belief.speed.series_pairs`). The WP model is not given them: every row it was trained on came
-  from one game, so its evidence (`belief.speed.orderings`) stays this game's.
+- **The races.** A turn-order bound on their Stat Points from game 1 holds in game 2, so the Speed
+  read, the belief panel and the engine all start from it (`belief.speed.series_pairs`), and so
+  does the WP model: its evidence of who is at least as fast as whom (`belief.speed.orderings`)
+  includes the earlier games' orders, except where a mover held a different Speed-bearing item then
+  (a Scarf knocked off in game 1 is held again in game 2). The model's gates were scored on games
+  whose evidence was one game's, so they say nothing yet about how it reads a series' worth.
 - **On a hidden sheet, what was revealed**: each Pokémon's item as it started the game (a berry
   eaten in game 1 is held again), its ability, the moves it used, and the abilities it was shown not
   to have, marked `earlier game`. These do reach the model, as a reveal in the game would.

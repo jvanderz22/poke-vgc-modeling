@@ -329,13 +329,17 @@ def series_pairs(reg: Regulation, obs: Any) -> list[tuple[Any, Any, int]]:
     the turn with the same number in game 2 did not race. What decided each order (the item held,
     the field, the boosts) is on its own event, so nothing about the earlier game's state leaks
     into how this one is read.
-
-    `orderings` does not call this: it is the WP model's evidence, and that model has only ever
-    been given one game's.
     """
-    out = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
+    return [(a, b, sign) for a, b, sign, _ in _series_evidence(reg, obs)]
+
+
+def _series_evidence(reg: Regulation, obs: Any) -> list[tuple[Any, Any, int, bool]]:
+    """`series_pairs`, each marked with whether it came from an earlier game."""
+    out = [(a, b, sign, False) for a, b, sign in
+           pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))]
     for game in getattr(obs, "earlier", ()):
-        out += pairs(reg, game.moves) + ability_pairs(reg, game.abilities)
+        out += [(a, b, sign, True) for a, b, sign in
+                pairs(reg, game.moves) + ability_pairs(reg, game.abilities)]
     return out
 
 
@@ -487,6 +491,11 @@ def orderings(reg: Regulation, obs: Any) -> list[list[list[str]]]:
 
     Keyed on forme, so a Mega's arrival starts afresh rather than inheriting its base forme's
     comparisons. Ties are never excluded: "at least as fast" is all a single order can say.
+
+    In a Bo3 the earlier games' orders count too (`series_pairs`): the persistent speed is the same
+    Stat Points and nature, since a team is locked for the series. The item is the one part that can
+    differ, because a game starts with every item held again, so an earlier game's order is kept only
+    where each mover held the same Speed-bearing item then as it holds now.
     """
     out: set[tuple[tuple[str, str, str], tuple[str, str, str]]] = set()
     # Illusion logs a Zoroark's moves under whoever it is disguised as — a Zoroark-Hisui passing
@@ -501,8 +510,17 @@ def orderings(reg: Regulation, obs: Any) -> list[list[list[str]]]:
     def stale(ev: Any) -> bool:
         return (ev.side, ev.species) in lost and ev.item != ""
 
-    evidence = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
-    for first, second, sign in evidence:
+    # What each Pokémon started this game holding, for an earlier game's order to be read against.
+    held = {(sid, m.species): to_id((m.lost_item if m.item == "" and m.lost_item else m.item) or "")
+            for sid, side in obs.sides.items() for m in side.mons}
+
+    def other_item(ev: Any) -> bool:
+        then, now = to_id(ev.item or ""), held.get((ev.side, ev.species), "")
+        return then != now and bool({then, now} & ORDER_ITEMS)
+
+    for first, second, sign, earlier in _series_evidence(reg, obs):
+        if earlier and (other_item(first) or other_item(second)):
+            continue
         if first.side == second.side or first.side in disguised or second.side in disguised:
             continue
         if stale(first) or stale(second):

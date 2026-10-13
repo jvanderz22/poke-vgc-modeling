@@ -725,18 +725,46 @@ def test_the_next_game_knows_what_the_earlier_one_showed(client, team_text, batt
     assert _spe(g2, "Pelipper") == bound
 
 
-def test_the_model_is_given_only_this_games_orderings(client, team_text, battles_dir, reg):
-    """Every row the WP model was trained on came from one game, so the earlier game's races reach
-    the Speed belief and not the model's evidence."""
+def _state(reg, battle_id):
     from vgc.battle import entry
-    from vgc.belief.speed import orderings, series_pairs
     from vgc.web import live
 
+    blob = live.load("reg_mc", battle_id)
+    return entry.Battle(reg, blob["setup"], blob["journal"]).rp.state
+
+
+def test_the_model_is_given_the_earlier_games_orderings(client, team_text, battles_dir, reg):
+    """Game 1 showed Incineroar at least as fast as Pelipper, and game 2's WP evidence says so
+    before game 2 has shown anything."""
+    from vgc.belief.speed import orderings, series_pairs
+
     g1 = _game_one(client, team_text)
+    seen = orderings(reg, _state(reg, g1["id"]))
     g2 = entries(client, g1["id"], {"kind": "end", "winner": "p1"})["series"]["next"]
-    blob = live.load("reg_mc", g2)
-    state = entry.Battle(reg, blob["setup"], blob["journal"]).rp.state
-    assert len(series_pairs(reg, state)) == 1 and orderings(reg, state) == []
+    state = _state(reg, g2)
+    assert len(series_pairs(reg, state)) == 1
+    assert orderings(reg, state) == seen and [x[1] for x in seen[0]] == ["Incineroar", "Pelipper"]
+
+
+def test_an_earlier_order_under_another_item_is_not_the_models_evidence(client, team_text, battles_dir, reg):
+    """A game starts with every item held again, so an order game 1 showed after Pelipper lost a
+    Choice Scarf says nothing about the Pelipper of game 2, which is holding it."""
+    from vgc.belief.speed import orderings
+
+    v = client.post("/api/battles", json={"my_team": team_text("valid_basic"),
+                                          "their_species": THEIR_SIX, "best_of": 3}).json()
+    entries(client, v["id"],
+            {"kind": "lead", "side": "p1", "slot": 1, "species": "Incineroar"},
+            {"kind": "lead", "side": "p2", "slot": 1, "species": "Pelipper"},
+            {"kind": "consume", "side": "p2", "species": "Pelipper", "item": "Choice Scarf"},
+            {"kind": "turn", "n": 1},
+            {"kind": "move", "side": "p1", "slot": 1, "move": "Flare Blitz",
+             "target": {"side": "p2", "slot": 1}, "result": "miss"},
+            {"kind": "move", "side": "p2", "slot": 1, "move": "Hurricane",
+             "target": {"side": "p1", "slot": 1}, "result": "miss"})
+    assert orderings(reg, _state(reg, v["id"]))
+    g2 = entries(client, v["id"], {"kind": "end", "winner": "p1"})["series"]["next"]
+    assert orderings(reg, _state(reg, g2)) == []
 
 
 def test_undoing_the_end_takes_back_a_next_game_nobody_has_played(client, team_text, battles_dir):

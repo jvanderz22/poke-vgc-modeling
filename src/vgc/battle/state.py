@@ -276,9 +276,9 @@ class BattleState:
         self.ability_log: list[AbilityEvent] = []
         # The same two logs from the earlier games of a Bo3, one `EarlierGame` each. A team cannot
         # change inside a series, so a race game 1 showed bounds the same Stat Points in game 2.
-        # Kept apart from this game's logs rather than appended to them: the Speed belief reads
-        # both, and the WP model's evidence (`speed.orderings`) reads only this game's, because
-        # every row it was trained on came from one game.
+        # Kept apart from this game's logs rather than appended to them, because each game's races
+        # are paired on their own (`speed.series_pairs`), and because this game's `last_move` and
+        # the like are still this game's alone.
         self.earlier: list[EarlierGame] = []
         # Which batch of simultaneous arrivals we are in. Switches are printed before the
         # abilities they trigger, so everything announced after the last switch arrived together

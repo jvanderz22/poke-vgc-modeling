@@ -120,6 +120,5 @@ revealed in game 1 is known at game 2's preview.
 
 - **Source:** the rules (a team cannot be changed between the games of a match).
 - **In code:** `web.live.carry` writes what the earlier games showed onto the next game's setup;
-  `speed.series_pairs` reads their races for the Speed belief, the Speed read and the engine. The WP
-  model's evidence (`speed.orderings`) stays one game's, since every row it was trained on was one
-  game ([web-app](web-app.md#a-bo3)).
+  `speed.series_pairs` reads their races for the Speed belief, the Speed read and the engine, and
+  `speed.orderings` for the WP model's evidence ([web-app](web-app.md#a-bo3)).
