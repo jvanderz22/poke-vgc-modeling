@@ -239,6 +239,8 @@ enter things, and past both to reach the history.
 - **Arrivals are entered before their questions are answered.** Leads, start-of-turn switches and
   replacements arrive together, so their ability questions wait beside the stage rather than in
   front of it. Answering each as it was entered would record the entry order as the Speed order.
+  For leads they wait until all four are in: an Intimidate answered after three would miss its
+  fourth target, and a seed would be asked before the terrain that pops it.
 - **The timeline becomes the curve** in the win chance panel. Clicking a turn walks the battle
   back to it, as the timeline does now.
 - **Columns.** On the battle page `main` widens to fill the screen up to about 1600px, with 16px

@@ -733,6 +733,9 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     return canAdd ? { ...st, keys: { a: addMore, ...st.keys } } : st;
   }
 
+  /** Both slots on both sides filled: the leads are in. */
+  const leadsIn = () => (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.every(Boolean));
+
   function stageNow(): Stage {
     if (view.ended) {
       const forfeit = view.journal.some((e) => e.kind === "end" && e.by === "forfeit");
@@ -741,6 +744,10 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     }
     const base = baseStage();
     if (!view.questions.length && !staged.length) return base;
+    // The four leads arrive together, so nothing they announce is asked until all four are in:
+    // an Intimidate answered early would miss a target, and a seed would be asked before the
+    // terrain that pops it.
+    if (!view.started && !leadsIn()) return base;
     if (base.arrival) return { ...base, pre: <>{questionCards()}{base.pre}</>, digit: digitInCards,
                                 enter: staged.length ? confirmAnswers : undefined };
     return questionStage();
@@ -748,7 +755,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
 
   function baseStage(): Stage {
     if (!view.started) {
-      const ready = (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.some(Boolean));
+      const ready = leadsIn();
       return {
         id: "preview",
         prompt: ready ? "Leads are in." : "Team preview: who led?",
