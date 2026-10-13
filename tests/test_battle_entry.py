@@ -596,6 +596,46 @@ def test_recoil_is_a_share_of_the_damage_dealt(battle):
     assert rp.applied[len(battle.journal) - 1 - len(rp.questions)] == [f"Wood Hammer recoil: Rillaboom on about {left} HP"]
 
 
+def _sheets(reg, p1: list[tuple], p2: list[tuple]) -> entry.Battle:
+    """A watched battle from two open sheets: (species, item, ability, moves) each."""
+    side = lambda xs: [{"species": s, "item": i, "ability": a, "moves": m, "nature": "Hardy"} for s, i, a, m in xs]
+    return entry.Battle(reg, {"perspective": "spectator", "p1": side(p1), "p2": side(p2)})
+
+
+def test_a_drain_heals_a_share_of_the_damage_dealt_before_rocky_helmet_hurts(reg):
+    """Golisopod's Leech Life KOs Indeedee-F: half of what it dealt comes back, and then the known
+    Rocky Helmet takes its sixth. Both max HPs are guesses, so the line says "about"."""
+    b = _sheets(reg, [("Golisopod", "golisopite", "emergencyexit", ["leechlife", "protect"]),
+                      ("Raichu", "raichunitey", "lightningrod", ["fakeout", "protect"])],
+                [("Indeedee-F", "rockyhelmet", "psychicsurge", ["psychic", "protect"]),
+                 ("Rotom-Heat", "choicescarf", "levitate", ["overheat", "trick"])])
+    lead(b, ("p1", 0, "Golisopod"), ("p1", 1, "Raichu"), ("p2", 0, "Indeedee-F"), ("p2", 1, "Rotom-Heat"))
+    answer_all(b)
+    b.append({"kind": "turn", "n": 1})
+    b.append({"kind": "heal", "side": "p1", "slot": 0, "pct": 50})
+    st = b.rp.state
+    gol, ind = rules.max_hp(st, st.at("p1", 0))[0], rules.max_hp(st, st.at("p2", 0))[0]
+    b.append({"kind": "move", "side": "p1", "slot": 0, "move": "Leech Life", "target": {"side": "p2", "slot": 0}})
+    rp = b.append({"kind": "damage", "side": "p2", "slot": 0, "fainted": True})
+    healed = min(100, round(50 + 100 * round(ind / 2) / gol))
+    after = max(0, round(healed - 100 * (gol // 6) / gol))
+    assert round(rp.state.at("p1", 0).hp * 100) == after
+    assert rp.applied[len(b.journal) - 1][0] == f"Leech Life drain: Golisopod on about {healed}%"
+
+
+def test_liquid_ooze_turns_a_drain_into_damage(reg):
+    b = _sheets(reg, [("Venusaur", "leftovers", "chlorophyll", ["gigadrain", "protect"]),
+                      ("Raichu", "raichunitey", "lightningrod", ["fakeout", "protect"])],
+                [("Swalot", "sitrusberry", "liquidooze", ["protect", "sludgebomb"]),
+                 ("Rotom-Heat", "choicescarf", "levitate", ["overheat", "trick"])])
+    lead(b, ("p1", 0, "Venusaur"), ("p1", 1, "Raichu"), ("p2", 0, "Swalot"), ("p2", 1, "Rotom-Heat"))
+    answer_all(b)
+    b.append({"kind": "turn", "n": 1})
+    b.append({"kind": "move", "side": "p1", "slot": 0, "move": "Giga Drain", "target": {"side": "p2", "slot": 0}})
+    rp = b.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 60})
+    assert rp.state.at("p1", 0).hp < 1.0
+
+
 def test_their_recoil_and_your_rough_skin_take_their_hp(battle):
     rp = _garchomp(battle)
     gambit = rules.max_hp(rp.state, rp.state.at("p2", 0))[0]

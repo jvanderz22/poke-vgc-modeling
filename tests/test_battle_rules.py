@@ -459,9 +459,9 @@ def test_a_white_herb_answers_a_drop_and_a_clear_amulet_refuses_anothers(reg):
 
 
 def test_the_recoil_tables_are_exactly_the_pinned_ones(reg):
-    """`RECOIL` and `HALF_HP_COST` as the pinned build's moves.ts has them, over what is legal."""
+    """`RECOIL`, `HALF_HP_COST` and `DRAIN` as the pinned build's moves.ts has them, over what is legal."""
     src = (paths.SHOWDOWN / "data" / "moves.ts").read_text()
-    recoil, half = {}, set()
+    recoil, half, drain = {}, set(), {}
     for m in re.finditer(r"^\t(\w+): \{\n(.*?)^\t\},", src, re.S | re.M):
         name, body = m.group(1), m.group(2)
         if name not in reg.dex.moves:
@@ -470,6 +470,9 @@ def test_the_recoil_tables_are_exactly_the_pinned_ones(reg):
             recoil[name] = (int(r.group(1)), int(r.group(2)))
         if re.search(r"^\t\t(mindBlownRecoil|chloroblastRecoil): true", body, re.M):
             half.add(name)
+        if d := re.search(r"^\t\tdrain: \[(\d+), (\d+)\]", body, re.M):
+            drain[name] = (int(d.group(1)), int(d.group(2)))
+    assert rules.DRAIN == drain
     assert rules.RECOIL == recoil
     assert rules.HALF_HP_COST == half
     assert rules.RECOIL["doubleedge"] == (33, 100) and rules.RECOIL["headsmash"] == (1, 2)

@@ -25,8 +25,8 @@ in `frontend/src/screen.ts`), the two-column page with the battle state below it
 
 **Work remaining**, all in "Build order" below: step 3, the Plan stage; steps 6–18, the gaps found
 while building and using the rest, in the order to fix them; and the checks in "How to tell it is
-better", none of which has been run yet. Recoil and Life Orb (step 6) and Intimidate's drop
-answered by an item (step 15) are the two most likely to come up in a real game.
+better", none of which has been run yet. Step 6 is built. Intimidate's drop answered by an item
+(step 15) is the most likely of the rest to come up in a real game.
 
 ---
 
@@ -408,12 +408,16 @@ happened, and only their placement moves into stage 6.
    working it out in the browser. *Built.*
 5. **Backend item 4**, the end-of-turn checklist. *Built.*
 
-The gaps found while building and using steps 1–5, in the order to fix them. None is built.
+The gaps found while building and using steps 1–5, in the order to fix them. Only step 6 is built.
 
 6. **Recoil, Life Orb and drain.** After a move's results, if the move has recoil or drain, or the
    attacker holds (or might hold) a Life Orb, ask once more: "Rillaboom is on 150/207. What is it
    on now?", with "unchanged" as the default. Logged as `heal` (HP alone), never `damage`. Today
    this goes through "Anything else → HP changed", which is the step most often reached for.
+   *Built differently:* nothing is asked. Recoil, Life Orb and drain are worked out from the damage
+   dealt (`entry._recoil`, `_life_orb`, `_drain`), said on the move's line, and "about" when a max
+   HP is guessed; "HP changed" corrects a guess. A target that might have Liquid Ooze leaves the
+   attacker's HP to you.
 7. **A result for a move logged earlier.** The stepper resumes a move whose results are owed
    (`turn_progress.awaiting`), but a no-damage answer to it is only remembered in the browser,
    because the move entry is already written. Add a tap that gives a logged move a target's

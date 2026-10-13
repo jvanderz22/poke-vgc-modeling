@@ -442,6 +442,12 @@ RECOIL = {"bravebird": (33, 100), "doubleedge": (33, 100), "flareblitz": (33, 10
           "wavecrash": (33, 100), "wildcharge": (1, 4), "woodhammer": (33, 100)}
 HALF_HP_COST = {"steelbeam"}
 
+# A draining move's heal, as a share of the damage it dealt (`drain` in moves.ts), rounded as
+# `Battle.spreadDamage` rounds it after gen 4. Big Root adds 30% to it (5324/4096, `onTryHeal`), and
+# Liquid Ooze on the target turns it into damage. Re-derived by `tests/test_battle_rules.py`.
+DRAIN = {"bitterblade": (1, 2), "drainingkiss": (3, 4), "drainpunch": (1, 2), "gigadrain": (1, 2),
+         "hornleech": (1, 2), "leechlife": (1, 2), "matchagotcha": (1, 2), "paraboliccharge": (1, 2)}
+
 # Moves that put up a field-wide effect for five turns, the turn they are used included. Using a
 # room again while it is up ends it; Gravity just fails.
 FIELD_MOVES = {"trickroom", "magicroom", "wonderroom", "gravity"}
@@ -478,6 +484,20 @@ def lose_hp(state: Any, mon: Any, hp: int) -> str | None:
         state.faint(mon)
         return "fainted"
     return left
+
+
+def gain_hp(state: Any, mon: Any, hp: int) -> str | None:
+    """Give `hp` back to a Pokémon (a drain), up to its max: `lose_hp` the other way."""
+    if mon.state != "active" or mon.hp <= 0:
+        return None
+    mx, exact = max_hp(state, mon)
+    if exact:
+        now = min(mx, round(mon.hp * mx) + hp)
+        state.set_hp(mon, now, mx, mon.status)
+        return f"{now} HP"
+    now = min(100, round(100 * mon.hp + 100 * hp / mx))
+    state.set_hp(mon, now, 100, mon.status)
+    return f"{now}%"
 
 
 # --- applying one -------------------------------------------------------------------------

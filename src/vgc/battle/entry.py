@@ -588,6 +588,40 @@ def _recoil(rp: Replay, reg: Regulation, target: Mon, before: float) -> None:
           about=not (exact and rules.max_hp(rp.state, user)[1]))
 
 
+def _drain(rp: Replay, reg: Regulation, target: Mon, before: float) -> None:
+    """A draining move's heal, a share of the damage it just dealt (`rules.DRAIN`), worked out as
+    `_recoil` works out recoil: one damage entry per target, each drained on its own. A target that
+    could have Liquid Ooze leaves the HP for you to enter; one that certainly has it hurts instead."""
+    fx = rp.fx
+    if fx is None or fx["move"] not in rules.DRAIN:
+        return
+    user = fx["user"]
+    if target is user or user.state != "active" or user.hp <= 0:
+        return
+    mx, exact = rules.max_hp(rp.state, target)
+    dealt = round((before - target.hp) * mx)
+    if dealt <= 0:
+        return
+    num, den = rules.DRAIN[fx["move"]]
+    amount = round(dealt * num / den)
+    if to_id(user.item or "") == "bigroot":
+        amount = (amount * 5324 + 2047) // 4096      # `chainModify`, rounded as `modify` rounds
+    if amount <= 0:
+        return
+    about = not (exact and rules.max_hp(rp.state, user)[1])
+    ooze = _could_have(rp, reg, target, "liquidooze")
+    if ooze:
+        _chip(rp, reg, user, amount, "Liquid Ooze", about=about)
+        return
+    if ooze is None:
+        return
+    left = rules.gain_hp(rp.state, user, amount)
+    if left:
+        name = (reg.dex.get_move(fx["move"]) or {}).get("name", fx["move"])
+        rp.applied.setdefault(rp._index, []).append(
+            f"{name} drain: {user.species} on {'about ' if about else ''}{left}")
+
+
 def _chip_items(reg: Regulation, mon: Mon) -> list[str]:
     """The chip items (Rocky Helmet) an unseen item could well be."""
     if mon.item is not None:
@@ -694,6 +728,7 @@ def _on_damage(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
         rp.state.record_damage(m, before, crit=bool(e.get("crit")))
         _on_connect(rp, reg, m if m.hp > 0 and not e.get("fainted") else None)
         _recoil(rp, reg, m, before)
+        _drain(rp, reg, m, before)
     if rp.awaiting is not None:
         here = {"side": e["side"], "slot": int(e["slot"])}
         rp.awaiting["targets"] = [t for t in rp.awaiting["targets"] if t != here]
