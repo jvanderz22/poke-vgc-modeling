@@ -768,8 +768,9 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "derived": battle.rp.derived,
         "applied": {str(i): notes for i, notes in battle.rp.applied.items()},
         # What each move in the journal does on its own once it hits, so "turn so far" can say
-        # what was applied for you after the stepper stops asking about it.
-        "move_effects": {mv: move_effects(mv) for mv in
+        # what was applied for you after the stepper stops asking about it, and its name for a
+        # mover no longer on the field, whose menu is gone.
+        "move_effects": {mv: {"name": (reg.dex.get_move(mv) or {}).get("name", mv), **move_effects(mv)} for mv in
                          sorted({to_id(e["move"]) for e in battle.journal if e.get("kind") == "move"})},
         "turn_progress": entry.progress(battle.rp, reg),
         "end_of_turn": entry.end_of_turn(battle.rp, reg),

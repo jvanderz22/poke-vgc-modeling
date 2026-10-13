@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObjec
 import { api, possessive, sideNames, type EndOfTurn, type Entry, type LiveView, type MoveOption, type Question } from "../api";
 import { across, screenOrder, type Pos, type Side } from "../screen";
 import {
-  CANT_REASONS, actedSet, active, benchFor, endOfTurn, loser, moveName, posKey, toId, turnLines, turnStart,
+  CANT_REASONS, actedSet, active, benchFor, endOfTurn, loser, moveName, posKey, tagged, toId, turnLines, turnStart,
 } from "../turn";
 import { FieldPad } from "./EntryBar";
 
@@ -195,6 +195,8 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   const mon = (p: Pos) => active(view, p);
   const nameAt = (p: Pos) => mon(p)?.forme ?? view.menu[p.side].actives[p.slot]?.species ?? "—";
   const where = (p: Pos) => `${names[p.side]} · ${across(p.side, p.slot)}`;
+  /** The name a sentence uses: `nameAt`, with its side when both teams have the species. */
+  const said = (p: Pos) => tagged(view, names, p.side, nameAt(p));
   const monButton = (p: Pos) => <>{nameAt(p)} <span className="opt-sub">{where(p)}</span></>;
 
   // --- logging an action -------------------------------------------------------------------
@@ -307,7 +309,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     const now = mine ? `${m!.hp_exact}/${m!.hp_max}` : `${Math.round((m?.hp ?? 0) * 100)}%`;
     return {
       id: opts.id,
-      prompt: <>{opts.lead}{nameAt(p)} is on {now}. What is it on now?</>,
+      prompt: <>{opts.lead}{said(p)} is on {now}. What is it on now?</>,
       options: opts.extra,
       dflt: opts.dflt,
       keys: opts.keys,
@@ -639,7 +641,12 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     };
   };
 
-  const promptOf = (x: Question) => <>{x.prompt}{x.source && <span className="dim"> · from {x.source.species}</span>}</>;
+  // The backend's prompt names the species alone; in a mirror, the side says whose it is.
+  const promptOf = (x: Question) => <>
+    {x.prompt}
+    {tagged(view, names, x.side as Side, x.species) !== x.species && <span className="dim"> · {names[x.side as Side]}</span>}
+    {x.source && <span className="dim"> · from {tagged(view, names, x.source.side as Side, x.source.species)}</span>}
+  </>;
 
   /** Every question open now, or opened by an answer selected: the selected ones stay on screen with
    *  their answer, and the knock-on ones appear under them before anything is logged. */
@@ -782,7 +789,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     const owed = aw?.targets.filter((x) => !skipped.includes(`${aw.index}:${posKey(x)}`)) ?? [];
     if (aw && owed.length) {
       return actStage({
-        pos: { side: aw.side, slot: aw.slot }, species: aw.species,
+        pos: { side: aw.side, slot: aw.slot }, species: tagged(view, names, aw.side, aw.species),
         move: { id: aw.move, name: moveName(view, aw.move), target: null, category: null },
         cant: false, aiming: false, targets: owed, spread: owed.length > 1, results: [], crit: false,
         logged: aw.index,
@@ -841,7 +848,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
                   </span>
                   <span className="batch-choices">
                     {benchFor(view, p.side).map((b) => {
-                      const text = `${nameAt(p)} switched to ${b.species}`;
+                      const text = `${said(p)} switched to ${b.species}`;
                       // One Pokémon cannot come in for both of a side's two.
                       const taken = pending.some((x) => x.key !== sk && x.key.startsWith(`switch:${p.side}`)
                                                       && x.entries[0]?.species === b.species);
@@ -874,7 +881,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     // 2–6. Who moved, until everyone has or you say the turn is over.
     if (!t.eot && toAct.length > 0) {
       const begin = (p: Pos): Act => ({
-        pos: p, species: nameAt(p), move: null, cant: false, aiming: false, targets: null, spread: false, results: [], crit: false,
+        pos: p, species: said(p), move: null, cant: false, aiming: false, targets: null, spread: false, results: [], crit: false,
       });
       if (toAct.length === 1) return actStage(begin(toAct[0]), true);
       // Screen order, always, and no default: the order you click in is the Speed reading.
@@ -950,7 +957,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       const { was, ...p } = [...reps].sort((x, y) => order.indexOf(posKey(x)) - order.indexOf(posKey(y)))[0];
       return {
         id: `replace:${posKey(p)}`,
-        prompt: <>Who came in {was ? <>for {was}</> : <>on {possessive(names[p.side])} {across(p.side, p.slot)}</>}?</>,
+        prompt: <>Who came in {was ? <>for {tagged(view, names, p.side, was)}</> : <>on {possessive(names[p.side])} {across(p.side, p.slot)}</>}?</>,
         options: benchFor(view, p.side).map((b) => ({
           label: <>{b.species} <span className="opt-sub">{Math.round(b.hp * 100)}%</span></>,
           pick: () => void log([{ kind: "switch", side: p.side, slot: p.slot, species: b.species }]),

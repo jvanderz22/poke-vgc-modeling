@@ -50,6 +50,15 @@ const CANT_WORDS: Record<string, string> = {
   flinch: "flinched", par: "fully paralysed", slp: "asleep", frz: "frozen", recharge: "recharging",
 };
 
+/** A Pokémon named in a sentence: with its side when both teams have the species, so a mirror's
+ *  "Sneasler used Dire Claw → Sneasler" says whose is whose. Buttons that show the side already
+ *  use the plain name. */
+export function tagged(view: LiveView, names: Record<Side, string>, side: Side, name: string): string {
+  const mon = view.sides[side]?.mons.find((m) => m.forme === name || m.species === name);
+  const theirs = view.sides[side === "p1" ? "p2" : "p1"]?.mons ?? [];
+  return mon && theirs.some((m) => m.species === mon.species) ? `${name} (${midSentence(names[side])})` : name;
+}
+
 /** Whether a Pokémon has had its turn, by `turn_progress`. Kept by Pokémon rather than slot,
  *  because Ally Switch moves a Pokémon that has acted into a slot that has not. */
 export function actedSet(view: LiveView): Set<string> {
@@ -113,7 +122,7 @@ export function moveName(view: LiveView, id: string): string {
       if (m) return m.name;
     }
   }
-  return PRETTY[toId(id)] ?? id;
+  return view.move_effects?.[toId(id)]?.name ?? PRETTY[toId(id)] ?? id;
 }
 
 /** Each entry since the last `turn` entry, written the way the cartridge would write it. A move
@@ -134,10 +143,14 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
   for (let i = start; i < journal.length; i++) {
     const e = journal[i];
     const at = i;
-    const who = (side: unknown, slot: unknown) =>
-      before[at][`${side}${slot}`] ?? `${names[side as Side] ?? side} ${across(side as Side, Number(slot))}`;
+    const named = (side: unknown, name: string) => tagged(view, names, side as Side, name);
+    const who = (side: unknown, slot: unknown) => {
+      const name = before[at][`${side}${slot}`];
+      return name ? named(side, name) : `${names[side as Side] ?? side} ${across(side as Side, Number(slot))}`;
+    };
     const hp = (x: Entry, j: number) => {
-      const name = before[j][`${x.side}${x.slot}`] ?? who(x.side, x.slot);
+      const was = before[j][`${x.side}${x.slot}`];
+      const name = was ? named(x.side, was) : who(x.side, x.slot);
       const crit = x.crit ? "A critical hit! " : "";
       if (x.fainted) return `${crit}${name} fainted.`;
       if (x.hp != null) return `${crit}${name} on ${x.hp} HP.`;
@@ -189,9 +202,9 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
       }
       case "field": text = `${PRETTY[toId(String(e.value ?? ""))] ?? e.value ?? e.what} ${e.on === false ? "ended" : "started"}.`; break;
       case "side": text = `${PRETTY[toId(String(e.condition))] ?? e.condition} ${e.on === false ? "ended" : "went up"} for ${obj(e.side)}.`; break;
-      case "reveal": text = `${e.species}'s ${e.what} is ${PRETTY[toId(String(e.value ?? ""))] ?? (e.value || "nothing")}.`; break;
-      case "consume": text = `${e.species} used up its ${e.item}.`; break;
-      case "mega": text = `${e.species} Mega Evolved${e.forme ? ` into ${e.forme}` : ""}.`; break;
+      case "reveal": text = `${named(e.side, String(e.species))}'s ${e.what} is ${PRETTY[toId(String(e.value ?? ""))] ?? (e.value || "nothing")}.`; break;
+      case "consume": text = `${named(e.side, String(e.species))} used up its ${e.item}.`; break;
+      case "mega": text = `${named(e.side, String(e.species))} Mega Evolved${e.forme ? ` into ${e.forme}` : ""}.`; break;
       case "answer":
         text = e.option == null ? `${e.species ?? "It"}: not sure what happened.`
           : e.label ? `${e.species ?? ""}: ${e.label}.` : "A question answered.";

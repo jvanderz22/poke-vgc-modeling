@@ -425,7 +425,7 @@ export type LiveView = {
   questions: Question[];
   derived: string[];
   /** What each move in the journal does on its own once it hits, and its chance effects, by id. */
-  move_effects?: Record<string, Pick<MoveOption, "follows" | "chance">>;
+  move_effects?: Record<string, Pick<MoveOption, "follows" | "chance"> & { name?: string }>;
   /** What the replay did on its own after a move (Life Orb's recoil), by the move's journal index. */
   applied?: Record<string, string[]>;
   turn_progress?: TurnProgress;
