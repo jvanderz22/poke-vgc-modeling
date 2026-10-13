@@ -231,6 +231,8 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `GET /api/endgames/{replay_id}` | One of those games position by position: board, events, WP, both open sheets |
 | `GET /api/battles`, `POST /api/battles`, `GET/DELETE /api/battles/{id}` | Saved battles; start one (yours against an open or closed sheet, or watching someone else's game); one as it stands, with its WP and gate verdicts |
 | `POST /api/battles/{id}/entries`, `POST /api/battles/{id}/undo`, `GET /api/battles/{id}/at/{index}` | Append taps, pop the last, or see the battle after its first `index` taps |
+| `POST /api/battles/{id}/next` | The next game of the battle's Bo3, made if it is not there yet (ending a game of one already makes it) |
+| `GET /api/species/{name}` | What a sheet can say about one species: types, legal abilities and moves, and the items and natures people run, each ordered by usage |
 | `GET /api/battles/{id}/trajectory` | The WP at every turn so far, with the band over drawn sets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
 
@@ -260,6 +262,28 @@ app (the password comes from `VGC_WEB_PASSWORD` or `.env`), and `vgc-local` to
 is also how a deploy is checked. `solve` waits for the engine's answer to settle and returns when
 each part landed (`timeline`, with the server's own `elapsed`), which is the doubles answer timed
 on the machine that serves it.
+
+### A Bo3
+
+A new battle is a single game unless **Bo3** is chosen. Then it is game 1 of a series, and logging
+its end sets up the next game: the same two teams, nothing to enter again. The series stops once a
+side has two wins. Every game is an ordinary battle carrying `series: {id, game, best_of, name}`;
+the score is their results.
+
+A team is locked for the series, so the next game starts out knowing what the earlier ones showed:
+
+- **The races**, for the Speed belief. A turn-order bound on their Stat Points from game 1 holds in
+  game 2, so the Speed read, the belief panel and the engine all start from it
+  (`belief.speed.series_pairs`). The WP model is not given them: every row it was trained on came
+  from one game, so its evidence (`belief.speed.orderings`) stays this game's.
+- **On a hidden sheet, what was revealed**: each Pokémon's item as it started the game (a berry
+  eaten in game 1 is held again), its ability, the moves it used, and the abilities it was shown not
+  to have, marked `earlier game`. These do reach the model, as a reveal in the game would.
+
+What a game carries is computed from the games before it and written onto its setup
+(`web.live.carry`), so its replay is still a function of its setup and journal. A tap, an undo or a
+deletion in an earlier game rewrites the later games' carry, so fixing a mis-tap in game 1 reaches
+game 3. Undoing the end of a game takes the next game away again while nothing has been logged in it.
 
 ### Watching someone else's game
 

@@ -157,6 +157,15 @@ class AbilityEvent:
         return {k: getattr(self, k) for k in self.__slots__}
 
 
+class EarlierGame:
+    """The races an earlier game of the same series showed: its `moves_log` and `ability_log`."""
+
+    __slots__ = ("game", "moves", "abilities")
+
+    def __init__(self, game: int, moves: list[MoveEvent], abilities: list[AbilityEvent]):
+        self.game, self.moves, self.abilities = game, moves, abilities
+
+
 class Mon:
     __slots__ = ("species", "forme", "nickname", "state", "position", "hp", "hp_max", "status", "boosts",
                  "volatiles", "item", "item_source", "lost_item", "ability", "ability_source", "moves",
@@ -265,6 +274,12 @@ class BattleState:
         self.moves_log: list[MoveEvent] = []
         self.damage_log: list[DamageEvent] = []
         self.ability_log: list[AbilityEvent] = []
+        # The same two logs from the earlier games of a Bo3, one `EarlierGame` each. A team cannot
+        # change inside a series, so a race game 1 showed bounds the same Stat Points in game 2.
+        # Kept apart from this game's logs rather than appended to them: the Speed belief reads
+        # both, and the WP model's evidence (`speed.orderings`) reads only this game's, because
+        # every row it was trained on came from one game.
+        self.earlier: list[EarlierGame] = []
         # Which batch of simultaneous arrivals we are in. Switches are printed before the
         # abilities they trigger, so everything announced after the last switch arrived together
         # and therefore raced.

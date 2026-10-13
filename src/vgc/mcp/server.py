@@ -150,13 +150,17 @@ def build(api: Api | None = None):
 
     @server.tool()
     def create_battle(my_team: str = "", team_id: str = "", their_team: str = "",
-                      their_species: list[str] | None = None, p1_team: str = "", name: str = "") -> dict[str, Any]:
+                      their_species: list[str] | None = None, p1_team: str = "", name: str = "",
+                      best_of: int = 1) -> dict[str, Any]:
         """Start a battle. Yours against an open sheet: `my_team` (or `team_id`) and `their_team`.
         Against a closed sheet: `their_species` instead. Watching someone else's game: `p1_team` and
-        `their_team` (player 2), with no team of yours. Returns the battle's view, with its id."""
+        `their_team` (player 2), with no team of yours. `best_of=3` makes it game 1 of a series:
+        logging its end sets up the next game (its id is the view's `series.next`), which starts out
+        knowing what the earlier games showed. Returns the battle's view, with its id."""
         return api.call("POST", "/api/battles", json={
             "name": name, "my_team": my_team, "team_id": team_id, "their_team": their_team,
-            "their_species": their_species or [], "p1_team": p1_team, "regulation": reg})
+            "their_species": their_species or [], "p1_team": p1_team, "best_of": best_of,
+            "regulation": reg})
 
     @server.tool()
     def get_battle(battle_id: str) -> dict[str, Any]:

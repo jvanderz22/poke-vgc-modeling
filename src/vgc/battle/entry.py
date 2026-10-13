@@ -197,7 +197,43 @@ def setup_state(reg: Regulation, setup: dict[str, Any]) -> BattleState:
             side.mons.append(m)
             side.sheet = side.sheet or (not own and spec.get("ability") is not None)
         side.team_size = len(side.mons)
+    _carry(state, setup.get("carried"))
     return state
+
+
+def _carry(state: BattleState, carried: dict[str, Any] | None) -> None:
+    """What the earlier games of a Bo3 showed, which this game starts out knowing (`web.live.carry`).
+
+    Two things carry. The races, as `state.earlier`, for the Speed belief: a team is locked for the
+    series, so its Stat Points are too. And on a hidden side, what was revealed about each Pokémon
+    (its item, ability and the moves it used, and the abilities it was shown not to have), with
+    `source: "earlier game"`. Only an unknown is filled: a sheet already says all of it.
+
+    It is computed from the other games and stored on the setup, so replaying this game stays a
+    function of its setup and journal; the setup is rewritten when an earlier game changes.
+    """
+    from vgc.battle.state import AbilityEvent, EarlierGame, MoveEvent
+
+    if not carried:
+        return
+    for g in carried.get("games", []):
+        state.earlier.append(EarlierGame(int(g["game"]), [MoveEvent(**e) for e in g.get("moves", [])],
+                                         [AbilityEvent(**e) for e in g.get("abilities", [])]))
+    for sid, known in (carried.get("reveals") or {}).items():
+        if sid == state.perspective or sid not in state.sides:
+            continue
+        for m in state.sides[sid].mons:
+            r = known.get(m.species)
+            if not r:
+                continue
+            if m.item is None and r.get("item") is not None:
+                m.item, m.item_source = r["item"], "earlier game"
+            if m.ability is None and r.get("ability"):
+                m.ability, m.ability_source = r["ability"], "earlier game"
+            if not m.moves:
+                m.moves_used = list(dict.fromkeys(list(m.moves_used) + list(r.get("moves", []))))
+            if m.ability is None:
+                m.ability_ruled_out |= set(r.get("ruled_out", []))
 
 
 def side_entries(setup: dict[str, Any], sid: str) -> list[dict[str, Any]]:

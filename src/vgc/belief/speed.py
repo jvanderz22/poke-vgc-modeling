@@ -321,6 +321,24 @@ def ability_pairs(reg: Regulation, log: Iterable[Any]) -> list[tuple[Any, Any, i
     return out
 
 
+def series_pairs(reg: Regulation, obs: Any) -> list[tuple[Any, Any, int]]:
+    """Every race this game showed, and every race the earlier games of its Bo3 showed.
+
+    A team is locked for the series, so the Stat Points game 1 raced on are the ones game 2 races
+    on, and a bound from either holds in both. Each game is paired on its own: a turn of game 1 and
+    the turn with the same number in game 2 did not race. What decided each order (the item held,
+    the field, the boosts) is on its own event, so nothing about the earlier game's state leaks
+    into how this one is read.
+
+    `orderings` does not call this: it is the WP model's evidence, and that model has only ever
+    been given one game's.
+    """
+    out = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
+    for game in getattr(obs, "earlier", ()):
+        out += pairs(reg, game.moves) + ability_pairs(reg, game.abilities)
+    return out
+
+
 def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | None = None,
           cap: int | None = None) -> dict[tuple[str, str], SpeedBelief]:
     """Feasible Speed SP for every Pokémon that moved, given the ones whose spread you know.
@@ -373,8 +391,7 @@ def infer(reg: Regulation, obs: Observer, known: dict[tuple[str, str], int] | No
         band = speed_band(reg, ev.forme or ev.species, natures.get(key), points)
         return None if band is None else (effective_speed(band[0], ev), effective_speed(band[1], ev))
 
-    evidence = pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", []))
-    for first, second, sign in evidence:
+    for first, second, sign in series_pairs(reg, obs):
         fb, sb = belief_for(first), belief_for(second)
         if fb is UNMODELLED or sb is UNMODELLED:
             continue
@@ -561,7 +578,7 @@ def joint(reg: Regulation, obs: Any, keys: tuple[tuple[str, str], tuple[str, str
     fa, fb = [1.0] * len(va), [1.0] * len(vb)
     both = [[1.0] * len(vb) for _ in va]
     used = 0
-    for first, second, sign in pairs(reg, obs.moves_log) + ability_pairs(reg, getattr(obs, "ability_log", [])):
+    for first, second, sign in series_pairs(reg, obs):
         k1, k2 = (first.side, first.species), (second.side, second.species)
         if base_speed(reg, first.forme or first.species) is None or base_speed(reg, second.forme or second.species) is None:
             continue

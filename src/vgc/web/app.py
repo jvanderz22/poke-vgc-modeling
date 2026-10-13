@@ -185,6 +185,8 @@ class NewBattle(BaseModel):
     their_team: str = Field(default="", description="Open Team Sheets: their six sets as text")
     p1_team: str = Field(default="", description="Watching someone else's game: player 1's open "
                          "sheet as text, with `their_team` as player 2's. No team of yours.")
+    best_of: int = Field(default=1, description="1, or 3 for game 1 of a series: ending a game sets "
+                         "up the next, which starts out knowing what the earlier games showed")
     version: str = ""
     regulation: str = "reg_mc"
 
@@ -260,6 +262,55 @@ def pool(regulation: str = "reg_mc") -> dict[str, Any]:
             "used_up": sorted({i["name"] for k, i in reg.dex.items.items() if rules.used_up(reg, k)}),
             "moves": sorted({m["name"] for m in reg.dex.moves.values()}),
             "natures": NATURES}
+
+
+@app.get("/api/species/{name}")
+def species_options(name: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """What a sheet can say about one species, for entering a sheet by hand: its types, its legal
+    abilities and moves, and the items and natures people run on it. Each list is ordered by how
+    often it appears on that species' sheets (`share`, 0 for a legal option nobody has run), so the
+    one you are looking for is usually near the top."""
+    reg = _reg(regulation)
+    entry = reg.dex.get_species(name)
+    if entry is None or entry.get("battleOnly"):
+        raise HTTPException(404, f"{name!r} is not a species in {reg.name}")
+    from vgc.belief import sets as set_belief
+
+    try:
+        belief = set_belief.for_species(reg, entry["name"])
+    except Exception:                   # no corpus built: the dex still knows what is legal
+        belief = None
+    total = sum(s.count for s in belief.sheets) if belief else 0
+
+    def share(key, value: str) -> float:
+        if not total:
+            return 0.0
+        return round(sum(s.count for s in belief.sheets if key(s) == value) / total, 3)
+
+    def ranked(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return sorted(rows, key=lambda r: (-r["share"], r["name"]))
+
+    moves = belief.moves(top=999) if belief else []
+    move_share = dict(moves)
+    move_rows = [{"name": (reg.dex.get_move(mv) or {}).get("name", mv),
+                  "share": round(move_share.get(mv, 0.0), 3)}
+                 for mv in set_belief.legal_moves(reg, entry["name"])]
+    abilities = [{"name": a, "share": share(lambda s: s.ability, to_id(a))}
+                 for a in dict.fromkeys((entry.get("abilities") or {}).values())]
+    items = {}
+    for s_ in (belief.sheets if belief else []):
+        if s_.item and s_.item != set_belief.NONE:
+            items[s_.item] = items.get(s_.item, 0) + s_.count
+    item_rows = [{"name": (reg.dex.get_item(i) or {}).get("name", i), "share": round(n / total, 3)}
+                 for i, n in items.items() if reg.dex.get_item(i)]
+    natures = {}
+    for s_ in (belief.sheets if belief else []):
+        if s_.nature:
+            natures[s_.nature.capitalize()] = natures.get(s_.nature.capitalize(), 0) + s_.count
+    return {"name": entry["name"], "types": entry.get("types", []), "seen": total,
+            "abilities": ranked(abilities), "moves": ranked(move_rows), "items": ranked(item_rows),
+            "natures": ranked([{"name": n, "share": round(c / total, 3)} for n, c in natures.items()
+                               if n in NATURES])}
 
 
 @app.post("/api/compose")
@@ -529,8 +580,14 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
 
     # The model is chosen by the regime the battle is played in, and recorded on the battle.
     version = body.version or in_battle_version(reg.id, OPEN if body.their_team else CLOSED)
-    blob = live.create(reg, body.name, text, theirs, version)
+    blob = live.create(reg, body.name, text, theirs, version, best_of=_best_of(body.best_of))
     return battle_view(blob["id"], reg.id)
+
+
+def _best_of(n: int) -> int:
+    if n not in (1, 3):
+        raise HTTPException(422, "best_of is 1 or 3")
+    return n
 
 
 def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
@@ -555,7 +612,7 @@ def _watch(reg, body: NewBattle) -> dict[str, Any]:
         raise HTTPException(422, "watching needs both players' sheets")
     p1, p2 = _sheet(reg, body.p1_team, "player 1's"), _sheet(reg, body.their_team, "player 2's")
     version = body.version or in_battle_version(reg.id, OPEN)
-    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1)
+    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1, best_of=_best_of(body.best_of))
     return battle_view(blob["id"], reg.id)
 
 
@@ -579,6 +636,7 @@ def add_entries(battle_id: str, body: Entries) -> dict[str, Any]:
     blob["turn"] = b.rp.state.turn
     blob["result"] = b.rp.state.winner if b.rp.state.ended else None
     live.save(reg.id, blob)
+    live.after_edit(reg, blob, b.rp.state.ended)
     return _view(reg, blob, b)
 
 
@@ -611,7 +669,22 @@ def undo(battle_id: str, regulation: str = "reg_mc", count: int = 1) -> dict[str
     blob["turn"] = b.rp.state.turn
     blob["result"] = b.rp.state.winner if b.rp.state.ended else None
     live.save(reg.id, blob)
+    live.after_edit(reg, blob, b.rp.state.ended)
     return _view(reg, blob, b)
+
+
+@app.post("/api/battles/{battle_id}/next")
+def next_game(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """The next game of this battle's series, made if it is not there yet: the same two teams,
+    starting out knowing what the games so far showed. Ending a game of a Bo3 already does this;
+    this is for a battle started as a single game that turned out to be game 1."""
+    reg = _reg(regulation)
+    blob, _ = _battle(reg, battle_id)
+    try:
+        made = live.next_game(reg, blob)
+    except ValueError as e:
+        raise HTTPException(409, str(e)) from e
+    return battle_view(made["id"], reg.id)
 
 
 @app.get("/api/battles/{battle_id}/at/{index}")
@@ -664,9 +737,13 @@ def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
 def delete_battle(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
     from vgc.web import solving
 
+    reg = _reg(regulation)
     solving.cancel(battle_id)
-    if not live.remove(_reg(regulation).id, battle_id):
+    blob = live.load(reg.id, battle_id)
+    if blob is None or not live.remove(reg.id, battle_id):
         raise HTTPException(404, f"no battle {battle_id!r}")
+    # The games after it in its series no longer carry what it showed.
+    live.refresh_series(reg, blob)
     return {"deleted": battle_id}
 
 

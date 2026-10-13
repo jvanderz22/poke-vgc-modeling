@@ -77,7 +77,8 @@ def listing(reg_id: str, limit: int = 50) -> list[dict[str, Any]]:
                     "created": blob.get("created", ""), "updated": blob.get("updated", ""),
                     "turn": blob.get("turn", 0), "entries": len(blob.get("journal", [])),
                     "theirs": [m["species"] for m in entry.side_entries(blob["setup"], _other(blob["setup"]))],
-                    "sheets": sheets(blob), "perspective": perspective(blob), "result": blob.get("result")})
+                    "sheets": sheets(blob), "perspective": perspective(blob), "result": blob.get("result"),
+                    "series": blob.get("series")})
     out.sort(key=lambda b: b["updated"], reverse=True)
     return out[:limit]
 
@@ -115,18 +116,216 @@ def _other(setup: dict[str, Any]) -> str:
 
 
 def create(reg: Regulation, name: str, my_team: str, theirs: list[dict[str, Any]],
-           version: str | None, p1_sheet: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+           version: str | None, p1_sheet: list[dict[str, Any]] | None = None,
+           best_of: int = 1) -> dict[str, Any]:
     """A battle of yours, or with `p1_sheet`, someone else's: two open sheets watched from outside,
-    neither side's Stat Points known."""
+    neither side's Stat Points known. `best_of=3` makes it game 1 of a series."""
     now = dt.datetime.now().isoformat(timespec="seconds")
     if p1_sheet is not None:
         setup = {"perspective": "spectator", "p1": p1_sheet, "p2": theirs}
     else:
         setup = {"perspective": "p1", "mine": entry.from_team(reg, my_team), "theirs": theirs}
-    return save(reg.id, {"id": uuid.uuid4().hex[:12], "name": name or "Battle",
+    bid = uuid.uuid4().hex[:12]
+    series = ({"series": {"id": bid, "game": 1, "best_of": best_of, "name": name or "Battle"}}
+              if best_of > 1 else {})
+    return save(reg.id, {"id": bid, "name": f"{name or 'Battle'} · game 1" if series else name or "Battle",
                          "regulation": reg.id, "version": version, "created": now,
                          "my_team": my_team, "setup": setup, "journal": [], "turn": 0,
-                         "result": None})
+                         "result": None, **series})
+
+
+# --- a Bo3 ---------------------------------------------------------------------------------
+#
+# A series is its games, each an ordinary battle with `series: {id, game, best_of, name}` on it.
+# Nothing else is stored about it: the score is the games' results, and what a game starts out
+# knowing is computed from the games before it (`carry`) and written onto its setup, so the
+# replay reads it like the rest of its setup. Changing an earlier game rewrites the later games'
+# (`refresh_series`), which is what makes fixing a tap in game 1 reach game 3.
+
+BEST_OF = 3
+
+
+def series_games(reg_id: str, series_id: str) -> list[dict[str, Any]]:
+    """Every game of one series, in order."""
+    out = []
+    for p in _dir(reg_id).glob("*.json"):
+        try:
+            blob = json.loads(p.read_text())
+        except Exception:
+            continue
+        if (blob.get("series") or {}).get("id") == series_id:
+            out.append(blob)
+    return sorted(out, key=lambda b: b["series"]["game"])
+
+
+def wins(games: list[dict[str, Any]]) -> dict[str, int]:
+    return {sid: sum(g.get("result") == sid for g in games) for sid in ("p1", "p2")}
+
+
+def carry(reg: Regulation, earlier: list[dict[str, Any]]) -> dict[str, Any]:
+    """What these games, all earlier in the same series, leave the next one knowing.
+
+    The races each showed, for the Speed belief (`belief.speed.series_pairs`), and on a hidden
+    side what was revealed about each Pokémon: its item as it started the game (a berry eaten in
+    game 1 is held again in game 2), its ability, the moves it used and the abilities it was shown
+    not to have. A Mega-Evolved Pokémon's ability is left out, since what showed after the Mega was
+    the Mega's.
+
+    An event logged before the item was known is given the item it turned out to be holding, so a
+    Choice Scarf revealed on turn 4 explains the turn-1 order it decided. Within the game that
+    stays unread, because the event recorded what was known then; across games it is known.
+    """
+    games, reveals = [], {}
+    for blob in earlier:
+        state = entry.Battle(reg, blob["setup"], blob.get("journal")).rp.state
+        held = {(sid, m.species): (m.lost_item if m.item == "" and m.lost_item else m.item)
+                for sid, side in state.sides.items() for m in side.mons}
+
+        def dump(ev) -> dict[str, Any]:
+            d = ev.to_json()
+            for k, v in d.items():
+                if isinstance(v, (set, frozenset)):
+                    d[k] = sorted(v)
+            if d.get("item") is None:
+                d["item"] = held.get((ev.side, ev.species))
+            return d
+
+        games.append({"game": blob["series"]["game"], "battle": blob["id"],
+                      "moves": [dump(e) for e in state.moves_log],
+                      "abilities": [dump(e) for e in state.ability_log]})
+        for sid, side in state.sides.items():
+            if sid == state.perspective:
+                continue
+            for m in side.mons:
+                known = reveals.setdefault(sid, {}).setdefault(m.species, {})
+                item = held[(sid, m.species)]
+                if item is not None:
+                    known["item"] = item
+                if m.ability and not m.mega:
+                    known["ability"] = m.ability
+                if m.moves_used:
+                    known["moves"] = list(dict.fromkeys(known.get("moves", []) + list(m.moves_used)))
+                if m.ability_ruled_out and not m.mega:
+                    known["ruled_out"] = sorted(set(known.get("ruled_out", [])) | m.ability_ruled_out)
+    reveals = {sid: {sp: k for sp, k in mons.items() if k} for sid, mons in reveals.items()}
+    return {"games": games, "reveals": reveals}
+
+
+def next_game(reg: Regulation, blob: dict[str, Any]) -> dict[str, Any]:
+    """The game after this one: the same two teams, starting out knowing what the games so far
+    showed. A battle that was not started as a Bo3 becomes game 1 of one. Asking twice returns the
+    game already made rather than a second one."""
+    if not blob.get("series"):
+        blob["series"] = {"id": blob["id"], "game": 1, "best_of": BEST_OF, "name": blob.get("name") or "Battle"}
+        save(reg.id, blob)
+    series = blob["series"]
+    games = series_games(reg.id, series["id"])
+    n = series["game"] + 1
+    made = next((g for g in games if g["series"]["game"] == n), None)
+    if made is not None:
+        return made
+    need = series["best_of"] // 2 + 1
+    played = [g for g in games if g["series"]["game"] < n]
+    if max(wins(played).values()) >= need:
+        raise ValueError("the series is already decided")
+    if n > series["best_of"]:
+        raise ValueError(f"a best of {series['best_of']} has no game {n}")
+    setup = {k: v for k, v in json.loads(json.dumps(blob["setup"])).items() if k != "carried"}
+    setup["carried"] = carry(reg, played)
+    now = dt.datetime.now().isoformat(timespec="seconds")
+    return save(reg.id, {"id": uuid.uuid4().hex[:12], "name": f"{series['name']} · game {n}",
+                         "regulation": reg.id, "version": blob.get("version"), "created": now,
+                         "my_team": blob.get("my_team", ""), "setup": setup, "journal": [], "turn": 0,
+                         "result": None, "series": {**series, "game": n}})
+
+
+def after_edit(reg: Regulation, blob: dict[str, Any], ended: bool) -> None:
+    """What a tap or an undo in a game of a series does to the rest of it.
+
+    The game ending sets up the next one, unless that decided the series, so the next game is
+    there to open the moment this one is over. Undoing the end takes the next game away again,
+    but only while nothing has been logged in it: a game that has been played is not discarded
+    because a tap in the one before it moved. And every later game's carry is rewritten.
+    """
+    series = blob.get("series")
+    if not series:
+        return
+    if ended:
+        try:
+            next_game(reg, blob)
+        except ValueError:          # decided, or the last game of the series
+            pass
+    else:
+        for g in series_games(reg.id, series["id"]):
+            if g["series"]["game"] == series["game"] + 1 and not g.get("journal"):
+                remove(reg.id, g["id"])
+    refresh_series(reg, blob)
+
+
+def refresh_series(reg: Regulation, blob: dict[str, Any]) -> None:
+    """After an earlier game changed (a tap, an undo, a deletion), rewrite what every later game
+    of its series carries, so none of them goes on reading a game that is no longer what it was."""
+    series = blob.get("series")
+    if not series:
+        return
+    games = series_games(reg.id, series["id"])
+    for later in [g for g in games if g["series"]["game"] > series["game"]]:
+        earlier = [g for g in games if g["series"]["game"] < later["series"]["game"]]
+        carried = carry(reg, earlier)
+        if carried != later["setup"].get("carried"):
+            later["setup"]["carried"] = carried
+            save(reg.id, later)
+
+
+def _history(blob: dict[str, Any]) -> dict[str, Any]:
+    """One game of a series as its history line: who won, and what each side led and showed.
+
+    Read off the journal rather than a replay: leads are the `lead` taps, and what a side brought
+    is what was seen of it (its `bring` tap, where you gave one, and everyone sent in)."""
+    led: dict[str, list[str]] = {"p1": [], "p2": []}
+    seen: dict[str, list[str]] = {"p1": [], "p2": []}
+    for e in blob.get("journal", []):
+        sid = e.get("side")
+        if e.get("kind") == "lead" and sid in led:
+            led[sid].append(e["species"])
+        if e.get("kind") == "bring" and sid in seen:
+            seen[sid] = list(dict.fromkeys(seen[sid] + list(e["species"])))
+        if e.get("kind") in ("lead", "switch") and sid in seen and e.get("species"):
+            seen[sid] = list(dict.fromkeys(seen[sid] + [e["species"]]))
+    ended = any(e.get("kind") == "end" for e in blob.get("journal", []))
+    return {"id": blob["id"], "name": blob.get("name", ""), "game": blob["series"]["game"],
+            "result": blob.get("result"), "ended": ended, "turn": blob.get("turn", 0),
+            "led": led, "brought": seen}
+
+
+def series_view(reg: Regulation, blob: dict[str, Any], state) -> dict[str, Any] | None:
+    """The series this battle is a game of: the score, every game's line, which game comes next
+    (made or not), and what this game carried in from the ones before it."""
+    from vgc.belief import speed as speed_channel
+
+    series = blob.get("series")
+    if not series:
+        return None
+    games = series_games(reg.id, series["id"])
+    need = series["best_of"] // 2 + 1
+    score = wins(games)
+    nxt = next((g["id"] for g in games if g["series"]["game"] == series["game"] + 1), None)
+    reveals = []
+    for sid, mons in ((blob["setup"].get("carried") or {}).get("reveals") or {}).items():
+        for species, k in mons.items():
+            moves = [(reg.dex.get_move(mv) or {}).get("name", mv) for mv in k.get("moves", [])]
+            item = (reg.dex.get_item(k["item"]) or {}).get("name", k["item"]) if k.get("item") else \
+                ("no item" if k.get("item") == "" else None)
+            ability = next((a for a in ((reg.dex.get_species(species) or {}).get("abilities") or {}).values()
+                            if to_id(a) == k.get("ability")), k.get("ability"))
+            reveals.append({"side": sid, "species": species, "item": item, "ability": ability, "moves": moves})
+    races = sum(len(speed_channel.pairs(reg, g.moves)) + len(speed_channel.ability_pairs(reg, g.abilities))
+                for g in state.earlier)
+    return {"id": series["id"], "name": series.get("name", ""), "game": series["game"],
+            "best_of": series["best_of"], "score": score,
+            "decided": max(score.values()) >= need, "next": nxt,
+            "games": [_history(g) for g in games],
+            "carried": {"races": races, "reveals": reveals}}
 
 
 # --- the screen ----------------------------------------------------------------------------
@@ -576,6 +775,7 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         # Whether the engine can be asked about this position (`/solve`), and if not, why.
         # A 1v1, or two or fewer a side on open sheets (`solving.reason`).
         "endgame": {"eligible": (why := _engine_reason(reg, battle)) is None, "reason": why},
+        "series": series_view(reg, blob, state),
     }
     if with_wp and version:
         try:

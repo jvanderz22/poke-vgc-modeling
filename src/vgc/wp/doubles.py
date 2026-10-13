@@ -306,7 +306,7 @@ def speed_classes(reg: Regulation, battle, side_sets: dict[str, list[dict[str, A
     vals = {k: support((k[0], species[k])) for k in keys}
     factor = {k: [1.0] * len(vals[k][0]) for k in keys}
     within = []
-    for first, second, sign in sp_belief.pairs(reg, state.moves_log) + sp_belief.ability_pairs(reg, getattr(state, "ability_log", [])):
+    for first, second, sign in sp_belief.series_pairs(reg, state):
         k1, k2 = (first.side, first.species), (second.side, second.species)
         if sp_belief.base_speed(reg, first.forme or first.species) is None or \
                 sp_belief.base_speed(reg, second.forme or second.species) is None:

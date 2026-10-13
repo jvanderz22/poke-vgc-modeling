@@ -669,3 +669,114 @@ def test_an_unseen_moveset_offers_its_likeliest_moves_and_every_legal_one(client
     assert gambit["moves"] == [] and len(gambit["likely"]) > 0
     assert {"kowtowcleave", "suckerpunch"} <= {m["id"] for m in gambit["legal"]}
     assert all(m["name"] and "share" in m for m in gambit["likely"])
+
+
+# --- a Bo3 ----------------------------------------------------------------------------------------
+
+def _game_one(client, team_text):
+    """Game 1 of a Bo3 in which Incineroar (80 Speed, known) moves before Pelipper, and Pelipper
+    shows its Damp Rock and Hurricane."""
+    v = client.post("/api/battles", json={"name": "vs X", "my_team": team_text("valid_basic"),
+                                          "their_species": THEIR_SIX, "best_of": 3}).json()
+    return entries(client, v["id"],
+                   {"kind": "lead", "side": "p1", "slot": 0, "species": "Garchomp"},
+                   {"kind": "lead", "side": "p1", "slot": 1, "species": "Incineroar"},
+                   {"kind": "lead", "side": "p2", "slot": 0, "species": "Torkoal"},
+                   {"kind": "lead", "side": "p2", "slot": 1, "species": "Pelipper"},
+                   {"kind": "turn", "n": 1},
+                   {"kind": "move", "side": "p1", "slot": 1, "move": "Flare Blitz",
+                    "target": {"side": "p2", "slot": 1}, "result": "miss"},
+                   {"kind": "move", "side": "p2", "slot": 1, "move": "Hurricane",
+                    "target": {"side": "p1", "slot": 0}, "result": "miss"},
+                   {"kind": "reveal", "side": "p2", "species": "Pelipper", "what": "item", "value": "Damp Rock"})
+
+
+def _spe(view, species):
+    return next(b for b in view["beliefs"] if b["species"] == species)["bounds"]["spe"]
+
+
+def test_a_single_game_is_the_default_and_is_not_a_series(started):
+    assert started["series"] is None
+
+
+def test_ending_a_bo3_game_sets_up_the_next_one(client, team_text, battles_dir):
+    g1 = _game_one(client, team_text)
+    assert g1["series"]["game"] == 1 and g1["series"]["next"] is None
+    v = entries(client, g1["id"], {"kind": "end", "winner": "p1"})
+    assert v["series"]["score"] == {"p1": 1, "p2": 0}
+    g2 = client.get(f"/api/battles/{v['series']['next']}").json()
+    assert g2["series"]["game"] == 2 and g2["name"] == "vs X · game 2"
+    assert [m["species"] for m in g2["sides"]["p2"]["mons"]] == THEIR_SIX and not g2["started"]
+
+
+def test_the_next_game_knows_what_the_earlier_one_showed(client, team_text, battles_dir):
+    """The race bounds the same Stat Points in game 2, since a team cannot change in a series, and on
+    a hidden sheet what Pelipper revealed is known from the start."""
+    g1 = _game_one(client, team_text)
+    bound = _spe(g1, "Pelipper")
+    assert bound[1] < 32
+    g2 = client.get(f"/api/battles/{entries(client, g1['id'], {'kind': 'end', 'winner': 'p1'})['series']['next']}").json()
+    pel = next(m for m in g2["sides"]["p2"]["mons"] if m["species"] == "Pelipper")
+    assert pel["item"] == "damprock" and pel["item_source"] == "earlier game"
+    assert pel["moves_used"] == ["hurricane"]
+    assert g2["series"]["carried"]["races"] == 1
+    g2 = entries(client, g2["id"], {"kind": "lead", "side": "p1", "slot": 1, "species": "Incineroar"},
+                 {"kind": "lead", "side": "p2", "slot": 1, "species": "Pelipper"})
+    assert _spe(g2, "Pelipper") == bound
+
+
+def test_the_model_is_given_only_this_games_orderings(client, team_text, battles_dir, reg):
+    """Every row the WP model was trained on came from one game, so the earlier game's races reach
+    the Speed belief and not the model's evidence."""
+    from vgc.battle import entry
+    from vgc.belief.speed import orderings, series_pairs
+    from vgc.web import live
+
+    g1 = _game_one(client, team_text)
+    g2 = entries(client, g1["id"], {"kind": "end", "winner": "p1"})["series"]["next"]
+    blob = live.load("reg_mc", g2)
+    state = entry.Battle(reg, blob["setup"], blob["journal"]).rp.state
+    assert len(series_pairs(reg, state)) == 1 and orderings(reg, state) == []
+
+
+def test_undoing_the_end_takes_back_a_next_game_nobody_has_played(client, team_text, battles_dir):
+    g1 = _game_one(client, team_text)
+    g2 = entries(client, g1["id"], {"kind": "end", "winner": "p1"})["series"]["next"]
+    v = client.post(f"/api/battles/{g1['id']}/undo").json()
+    assert v["series"]["next"] is None
+    assert client.get(f"/api/battles/{g2}").status_code == 404
+
+
+def test_fixing_an_earlier_game_reaches_the_later_one(client, team_text, battles_dir):
+    g1 = _game_one(client, team_text)
+    g2 = entries(client, g1["id"], {"kind": "end", "winner": "p1"})["series"]["next"]
+    entries(client, g2, {"kind": "lead", "side": "p1", "slot": 0, "species": "Garchomp"})
+    # The reveal was a mis-tap: undo back past it in game 1 (the end, then the reveal).
+    client.post(f"/api/battles/{g1['id']}/undo?count=2")
+    pel = next(m for m in client.get(f"/api/battles/{g2}").json()["sides"]["p2"]["mons"]
+               if m["species"] == "Pelipper")
+    assert pel["item"] is None and pel["moves_used"] == ["hurricane"]
+
+
+def test_a_decided_series_has_no_next_game(client, team_text, battles_dir):
+    g1 = _game_one(client, team_text)
+    g2 = entries(client, g1["id"], {"kind": "end", "winner": "p2"})["series"]["next"]
+    v = entries(client, g2, {"kind": "end", "winner": "p2"})
+    assert v["series"]["decided"] and v["series"]["next"] is None
+    assert [g["result"] for g in v["series"]["games"]] == ["p2", "p2"]
+    assert client.post(f"/api/battles/{g2}/next").status_code == 409
+
+
+def test_best_of_is_one_or_three(client, team_text, battles_dir):
+    r = client.post("/api/battles", json={"my_team": team_text("valid_basic"),
+                                          "their_species": THEIR_SIX, "best_of": 5})
+    assert r.status_code == 422
+
+
+def test_species_options_rank_what_is_run_and_keep_what_is_legal(client):
+    r = client.get("/api/species/Golisopod").json()
+    assert r["types"] == ["Bug", "Water"] and r["abilities"][0]["name"] == "Emergency Exit"
+    shares = [m["share"] for m in r["moves"]]
+    assert shares == sorted(shares, reverse=True)
+    assert {"Leech Life", "Sucker Punch"} <= {m["name"] for m in r["moves"]}
+    assert client.get("/api/species/Missingno").status_code == 404
