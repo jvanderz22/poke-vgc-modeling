@@ -33,7 +33,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<{ side: Side; slot: number } | null>(null);
-  // The free-form entry bar, behind "something else…": the escape hatch for whatever the stepper
+  // The free-form entry bar, behind "free-form entry…": the escape hatch for whatever the stepper
   // does not ask about. Clicking the field goes to whichever of the two is in front.
   const [freeForm, setFreeForm] = useState(false);
   const fieldPick = useRef<((p: Pos) => void) | null>(null);
@@ -125,7 +125,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
           {step === null && freeForm && (
             <>
               <div className="row free-form-head">
-                <span className="tiny dim">Something else: the free-form entry bar</span>
+                <span className="tiny dim">The free-form entry bar</span>
                 <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
               </div>
               <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />

@@ -71,7 +71,7 @@ mode in [PLAN-video.md](PLAN-video.md) are all unaffected.
 ├───────────────────────────────────────────────────────────────────────┤
 │  Who moved next?                                                      │  one question at a time
 │  [ Rillaboom ]  [ Urshifu-Rapid-Strike ]  [ Gholdengo ]               │  only those yet to act
-│  [ End of turn → ]                            something else…         │
+│  [ End of turn → ]                            free-form entry…         │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -99,7 +99,7 @@ answer.
 A spread move runs stage 5 once for each Pokémon it hit, one after another, in the order the bars
 drained.
 
-"Something else…" is always available and opens today's entry bar unchanged. Dancer,
+"Free-form entry…" is always available and opens today's entry bar unchanged. Dancer,
 Instruct, redirection, Revival Blessing and anything the stepper does not model are still entered
 somewhere, and never block the turn.
 
@@ -160,7 +160,7 @@ attached to it that lists the shortcuts:
 | `.` | "Nothing else": go to the next stage |
 | `Backspace` | Back one stage within the current action. Logs nothing, undoes nothing |
 | `⌘Z` | Undo the last entry (today's Undo) |
-| `Esc` | Something else: the free-form entry bar |
+| `Esc` | The free-form entry bar |
 | `f` | Toggle Fast mode |
 | `?` | Open or close this popover |
 
@@ -212,7 +212,7 @@ enter things, and past both to reach the history.
 │                                              │ ON THE FIELD                              │
 │ Who moved next?                              │  Gholdengo  61%       Amoonguss  88%  slp │
 │ [ Rillaboom ] [ Urshifu ] [ Gholdengo ]      │  ── Rillaboom → Gholdengo: not decided ── │
-│ [ End of turn → ]          something else…   │  Rillaboom 143/207    Incineroar  100%    │
+│ [ End of turn → ]          free-form entry…   │  Rillaboom 143/207    Incineroar  100%    │
 ├──────────────────────────────────────────────┴─────────────────────────────────────────┤
 │ BATTLE STATE                                                                            │
 │  Your four                              │  Their six                                    │
@@ -467,7 +467,7 @@ Measure it rather than assuming it. `scripts/analysis/entry_parity.py` already t
 into entries. A sibling script can count the **clicks** each design needs to enter the same
 held-out replays, along with how far the pointer travels between them. Report the median per turn
 and the worst turns. Then enter two real games by hand, one watched and one played, with the mouse
-alone, and check that "something else…" was rare. If it keeps being used for the same thing,
+alone, and check that "free-form entry…" was rare. If it keeps being used for the same thing,
 that thing needs a stage.
 
 None of this has been run yet. With it, three checks the build left open:

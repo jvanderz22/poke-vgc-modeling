@@ -489,7 +489,7 @@ kbd {
   position: absolute; top: -7px; left: -7px; min-width: 18px; height: 18px; border-radius: 9px;
   background: var(--text); color: var(--bg); font: 700 11px/18px ui-monospace, Menlo, monospace; text-align: center;
 }
-.stage-foot { display: flex; justify-content: space-between; margin-top: 12px; }
+.stage-foot { display: flex; justify-content: space-between; gap: 16px; margin-top: 12px; }
 .stage-foot .link:last-child { margin-left: auto; }
 
 .hp-entry { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }

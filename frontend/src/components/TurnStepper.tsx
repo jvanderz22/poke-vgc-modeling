@@ -964,7 +964,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       prompt: `Turn ${view.turn} is done.`,
       options: [
         { label: `Start turn ${view.turn + 1} →`, pick: () => void log([{ kind: "turn", n: view.turn + 1 }]) },
-        { label: "Anything else…", tone: "ghost", pick: () => upd({ after: true }) },
       ],
       dflt: 0,
     };
@@ -1121,7 +1120,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
         <div className="stage-foot">
           {s.back && <button className="link" onClick={s.back}>← back</button>}
           {canAdd && <button className="link" onClick={addMore}>anything else happened…</button>}
-          <button className="link" onClick={onSomethingElse}>something else…</button>
+          <button className="link" onClick={onSomethingElse} title="the free-form entry bar (Esc)">free-form entry…</button>
         </div>
       </div>
     </div>
@@ -1139,7 +1138,7 @@ function Shortcuts({ popRef }: { popRef: MutableRefObject<HTMLDivElement | null>
     [".", "Nothing else: go to the next stage"],
     ["Backspace", "Back one stage within this action. Logs nothing, undoes nothing"],
     ["⌘Z", "Undo the last entry"],
-    ["Esc", "Something else: the free-form entry bar"],
+    ["Esc", "The free-form entry bar"],
     ["f", "Toggle Fast mode"],
     ["?", "Open or close this list"],
   ];
