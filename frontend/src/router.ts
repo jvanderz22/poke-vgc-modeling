@@ -11,6 +11,9 @@
  *    /battle                           your battles, and a form to start one
  *    /battle/<id>                      one battle, live
  *    /battle/<id>/<step>               that battle as it stood after <step> taps
+ *    /watch                            watch a game on YouTube: the video beside the match
+ *    /watch/<id>                       that battle, entered beside the video ?v=<video>&t=<seconds>
+ *    /watch/<id>/<step>                that battle at <step> taps, beside the video
  *    /simulate                         play two teams against each other
  *    /endgames                         the decided-endgame set        ?filter=played_out|misses
  *    /endgames/<replay>                one game, opened where it was decided
@@ -24,15 +27,18 @@
 
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 
-export type Tab = "preview" | "battle" | "simulate" | "endgames" | "teams";
+export type Tab = "preview" | "battle" | "watch" | "simulate" | "endgames" | "teams";
 export type EndgameFilter = "all" | "played_out" | "misses";
 
-export const TABS: Tab[] = ["preview", "battle", "simulate", "endgames", "teams"];
+export const TABS: Tab[] = ["preview", "battle", "watch", "simulate", "endgames", "teams"];
 const FILTERS: EndgameFilter[] = ["all", "played_out", "misses"];
 
 export type Route =
   | { tab: "preview" | "simulate" }
   | { tab: "battle"; battle: string | null; step: number | null }
+  /** `video` is a YouTube id and `start` the second it opens at; both live in the query, so a
+   *  watched battle reloads with its video. */
+  | { tab: "watch"; battle: string | null; step: number | null; video: string | null; start: number }
   | { tab: "endgames"; replay: string | null; step: number | null; filter: EndgameFilter }
   | { tab: "teams"; team: string | null };
 
@@ -41,6 +47,7 @@ export function tabRoute(tab: Tab): Route {
   if (tab === "endgames") return { tab, replay: null, step: null, filter: "all" };
   if (tab === "teams") return { tab, team: null };
   if (tab === "battle") return { tab, battle: null, step: null };
+  if (tab === "watch") return { tab, battle: null, step: null, video: null, start: 0 };
   return { tab };
 }
 
@@ -61,6 +68,18 @@ export function parseRoute(url: URL): Route {
     };
   }
   if (tab === "teams") return { tab, team: second || null };
+  if (tab === "watch") {
+    const step = Number(third);
+    const video = url.searchParams.get("v");
+    const start = Number(url.searchParams.get("t"));
+    return {
+      tab,
+      battle: second || null,
+      step: second && Number.isInteger(step) && step >= 0 ? step : null,
+      video: video && /^[\w-]{6,20}$/.test(video) ? video : null,
+      start: video && Number.isInteger(start) && start > 0 ? start : 0,
+    };
+  }
   if (tab === "battle") {
     const step = Number(third);
     return {
@@ -91,6 +110,15 @@ export function routeUrl(route: Route): string {
     if (!route.battle) return "/battle";
     const path = `/battle/${encodeURIComponent(route.battle)}`;
     return route.step === null ? path : `${path}/${route.step}`;
+  }
+  if (route.tab === "watch") {
+    let path = "/watch";
+    if (route.battle) {
+      path += `/${encodeURIComponent(route.battle)}`;
+      if (route.step !== null) path += `/${route.step}`;
+    }
+    if (!route.video) return path;
+    return `${path}?v=${route.video}${route.start ? `&t=${route.start}` : ""}`;
   }
   return `/${route.tab}`;
 }

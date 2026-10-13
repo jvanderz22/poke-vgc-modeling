@@ -5,13 +5,14 @@ import { BattleSession } from "./components/BattleSession";
 import { EndgamesPanel } from "./components/EndgamesPanel";
 import { SimulatePanel } from "./components/SimulatePanel";
 import { TeamLibrary } from "./components/TeamLibrary";
+import { WatchPage } from "./components/WatchPage";
 import { linkProps, TABS, tabRoute, useRoute, type Tab } from "./router";
 
 const REG = "reg_mc";
 const LAST_TEAM = `vgc:${REG}:lastTeam`;
 
 const TITLES: Record<Tab, string> = {
-  preview: "Preview", battle: "Battle", simulate: "Simulate", endgames: "Endgames", teams: "Teams",
+  preview: "Preview", battle: "Battle", watch: "Watch", simulate: "Simulate", endgames: "Endgames", teams: "Teams",
 };
 
 /** Which team you used last, remembered across reloads.
@@ -98,6 +99,7 @@ export default function App() {
         {route.tab === "battle" && (
           <BattleSession reg={REG} route={route} navigate={navigate} teams={teams} />
         )}
+        {route.tab === "watch" && <WatchPage reg={REG} route={route} navigate={navigate} pool={pool} />}
         {route.tab === "simulate" && <SimulatePanel reg={REG} teams={teams} />}
         {route.tab === "endgames" && <EndgamesPanel reg={REG} route={route} navigate={navigate} />}
         {route.tab === "teams" && (

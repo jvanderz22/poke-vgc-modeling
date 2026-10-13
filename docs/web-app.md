@@ -69,6 +69,25 @@ showing the best lead for each set of four, plus which four the opponent is like
 Both sheets go through the real simulator's validator, so an illegal one comes back with
 Showdown's own message naming the offending Pokémon.
 
+### Watch
+
+Someone else's game on YouTube, beside the match. Paste a link (with `t=` if you like) and the page
+takes the full width: the video on the left half, kept in view while you scroll, and the match on
+the right. The URL carries the video (`/watch?v=<id>&t=<seconds>`), so a reload or a shared link
+opens it again.
+
+Before the battle, the right half is both players' sheets and names. **Read sheets from the video**
+asks to share the tab (Chrome or Edge) and captures only the player, through Region Capture. The
+page's own forms are text the reader would read back, so without Region Capture it refuses rather
+than capture the whole tab. A new picture is sent at most every 1.5 seconds and read like a
+screenshot. A frame counts as a sheet only if at least four Pokémon on it have moves under them, so
+a battle's nameplates or team preview don't. The first team read goes to player 1 and the next to
+player 2, with the broadcast's name for each. A later read of the same team only fills what is
+still empty. Where it disagrees with a field already set, the form keeps its value and the page
+lists the disagreement. Reading stops once both sheets are full. **Start watching** makes a
+Watching battle (`/watch/<id>`), and the right half becomes the battle page, entered by hand for
+now.
+
 ### Endgames
 
 A set of real human games the WP model called at **90%+ before they ended**, to click through.

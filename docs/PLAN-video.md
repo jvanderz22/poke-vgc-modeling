@@ -5,6 +5,12 @@ battle, give it the time the battle starts, and have win probability follow the 
 It sits beside [PLAN-v3.md](PLAN-v3.md) and depends on its step 4 (Observer mode). Nothing here
 is built yet.
 
+**Status (2026-10-12):** step 0 is in (Watching mode). Reading the two sheets, step 6's first item,
+came first and is in: `vgc.video.sheet` and `POST /api/sheet/read` (OCR, any screenshot), and the
+`/watch` page, which embeds the player, captures it with Region Capture and fills both sheets as
+the broadcast shows them. The battle on that page is entered by hand. Step 1 (the screen survey)
+and step 2 (the battle reader) are next.
+
 ---
 
 ## The goal

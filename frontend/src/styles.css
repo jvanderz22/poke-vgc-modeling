@@ -690,3 +690,21 @@ button.choice:disabled { opacity: .4; }
 .review-who { color: var(--dim); }
 .review-lines { margin: 0; padding-left: 20px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .review-lines li.err { color: var(--bad); }
+
+/* Watching a game: the whole width, the video on one half and the match on the other. The video
+   stays in view while the match half scrolls; the battle page inside it stacks to one column. */
+main:has(> .watch-page) { max-width: none; }
+.watch-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.watch-video { position: sticky; top: 12px; min-width: 0; }
+.watch-match { min-width: 0; }
+.watch-player { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
+.watch-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.watch-controls { margin: 8px 2px 0; gap: 10px; }
+.watch-sheet { margin-bottom: 14px; }
+.watch-name { width: 100%; margin-bottom: 6px; font-weight: 600; }
+.watch-match .battle-top { grid-template-columns: 1fr; }
+.watch-match .battle-side { position: static; }
+@media (max-width: 1000px) {
+  .watch-page { grid-template-columns: 1fr; }
+  .watch-video { position: static; }
+}
