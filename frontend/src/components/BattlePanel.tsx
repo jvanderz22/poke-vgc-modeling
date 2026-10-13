@@ -4,6 +4,8 @@ import { GateBanner } from "./GateBanner";
 import { BringBadges, MonBadge } from "./MonBadge";
 import { MyTeamInput } from "./MyTeamInput";
 import { OpponentInput, type SheetMode } from "./OpponentInput";
+import { useSheetDraft } from "./SheetForm";
+import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 
 /** Team preview: which four to bring, and which two to lead. */
 export function BattlePanel({
@@ -21,7 +23,7 @@ export function BattlePanel({
   const [paste, setPaste] = useState(false);
   const [myText, setMyText] = useState("");
   const [mode, setMode] = useState<SheetMode>("open");
-  const [theirText, setTheirText] = useState("");
+  const [theirSheet, setTheirSheet] = useSheetDraft(`vgc:${reg}:sheet:their`);
   const [theirSpecies, setTheirSpecies] = useState<(string | null)[]>(() => Array(teamSize).fill(null));
   const [result, setResult] = useState<PreviewResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,7 +35,7 @@ export function BattlePanel({
 
   const mine = paste ? myText : active?.text ?? "";
   const chosen = theirSpecies.filter(Boolean) as string[];
-  const ready = mine.trim() && (mode === "open" ? theirText.trim() : chosen.length === teamSize);
+  const ready = mine.trim() && (mode === "open" ? filled(theirSheet) === SHEET_SIZE : chosen.length === teamSize);
 
   async function run() {
     if (!ready) {
@@ -44,7 +46,7 @@ export function BattlePanel({
     }
     setBusy(true); setError(""); setResult(null);
     try {
-      const opponent = mode === "open" ? { their_team: theirText } : { their_species: chosen };
+      const opponent = mode === "open" ? { their_team: toShowdown(theirSheet) } : { their_species: chosen };
       setResult(await api.preview(mine, opponent, reg));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
@@ -66,8 +68,8 @@ export function BattlePanel({
             text={myText} onText={setMyText} paste={paste} onPaste={setPaste}
           />
           <OpponentInput
-            mode={mode} onMode={setMode}
-            text={theirText} onText={setTheirText}
+            reg={reg} mode={mode} onMode={setMode}
+            sheet={theirSheet} onSheet={setTheirSheet}
             species={theirSpecies} onSpecies={setTheirSpecies}
             pool={pool} teamSize={teamSize}
           />

@@ -51,8 +51,14 @@ legality snapshot can change under a team that was legal when it was written.
 
 **Their team**: two modes.
 
-- **Open sheet** — paste what you were shown at the start of a Bo3 game. This is exactly what the
-  models were trained on and is the only mode whose answers are as good as the model gets.
+- **Open sheet** — enter what you were shown at the start of a Bo3 game, as it is shown: six cards,
+  each with species, ability, nature, item and four moves (no Stat Points, which a sheet does not
+  show). Every field searches as you type over what is legal for that Pokémon, ordered by how often
+  people run it (`GET /api/species/{name}`), and ↵ picks and moves on to the next empty field. The
+  one ability a species can have is filled in; nothing else is guessed. **import text** fills the
+  form from Showdown or PokéPaste text. The sheet is kept in the browser until cleared, and Preview
+  and the new-battle form share it. This is exactly what the models were trained on and is the only
+  mode whose answers are as good as the model gets.
 - **Closed** — pick their six species with search-as-you-type (ordered by how often each is
   actually played, so the names you want are at the top of an empty box). See the next section for
   what this costs.
@@ -288,7 +294,7 @@ game 3. Undoing the end of a game takes the next game away again while nothing h
 ### Watching someone else's game
 
 The third mode in the new-battle form, **Watching (both open)**, is for a game you are not in: on
-stream, at an event, or a replay. Paste both players' open sheets instead of choosing a team. Both
+stream, at an event, or a replay. Enter both players' open sheets instead of choosing a team. Both
 sides are then entered the way theirs always were: HP as a percentage, Stat Points unknown. The
 number is player 1's chance, and the page names the sides P1 and P2. It runs the open-sheet model,
 and that model's gate is scored from exactly this seat (spectator rows). The Speed read and the

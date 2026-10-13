@@ -1,23 +1,26 @@
 import type { Species } from "../api";
+import type { SheetEntry } from "../sheet";
+import { SheetForm } from "./SheetForm";
 import { SpeciesPicker } from "./SpeciesPicker";
 
 export type SheetMode = "open" | "closed";
 
 /** How you tell the app what the opponent has.
  *
- *  **Open** (Bo3): you are shown their full sheet, so paste it. The models were trained on exactly
+ *  **Open** (Bo3): you are shown their full sheet, so enter it as it is shown. The models were trained on exactly
  *  this, and it is the only mode whose answers are as good as the model gets.
  *
  *  **Closed**: you only see six species at preview. The backend fills each with its most common
  *  real set so there is something to simulate, which is a guess — and the share it reports says
  *  how thin a guess. Phase 5 replaces this with a belief that updates as the battle reveals things. */
 export function OpponentInput({
-  mode, onMode, text, onText, species, onSpecies, pool, teamSize,
+  reg, mode, onMode, sheet, onSheet, species, onSpecies, pool, teamSize,
 }: {
+  reg: string;
   mode: SheetMode;
   onMode: (m: SheetMode) => void;
-  text: string;
-  onText: (t: string) => void;
+  sheet: SheetEntry[];
+  onSheet: (s: SheetEntry[]) => void;
   species: (string | null)[];
   onSpecies: (s: (string | null)[]) => void;
   pool: Species[];
@@ -39,7 +42,7 @@ export function OpponentInput({
 
       {mode === "open" ? (
         <>
-          <textarea value={text} placeholder="Paste their team sheet…" onChange={(e) => onText(e.target.value)} />
+          <SheetForm reg={reg} pool={pool} value={sheet} onChange={onSheet} label="Their open team sheet" />
           <p className="tiny dim" style={{ margin: "6px 2px 0" }}>
             The sheet you are shown at the start of a Bo3 game. This is what the model was trained on.
           </p>

@@ -5,6 +5,8 @@ import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
 import { BattleState } from "./BattleState";
 import { Info } from "./Popover";
+import { SheetForm, useSheetDraft } from "./SheetForm";
+import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import { SpeciesPicker } from "./SpeciesPicker";
 import { TurnStepper } from "./TurnStepper";
 import type { Pos } from "../screen";
@@ -651,8 +653,8 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
   const [modes, setModes] = useState<Mode[]>([]);
   const [modeId, setModeId] = useState<string | null>(null);
   const [theirs, setTheirs] = useState<(string | null)[]>(Array(6).fill(null));
-  const [theirSheet, setTheirSheet] = useState("");
-  const [p1Sheet, setP1Sheet] = useState("");
+  const [theirSheet, setTheirSheet] = useSheetDraft(`vgc:${reg}:sheet:their`);
+  const [p1Sheet, setP1Sheet] = useSheetDraft(`vgc:${reg}:sheet:p1`);
   const mode = modes.find((m) => m.id === modeId);
   const sheets = mode?.sheets ?? null;
   const watching = mode?.perspective === "spectator";
@@ -682,9 +684,9 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
     setBusy(true);
     setError(null);
     try {
-      const opponent = sheets === "open" ? { their_team: theirSheet } : { their_species: chosen };
+      const opponent = sheets === "open" ? { their_team: toShowdown(theirSheet) } : { their_species: chosen };
       const v = watching
-        ? await api.newBattle({ name, p1_team: p1Sheet, their_team: theirSheet, regulation: reg, best_of: bestOf })
+        ? await api.newBattle({ name, p1_team: toShowdown(p1Sheet), their_team: toShowdown(theirSheet), regulation: reg, best_of: bestOf })
         : await api.newBattle({ name, team_id: teamId, regulation: reg, best_of: bestOf, ...opponent });
       navigate({ tab: "battle", battle: v.id, step: null });
     } catch (e) {
@@ -748,24 +750,21 @@ function BattleList({ reg, navigate, teams }: { reg: string; navigate: Navigate;
               ) : (
                 <>
                   {watching && (
-                    <>
-                      <label>Player 1's open team sheet, as Showdown text</label>
-                      <textarea value={p1Sheet} rows={8} style={{ width: "100%" }}
-                                placeholder={"Rillaboom @ Miracle Seed\nAbility: Grassy Surge\nAdamant Nature\n- Fake Out\n..."}
-                                onChange={(e) => setP1Sheet(e.target.value)} />
-                    </>
+                    <SheetForm reg={reg} pool={pool} value={p1Sheet} onChange={setP1Sheet}
+                               label="Player 1's open team sheet" />
                   )}
-                  <label>{watching ? "Player 2's" : "Their"} open team sheet, as Showdown text</label>
-                  <textarea value={theirSheet} rows={watching ? 8 : 10} style={{ width: "100%" }}
-                            placeholder={"Incineroar @ Sitrus Berry\nAbility: Intimidate\nCareful Nature\n- Fake Out\n..."}
-                            onChange={(e) => setTheirSheet(e.target.value)} />
+                  <SheetForm reg={reg} pool={pool} value={theirSheet} onChange={setTheirSheet}
+                             label={`${watching ? "Player 2's" : "Their"} open team sheet`} />
                 </>
               )}
               <div className="row" style={{ marginTop: 10 }}>
-                <button disabled={busy || !sheets || (watching ? !(p1Sheet.trim() && theirSheet.trim())
-                                  : !teamId || (sheets === "closed" ? chosen.length !== 6 : !theirSheet.trim()))}
+                <button disabled={busy || !sheets || (watching
+                                  ? filled(p1Sheet) !== SHEET_SIZE || filled(theirSheet) !== SHEET_SIZE
+                                  : !teamId || (sheets === "closed" ? chosen.length !== 6 : filled(theirSheet) !== SHEET_SIZE))}
                         onClick={start}>Start</button>
                 {sheets === "closed" && <span className="tiny dim">{chosen.length}/6 chosen</span>}
+                {sheets === "open" && filled(theirSheet) !== SHEET_SIZE &&
+                  <span className="tiny dim">{filled(theirSheet)}/{SHEET_SIZE} on their sheet</span>}
               </div>
               {error && <p className="small err" style={{ marginBottom: 0 }}>{error}</p>}
               <p className="tiny dim" style={{ margin: "10px 2px 0" }}>

@@ -658,3 +658,25 @@ button.choice:disabled { opacity: .4; }
 .series-game.current { border-color: var(--accent); }
 .series-game-n { font-weight: 600; }
 @media (max-width: 520px) { .series-game { grid-template-columns: 1fr; gap: 2px; } }
+
+/* An open team sheet, entered as it is shown: six cards, two across. */
+.sheet-form { margin-bottom: 10px; }
+.sheet-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 720px) { .sheet-cards { grid-template-columns: 1fr; } }
+.sheet-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 8px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); min-width: 0;
+}
+.sheet-card.empty { background: transparent; border-style: dashed; }
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head > .combo { flex: 1; }
+.sheet-types { white-space: nowrap; }
+.sheet-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.sheet-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sheet-card input { width: 100%; min-width: 0; padding: 6px 8px; }
+.sheet-card input.unknown { border-color: var(--bad); }
+.nature-arrows .up { color: var(--bad); }
+.nature-arrows .down { color: var(--accent); }
+.sheet-import { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.combo { position: relative; }
+@media (max-width: 520px) { .sheet-row { grid-template-columns: 1fr; } }
