@@ -108,3 +108,18 @@ in Speed order relative to each other.
 - **In code / UI:** never ask for or read an order from lead taps. Start-of-turn switches are listed
   in screen order with no default and recorded in the order clicked
   ([battle-entry-flows](battle-entry-flows.md)).
+
+## A series
+
+### A team is locked for a Bo3, Stat Points included
+
+Both players keep the same six, with the same sets and the same spreads, for every game of a
+series. So whatever one game shows about a hidden spread holds in the next: a turn-order bound on
+their Speed Stat Points from game 1 bounds game 2, and on a hidden sheet an item, ability or move
+revealed in game 1 is known at game 2's preview.
+
+- **Source:** the rules (a team cannot be changed between the games of a match).
+- **In code:** `web.live.carry` writes what the earlier games showed onto the next game's setup;
+  `speed.series_pairs` reads their races for the Speed belief, the Speed read and the engine. The WP
+  model's evidence (`speed.orderings`) stays one game's, since every row it was trained on was one
+  game ([web-app](web-app.md#a-bo3)).
