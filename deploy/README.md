@@ -16,7 +16,8 @@ Then open `https://vgc-live-battle-calculator.fly.dev`; the browser asks for use
 
 | | Where | Why |
 | --- | --- | --- |
-| The app, models, set corpus, Reg M-C replays, dex | the image, from this working tree | gitignored, so they exist only here; `deploy_fly.sh` refuses if they are missing |
+| The app, models, set corpus, dex | the image, from this working tree | gitignored, so they exist only here; `deploy_fly.sh` refuses if they are missing |
+| The replays the Endgames page opens (the games in `endgames.json`: about 1,400, a few MB) | the image, staged into `deploy/replays` by `deploy_fly.sh` | the page scores a game from its replay when you open it; nothing else the app serves reads the replay cache, so the rest of it (about 350 MB) stays out |
 | Pinned Showdown, calc sidecar | built in the image from the submodule's source | the local `node_modules` hold macOS builds |
 | Your teams, your battles, the solver's cache | the volume at `/data` (`data/library`, `data/battles`, `.vgc` link to it) | they must survive a restart and a redeploy |
 | Training data (snapshots, features, self-play, analysis) | left out (`.dockerignore`) | about a gigabyte the app never reads |

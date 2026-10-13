@@ -1,7 +1,7 @@
 # The battle-companion web app (`vgc web`) for Fly.io. See deploy/README.md.
 #
-# Built from the local working tree, not from git: the served models, the replay cache and the
-# set corpus are gitignored and exist only where they were made. `.dockerignore` keeps the
+# Built from the local working tree, not from git: the served models, the Endgames page's replays
+# and the set corpus are gitignored and exist only where they were made. `.dockerignore` keeps the
 # training data (snapshots, features, self-play: about a gigabyte) out of the context.
 
 # ---- stage 1: the frontend, built into src/vgc/web/static -----------------------------------
@@ -49,7 +49,8 @@ COPY models/ ./models/
 COPY data/regulations/ ./data/regulations/
 COPY data/teams/ ./data/teams/
 COPY data/splits/ ./data/splits/
-COPY data/replays/ ./data/replays/
+# Only the replays the Endgames page opens, staged by deploy_fly.sh from its index.
+COPY deploy/replays/ ./data/replays/
 COPY data/analysis/reg_mc/bring_rates.json data/analysis/reg_mc/endgames.json ./data/analysis/reg_mc/
 
 # What the app writes lives on the volume at /data: your teams, your battles, and the solver's

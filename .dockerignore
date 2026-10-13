@@ -33,8 +33,8 @@ data/analysis/**
 data/battles
 data/library
 data/champions-data
-data/replays/gen9championsvgc2026regmb
-data/replays/gen9championsvgc2026regmbbo3
+# The replay cache: deploy_fly.sh stages the few the app opens into deploy/replays
+data/replays
 benchmarks
 checkpoints
 docs

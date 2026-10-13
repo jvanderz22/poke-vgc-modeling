@@ -71,10 +71,34 @@ for f in fly.toml Dockerfile .dockerignore; do
 done
 
 # The image is built from this working tree, and the app needs what git does not carry.
-for need in models/served.json data/teams data/replays/gen9championsvgc2026regmc \
+for need in models/served.json data/teams data/analysis/reg_mc/endgames.json \
             data/regulations vendor/pokemon-showdown/package.json; do
   [[ -e "$need" ]] || { echo "Missing $need: the image would be built without it." >&2; exit 1; }
 done
+
+# The app opens a cached replay only when the Endgames page steps through one of its games, so
+# the image gets those replays (about 1,400, a few MB) and not the whole cache (about 350 MB).
+echo "==> Staging the Endgames page's replays"
+rm -rf deploy/replays
+python3 - <<'PY'
+import json, shutil, sys
+from pathlib import Path
+
+games = json.loads(Path("data/analysis/reg_mc/endgames.json").read_text())["games"]
+missing = 0
+for g in games:
+    rel = Path(g["format"]) / f"{g['replay']}.json.gz"
+    src, dst = Path("data/replays") / rel, Path("deploy/replays") / rel
+    if not src.exists():
+        missing += 1
+        print(f"    missing {src}", file=sys.stderr)
+        continue
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dst)
+if missing:
+    sys.exit(f"{missing} of the Endgames page's {len(games)} replays are not in data/replays.")
+print(f"    {len(games)} replays into deploy/replays")
+PY
 
 if "$FLY_CMD" status --app "$APP_NAME" >/dev/null 2>&1; then
   echo "==> App '$APP_NAME' already exists; skipping 'fly launch'"
