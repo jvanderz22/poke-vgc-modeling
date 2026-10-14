@@ -95,6 +95,12 @@ fixtures the battle reader is built and scored on (PLAN-video steps 1–3). Keep
 `data/video/`, which is gitignored: a battle is a few hundred MB. `vgc video frames CLIP` turns a
 clip into PNGs named by clip time and video time (`vgc.video.clip`, decoded by PyAV).
 
+**⚑ Flag this moment** saves the video's time and a note to the review log
+(`POST /api/video/flag`): anything the page got wrong or didn't catch. The same log takes what the
+battle reader missed and every message it read by a provisional phrasing (`vgc.video.review`).
+`vgc video review` (or `GET /api/video/review`) lists them grouped, with where to look. The log is
+`data/review/video.jsonl`, on the volume when deployed.
+
 ### Endgames
 
 A set of real human games the WP model called at **90%+ before they ended**, to click through.

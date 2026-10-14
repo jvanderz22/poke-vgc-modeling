@@ -1240,6 +1240,82 @@ def cmd_video_timeline(args: argparse.Namespace) -> int:
     return 0
 
 
+def _sheet_entries(path: str, reg) -> tuple[str | None, list[dict]]:
+    """A sheet for the video reader: a screenshot (read by OCR) or Showdown text."""
+    from dataclasses import asdict
+
+    p = Path(path)
+    if not p.exists():
+        raise SystemExit(f"no such sheet: {path}")
+    if p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+        from vgc.video.sheet import read_sheet
+
+        read = read_sheet(p, reg)
+        return read.title, [asdict(e) for e in read.entries]
+    team = parse_team(p.read_text())
+    return None, [{"species": m.species, "ability": m.ability, "nature": m.nature, "item": m.item,
+                   "moves": list(m.moves)} for m in team.members]
+
+
+def cmd_video_read(args: argparse.Namespace) -> int:
+    from vgc.video import review
+    from vgc.video.assemble import assemble
+    from vgc.video.screen import Event, timeline
+
+    reg = _reg(args)
+    (n1, p1), (n2, p2) = _sheet_entries(args.p1, reg), _sheet_entries(args.p2, reg)
+    names = {"p1": args.names[0] if args.names else n1, "p2": args.names[1] if args.names else n2}
+    setup = {"perspective": "spectator", "p1": p1, "p2": p2, "names": names}
+    source = Path(args.clip).name
+    if args.timeline:
+        rows = [json.loads(x) for x in Path(args.timeline).read_text().splitlines() if x.strip()]
+        events = [Event(r.pop("t"), r.pop("kind"), r) for r in rows]
+    else:
+        from vgc.video.clip import frames
+
+        shots = ((f.clip_s, f.image) for f in frames(Path(args.clip), every=1 / args.fps))
+        events = list(timeline(shots))
+    a = assemble(reg, setup, events)
+    if args.json:
+        print(json.dumps({"setup": setup, "entries": a.entries, "missed": a.missed,
+                          "provisional": a.provisional, "errors": a.errors}, indent=1, default=str))
+    else:
+        from collections import Counter
+
+        print(f"{names['p1'] or 'P1'} (left) vs {names['p2'] or 'P2'} (right)")
+        print(f"  {len(a.entries)} entries: " + ", ".join(f"{n} {k}" for k, n in Counter(e['kind'] for e in a.entries).most_common()))
+        quiet = sum(m["why"] == "noise" for m in a.missed)
+        print(f"  {len(a.missed) - quiet} missed (+{quiet} noise), {len(a.provisional)} read provisionally, "
+              f"{len(a.errors)} replay errors")
+        for e in a.errors:
+            print(f"  ! {e}")
+    if not args.no_record:
+        n = review.record(a, source)
+        print(f"  {n} lines logged for review: vgc video review", file=sys.stderr)
+    return 0
+
+
+def cmd_video_review(args: argparse.Namespace) -> int:
+    from vgc.video import review
+
+    s = review.summary(review.load(), quiet=not args.all)
+
+    def where(w: dict) -> str:
+        at = w.get("video_s") if w.get("video_s") is not None else w.get("t")
+        return f"{w.get('source')}@{int(at) // 60}:{int(at) % 60:02d}" if at is not None else str(w.get("source"))
+
+    print(f"Flagged while watching ({len(s['flag'])})")
+    for f in s["flag"]:
+        print(f"  {where(f)}  {f['note'] or '(no note)'}")
+    print(f"\nRead by a phrasing footage hasn't confirmed ({len(s['provisional'])} phrasings): check one, then add it to said.CONFIRMED")
+    for g in s["provisional"]:
+        print(f"  {g['count']:>3}x {g['pattern']:<24} {g['text']!r}  e.g. {', '.join(where(w) for w in g['where'])}")
+    print(f"\nMissed ({len(s['missed'])} kinds{'' if args.all else ', noise hidden: --all'})")
+    for g in s["missed"]:
+        print(f"  {g['count']:>3}x {g['why']}: {g['text'][:90]!r}  e.g. {', '.join(where(w) for w in g['where'])}")
+    return 0
+
+
 def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
@@ -1331,6 +1407,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--end", type=float, help="seconds into the clip to stop")
     p.add_argument("--json", action="store_true", help="one JSON event per line")
     p.set_defaults(func=cmd_video_timeline)
+    p = with_reg(video.add_parser("read", help="read a battle off a recording into journal entries"))
+    p.add_argument("clip", help="the recording (names the read in the review log)")
+    p.add_argument("--p1", required=True, help="the left player's sheet: a screenshot or Showdown text")
+    p.add_argument("--p2", required=True, help="the right player's sheet")
+    p.add_argument("--names", nargs=2, metavar=("LEFT", "RIGHT"), help="player names (default: read off the sheets)")
+    p.add_argument("--timeline", help="a `vgc video timeline --json` of the clip, instead of reading it again")
+    p.add_argument("--fps", type=float, default=4.0)
+    p.add_argument("--json", action="store_true", help="the entries, misses and provisional reads as JSON")
+    p.add_argument("--no-record", action="store_true", help="don't log misses for review")
+    p.set_defaults(func=cmd_video_read)
+    p = video.add_parser("review", help="what the reader missed or read on a guess, and moments you flagged")
+    p.add_argument("--all", action="store_true", help="include OCR noise")
+    p.set_defaults(func=cmd_video_review)
 
     p = with_reg(sub.add_parser("calc",help="damage calc (Champions rules, doubles by default)"))
     p.add_argument("--attacker", required=True, help='set spec, lines joined by "|"')

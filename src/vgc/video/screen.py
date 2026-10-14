@@ -123,7 +123,14 @@ def _white(img: np.ndarray) -> np.ndarray:
 
 # --- reading a region -----------------------------------------------------------------------
 
-_HP = re.compile(r"(\d{1,3})\s*%")
+_HP = re.compile(r"(\d+)\s*%")
+# The HP bar, under the name: its clean top rows (the number covers the rest), as fractions of the
+# plate, and its full length as a fraction of the frame. It reads about 1.5 points long.
+BAR_ROWS = (0.45, 0.53)
+BAR_LENGTH = 0.1142
+BAR_BIAS = 1.5
+# How far the printed number may sit from the bar and still be taken as read.
+BAR_TOLERANCE = 8
 _TURNS = re.compile(r"(\d)\s*/\s*(\d)")
 
 
@@ -157,16 +164,51 @@ def _read_message(lines, width: float, layout: Layout, x_off: float) -> tuple[st
     return (" ".join(msg) or None), choosing, screens
 
 
-def _read_plate(lines) -> Plate | None:
+def bar_hp(crop: np.ndarray, frame_width: int) -> float | None:
+    """HP from the bar's length, to within a few points; None where no bar is drawn."""
+    h = crop.shape[0]
+    rows = crop[int(BAR_ROWS[0] * h):int(BAR_ROWS[1] * h)].astype(int)
+    coloured = (rows.max(axis=2) - rows.min(axis=2) > 90) & (rows.max(axis=2) > 120)
+    spans = [xs.max() - xs.min() + 1 for r in coloured if len(xs := np.flatnonzero(r)) > 3]
+    if not spans:
+        return None
+    return max(0.0, float(np.median(spans)) / (BAR_LENGTH * frame_width) * 100 - BAR_BIAS)
+
+
+def _variants(digits: str) -> list[int]:
+    """What a printed HP may have been, given OCR's habit of doubling or merging a repeated
+    character: "1000" was 100, "6" may have been 66."""
+    out = [digits]
+    out += [digits[:i] + digits[i + 1:] for i in range(1, len(digits)) if digits[i] == digits[i - 1]]
+    out += [digits[:i] + digits[i] + digits[i:] for i in range(len(digits))]
+    return [int(d) for d in dict.fromkeys(out) if d and int(d) <= 100]
+
+
+def hp_from(digits: str, bar: float | None) -> int | None:
+    """The printed HP, checked against the bar. The number as read if the bar agrees; else the one
+    slip that fits the bar; else nothing. Without a bar to check, only a plain read counts."""
+    candidates = _variants(digits)
+    if bar is None:
+        return int(digits) if len(digits) <= 3 and int(digits) <= 100 else None
+    fits = [v for v in candidates if abs(v - bar) <= BAR_TOLERANCE]
+    if fits and fits[0] == candidates[0] and str(fits[0]) == digits:
+        return fits[0]
+    return fits[0] if len(fits) == 1 else None
+
+
+def _read_plate(lines, crop: np.ndarray, frame_width: int) -> Plate | None:
     if not lines:
         return None
-    name, hp = None, None
-    for text, *_ in lines:
+    name_parts, digits = [], None
+    for text, x0, *_ in sorted(lines, key=lambda ln: ln[1]):
         m = _HP.search(text)
-        if m and int(m.group(1)) <= 100:
-            hp = int(m.group(1))
-        elif sum(c.isalpha() for c in text) >= 3:
-            name = re.sub(r"[^A-Za-z .'-]", "", text).strip() or name
+        if m:
+            digits = m.group(1)
+        elif _letters(text) >= 3:  # the gender mark reads as "of" or "o"; a name is longer
+            name_parts.append(re.sub(r"[^A-Za-z .'-]", "", text).strip())
+    # OCR sometimes splits a name in two ("Indee", "dee"); the pieces are one name.
+    name = "".join(name_parts) or None
+    hp = hp_from(digits, bar_hp(crop, frame_width)) if digits else None
     return Plate(name, hp) if name or hp is not None else None
 
 
@@ -179,10 +221,13 @@ class ScreenReader:
         self._lines: dict[str, list] = {}
         self.ocr_calls = 0
 
-    def _region(self, frame: np.ndarray, key: str) -> list:
+    def _crop(self, frame: np.ndarray, key: str) -> np.ndarray:
         h, w = frame.shape[:2]
         x0, y0, x1, y1 = self.layout.regions[key]
-        crop = frame[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)]
+        return frame[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)]
+
+    def _region(self, frame: np.ndarray, key: str) -> list:
+        crop = self._crop(frame, key)
         mask = _white(crop)
         prev = self._masks.get(key)
         if prev is not None and prev.shape == mask.shape and np.count_nonzero(prev ^ mask) < CHANGED * mask.size:
@@ -198,7 +243,7 @@ class ScreenReader:
         r = self.layout.regions
         mx0, _, mx1, _ = r["message"]
         message, choosing, sides = _read_message(self._region(frame, "message"), (mx1 - mx0) * w, self.layout, mx0)
-        plates = {s: p for s in SLOTS if (p := _read_plate(self._region(frame, s)))}
+        plates = {s: p for s in SLOTS if (p := _read_plate(self._region(frame, s), self._crop(frame, s), w))}
         field_text = " ".join(t for t, *_ in self._region(frame, "field"))
         turns = " ".join(t for t, *_ in self._region(frame, "field_turns"))
         m = _TURNS.search(turns)

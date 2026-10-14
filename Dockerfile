@@ -52,9 +52,10 @@ COPY data/splits/ ./data/splits/
 COPY data/replays/ ./data/replays/
 COPY data/analysis/reg_mc/bring_rates.json data/analysis/reg_mc/endgames.json ./data/analysis/reg_mc/
 
-# What the app writes lives on the volume at /data: your teams, your battles, and the solver's
-# cache (.vgc). The links dangle until the volume is mounted; the entrypoint makes their targets.
-RUN ln -s /data/library ./data/library && ln -s /data/battles ./data/battles && ln -s /data/vgc ./.vgc
+# What the app writes lives on the volume at /data: your teams, your battles, the video review log
+# and the solver's cache (.vgc). The links dangle until the volume is mounted; the entrypoint makes
+# their targets.
+RUN ln -s /data/library ./data/library && ln -s /data/battles ./data/battles && ln -s /data/review ./data/review && ln -s /data/vgc ./.vgc
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

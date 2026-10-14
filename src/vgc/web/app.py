@@ -282,6 +282,29 @@ async def sheet_read(request: Request, regulation: str = "reg_mc") -> dict[str, 
         raise HTTPException(501, str(e)) from e
 
 
+class VideoFlag(BaseModel):
+    video: str = Field(description="the YouTube id being watched")
+    video_s: float | None = Field(default=None, description="seconds into the video")
+    note: str = Field(default="", max_length=500)
+
+
+@app.post("/api/video/flag")
+def video_flag(body: VideoFlag) -> dict[str, Any]:
+    """A moment marked from the watch page: something the reader got wrong or didn't catch, kept
+    in the review log (`vgc.video.review`) beside what the reader itself missed."""
+    from vgc.video import review
+
+    return review.flag(f"youtube:{body.video}", body.video_s, body.note)
+
+
+@app.get("/api/video/review")
+def video_review(all: bool = False) -> dict[str, Any]:
+    """The review log, grouped: moments flagged, phrasings read provisionally, and what was missed."""
+    from vgc.video import review
+
+    return review.summary(review.load(), quiet=not all)
+
+
 @app.get("/api/pool")
 def pool(regulation: str = "reg_mc") -> dict[str, Any]:
     """Everything the hand-entry pickers need: what is legal, and what people actually use.

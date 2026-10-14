@@ -535,6 +535,9 @@ export const api = {
     their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
     best_of?: 1 | 3;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
+  /** Mark a moment of a watched video for review: something the reader got wrong or missed. */
+  flagVideo: (video: string, video_s: number | null, note: string) =>
+    call<{ at: string }>("/api/video/flag", { method: "POST", body: JSON.stringify({ video, video_s, note }) }),
   /** An open team sheet read off a screenshot. Slow: a few seconds of OCR on the server. */
   readSheet: (image: Blob, reg: string) =>
     call<SheetRead>(`/api/sheet/read?regulation=${reg}`, {

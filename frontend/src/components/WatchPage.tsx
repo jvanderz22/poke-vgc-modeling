@@ -90,6 +90,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
   const [status, setStatus] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [captureError, setCaptureError] = useState<string | null>(null);
+  // A moment marked for review: the note being written, and the last one saved.
+  const [flagNote, setFlagNote] = useState<string | null>(null);
+  const [flagged, setFlagged] = useState<string | null>(null);
 
   // The capture reads the latest sheets through a ref: it outlives any one render.
   const latest = useRef(watch);
@@ -179,6 +182,18 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
     }
   }
 
+  async function saveFlag() {
+    if (!route.video) return;
+    const at = videoTime().video;
+    try {
+      await api.flagVideo(route.video, at, flagNote ?? "");
+      setFlagged(`Flagged at ${stamp(at)}. \`vgc video review\` lists it with what the reader missed.`);
+      setFlagNote(null);
+    } catch (e) {
+      setFlagged(`Couldn't save the flag: ${e instanceof ApiError ? e.message : String(e)}`);
+    }
+  }
+
   async function saveFrame() {
     const png = await capture.current?.frame("image/png");
     if (png && route.video) download(png, `${route.video}-${stamp(videoTime().video)}.png`);
@@ -237,8 +252,21 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
           <button onClick={start}>{reading ? "Capture the player and read the sheets" : "Capture the player"}</button>
         )}
         <span style={{ flex: 1 }} />
+        <button className="ghost" title="Something the page got wrong or didn't catch: noted at this point in the video, to look at later"
+                onClick={() => { setFlagNote(flagNote === null ? "" : null); setFlagged(null); }}>
+          ⚑ Flag this moment
+        </button>
         <button className="link tiny" onClick={() => navigate({ ...route, video: null, start: 0 })}>change video</button>
       </div>
+      {flagNote !== null && (
+        <form className="row watch-flag" onSubmit={(e) => { e.preventDefault(); void saveFlag(); }}>
+          <input autoFocus value={flagNote} onChange={(e) => setFlagNote(e.target.value)} maxLength={500}
+                 placeholder="What was wrong or missed? (optional)" style={{ flex: 1 }} />
+          <button type="submit">Save</button>
+          <button type="button" className="link tiny" onClick={() => setFlagNote(null)}>cancel</button>
+        </form>
+      )}
+      {flagged && <div className="tiny dim" style={{ margin: "4px 2px" }}>{flagged}</div>}
       <div className="tiny dim" style={{ margin: "6px 2px 0" }}>
         {!capturing && "Chrome or Edge: share this tab when asked. Only the player is captured."}
         {capturing && sheetsWanted && status}

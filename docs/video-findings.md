@@ -68,6 +68,20 @@ every message in a 45-second stretch was caught on at least four frames. Kinds s
 - Other: "Gardevoir protected itself!", "Indeedee became the center of attention!", "Indeedee is
   ready to help Gardevoir!", "The opposing Raichu was damaged by the recoil!"
 
+Round 6, read once the reader existed, added more: "The opposing Rotom went back to Trainer!"
+(Volt Switch), "It started to rain!" and "The rain stopped.", "A sandstorm kicked up!", "Pelipper
+is buffeted by the sandstorm!", "Gardevoir avoided the attack!", "The opposing Tyranitar knocked off
+Pelipper's Damp Rock!", "Sneasler returned its stats to normal using its White Herb!", "The opposing
+Indeedee had its energy drained!", "The opposing Archaludon absorbed electricity!" (Electro Shot
+charging), and a forfeit: "The battle has ended due to a forfeit." then "The Trainer lost!". From
+the left player's view the right one is "the Trainer". `said.CONFIRMED` lists what footage has
+shown; every other phrasing the reader knows is the main series' and reads provisionally.
+
+**The broadcast can cut away mid-turn.** In round 6 nothing was on screen for about 30 seconds at
+the end of a turn, and the opposing Sneasler fainted unseen (sandstorm, from 21%). The next thing
+shown was its replacement. The reader works such a faint out from the next decision point's plates
+and logs it for review.
+
 **Some events have no message.** Rocky Helmet's damage and Leftovers' healing showed as a banner and
 an HP change only. A reader that follows only the message line misses them, so banners and HP are
 read too.

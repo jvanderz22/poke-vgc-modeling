@@ -832,3 +832,11 @@ def test_sheet_read_refuses_what_is_not_an_image(client):
     assert client.post("/api/sheet/read", content=b"").status_code == 422
     r = client.post("/api/sheet/read", content=b"Golisopod @ Golisopite", headers={"content-type": "image/png"})
     assert r.status_code == 422
+
+
+def test_a_moment_flagged_while_watching_lands_in_the_review_log(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    r = client.post("/api/video/flag", json={"video": "abc123", "video_s": 61.5, "note": "missed a switch"})
+    assert r.status_code == 200, r.text
+    flags = client.get("/api/video/review").json()["flag"]
+    assert [(f["source"], f["video_s"], f["note"]) for f in flags] == [("youtube:abc123", 61.5, "missed a switch")]

@@ -58,8 +58,10 @@ def test_send_outs_with_titles_and_pairs(vocab):
 def test_one_line_for_two_stat_drops(vocab):
     s = parse("Gardevoir and Indeedee's Sp. Atk fell!", vocab)
     assert (s.kind, s.who, s.data) == ("boost", (Who("L", "Gardevoir"), Who("L", "Indeedee-F")),
-                                       {"stat": "spa", "stages": -1})
-    assert parse("The opposing Archaludon's Defense rose!", vocab).data == {"stat": "def", "stages": 1}
+                                       {"stats": ["spa"], "stages": -1})
+    assert parse("The opposing Archaludon's Defense rose!", vocab).data == {"stats": ["def"], "stages": 1}
+    # Two stats in one line, and OCR dropped the "!".
+    assert parse("Sneasler's Defense and Sp. Def fell", vocab).data == {"stats": ["def", "spd"], "stages": -1}
 
 
 def test_effectiveness_faints_and_the_rest(vocab):
@@ -75,8 +77,14 @@ def test_effectiveness_faints_and_the_rest(vocab):
 def test_mega_evolution(vocab):
     s = parse("The opposing Raichu's Raichunite X is reacting to Trainer's Omni Ring!", vocab)
     assert (s.kind, s.who, s.data) == ("mega_stone", (Who("R", "Raichu"),), {"item": "Raichunite X"})
-    s = parse("The opposing Raichu has Mega Evolved into Mega Raichu X!", vocab)
-    assert (s.kind, s.data) == ("mega", {"forme": "Raichu-Mega-X"})
+    # The game says "Mega Raichu" whichever stone it was: the forme is the sheet's to say.
+    s = parse("The opposing Raichu has Mega Evolved into Mega Raichu!", vocab)
+    assert (s.kind, s.who, s.data) == ("mega", (Who("R", "Raichu"),), {})
+
+
+def test_screens_go_up_on_a_side(vocab):
+    s = parse("Light Screen made the opposing side stronger against special moves!", vocab)
+    assert (s.kind, s.data) == ("side", {"side": "R", "condition": "Light Screen", "on": True})
 
 
 def test_an_ocr_slip_in_a_name_still_resolves(vocab):
@@ -95,3 +103,42 @@ def test_banners_name_an_item_or_an_ability(vocab, dex):
     assert banner("Indeedee's Rocky Helmet", "L", vocab, dex).data == {"item": "Rocky Helmet"}
     s = banner("Archaludon's Stamina", "R", vocab, dex)
     assert (s.kind, s.who, s.data) == ("ability", (Who("R", "Archaludon"),), {"ability": "Stamina"})
+
+
+# --- confirmed and provisional phrasings ----------------------------------------------------
+
+def test_a_phrasing_footage_has_shown_is_confirmed_and_one_it_has_not_is_provisional(vocab):
+    assert not parse("Gardevoir used Hyper Voice!", vocab).provisional
+    assert not parse("The opposing Raichu was damaged by the recoil!", vocab).provisional
+    burn = parse("Sneasler was burned!", vocab)
+    assert (burn.kind, burn.data, burn.pattern, burn.provisional) == ("status", {"status": "brn"}, "status:brn", True)
+
+
+def test_the_main_series_phrasings_read_provisionally(vocab):
+    assert parse("Sneasler flinched and couldn't move!", vocab).data == {"reason": "flinch"}
+    assert parse("Gardevoir is hurt by its burn!", vocab).data == {"cause": "brn"}
+    s = parse("Gardevoir and Sneasler switched places!", vocab)
+    assert (s.kind, s.who) == ("swap", (Who("L", "Gardevoir"), Who("L", "Sneasler")))
+    assert parse("The opposing Raichu is switched out with the Eject Button!", vocab).kind == "withdraw"
+    assert parse("But it failed!", vocab).kind == "failed"
+    assert parse("Gardevoir twisted the dimensions!", vocab).data == {"pseudo": "Trick Room", "on": True}
+
+
+def test_stat_words_ocr_ran_together(vocab):
+    assert parse("The opposing Raichu's Sp. Atk harshlyfell!", vocab).data == {"stats": ["spa"], "stages": -2}
+
+
+def test_a_move_off_a_sheet_read_short_is_read_from_the_learnset(dex, vocab):
+    # Round 6: the sheet reader left Knock Off blank on Tyranitar's card.
+    right = [{"species": "Tyranitar", "item": "Tyranitarite", "moves": ["Protect", "Rock Slide", "Low Kick"]}]
+    v = Vocabulary.from_sheets(dex, LEFT, right)
+    s = parse("The opposing Tyranitar used Knock Off!", v)
+    assert (s.kind, s.data, s.pattern, s.provisional) == ("move", {"move": "Knock Off"}, "move:off-sheet", True)
+    # A sheet with all four moves read keeps to them.
+    assert parse("The opposing Raichu used Knock Off!", vocab).kind == "unknown"
+
+
+def test_how_a_forfeit_reads(vocab):
+    assert parse("The battle has ended due to a forfeit.", vocab).kind == "forfeit_notice"
+    s = parse("The Trainer lost!", vocab)
+    assert (s.kind, s.data, s.provisional) == ("lost", {"winner": "L"}, False)
