@@ -32,6 +32,9 @@ data/analysis/**
 !data/analysis/reg_mc/endgames.json
 data/battles
 data/library
+# Recorded games (gigabytes) and the video reader's review log: local only
+data/video
+data/review
 data/champions-data
 data/replays/gen9championsvgc2026regmb
 data/replays/gen9championsvgc2026regmbbo3
