@@ -32,6 +32,7 @@ access_token
 data/library/
 # Battles you are in the middle of: your journals, not the project's.
 data/battles/
+data/video/
 
 # Built frontend (npm --prefix frontend run build). Source lives in frontend/.
 src/vgc/web/static/

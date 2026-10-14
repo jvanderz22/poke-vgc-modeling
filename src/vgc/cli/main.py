@@ -1200,6 +1200,46 @@ def cmd_sheet_read(args: argparse.Namespace) -> int:
     return 0 if complete and is_legal(found) else 1
 
 
+def cmd_video_frames(args: argparse.Namespace) -> int:
+    from vgc.video.clip import frames
+
+    clip = Path(args.clip)
+    out = Path(args.out) if args.out else clip.with_suffix("")
+    out.mkdir(parents=True, exist_ok=True)
+    n = 0
+    try:
+        for f in frames(clip, every=args.every):
+            video = f"v{f.video_s:09.3f}" if f.video_s is not None else "vnone"
+            f.image.save(out / f"{f.clip_s:08.2f}-{video}.png")
+            n += 1
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        return 1
+    print(f"{n} frames → {out}")
+    return 0
+
+
+def cmd_video_timeline(args: argparse.Namespace) -> int:
+    from vgc.video.clip import frames
+    from vgc.video.screen import timeline
+
+    def stamp(t: float) -> str:
+        return f"{int(t // 60)}:{t % 60:05.2f}"
+
+    try:
+        shots = ((f.clip_s, f.image) for f in frames(Path(args.clip), every=1 / args.fps,
+                                                       start=args.start, end=args.end))
+        for e in timeline(shots):
+            if args.json:
+                print(json.dumps({"t": e.t, "kind": e.kind, **e.data}))
+            else:
+                print(f"{stamp(e.t)}  {e.kind:8} {' '.join(f'{k}={v}' for k, v in e.data.items())}")
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        return 1
+    return 0
+
+
 def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
@@ -1277,6 +1317,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("image", help="a screenshot or video frame showing the sheet")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_sheet_read)
+
+    video = sub.add_parser("video", help="clips recorded on the watch page").add_subparsers(dest="video_cmd", required=True)
+    p = video.add_parser("frames", help="save a clip's frames as PNGs, named by clip and video time")
+    p.add_argument("clip", help="a .webm from the watch page; its .json of video times is read from beside it")
+    p.add_argument("--every", type=float, default=1.0, help="seconds between frames (0: every frame)")
+    p.add_argument("--out", help="directory (default: beside the clip, named after it)")
+    p.set_defaults(func=cmd_video_frames)
+    p = video.add_parser("timeline", help="what a battle broadcast shows, as settled events (OCR)")
+    p.add_argument("clip", help="a recording of the broadcast: .webm from the watch page, or any video file")
+    p.add_argument("--fps", type=float, default=4.0, help="frames read per second (default 4)")
+    p.add_argument("--start", type=float, default=0.0, help="seconds into the clip to start")
+    p.add_argument("--end", type=float, help="seconds into the clip to stop")
+    p.add_argument("--json", action="store_true", help="one JSON event per line")
+    p.set_defaults(func=cmd_video_timeline)
 
     p = with_reg(sub.add_parser("calc",help="damage calc (Champions rules, doubles by default)"))
     p.add_argument("--attacker", required=True, help='set spec, lines joined by "|"')

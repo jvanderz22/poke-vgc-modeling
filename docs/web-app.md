@@ -88,6 +88,13 @@ lists the disagreement. Reading stops once both sheets are full. **Start watchin
 Watching battle (`/watch/<id>`), and the right half becomes the battle page, entered by hand for
 now.
 
+The player is the YouTube IFrame API's, so the page knows the video's own time. While capturing,
+**Record clip** saves the player as `<video>-<time>.webm` with a `.json` beside it: the player's
+time sampled every 200 ms. **Save frame** saves one PNG named by its video time. These are the
+fixtures the battle reader is built and scored on (PLAN-video steps 1–3). Keep them in
+`data/video/`, which is gitignored: a battle is a few hundred MB. `vgc video frames CLIP` turns a
+clip into PNGs named by clip time and video time (`vgc.video.clip`, decoded by PyAV).
+
 ### Endgames
 
 A set of real human games the WP model called at **90%+ before they ended**, to click through.

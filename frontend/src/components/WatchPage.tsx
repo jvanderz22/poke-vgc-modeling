@@ -3,8 +3,10 @@ import { api, ApiError, type Species } from "../api";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
 import {
-  CaptureError, emptyWatch, isSheet, mergeRead, parseYouTube, startCapture, type Capture, type WatchSheets,
+  CaptureError, download, emptyWatch, isSheet, mergeRead, parseYouTube, readFrames, stamp, startCapture,
+  startRecording, type Capture, type Clip, type WatchSheets,
 } from "../watch";
+import { mountPlayer, type YouTubePlayer } from "../youtube";
 import { BattleSession } from "./BattleSession";
 import { SheetForm } from "./SheetForm";
 
@@ -76,9 +78,15 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
-  const player = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const host = useRef<HTMLDivElement>(null);
+  const player = useRef<YouTubePlayer | null>(null);
+  const [playerProblem, setPlayerProblem] = useState<string | null>(null);
   const capture = useRef<Capture | null>(null);
   const [capturing, setCapturing] = useState(false);
+  const recorder = useRef<{ stop: () => Promise<Clip> } | null>(null);
+  const [recordingSince, setRecordingSince] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
   const [status, setStatus] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [captureError, setCaptureError] = useState<string | null>(null);
@@ -88,46 +96,92 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
   latest.current = watch;
   const full = (w: WatchSheets) => w.sheets.every((s) => s.every((e) => e.species && e.ability && e.nature
     && e.item && e.moves.every(Boolean)));
-  const wanted = () => reading && !full(latest.current);
+  const sheetsWanted = reading && !full(watch);
+
+  const videoTime = () => {
+    const p = player.current;
+    return p ? { video: Math.round(p.getCurrentTime() * 1000) / 1000, playing: p.getPlayerState() === 1 }
+             : { video: null, playing: false };
+  };
+
+  useEffect(() => {
+    if (!route.video || !host.current) return;
+    setPlayerProblem(null);
+    return mountPlayer(host.current, route.video, route.start,
+                       (p) => { player.current = p; },
+                       (message) => setPlayerProblem(message));
+  }, [route.video, route.start]);
+
+  const stopRecording = useCallback(async () => {
+    const r = recorder.current;
+    recorder.current = null;
+    setRecordingSince(null);
+    if (!r) return;
+    const clip = await r.stop();
+    const first = clip.meta.times.find((t) => t.video !== null)?.video ?? null;
+    const name = `${clip.meta.video}-${stamp(first)}`;
+    download(clip.webm, `${name}.webm`);
+    download(new Blob([JSON.stringify(clip.meta)], { type: "application/json" }), `${name}.json`);
+  }, []);
 
   const stop = useCallback(() => {
+    if (recorder.current) void stopRecording();
     capture.current?.stop();
     capture.current = null;
     setCapturing(false);
-  }, []);
+  }, [stopRecording]);
   useEffect(() => stop, [stop, route.video]);
-  useEffect(() => { if (!reading) stop(); }, [reading, stop]);
+
+  // Sheets are read while there is no battle yet and a field is still empty.
+  useEffect(() => {
+    if (!capturing || !sheetsWanted || !capture.current) return;
+    setStatus("Reading: put a team sheet on screen.");
+    return readFrames(capture.current, async (jpeg) => {
+      try {
+        const read = await api.readSheet(jpeg, reg);
+        const at = new Date().toLocaleTimeString();
+        if (!isSheet(read)) { setStatus(`No sheet on screen (checked ${at}).`); return; }
+        const merged = mergeRead(latest.current, read);
+        if (merged.slot === null) {
+          setStatus(`A third team's sheet is on screen (${at}); both players already have one.`);
+          return;
+        }
+        latest.current = merged;
+        onWatch(() => ({ sheets: merged.sheets, names: merged.names }));
+        setConflicts((c) => [...new Set([...c, ...merged.conflicts])]);
+        setStatus(`Read ${read.title ? `${read.title}'s` : "a"} sheet into Player ${merged.slot + 1} (${at}).`);
+      } catch (e) {
+        setCaptureError(e instanceof ApiError ? e.message : String(e));
+      }
+    }, () => !full(latest.current));
+  }, [capturing, sheetsWanted, reg, onWatch]);
+
+  useEffect(() => {
+    if (recordingSince === null) return;
+    const t = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(t);
+  }, [recordingSince]);
 
   async function start() {
-    if (!player.current) return;
+    if (!box.current) return;
     setCaptureError(null);
     try {
-      capture.current = await startCapture(player.current, async (jpeg) => {
-        try {
-          const read = await api.readSheet(jpeg, reg);
-          const at = new Date().toLocaleTimeString();
-          if (!isSheet(read)) { setStatus(`No sheet on screen (checked ${at}).`); return; }
-          const merged = mergeRead(latest.current, read);
-          if (merged.slot === null) {
-            setStatus(`A third team's sheet is on screen (${at}); both players already have one.`);
-            return;
-          }
-          latest.current = merged;
-          onWatch(() => ({ sheets: merged.sheets, names: merged.names }));
-          setConflicts((c) => [...new Set([...c, ...merged.conflicts])]);
-          setStatus(`Read ${read.title ? `${read.title}'s` : "a"} sheet into Player ${merged.slot + 1} (${at}).`);
-        } catch (e) {
-          setCaptureError(e instanceof ApiError ? e.message : String(e));
-          stop();
-        }
-      }, wanted, stop);
+      capture.current = await startCapture(box.current, () => {
+        capture.current = null;
+        setCapturing(false);
+        if (recorder.current) void stopRecording();
+      });
       setCapturing(true);
-      setStatus("Reading: put a team sheet on screen.");
     } catch (e) {
       // Declining the share prompt lands here too, and needs no message.
       if (e instanceof CaptureError) setCaptureError(e.message);
       else if ((e as Error).name !== "NotAllowedError") setCaptureError(String((e as Error).message ?? e));
     }
+  }
+
+  async function saveFrame() {
+    const png = await capture.current?.frame("image/png");
+    if (png && route.video) download(png, `${route.video}-${stamp(videoTime().video)}.png`);
   }
 
   if (!route.video) {
@@ -157,25 +211,39 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
     );
   }
 
-  const filledSheets = watch.sheets.filter((s) => filled(s) === SHEET_SIZE).length;
+  const elapsed = recordingSince === null ? 0 : Math.floor((now - recordingSince) / 1000);
   return (
     <div className="watch-video">
       {/* Only this box is captured, so nothing of the page's own may sit inside it. */}
-      <div ref={player} className="watch-player">
-        <iframe src={`https://www.youtube.com/embed/${route.video}?start=${route.start}&rel=0`}
-                title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
-      </div>
+      <div ref={box} className="watch-player"><div ref={host} className="watch-host" /></div>
+      {playerProblem && <p className="small err" style={{ margin: "6px 2px" }}>{playerProblem}</p>}
       <div className="row watch-controls">
-        {reading && (capturing
-          ? <button className="ghost" onClick={stop}>Stop reading</button>
-          : <button onClick={start}>Read sheets from the video</button>)}
-        {capturing && !wanted() && <span className="tiny dim">Both sheets are full, so nothing more is read.</span>}
-        {capturing && wanted() && status && <span className="tiny dim">{status}</span>}
-        {!capturing && reading && filledSheets < 2 && (
-          <span className="tiny dim">Chrome or Edge: share this tab when asked, and only the player is read.</span>
+        {capturing ? (
+          <>
+            <button className="ghost" onClick={stop}>Stop capturing</button>
+            {recordingSince === null
+              ? <button className="ghost" onClick={() => {
+                  if (!capture.current || !route.video) return;
+                  recorder.current = startRecording(capture.current, route.video, videoTime);
+                  setRecordingSince(Date.now());
+                  setNow(Date.now());
+                }}>Record clip</button>
+              : <button className="ghost recording" onClick={() => void stopRecording()}>
+                  ● Stop recording · {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
+                </button>}
+            <button className="ghost" onClick={saveFrame}>Save frame</button>
+          </>
+        ) : (
+          <button onClick={start}>{reading ? "Capture the player and read the sheets" : "Capture the player"}</button>
         )}
         <span style={{ flex: 1 }} />
         <button className="link tiny" onClick={() => navigate({ ...route, video: null, start: 0 })}>change video</button>
+      </div>
+      <div className="tiny dim" style={{ margin: "6px 2px 0" }}>
+        {!capturing && "Chrome or Edge: share this tab when asked. Only the player is captured."}
+        {capturing && sheetsWanted && status}
+        {capturing && reading && !sheetsWanted && "Both sheets are full, so no more are read."}
+        {capturing && " A recorded clip saves as a .webm and a .json of the video's times, for building the battle reader."}
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {conflicts.length > 0 && (

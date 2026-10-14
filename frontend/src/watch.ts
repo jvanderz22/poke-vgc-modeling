@@ -112,43 +112,38 @@ export function emptyWatch(): WatchSheets {
 
 export class CaptureError extends Error {}
 
-export type Capture = { stop: () => void };
+/** The player's pixels, captured. One capture serves sheet reading, clip recording and saved
+ *  frames, so the browser asks to share the tab once. */
+export type Capture = {
+  stream: MediaStream;
+  /** The picture now, at the capture's full size. */
+  frame: (type?: string, quality?: number) => Promise<Blob | null>;
+  /** A 64×36 grey thumbnail, for telling one picture from the next. */
+  thumb: () => Float32Array;
+  size: () => { width: number; height: number };
+  stop: () => void;
+};
 
-/** How far apart two frames must be (mean absolute grey level, 0–255, on a 64×36 thumbnail) to
- *  count as a different picture. Compression noise on a still frame stays well under it. */
-const CHANGED = 1.5;
-/** Each frame is sent no sooner than this after the last, and only if the picture changed. A
- *  still picture is sent again after REPEAT_MS, in case the read before it was cut short. */
-const INTERVAL_MS = 1500;
-const REPEAT_MS = 15000;
-
-/** Capture the pixels of `target`, the element around the player, and hand each new picture to
- *  `onFrame` as a JPEG. One frame is in flight at a time, so a slow read slows the rate rather
- *  than queueing frames.
+/** Capture the pixels of `target`, the element around the player.
  *
  *  Only `target` is captured, never the rest of the page: the page's own sheet forms are text a
  *  reader would happily read back. That needs Region Capture (Chrome and Edge), so without it this
  *  refuses instead of capturing the whole tab. */
-export async function startCapture(
-  target: HTMLElement,
-  onFrame: (jpeg: Blob) => Promise<void>,
-  wanted: () => boolean,
-  onEnded: () => void,
-): Promise<Capture> {
+export async function startCapture(target: HTMLElement, onEnded: () => void): Promise<Capture> {
   const CropTarget = (window as unknown as { CropTarget?: { fromElement(e: Element): Promise<unknown> } }).CropTarget;
   if (!navigator.mediaDevices?.getDisplayMedia) throw new CaptureError("This browser can't capture a tab.");
-  if (!CropTarget) throw new CaptureError("Reading the video needs Chrome or Edge, which can capture just the player.");
+  if (!CropTarget) throw new CaptureError("Capturing the video needs Chrome or Edge, which can capture just the player.");
 
   const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: { frameRate: 5 }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
+    video: { frameRate: 30 }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
   } as DisplayMediaStreamOptions);
   const [track] = stream.getVideoTracks();
-  const stopAll = () => stream.getTracks().forEach((t) => t.stop());
+  const stopTracks = () => stream.getTracks().forEach((t) => t.stop());
   try {
     await (track as unknown as { cropTo(t: unknown): Promise<void> }).cropTo(await CropTarget.fromElement(target));
   } catch {
-    stopAll();
-    throw new CaptureError("Share this tab when asked: the page can only read the player in its own tab.");
+    stopTracks();
+    throw new CaptureError("Share this tab when asked: the page can only capture the player in its own tab.");
   }
 
   const video = document.createElement("video");
@@ -156,39 +151,71 @@ export async function startCapture(
   video.srcObject = stream;
   await video.play();
 
-  const thumb = document.createElement("canvas");
-  thumb.width = 64;
-  thumb.height = 36;
-  const tctx = thumb.getContext("2d", { willReadFrequently: true })!;
+  const small = document.createElement("canvas");
+  small.width = 64;
+  small.height = 36;
+  const sctx = small.getContext("2d", { willReadFrequently: true })!;
   const full = document.createElement("canvas");
+  let stopped = false;
+
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    stopTracks();
+    video.srcObject = null;
+  };
+  // "Stop sharing" in the browser's own bar ends the track without asking the page.
+  track.addEventListener("ended", () => { stop(); onEnded(); });
+
+  return {
+    stream,
+    stop,
+    size: () => ({ width: video.videoWidth, height: video.videoHeight }),
+    thumb: () => {
+      sctx.drawImage(video, 0, 0, 64, 36);
+      const px = sctx.getImageData(0, 0, 64, 36).data;
+      const out = new Float32Array(64 * 36);
+      for (let i = 0; i < out.length; i++) out[i] = px[4 * i] * 0.299 + px[4 * i + 1] * 0.587 + px[4 * i + 2] * 0.114;
+      return out;
+    },
+    frame: (type = "image/jpeg", quality = 0.9) => {
+      if (stopped || !video.videoWidth) return Promise.resolve(null);
+      full.width = video.videoWidth;
+      full.height = video.videoHeight;
+      full.getContext("2d")!.drawImage(video, 0, 0);
+      return new Promise((ok) => full.toBlob(ok, type, quality));
+    },
+  };
+}
+
+/** How far apart two thumbnails must be (mean absolute grey level, 0–255) to count as a different
+ *  picture. Compression noise on a still frame stays well under it. */
+const CHANGED = 1.5;
+/** A frame is sent no sooner than this after the last, and only if the picture changed; a still
+ *  picture is sent again after REPEAT_MS, in case the read before it was cut short. */
+const INTERVAL_MS = 1500;
+const REPEAT_MS = 15000;
+
+function distance(a: Float32Array, b: Float32Array): number {
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]);
+  return d / a.length;
+}
+
+/** Hand each new picture to `onFrame` while `wanted()`. One frame is in flight at a time, so a
+ *  slow read slows the rate rather than queueing frames. Returns the function that stops it. */
+export function readFrames(cap: Capture, onFrame: (jpeg: Blob) => Promise<void>, wanted: () => boolean): () => void {
   let lastSent: Float32Array | null = null;
   let lastAt = 0;
   let inFlight = false;
   let stopped = false;
-
-  const grey = (): Float32Array => {
-    tctx.drawImage(video, 0, 0, 64, 36);
-    const px = tctx.getImageData(0, 0, 64, 36).data;
-    const out = new Float32Array(64 * 36);
-    for (let i = 0; i < out.length; i++) out[i] = (px[4 * i] * 0.299 + px[4 * i + 1] * 0.587 + px[4 * i + 2] * 0.114);
-    return out;
-  };
-  const distance = (a: Float32Array, b: Float32Array) => {
-    let d = 0;
-    for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]);
-    return d / a.length;
-  };
-
   const tick = async () => {
-    if (stopped || inFlight || !wanted() || !video.videoWidth) return;
+    if (stopped || inFlight || !wanted()) return;
     const now = Date.now();
     if (now - lastAt < INTERVAL_MS) return;
-    const g = grey();
+    const g = cap.thumb();
     if (lastSent && distance(g, lastSent) < CHANGED && now - lastAt < REPEAT_MS) return;
-    full.width = video.videoWidth;
-    full.height = video.videoHeight;
-    full.getContext("2d")!.drawImage(video, 0, 0);
-    const jpeg = await new Promise<Blob | null>((ok) => full.toBlob(ok, "image/jpeg", 0.9));
+    const jpeg = await cap.frame();
     if (!jpeg || stopped) return;
     inFlight = true;
     lastSent = g;
@@ -196,15 +223,66 @@ export async function startCapture(
     try { await onFrame(jpeg); } finally { inFlight = false; }
   };
   const timer = window.setInterval(tick, 250);
+  return () => { stopped = true; window.clearInterval(timer); };
+}
 
-  const stop = () => {
-    if (stopped) return;
-    stopped = true;
-    window.clearInterval(timer);
-    stopAll();
-    video.srcObject = null;
+// --- clips ----------------------------------------------------------------------------------
+
+/** What the player was doing at a moment of a recording: `ms` from the recording's start, and
+ *  the video's own time then (null when the player wasn't ready). */
+export type ClipTime = { ms: number; video: number | null; playing: boolean };
+
+export type Clip = { webm: Blob; meta: ClipMeta };
+
+/** The JSON saved beside a clip, which `vgc.video.clip` reads. */
+export type ClipMeta = {
+  video: string; mime: string; width: number; height: number; recorded: string; times: ClipTime[];
+};
+
+/** Record the capture as a clip, sampling the video's time every 200 ms alongside it, so any
+ *  frame of the clip can be placed in the video: the fixtures PLAN-video step 3 is built from. */
+export function startRecording(cap: Capture, videoId: string,
+                               clock: () => { video: number | null; playing: boolean }): { stop: () => Promise<Clip> } {
+  const mime = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"]
+    .find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
+  // Sharp enough that the text box and the HP bars survive: these clips are read, not watched.
+  const rec = new MediaRecorder(cap.stream, { mimeType: mime || undefined, videoBitsPerSecond: 6_000_000 });
+  const chunks: Blob[] = [];
+  const times: ClipTime[] = [];
+  const recorded = new Date().toISOString();
+  const { width, height } = cap.size();
+  let t0 = 0;
+  const sample = () => times.push({ ms: Math.round(performance.now() - t0), ...clock() });
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  rec.onstart = () => { t0 = performance.now(); sample(); };
+  rec.start(1000);
+  const timer = window.setInterval(sample, 200);
+  return {
+    stop: () => new Promise((ok) => {
+      window.clearInterval(timer);
+      sample();
+      rec.onstop = () => ok({
+        webm: new Blob(chunks, { type: mime || "video/webm" }),
+        meta: { video: videoId, mime: mime || "video/webm", width, height, recorded, times },
+      });
+      rec.stop();
+    }),
   };
-  // "Stop sharing" in the browser's own bar ends the track without asking the page.
-  track.addEventListener("ended", () => { stop(); onEnded(); });
-  return { stop };
+}
+
+/** Save a blob to the browser's downloads under `name`. */
+export function download(blob: Blob, name: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** 754.3 seconds as "12m34s", for file names that sort and read. */
+export function stamp(seconds: number | null): string {
+  if (seconds === null) return "unknown";
+  const s = Math.floor(seconds);
+  return `${Math.floor(s / 60)}m${String(s % 60).padStart(2, "0")}s`;
 }

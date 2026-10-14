@@ -8,8 +8,9 @@ is built yet.
 **Status (2026-10-12):** step 0 is in (Watching mode). Reading the two sheets, step 6's first item,
 came first and is in: `vgc.video.sheet` and `POST /api/sheet/read` (OCR, any screenshot), and the
 `/watch` page, which embeds the player, captures it with Region Capture and fills both sheets as
-the broadcast shows them. The battle on that page is entered by hand. Step 1 (the screen survey)
-and step 2 (the battle reader) are next.
+the broadcast shows them. The battle on that page is entered by hand. Decision 1's record button
+is in too (2026-10-13): a clip and its video times, and `vgc video frames`. Step 1 (the screen
+survey) is next and waits on recorded footage; step 2 (the battle reader) follows from it.
 
 ---
 
