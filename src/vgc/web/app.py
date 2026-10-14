@@ -186,6 +186,8 @@ class NewBattle(BaseModel):
     their_team: str = Field(default="", description="Open Team Sheets: their six sets as text")
     p1_team: str = Field(default="", description="Watching someone else's game: player 1's open "
                          "sheet as text, with `their_team` as player 2's. No team of yours.")
+    p1_name: str = Field(default="", description="Watching: player 1's name, as the broadcast shows it")
+    p2_name: str = Field(default="", description="Watching: player 2's name")
     best_of: int = Field(default=1, description="1, or 3 for game 1 of a series: ending a game sets "
                          "up the next, which starts out knowing what the earlier games showed")
     version: str = ""
@@ -303,6 +305,105 @@ def video_review(all: bool = False) -> dict[str, Any]:
     from vgc.video import review
 
     return review.summary(review.load(), quiet=not all)
+
+
+# Battles being read off a video, by battle id: in memory, so a restart ends them. The journal is
+# the record; a reading restarted on the same battle carries on from it (`Reading.resync`).
+_readings: dict[str, Any] = {}
+FRAME_LIMIT = 4 * 1024 * 1024
+
+
+@app.post("/api/battles/{battle_id}/read")
+async def read_frame(battle_id: str, request: Request, video_s: float, video: str = "",
+                     regulation: str = "reg_mc") -> dict[str, Any]:
+    """One frame of the video beside a watched battle, sent as the request body (JPEG), taken
+    `video_s` into the video. What it settles is appended to the battle's journal, each entry
+    stamped with its `video_s`; the reply says what was added and where the reading stands.
+
+    One frame at a time per battle: the page sends the next when this one has been answered, so a
+    slow host reads fewer frames rather than falling behind. PLAN-video step 4."""
+    reg = _reg(regulation)
+    data = await request.body()
+    if not data:
+        raise HTTPException(422, "no frame in the request")
+    if len(data) > FRAME_LIMIT:
+        raise HTTPException(413, f"frame over {FRAME_LIMIT // (1024 * 1024)} MB")
+    try:
+        from vgc.video.reading import Reading
+    except ImportError as e:
+        raise HTTPException(501, f"this server can't read video: {e}") from e
+
+    def run() -> dict[str, Any]:
+        import io
+
+        from PIL import Image, UnidentifiedImageError
+
+        blob, b = _battle(reg, battle_id)
+        if blob["setup"].get("perspective") != "spectator":
+            raise HTTPException(409, "only a watched game (both sheets open) can be read off a video")
+        if b.rp.state.ended and battle_id not in _readings:
+            # Over: what the broadcast shows next (the desk, the next game's sheets) isn't this game.
+            from vgc.video.reading import Status
+
+            return {**Status(read_to=video_s, ended=True).as_dict(), "errors": list(b.rp.errors)}
+        reading = _readings.get(battle_id)
+        if reading is None:
+            reading = _readings[battle_id] = Reading(reg, blob["setup"], f"youtube:{video}" if video else battle_id)
+            reading.resync(b.journal)
+        if not reading.lock.acquire(blocking=False):
+            raise HTTPException(409, "a frame of this battle is already being read")
+        try:
+            try:
+                image = Image.open(io.BytesIO(data)).convert("RGB")
+            except (UnidentifiedImageError, OSError) as e:
+                raise HTTPException(422, "that isn't an image this server can read") from e
+            resynced = not reading.follows(b.journal)
+            if resynced:
+                reading.resync(b.journal)
+            status = reading.frame(video_s, image)
+            status.resynced = resynced
+            if status.entries:
+                for e in status.entries:
+                    b.append(e)
+                blob["journal"] = b.journal
+                blob["turn"] = b.rp.state.turn
+                blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+                live.save(reg.id, blob)
+                live.after_edit(reg, blob, b.rp.state.ended)
+            if status.ended:
+                _readings.pop(battle_id, None)
+            return {**status.as_dict(), "errors": list(b.rp.errors)}
+        finally:
+            reading.lock.release()
+
+    try:
+        return await run_in_threadpool(run)
+    except RuntimeError as e:  # RapidOCR missing: the server was built without '.[video]'
+        raise HTTPException(501, str(e)) from e
+
+
+@app.delete("/api/battles/{battle_id}/read")
+def stop_reading(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """Stop reading: what the reader still held (a move waiting on its results) is written, and the
+    reading is dropped. Frames sent later start a new one from the journal as it stands."""
+    reg = _reg(regulation)
+    reading = _readings.pop(battle_id, None)
+    if reading is None:
+        return {"stopped": False}
+    with reading.lock:
+        blob, b = _battle(reg, battle_id)
+        if not reading.follows(b.journal):
+            return {"stopped": True, "entries": []}
+        status = reading.finish()
+        for e in status.entries:
+            b.append(e)
+        if status.entries:
+            blob["journal"] = b.journal
+            blob["turn"] = b.rp.state.turn
+            blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+            live.save(reg.id, blob)
+            live.after_edit(reg, blob, b.rp.state.ended)
+        return {"stopped": True, "entries": status.entries}
 
 
 @app.get("/api/pool")
@@ -676,7 +777,8 @@ def _watch(reg, body: NewBattle) -> dict[str, Any]:
         raise HTTPException(422, "watching needs both players' sheets")
     p1, p2 = _sheet(reg, body.p1_team, "player 1's"), _sheet(reg, body.their_team, "player 2's")
     version = body.version or in_battle_version(reg.id, OPEN)
-    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1, best_of=_best_of(body.best_of))
+    names = {k: v.strip() for k, v in (("p1", body.p1_name), ("p2", body.p2_name)) if v.strip()}
+    blob = live.create(reg, body.name, "", p2, version, p1_sheet=p1, best_of=_best_of(body.best_of), names=names)
     return battle_view(blob["id"], reg.id)
 
 

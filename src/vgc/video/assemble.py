@@ -37,6 +37,9 @@ RESULT_OF = {"protected": "protected", "immune": "immune", "miss": "miss"}
 BANNER_WINDOW_S = 6.0
 # The four plates shown at a decision point arrive within this long of its marker.
 SNAPSHOT_S = 1.0
+# How far behind the frames a settled event can be: it is stamped with when it first showed, and
+# reported a couple of frames later.
+SETTLE_LAG_S = 0.75
 
 
 @dataclass
@@ -298,6 +301,13 @@ class Assembler:
             self._flush(e.t)
             self.decision = e.t
 
+    def tick(self, t: float) -> None:
+        """The frames have reached `t`. Read live, a decision point is closed (its turn written)
+        once its plates have had time to come in, not when the next message comes, which is after
+        the players have chosen."""
+        if self.decision is not None and t - self.decision > SNAPSHOT_S + SETTLE_LAG_S:
+            self._close_decision()
+
     def _cause(self, t: float, who: Who) -> str | None:
         """What a message or banner near it says changed this HP: "sandstorm", "rockyhelmet"."""
         for ht, hw, cause in reversed(self.hints):
@@ -320,6 +330,10 @@ class Assembler:
             return  # the sheets and the desk before the battle
         if self.replaying:
             return
+        if s.kind == "unknown" and sum(c.isascii() and c.isalpha() for c in text) < 8:
+            # A line of a few letters is OCR catching an effect or a fragment, not a message: it
+            # doesn't end the move before it, whose results may still be coming in.
+            return self._miss(t, text, "noise")
         if s.provisional:
             self.out.provisional.append({"t": round(t, 2), "pattern": s.pattern, "text": text})
         key = (s.who[0].side, s.who[0].species, s.data["move"]) if s.kind == "move" else None
@@ -429,9 +443,7 @@ class Assembler:
             if (to_id(cond) in self.rp.state.sides[side].conditions) != s.data["on"]:
                 self._write(t, {"kind": "side", "side": side, "condition": cond, "on": s.data["on"]})
         elif s.kind == "unknown":
-            # A line of a few letters is OCR catching an effect or a fragment, not a message.
-            letters = sum(c.isascii() and c.isalpha() for c in text)
-            self._miss(t, text, "message not understood" if letters >= 8 else "noise")
+            self._miss(t, text, "message not understood")
         # recoil, center, helping: the rules derive what they do, or there is nothing to log.
 
     def _sendout(self, t: float, s: Said) -> None:

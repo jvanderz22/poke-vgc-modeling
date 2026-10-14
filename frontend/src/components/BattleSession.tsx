@@ -23,11 +23,13 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0 }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
   teams: SavedTeam[];
+  /** Bumped when something other than this page wrote to the battle (the video reader). */
+  refresh?: number;
 }) {
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,7 +48,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
     setBusy(true);
     const load = step === null ? api.battle(id, reg) : api.battleAt(id, step, reg);
     load.then(setView).catch((e) => setError(String(e.message ?? e))).finally(() => setBusy(false));
-  }, [id, step, reg]);
+  }, [id, step, reg, refresh]);
 
   const log = useCallback(async (entries: Entry[]) => {
     if (!id) return;

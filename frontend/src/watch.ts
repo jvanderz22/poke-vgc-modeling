@@ -116,8 +116,8 @@ export class CaptureError extends Error {}
  *  frames, so the browser asks to share the tab once. */
 export type Capture = {
   stream: MediaStream;
-  /** The picture now, at the capture's full size. */
-  frame: (type?: string, quality?: number) => Promise<Blob | null>;
+  /** The picture now, at the capture's full size or scaled down to `maxWidth`. */
+  frame: (type?: string, quality?: number, maxWidth?: number) => Promise<Blob | null>;
   /** A 64×36 grey thumbnail, for telling one picture from the next. */
   thumb: () => Float32Array;
   size: () => { width: number; height: number };
@@ -178,11 +178,12 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
       for (let i = 0; i < out.length; i++) out[i] = px[4 * i] * 0.299 + px[4 * i + 1] * 0.587 + px[4 * i + 2] * 0.114;
       return out;
     },
-    frame: (type = "image/jpeg", quality = 0.9) => {
+    frame: (type = "image/jpeg", quality = 0.9, maxWidth = Infinity) => {
       if (stopped || !video.videoWidth) return Promise.resolve(null);
-      full.width = video.videoWidth;
-      full.height = video.videoHeight;
-      full.getContext("2d")!.drawImage(video, 0, 0);
+      const k = Math.min(1, maxWidth / video.videoWidth);
+      full.width = Math.round(video.videoWidth * k);
+      full.height = Math.round(video.videoHeight * k);
+      full.getContext("2d")!.drawImage(video, 0, 0, full.width, full.height);
       return new Promise((ok) => full.toBlob(ok, type, quality));
     },
   };
@@ -241,6 +242,34 @@ export type ClipMeta = {
 
 /** Record the capture as a clip, sampling the video's time every 200 ms alongside it, so any
  *  frame of the clip can be placed in the video: the fixtures PLAN-video step 3 is built from. */
+/** A battle's frames go every quarter second: a message is up for 1.5–2 s, and the reader counts
+ *  it once it has read the same thing twice running. */
+const BATTLE_INTERVAL_MS = 250;
+/** The reader works at 1200 wide (`screen.WORK_WIDTH`); a larger frame only costs upload. */
+const BATTLE_WIDTH = 1200;
+
+/** Stream frames for the battle reader, each with the video time it shows. A frame goes only once
+ *  the last has been answered, so a slow host reads fewer frames instead of falling behind, and
+ *  none goes while the video is paused (`time` gives null). Returns the stopper. */
+export function streamFrames(cap: Capture, time: () => number | null,
+                             onFrame: (jpeg: Blob, videoS: number) => Promise<void>): () => void {
+  let stopped = false;
+  const loop = async () => {
+    while (!stopped) {
+      const began = Date.now();
+      const at = time();
+      if (at !== null) {
+        const jpeg = await cap.frame("image/jpeg", 0.85, BATTLE_WIDTH);
+        if (!jpeg || stopped) break;
+        try { await onFrame(jpeg, at); } catch { /* reported by onFrame; keep reading */ }
+      }
+      await new Promise((ok) => window.setTimeout(ok, Math.max(0, BATTLE_INTERVAL_MS - (Date.now() - began))));
+    }
+  };
+  void loop();
+  return () => { stopped = true; };
+}
+
 export function startRecording(cap: Capture, videoId: string,
                                clock: () => { video: number | null; playing: boolean }): { stop: () => Promise<Clip> } {
   const mime = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"]

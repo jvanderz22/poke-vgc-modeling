@@ -219,6 +219,8 @@ class ScreenReader:
         self.layout = layout
         self._masks: dict[str, np.ndarray] = {}
         self._lines: dict[str, list] = {}
+        # Whether a region's last read was made on a frame after its change, not the first one.
+        self._checked: dict[str, bool] = {}
         self.ocr_calls = 0
 
     def _crop(self, frame: np.ndarray, key: str) -> np.ndarray:
@@ -230,8 +232,12 @@ class ScreenReader:
         crop = self._crop(frame, key)
         mask = _white(crop)
         prev = self._masks.get(key)
-        if prev is not None and prev.shape == mask.shape and np.count_nonzero(prev ^ mask) < CHANGED * mask.size:
+        same = prev is not None and prev.shape == mask.shape and np.count_nonzero(prev ^ mask) < CHANGED * mask.size
+        # The first frame of new text is often mid-fade, and reads as garbage that the frames after
+        # it, too alike to count as a change, would keep. So the frame after a change is read again.
+        if same and self._checked.get(key, False):
             return self._lines[key]
+        self._checked[key] = same
         self._masks[key] = mask
         self.ocr_calls += 1
         self._lines[key] = _lines(crop)
@@ -260,7 +266,8 @@ def scale(img: Any) -> np.ndarray:
     from PIL import Image
 
     im = img if isinstance(img, Image.Image) else Image.fromarray(img)
-    if im.width > WORK_WIDTH * 1.1:
+    # Any frame wider is brought to exactly this width: the regions and thresholds were set on it.
+    if im.width > WORK_WIDTH:
         im = im.resize((WORK_WIDTH, round(im.height * WORK_WIDTH / im.width)), Image.BILINEAR)
     return np.asarray(im.convert("RGB"))
 

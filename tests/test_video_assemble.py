@@ -197,3 +197,17 @@ def test_a_forfeit_ends_the_game(reg):
     entries, _ = _read(reg, LEADS + [(830.0, "message", {"text": "The battle has ended due to a forfeit."}),
                                      (831.8, "message", {"text": "The Trainer lost!"})])
     assert entries[-1] == {"kind": "end", "winner": "p1", "by": "forfeit"}
+
+
+def test_a_fragment_of_ocr_noise_does_not_cut_a_move_off_from_its_damage(reg):
+    # Round 6: a stray character read between Rock Slide and the plate that showed its damage.
+    entries, a = _read(reg, LEADS + [
+        (720.6, "message", {"text": "The opposing Raichu used Volt Tackle!"}),
+        (722.6, "message", {"text": "江"}),
+        (723.1, "plate", {"slot": "L0", "name": "Sneasler", "hp": 51}),
+    ])
+    assert entries[5:] == [
+        {"kind": "move", "side": "p2", "slot": 0, "move": "Volt Tackle", "target": {"side": "p1", "slot": 0},
+         "spread": False},
+        {"kind": "damage", "side": "p1", "slot": 0, "pct": 51, "fainted": False}]
+    assert a.missed[-1]["why"] == "noise"

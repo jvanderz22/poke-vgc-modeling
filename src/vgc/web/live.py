@@ -117,12 +117,14 @@ def _other(setup: dict[str, Any]) -> str:
 
 def create(reg: Regulation, name: str, my_team: str, theirs: list[dict[str, Any]],
            version: str | None, p1_sheet: list[dict[str, Any]] | None = None,
-           best_of: int = 1) -> dict[str, Any]:
+           best_of: int = 1, names: dict[str, str] | None = None) -> dict[str, Any]:
     """A battle of yours, or with `p1_sheet`, someone else's: two open sheets watched from outside,
-    neither side's Stat Points known. `best_of=3` makes it game 1 of a series."""
+    neither side's Stat Points known, and `names` the two players'. `best_of=3` makes it game 1 of
+    a series."""
     now = dt.datetime.now().isoformat(timespec="seconds")
     if p1_sheet is not None:
-        setup = {"perspective": "spectator", "p1": p1_sheet, "p2": theirs}
+        setup = {"perspective": "spectator", "p1": p1_sheet, "p2": theirs,
+                 **({"names": names} if names else {})}
     else:
         setup = {"perspective": "p1", "mine": entry.from_team(reg, my_team), "theirs": theirs}
     bid = uuid.uuid4().hex[:12]

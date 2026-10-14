@@ -85,8 +85,24 @@ a battle's nameplates or team preview don't. The first team read goes to player 
 player 2, with the broadcast's name for each. A later read of the same team only fills what is
 still empty. Where it disagrees with a field already set, the form keeps its value and the page
 lists the disagreement. Reading stops once both sheets are full. **Start watching** makes a
-Watching battle (`/watch/<id>`), and the right half becomes the battle page, entered by hand for
-now.
+Watching battle (`/watch/<id>`), with the two names on its setup, and the right half becomes the
+battle page.
+
+**Read the battle** (while capturing, once the battle exists) sends the player a frame every
+quarter second while the video plays, and none while it is paused, to the battle reader
+(`POST /api/battles/{id}/read`, `vgc.video.reading`). What it settles is appended to the battle's
+journal, each entry stamped with the `video_s` it was read at, and the battle half refreshes as it
+lands. A frame goes only once the last has been answered, so a slow server reads fewer frames
+rather than falling behind; under 2 a second the page warns that a short message can be missed.
+The line under the player says how far it has read, the last message, and how many things it
+couldn't read (each with its time, under "What it couldn't read"). The journal stays yours:
+correct an entry by hand (undo, re-enter) and the reader takes the journal as it then stands and
+reads on from there. Rewinding skips frames until the video is past where the reading had got to,
+so nothing is read twice. Skipping ahead leaves a gap that isn't read; the page lists it and the
+review log keeps it. **Stop reading the battle** writes out what the reader still held (a move
+waiting on its results). A reading lives in the server's memory: a restart ends it, and reading
+again on the same battle carries on from its journal. The reader knows one broadcast layout
+(Louisville's, [video-findings](video-findings.md)) and is unscored until PLAN-video step 3.
 
 The player is the YouTube IFrame API's, so the page knows the video's own time. While capturing,
 **Record clip** saves the player as `<video>-<time>.webm` with a `.json` beside it: the player's
@@ -271,6 +287,8 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/battles/{id}/entries`, `POST /api/battles/{id}/undo`, `GET /api/battles/{id}/at/{index}` | Append taps, pop the last, or see the battle after its first `index` taps |
 | `POST /api/battles/{id}/next` | The next game of the battle's Bo3, made if it is not there yet (ending a game of one already makes it) |
 | `GET /api/species/{name}` | What a sheet can say about one species: types, legal abilities and moves, and the items and natures people run, each ordered by usage |
+| `POST /api/battles/{id}/read`, `DELETE /api/battles/{id}/read` | A watched battle read off its video: one JPEG frame (`video_s`, `video`) → what it appended and where the reading stands; stop, writing out what was held |
+| `POST /api/video/flag`, `GET /api/video/review` | A moment marked for review; the review log, grouped |
 | `GET /api/battles/{id}/trajectory` | The WP at every turn so far, with the band over drawn sets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
 

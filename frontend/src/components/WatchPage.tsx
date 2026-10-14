@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, ApiError, type Species } from "../api";
+import { api, ApiError, type ReadStatus, type Species } from "../api";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
 import {
   CaptureError, download, emptyWatch, isSheet, mergeRead, parseYouTube, readFrames, stamp, startCapture,
-  startRecording, type Capture, type Clip, type WatchSheets,
+  startRecording, streamFrames, type Capture, type Clip, type WatchSheets,
 } from "../watch";
 import { mountPlayer, type YouTubePlayer } from "../youtube";
 import { BattleSession } from "./BattleSession";
@@ -15,8 +15,9 @@ type WatchRoute = Extract<Route, { tab: "watch" }>;
 /** Watching a game on YouTube: the video on one half of the page, the match on the other.
  *
  *  Before the battle, the match half is both players' sheets, and the page can read them off the
- *  video as the broadcast shows them. Once it starts, it is the ordinary battle page, entered by
- *  hand beside the video. Reading the battle itself off the video is PLAN-video's next step. */
+ *  video as the broadcast shows them. Once it starts, it is the ordinary battle page beside the
+ *  video, which the battle reader can fill as the game plays (PLAN-video step 4), and which can
+ *  always be corrected by hand. */
 export function WatchPage({ reg, route, navigate, pool }: {
   reg: string;
   route: WatchRoute;
@@ -24,6 +25,9 @@ export function WatchPage({ reg, route, navigate, pool }: {
   pool: Species[];
 }) {
   const [watch, setWatch] = useWatchDraft(`vgc:${reg}:watch`);
+  // Bumped when the battle reader writes to the journal, so the battle half shows it.
+  const [refresh, setRefresh] = useState(0);
+  const onRead = useCallback(() => setRefresh((n) => n + 1), []);
 
   // The battle page navigates to itself (stepping back through turns, the next game of a Bo3).
   // Here those stay beside the video; anything else leaves the page as it would anyway.
@@ -38,11 +42,11 @@ export function WatchPage({ reg, route, navigate, pool }: {
   return (
     <div className="watch-page">
       <VideoColumn reg={reg} route={route} navigate={navigate}
-                   watch={watch} onWatch={setWatch} reading={!route.battle} />
+                   watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
-                           navigate={inPage} teams={[]} />
+                           navigate={inPage} teams={[]} refresh={refresh} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -68,13 +72,14 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
   watch: WatchSheets;
   onWatch: (f: (w: WatchSheets) => WatchSheets) => void;
   reading: boolean;
+  onRead: () => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -93,6 +98,11 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
   // A moment marked for review: the note being written, and the last one saved.
   const [flagNote, setFlagNote] = useState<string | null>(null);
   const [flagged, setFlagged] = useState<string | null>(null);
+  // The battle reader: on while frames are going to it, and what it said last.
+  const [battleReading, setBattleReading] = useState(false);
+  const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);
+  const [readError, setReadError] = useState<string | null>(null);
+  const answered = useRef<number[]>([]);
 
   // The capture reads the latest sheets through a ref: it outlives any one render.
   const latest = useRef(watch);
@@ -128,6 +138,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
   }, []);
 
   const stop = useCallback(() => {
+    setBattleReading(false);
     if (recorder.current) void stopRecording();
     capture.current?.stop();
     capture.current = null;
@@ -158,6 +169,47 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
       }
     }, () => !full(latest.current));
   }, [capturing, sheetsWanted, reg, onWatch]);
+
+  // The battle is read while there is one and the reader is on: a frame every quarter second while
+  // the video plays, none while it is paused.
+  const battle = route.battle;
+  useEffect(() => {
+    if (!capturing || !battleReading || !battle || !capture.current || !route.video) return;
+    const video = route.video;
+    answered.current = [];
+    const playing = () => {
+      const p = player.current;
+      return p && p.getPlayerState() === 1 ? p.getCurrentTime() : null;
+    };
+    return streamFrames(capture.current, playing, async (jpeg, at) => {
+      try {
+        const s = await api.readFrame(battle, jpeg, Math.round(at * 1000) / 1000, video, reg);
+        const now = Date.now();
+        answered.current = [...answered.current.filter((x) => now - x < 5000), now];
+        setReadStatus(s);
+        setReadError(null);
+        if (s.entries.length || s.resynced) onRead();
+        if (s.ended) setBattleReading(false);
+      } catch (e) {
+        setReadError(e instanceof ApiError ? e.message : String(e));
+        throw e;
+      }
+    });
+  }, [capturing, battleReading, battle, route.video, reg, onRead]);
+
+  // A different battle (the next game of a Bo3) starts unread.
+  useEffect(() => { setBattleReading(false); setReadStatus(null); }, [battle]);
+
+  async function stopReading() {
+    setBattleReading(false);
+    if (!battle) return;
+    try {
+      await api.stopReading(battle, reg);
+      onRead();
+    } catch (e) {
+      setReadError(e instanceof ApiError ? e.message : String(e));
+    }
+  }
 
   useEffect(() => {
     if (recordingSince === null) return;
@@ -236,6 +288,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
         {capturing ? (
           <>
             <button className="ghost" onClick={stop}>Stop capturing</button>
+            {battle && (battleReading
+              ? <button className="ghost recording" onClick={() => void stopReading()}>● Stop reading the battle</button>
+              : <button onClick={() => { setReadError(null); setBattleReading(true); }}>Read the battle</button>)}
             {recordingSince === null
               ? <button className="ghost" onClick={() => {
                   if (!capture.current || !route.video) return;
@@ -274,11 +329,57 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading }: {
         {capturing && " A recorded clip saves as a .webm and a .json of the video's times, for building the battle reader."}
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
+      {battle && (battleReading || readStatus) && (
+        <ReadingLine status={readStatus} on={battleReading} rate={answered.current.length / 5} error={readError} />
+      )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
           A later frame disagreed with what is in the form; the form kept its value. Check:
           <ul style={{ margin: "2px 0 0 16px", padding: 0 }}>{conflicts.map((c) => <li key={c}>{c}</li>)}</ul>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Where the battle reader stands: what it read last, how fast, and what it couldn't read. */
+function ReadingLine({ status, on, rate, error }: {
+  status: ReadStatus | null; on: boolean; rate: number; error: string | null;
+}) {
+  const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  return (
+    <div className="watch-reading small">
+      {error && <div className="err">The reader stopped on a frame: {error}</div>}
+      {!status && on && <div className="dim">Reading: play the video. Nothing is read while it is paused.</div>}
+      {status && (
+        <>
+          <div>
+            {status.ended ? "Read to the end of the game." : on ? "Reading" : "Not reading"}
+            {status.read_to !== null && <> · up to {clock(status.read_to)}</>}
+            {on && rate > 0 && <> · {rate.toFixed(1)} frames/s</>}
+            {status.missed > 0 && <> · <span className="warn-text">{status.missed} not read</span></>}
+            {status.provisional > 0 && <> · {status.provisional} read on an unconfirmed phrasing</>}
+          </div>
+          {status.message && <div className="dim">Last message: “{status.message}”</div>}
+          {on && rate > 0 && rate < 2 && (
+            <div className="warn-text">Under 2 frames a second: a short message can be missed.</div>
+          )}
+          {status.behind && status.read_to !== null && (
+            <div className="dim">Rewound: reading picks up again after {clock(status.read_to)}, where it had got to.</div>
+          )}
+          {status.resynced && <div className="dim">The journal was edited by hand; reading on from it as it stands.</div>}
+          {status.gaps.map(([a, b]) => (
+            <div key={a} className="warn-text">Not read: {clock(a)}–{clock(b)}, skipped over.</div>
+          ))}
+          {status.recent_missed.length > 0 && (
+            <details>
+              <summary className="dim">What it couldn't read (all of it goes to <code>vgc video review</code>)</summary>
+              <ul style={{ margin: "2px 0 0 16px", padding: 0 }}>
+                {status.recent_missed.map((m) => <li key={`${m.t}${m.why}`}>{clock(m.t)} {m.why}: {m.what}</li>)}
+              </ul>
+            </details>
+          )}
+        </>
       )}
     </div>
   );
@@ -310,6 +411,7 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
       const [n1, n2] = watch.names.map((n) => n.trim());
       const v = await api.newBattle({
         name: n1 || n2 ? `${n1 || "P1"} vs ${n2 || "P2"}` : "", regulation: reg, best_of: bestOf,
+        p1_name: n1, p2_name: n2,
         p1_team: toShowdown(p1), their_team: toShowdown(p2),
       });
       navigate({ ...route, battle: v.id, step: null });

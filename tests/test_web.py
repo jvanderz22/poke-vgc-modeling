@@ -840,3 +840,42 @@ def test_a_moment_flagged_while_watching_lands_in_the_review_log(client, tmp_pat
     assert r.status_code == 200, r.text
     flags = client.get("/api/video/review").json()["flag"]
     assert [(f["source"], f["video_s"], f["note"]) for f in flags] == [("youtube:abc123", 61.5, "missed a switch")]
+
+
+def test_a_watched_battle_is_read_frame_by_frame(client, watched, tmp_path, monkeypatch):
+    """A frame of the video goes to the battle reader; its reply says where the reading stands.
+    Before the leads there is nothing to write, and a still player is not read twice."""
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    monkeypatch.setattr(webapp, "_readings", {})
+    frame = (paths.ROOT / "tests" / "fixtures" / "video" / "r5-choosing.jpg").read_bytes()
+    url = f"/api/battles/{watched['id']}/read?video_s=182.5&video=abc123"
+    r = client.post(url, content=frame, headers={"content-type": "image/jpeg"})
+    assert r.status_code == 200, r.text
+    s = r.json()
+    assert s["read_to"] == 182.5 and s["entries"] == [] and not s["ended"] and s["errors"] == []
+    assert client.post(url, content=frame, headers={"content-type": "image/jpeg"}).json()["read_to"] == 182.5
+    behind = client.post(url.replace("182.5", "100.0"), content=frame, headers={"content-type": "image/jpeg"})
+    assert behind.json()["behind"]
+    assert client.delete(f"/api/battles/{watched['id']}/read").json() == {"stopped": True, "entries": []}
+    assert client.get(f"/api/battles/{watched['id']}").json()["journal"] == []
+
+
+def test_only_a_watched_battle_is_read_off_a_video(client, started):
+    r = client.post(f"/api/battles/{started['id']}/read?video_s=1", content=b"x", headers={"content-type": "image/jpeg"})
+    assert r.status_code == 409
+
+
+def test_a_finished_game_is_not_read_on(client, watched, monkeypatch):
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(webapp, "_readings", {})
+    bid = watched["id"]
+    leads = [{"kind": "lead", "side": sid, "slot": slot, "species": sp}
+             for sid, pair in (("p1", ("Rillaboom", "Garchomp")), ("p2", ("Incineroar", "Pelipper")))
+             for slot, sp in enumerate(pair)]
+    entries(client, bid, *leads, {"kind": "turn", "n": 1}, {"kind": "end", "winner": "p1"})
+    r = client.post(f"/api/battles/{bid}/read?video_s=900", content=b"not even an image",
+                    headers={"content-type": "image/jpeg"})
+    assert r.status_code == 200 and r.json()["ended"] and r.json()["entries"] == []

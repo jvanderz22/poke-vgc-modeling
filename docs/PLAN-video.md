@@ -13,7 +13,12 @@ is in too (2026-10-13): a clip and its video times, and `vgc video frames`. Step
 survey, is done on two Louisville games ([video-findings](video-findings.md), 2026-10-14). Step
 2's reader is built offline (`vgc video timeline`, `vgc video read`) and reads both games end to
 end with no replay errors; it is unscored until step 3's hand transcriptions exist. Misses,
-provisional phrasings and moments flagged on the watch page go to a review log (`vgc video review`).
+provisional phrasings and moments flagged on the watch page go to a review log (`vgc video review`). Step
+4's live session is in (2026-10-14): **Read the battle** on the watch page sends frames to
+`POST /api/battles/{id}/read` (`vgc.video.reading`), which runs the same reader and appends to the
+battle's journal; rewinds are skipped, skips ahead are logged as gaps, and hand edits are taken as
+the journal. It replaces the planned WebSocket with one POST per frame, sent when the last is
+answered. G-latency and the reader's speed on the Fly machine are not measured yet.
 
 ---
 

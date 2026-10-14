@@ -113,6 +113,43 @@ Nothing on screen counts turns. "Trainers are choosing actions" marks each decis
 is the stretch from one to the next. What fainted Pokémon are replaced by comes after "fainted!",
 with a send-out message.
 
+## Reading live (step 4)
+
+_Added 2026-10-14._ Both games were run through the live path (`vgc.video.reading`) the way the
+watch page sends them: one frame every 0.25 s of video, scaled to 1200 wide and JPEG-compressed at
+0.85. Each live journal was compared with the offline read of the same game.
+
+**The first frame of new text is often mid-fade.** It read as garbage ("ie eds see ss es Sdo t"
+for "Light Screen made the opposing side stronger against special moves!"). The frames after it
+differed from it by less than the change threshold, so the garbage was kept and the message lost.
+The screen layer now reads a region again on the frame after any change. That costs one more OCR
+per change, and it recovered messages the offline read had also lost: misses fell from 11 to 1
+(round 5) and from 6 to 2 (round 6). New reads included a terrain, a crit, Sandstorm starting,
+two Sp. Atk drops, a drain heal, and two of Golisopod's Protects failing. The
+footage confirms the failed Protects ("But it failed!" is on screen at 13:29).
+
+**A frame wider than the reader's 1200 was read at its own size.** `scale` only shrank frames
+more than 10% wider, so a 1280 frame was read at a geometry nothing was tuned on. Frames are now
+always brought to 1200, and the page sends 1200.
+
+**OCR noise cut a move off from its damage.** A one-character fragment between "used Rock Slide!"
+and the plate showing its damage closed the move, so the damage had nothing to belong to, and the
+next decision point's plates didn't show that Pokémon. A fragment of noise no longer ends a move.
+
+**A decision point is closed by the clock live.** Offline, a turn is written when the next event
+arrives; live, that is after the players have chosen. The live reader closes a decision point
+1.75 s after its marker, once its plates have settled.
+
+Differences left between the live and offline reads, other than the above: one HP read a point
+apart (Leftovers to 65 or 66; G-hp will say which), and one hit whose plate showed no number
+until the next decision point, so its damage is right but written as unexplained.
+
+**Speed on this Mac** (round 6, nothing else running): 124 ms a frame at the median, 309 ms at
+p90, 516 ms at p99, 731 ms at most, so 4 frames a second about keeps up. Two games read at once
+roughly doubled it. The page sends a frame only once the last is answered, so a
+slower host reads fewer frames; the page warns below 2 a second. The Fly machine
+(shared-cpu-4x) is not measured.
+
 ## Decision gate (step 1)
 
 This source passes: the message line, the nameplates and the HP numbers are all readable. Step 2

@@ -400,6 +400,22 @@ export type SpeciesOptions = {
   natures: { name: string; share: number }[];
 };
 
+/** Where the battle reader stands after a frame (`vgc.video.reading.Status`). */
+export type ReadStatus = {
+  entries: Record<string, unknown>[];
+  read_to: number | null;
+  behind: boolean;
+  message: string | null;
+  missed: number;
+  recent_missed: { t: number; why: string; what: string }[];
+  provisional: number;
+  gaps: [number, number][];
+  ended: boolean;
+  ms: number;
+  resynced: boolean;
+  errors: string[];
+};
+
 export type LiveView = {
   id: string; name: string; sheets: Sheets; perspective: Perspective;
   turn: number; started: boolean; ended: boolean; winner: string | null;
@@ -533,11 +549,20 @@ export const api = {
   newBattle: (body: {
     name?: string; my_team?: string; team_id?: string;
     their_species?: string[]; their_team?: string; p1_team?: string; regulation: string;
-    best_of?: 1 | 3;
+    best_of?: 1 | 3; p1_name?: string; p2_name?: string;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
   /** Mark a moment of a watched video for review: something the reader got wrong or missed. */
   flagVideo: (video: string, video_s: number | null, note: string) =>
     call<{ at: string }>("/api/video/flag", { method: "POST", body: JSON.stringify({ video, video_s, note }) }),
+  /** One frame of the video beside a watched battle, for the battle reader. What it settles is
+   *  appended to the battle's journal; the reply says what, and where the reading stands. */
+  readFrame: (battle: string, frame: Blob, videoS: number, video: string, reg: string) =>
+    call<ReadStatus>(`/api/battles/${battle}/read?video_s=${videoS}&video=${encodeURIComponent(video)}&regulation=${reg}`, {
+      method: "POST", body: frame, headers: { "content-type": frame.type || "image/jpeg" },
+    }),
+  /** Stop reading: what the reader still held is written to the journal. */
+  stopReading: (battle: string, reg: string) =>
+    call<{ stopped: boolean }>(`/api/battles/${battle}/read?regulation=${reg}`, { method: "DELETE" }),
   /** An open team sheet read off a screenshot. Slow: a few seconds of OCR on the server. */
   readSheet: (image: Blob, reg: string) =>
     call<SheetRead>(`/api/sheet/read?regulation=${reg}`, {
