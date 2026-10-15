@@ -174,6 +174,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         setConflicts((c) => [...new Set([...c, ...merged.conflicts])]);
         setStatus(`Read ${read.title ? `${read.title}'s` : "a"} sheet into Player ${merged.slot + 1} (${at}).`);
       } catch (e) {
+        if (e instanceof ApiError && e.status === 429) return;  // the server is still on earlier frames
         setCaptureError(e instanceof ApiError ? e.message : String(e));
       }
     }, () => !full(latest.current));
@@ -370,6 +371,12 @@ function ReadingLine({ status, on, rate, error }: {
             {status.provisional > 0 && <> · {status.provisional} read on an unconfirmed phrasing</>}
           </div>
           {status.message && <div className="dim">Last message: “{status.message}”</div>}
+          {status.left && (
+            <div className="dim">
+              Player {status.left === "p1" ? 1 : 2} is on the left of the screen
+              {status.left === "p2" && " (the sheets were read the other way round; the Pokémon say so)"}.
+            </div>
+          )}
           {on && rate > 0 && rate < 2 && (
             <div className="warn-text">Under 2 frames a second: a short message can be missed.</div>
           )}

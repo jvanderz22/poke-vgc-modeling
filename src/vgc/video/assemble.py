@@ -26,8 +26,10 @@ from vgc.regulation import Regulation, to_id
 from vgc.video.said import Said, Vocabulary, Who, banner, best, parse
 from vgc.video.screen import Event
 
-# The left player is P1: the watch page makes the left player's sheet player 1's.
+# Which player is on which side of the screen, until the leads say otherwise: the watch page gives
+# the first sheet it reads to player 1, and the broadcast doesn't have to show the left one first.
 SIDE = {"L": "p1", "R": "p2"}
+FLIPPED = {"L": "p2", "R": "p1"}
 
 SPREAD = {"allAdjacentFoes", "allAdjacent"}
 AIMED = {"normal", "adjacentFoe", "any", "randomNormal", "adjacentAlly", "adjacentAllyOrSelf"}
@@ -69,8 +71,16 @@ class _Move:
 
 
 class Assembler:
-    def __init__(self, reg: Regulation, setup: dict[str, Any], vocab: Vocabulary):
-        self.reg, self.vocab = reg, vocab
+    def __init__(self, reg: Regulation, setup: dict[str, Any]):
+        self.reg = reg
+        names = setup.get("names") or {}
+        # One vocabulary per way round: the screen's left side is player 1's sheet, or player 2's.
+        self.vocabs = {flip: Vocabulary.from_sheets(reg.dex, setup[m["L"]], setup[m["R"]],
+                                                    {"L": names.get(m["L"]), "R": names.get(m["R"])})
+                       for flip, m in ((False, SIDE), (True, FLIPPED))}
+        self.side, self.vocab = SIDE, self.vocabs[False]
+        # Settled by the first send-out only one way round explains; until then, either could be.
+        self.oriented = False
         self.rp = journal.Replay(journal.setup_state(reg, setup))
         self.out = Assembly()
         self.started = False
@@ -97,6 +107,7 @@ class Assembler:
         # point's plates to say who left.
         self.held: dict[str, list[tuple[float, Who]]] = {"p1": [], "p2": []}
         self.forfeit = False
+        self.won: tuple[float, str] | None = None  # (when, winner) once a side has nothing left
 
     # --- writing ------------------------------------------------------------------------------
 
@@ -113,13 +124,32 @@ class Assembler:
         for q in self.rp.questions:
             if q.id not in before:
                 self.asked[q.id] = t
+        if entry["kind"] != "end" and self.won is None and (out := self._out()) is not None:
+            # A side with nothing left has lost, whatever the broadcast shows next (or doesn't:
+            # round 5's recording stops before its winner banner). Written once the rest of what
+            # is being written (the other targets of a spread move) is in.
+            self.won = (t, {"p1": "p2", "p2": "p1"}[out])
         return True
+
+    def _write_won(self) -> None:
+        if self.won is not None and not self.rp.state.ended:
+            t, winner = self.won
+            self._settle_questions(t, all_=True)
+            self._write(t, {"kind": "end", "winner": winner})
+
+    def _out(self) -> str | None:
+        """The one side that has lost all it brought, if the game is not already over."""
+        st = self.rp.state
+        if st.ended:
+            return None
+        out = [sid for sid in ("p1", "p2") if sum(m.state == "fainted" for m in st.sides[sid].mons) >= self.reg.bring]
+        return out[0] if len(out) == 1 else None
 
     def _miss(self, t: float, what: Any, why: str) -> None:
         self.out.missed.append({"t": round(t, 2), "what": what, "why": why})
 
     def _mon(self, who: Who) -> Mon | None:
-        side = SIDE[who.side]
+        side = self.side[who.side]
         want = self.rp.state._base(who.species)
         return next((m for m in self.rp.state.sides[side].mons if self.rp.state._base(m.species) == want), None)
 
@@ -138,7 +168,7 @@ class Assembler:
             for bt, b in self.banners:
                 if bt + 0.5 < raised or bt - raised > BANNER_WINDOW_S or not b.who:
                     continue
-                if SIDE[b.who[0].side] != q.side or to_id(b.who[0].species) != to_id(q.species):
+                if self.side[b.who[0].side] != q.side or to_id(b.who[0].species) != to_id(q.species):
                     continue
                 for i, o in enumerate(q.outcomes):
                     if (b.kind == "ability" and o.ability == to_id(b.data["ability"])) or \
@@ -161,7 +191,7 @@ class Assembler:
         if user is None:
             self._miss(mv.t, f"{mv.species} used {mv.move}", "not on the field")
             return
-        side = SIDE[mv.side]
+        side = self.side[mv.side]
         dexmove = self.reg.dex.get_move(mv.move) or {}
         kind = dexmove.get("target")
         entry: dict[str, Any] = {"kind": "move", "side": side, "slot": user.position, "move": mv.move,
@@ -170,7 +200,7 @@ class Assembler:
         if kind in SPREAD:
             for who, result in mv.named:
                 if result and (m := self._active(who)) is not None:
-                    results.append({"side": SIDE[who.side], "slot": m.position, "result": result})
+                    results.append({"side": self.side[who.side], "slot": m.position, "result": result})
             if results:
                 entry["results"] = results
         elif kind in AIMED:
@@ -183,11 +213,11 @@ class Assembler:
             target = named[0][0] if named else (hit[0] if len(set(hit)) == 1 else None)
             if target is not None:
                 m = self._active(target)
-                entry["target"] = {"side": SIDE[target.side], "slot": m.position}
+                entry["target"] = {"side": self.side[target.side], "slot": m.position}
                 result = next((r for w, r in named if w == target and r), None)
                 if result:
                     entry["result"] = result
-                self.last_target = {"side": SIDE[target.side], "slot": m.position}
+                self.last_target = {"side": self.side[target.side], "slot": m.position}
         if mv.result and "result" not in entry and not results:
             entry["result"] = mv.result
         mons = {id(m): dict(m.boosts) for s in ("p1", "p2") for m in self.rp.state.sides[s].mons}
@@ -212,7 +242,7 @@ class Assembler:
         now = round(m.hp * 100)
         if abs(now - hp) <= 1 and not (hp == 0 and m.hp > 0):
             return  # the replay has it already: a derived recoil, a plate shown again
-        side, slot = SIDE[who.side], m.position
+        side, slot = self.side[who.side], m.position
         if hp < now:
             e = {"kind": "damage", "side": side, "slot": slot, "pct": hp, "fainted": hp == 0}
             if crit:
@@ -250,7 +280,7 @@ class Assembler:
         for side, held in self.held.items():
             if not held:
                 continue
-            shown = {self.rp.state._base(w.species) for w in self.snapshot if SIDE[w.side] == side}
+            shown = {self.rp.state._base(w.species) for w in self.snapshot if self.side[w.side] == side}
             gone = [m for m in self.rp.state.sides[side].mons
                     if m.state == "active" and m.position is not None and self.rp.state._base(m.species) not in shown]
             for t, who in held:
@@ -265,6 +295,7 @@ class Assembler:
             self.held[side] = []
 
     def feed(self, e: Event) -> None:
+        self._write_won()
         if self.decision is not None and not (e.kind == "plate" and e.t - self.decision <= SNAPSHOT_S):
             self._close_decision()
         if e.kind == "message":
@@ -307,6 +338,8 @@ class Assembler:
         the players have chosen."""
         if self.decision is not None and t - self.decision > SNAPSHOT_S + SETTLE_LAG_S:
             self._close_decision()
+        if self.won is not None and t - self.won[0] > SETTLE_LAG_S:
+            self._write_won()
 
     def _cause(self, t: float, who: Who) -> str | None:
         """What a message or banner near it says changed this HP: "sandstorm", "rockyhelmet"."""
@@ -326,6 +359,8 @@ class Assembler:
         if text.upper().startswith("GAME WINNER"):
             return self._end(t, text)
         s = parse(text, self.vocab)
+        if not self.oriented:
+            s = self._orient(text, s)
         if not self.started and s.kind != "sendout":
             return  # the sheets and the desk before the battle
         if self.replaying:
@@ -369,7 +404,7 @@ class Assembler:
         elif s.kind == "withdraw":
             m = self._active(s.who[0])
             if m is not None:
-                self.vacated[SIDE[s.who[0].side]].append(m.position)
+                self.vacated[self.side[s.who[0].side]].append(m.position)
         elif s.kind == "move":
             self.pending = _Move(t, s.who[0].side, s.who[0].species, s.data["move"])
         elif s.kind == "faint":
@@ -377,8 +412,8 @@ class Assembler:
             if m is not None:
                 pos = m.position
                 if m.hp > 0:
-                    self._write(t, {"kind": "faint", "side": SIDE[s.who[0].side], "slot": pos})
-                self.vacated[SIDE[s.who[0].side]].append(pos)
+                    self._write(t, {"kind": "faint", "side": self.side[s.who[0].side], "slot": pos})
+                self.vacated[self.side[s.who[0].side]].append(pos)
         elif s.kind == "boost":
             for who in s.who:
                 self._boost(t, who, s.data["stats"], s.data["stages"])
@@ -398,7 +433,7 @@ class Assembler:
             m = self._active(s.who[0])
             if m is None:
                 return self._miss(t, text, "not on the field")
-            side = SIDE[s.who[0].side]
+            side = self.side[s.who[0].side]
             if s.kind == "cant":
                 self._write(t, {"kind": "cant", "side": side, "slot": m.position, "reason": s.data["reason"]})
             elif (m.status or None) != s.data.get("status"):
@@ -407,12 +442,12 @@ class Assembler:
             self.hints.append((t, s.who[0], s.data["cause"]))
         elif s.kind == "consume":
             self.hints.append((t, s.who[0], to_id(s.data["item"])))
-            self._write(t, {"kind": "consume", "side": SIDE[s.who[0].side], "species": s.who[0].species,
+            self._write(t, {"kind": "consume", "side": self.side[s.who[0].side], "species": s.who[0].species,
                             "item": s.data["item"]})
         elif s.kind == "knocked_off":
             # The target's item is gone. The journal's word for an item that is gone is "consumed".
             target = s.who[1]
-            self._write(t, {"kind": "consume", "side": SIDE[target.side], "species": target.species,
+            self._write(t, {"kind": "consume", "side": self.side[target.side], "species": target.species,
                             "item": s.data["item"]})
         elif s.kind == "trick":
             self._miss(t, text, "Trick: which two swapped items isn't read yet")
@@ -420,9 +455,9 @@ class Assembler:
             m = self._active(s.who[0])
             if m is None:
                 return self._miss(t, text, "not on the field")
-            self._write(t, {"kind": "swap", "side": SIDE[s.who[0].side], "slot": m.position})
+            self._write(t, {"kind": "swap", "side": self.side[s.who[0].side], "slot": m.position})
         elif s.kind == "dragged":
-            side = SIDE[s.who[0].side]
+            side = self.side[s.who[0].side]
             if self.last_target is None or self.last_target["side"] != side:
                 return self._miss(t, text, "dragged out, but in place of whom wasn't read")
             self._write(t, {"kind": "switch", "side": side, "slot": self.last_target["slot"],
@@ -432,22 +467,37 @@ class Assembler:
         elif s.kind == "lost":
             self._close_decision()
             self._settle_questions(t, all_=True)
-            self._write(t, {"kind": "end", "winner": SIDE[s.data["winner"]],
+            self._write(t, {"kind": "end", "winner": self.side[s.data["winner"]],
                             **({"by": "forfeit"} if self.forfeit else {})})
         elif s.kind == "forfeit":
             self._close_decision()
             self._settle_questions(t, all_=True)
-            self._write(t, {"kind": "end", "winner": SIDE.get(s.data.get("winner")), "by": "forfeit"})
+            self._write(t, {"kind": "end", "winner": self.side.get(s.data.get("winner")), "by": "forfeit"})
         elif s.kind == "side":
-            side, cond = SIDE[s.data["side"]], s.data["condition"]
+            side, cond = self.side[s.data["side"]], s.data["condition"]
             if (to_id(cond) in self.rp.state.sides[side].conditions) != s.data["on"]:
                 self._write(t, {"kind": "side", "side": side, "condition": cond, "on": s.data["on"]})
         elif s.kind == "unknown":
             self._miss(t, text, "message not understood")
         # recoil, center, helping: the rules derive what they do, or there is nothing to log.
 
+    def _orient(self, text: str, s: Said) -> Said:
+        """Which sheet is on the left, from the Pokémon on screen: the names on the sheets and the
+        names on screen needn't agree, and the order the sheets were read in says nothing. The
+        first message only one way round can read settles it: the leads, usually, or the first
+        move named after a reading starts mid-game."""
+        flipped = parse(text, self.vocabs[True])
+        here, there = s.kind != "unknown", flipped.kind != "unknown"
+        if here == there:
+            return s  # neither, or both (no names, or a species on both sheets): wait for the next
+        self.oriented = True
+        if there:
+            self.side, self.vocab = FLIPPED, self.vocabs[True]
+            return flipped
+        return s
+
     def _sendout(self, t: float, s: Said) -> None:
-        side = SIDE[s.who[0].side]
+        side = self.side[s.who[0].side]
         if not self.started:
             if side in self.led:
                 return
@@ -475,7 +525,7 @@ class Assembler:
             done = m.boosts.get(stat, 0) - before.get(stat, 0)
             rest = stages - done if (stages > 0) == (done > 0) or done == 0 else stages
             if rest:
-                self._write(t, {"kind": "boost", "side": SIDE[who.side], "slot": m.position,
+                self._write(t, {"kind": "boost", "side": self.side[who.side], "slot": m.position,
                                 "stat": stat, "stages": rest})
             before[stat] = m.boosts.get(stat, 0)
         self.boosts_before[id(m)] = before
@@ -487,21 +537,28 @@ class Assembler:
         if forme is None:
             self._miss(t, f"{who.species} Mega Evolved", f"no Mega forme for {item or 'no stone'}")
             return
-        self._write(t, {"kind": "mega", "side": SIDE[who.side], "species": who.species,
+        self._write(t, {"kind": "mega", "side": self.side[who.side], "species": who.species,
                         "forme": forme["name"], "item": item})
 
     def _end(self, t: float, text: str) -> None:
+        if self.rp.state.ended or self.won is not None:
+            return  # the board said so first
         self._close_decision()
         self._flush(t)
         self._settle_questions(t, all_=True)
+        # A side wiped out has already ended the game (`_write`), so this is a game the board left
+        # open. The broadcast's name for the winner needn't be the name on the sheet: a name that
+        # matches neither, or both, leaves the winner unsaid.
         name = text.upper().replace("GAME WINNER", "").strip()
         names = {sid: (self.rp.state.sides[sid].name or "").upper() for sid in ("p1", "p2")}
-        winner = next((sid for sid, n in names.items() if n and (n in name or name in n)), None)
+        by_name = [sid for sid, n in names.items() if n and name and (n in name or name in n)]
+        winner = by_name[0] if len(by_name) == 1 else None
         self._write(t, {"kind": "end", "winner": winner})
 
     def finish(self, t: float) -> Assembly:
         self._close_decision()
         self._flush(t)
+        self._write_won()
         self._settle_questions(t, all_=True)
         self.out.errors = list(self.rp.errors)
         return self.out
@@ -510,9 +567,7 @@ class Assembler:
 def assemble(reg: Regulation, setup: dict[str, Any], events: list[Event]) -> Assembly:
     """Journal entries for a Watching battle from a broadcast's events. `setup` is the battle's
     (perspective "spectator", `p1` the left player's six, `p2` the right's, `names`)."""
-    names = setup.get("names") or {}
-    vocab = Vocabulary.from_sheets(reg.dex, setup["p1"], setup["p2"], {"L": names.get("p1"), "R": names.get("p2")})
-    a = Assembler(reg, setup, vocab)
+    a = Assembler(reg, setup)
     for e in sorted(events, key=lambda e: e.t):
         a.feed(e)
     return a.finish(events[-1].t if events else 0.0)

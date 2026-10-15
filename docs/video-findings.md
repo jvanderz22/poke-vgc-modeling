@@ -95,6 +95,13 @@ read too.
 - **A send-out may carry a title:** "Archaludon the Great Friend", "Grimmsnarl the Treasure Hunter".
   The title follows the species name.
 - No nicknames in either game.
+- **Player names don't tie a side to a sheet.** The broadcast's names (on the sheets and the
+  winner banner) needn't match the in-game trainer names, and the watch page gives the first sheet
+  it reads to player 1 whichever side that player is on. So the reader works out which sheet is on
+  the left from the Pokémon: the first message only one way round can read (the leads, usually).
+  Both games read identically with their sheets given either way round. A side with nothing left
+  ends the game from the board; the banner's name is used only where the board can't say (a
+  forfeit by banner), and a name matching neither player leaves the winner unsaid.
 
 ## OCR on these frames
 
@@ -149,6 +156,18 @@ p90, 516 ms at p99, 731 ms at most, so 4 frames a second about keeps up. Two gam
 roughly doubled it. The page sends a frame only once the last is answered, so a
 slower host reads fewer frames; the page warns below 2 a second. The Fly machine
 (shared-cpu-4x) is not measured.
+
+## Served (2026-10-15)
+
+The first use on the deployed app ended in "Failed to fetch": the server was killed for memory
+(1.85 GB of a 2 GB machine) while reading sheets, and every open request died with it. Two
+causes together. The page's sheet loop marked a read in flight only after encoding the frame,
+which outlasts its 250 ms tick on a large capture, so several frames went at once, again after
+each answer. And the sheet reader's detector took a full-size capture whole: 670 MB at its peak
+for one 2342×1324 frame. The loop now claims its slot first and sends at most 1600 wide; the
+detector caps the long side at 1280 (366 MB, faster, and it read two moves the full size had left
+blank, both confirmed in the footage); and the server turns away a sheet read when one is running
+and one waiting (429). Idle, the server holds 70 MB.
 
 ## Decision gate (step 1)
 

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
@@ -245,6 +246,9 @@ def validate(body: TeamText) -> dict[str, Any]:
 
 
 SHEET_IMAGE_LIMIT = 15 * 1024 * 1024
+# Sheet reads take turns on one OCR engine; one running and one waiting is all that is worth
+# holding, and anything more is turned away rather than queued (each holds its image meanwhile).
+_SHEET_READS = threading.BoundedSemaphore(2)
 
 
 @app.post("/api/sheet/read")
@@ -278,10 +282,14 @@ async def sheet_read(request: Request, regulation: str = "reg_mc") -> dict[str, 
         read = read_sheet(data, reg)
         return {**read.as_dict(), "problems": [asdict(p) for p in problems(read, reg)]}
 
+    if not _SHEET_READS.acquire(blocking=False):
+        raise HTTPException(429, "still reading the frames before this one")
     try:
         return await run_in_threadpool(run)  # about three seconds of OCR: off the event loop
     except RuntimeError as e:  # RapidOCR missing: the server was built without '.[video]'
         raise HTTPException(501, str(e)) from e
+    finally:
+        _SHEET_READS.release()
 
 
 class VideoFlag(BaseModel):

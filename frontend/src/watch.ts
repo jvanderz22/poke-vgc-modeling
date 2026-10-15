@@ -195,6 +195,8 @@ const CHANGED = 1.5;
 /** A frame is sent no sooner than this after the last, and only if the picture changed; a still
  *  picture is sent again after REPEAT_MS, in case the read before it was cut short. */
 const INTERVAL_MS = 1500;
+/** A sheet reads the same from 1600 wide as from a full Retina capture; the server reads at 1280. */
+const SHEET_WIDTH = 1600;
 const REPEAT_MS = 15000;
 
 function distance(a: Float32Array, b: Float32Array): number {
@@ -216,12 +218,18 @@ export function readFrames(cap: Capture, onFrame: (jpeg: Blob) => Promise<void>,
     if (now - lastAt < INTERVAL_MS) return;
     const g = cap.thumb();
     if (lastSent && distance(g, lastSent) < CHANGED && now - lastAt < REPEAT_MS) return;
-    const jpeg = await cap.frame();
-    if (!jpeg || stopped) return;
+    // Claimed before the frame is encoded: encoding a large capture outlasts the 250 ms between
+    // ticks, and every tick that got past this check while it ran sent a frame of its own.
     inFlight = true;
-    lastSent = g;
-    lastAt = now;
-    try { await onFrame(jpeg); } finally { inFlight = false; }
+    try {
+      const jpeg = await cap.frame("image/jpeg", 0.9, SHEET_WIDTH);
+      if (!jpeg || stopped) return;
+      lastSent = g;
+      lastAt = now;
+      await onFrame(jpeg);
+    } finally {
+      inFlight = false;
+    }
   };
   const timer = window.setInterval(tick, 250);
   return () => { stopped = true; window.clearInterval(timer); };

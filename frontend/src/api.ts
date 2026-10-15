@@ -413,6 +413,8 @@ export type ReadStatus = {
   ended: boolean;
   ms: number;
   resynced: boolean;
+  /** The player on the left of the screen, once the reader has worked it out from the Pokémon. */
+  left: "p1" | "p2" | null;
   errors: string[];
 };
 
@@ -496,7 +498,9 @@ export type TrajectoryRow = {
   active: Record<"p1" | "p2", string[]>;
 };
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  constructor(message: string, readonly status = 0) { super(message); }
+}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, {
@@ -507,7 +511,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await r.json().catch(() => ({}));
   // FastAPI puts the message in `detail`; Showdown's validator messages arrive this way and are
   // worth showing verbatim, since they name the offending Pokémon.
-  if (!r.ok) throw new ApiError(typeof body.detail === "string" ? body.detail : r.statusText);
+  if (!r.ok) throw new ApiError(typeof body.detail === "string" ? body.detail : r.statusText, r.status);
   return body as T;
 }
 

@@ -154,3 +154,15 @@ def test_the_end_of_the_game_reaches_the_journal_and_reading_stops(reg, logged):
     journal += [e for s in statuses for e in s.entries]
     assert journal[-1] == {"kind": "end", "winner": "p1", "by": "forfeit", "video_s": 265.0}
     assert statuses[-1].ended and r.frame(266.0, None).entries == []
+
+
+def test_the_reply_says_which_player_is_on_the_left(reg, logged):
+    flipped = {**SETUP, "p1": SETUP["p2"], "p2": SETUP["p1"]}
+    r = live_reading.Reading(reg, flipped, "youtube:test")
+    current = {"obs": Observation()}
+    r.screen.observe = lambda _img: current["obs"]
+    assert r.frame(170.0, None).left is None
+    current["obs"] = Observation(message="Go! Sneasler and Gardevoir!")
+    statuses = [r.frame(t, None) for t in (179.0, 179.25, 179.5)]
+    assert statuses[-1].left == "p2"
+    assert [(e["side"], e["species"]) for s in statuses for e in s.entries] == [("p2", "Sneasler"), ("p2", "Gardevoir")]

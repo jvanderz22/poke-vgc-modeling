@@ -211,3 +211,33 @@ def test_a_fragment_of_ocr_noise_does_not_cut_a_move_off_from_its_damage(reg):
          "spread": False},
         {"kind": "damage", "side": "p1", "slot": 0, "pct": 51, "fainted": False}]
     assert a.missed[-1]["why"] == "noise"
+
+
+def test_the_sheets_given_the_other_way_round_are_put_right_by_the_leads(reg):
+    # The right player's sheet was read first, so it is player 1's: the leads say so.
+    flipped = {**SETUP, "p1": RIGHT, "p2": LEFT, "names": {"p1": "DORIAN KANG", "p2": "SAMUEL THOMPSON"}}
+    a = assemble(reg, flipped, [Event(t, k, d) for t, k, d in LEADS + [
+        (249.9, "message", {"text": "Sneasler used Close Combat!"}),
+        (253.6, "plate", {"slot": "R1", "name": "Raichu", "hp": 20})]])
+    entries = [{k: v for k, v in e.items() if k != "t"} for e in a.entries]
+    assert entries[:4] == [
+        {"kind": "lead", "side": "p1", "slot": 0, "species": "Raichu"},
+        {"kind": "lead", "side": "p1", "slot": 1, "species": "Grimmsnarl"},
+        {"kind": "lead", "side": "p2", "slot": 0, "species": "Sneasler"},
+        {"kind": "lead", "side": "p2", "slot": 1, "species": "Gardevoir"}]
+    assert entries[5:] == [
+        {"kind": "move", "side": "p2", "slot": 0, "move": "Close Combat", "target": {"side": "p1", "slot": 0},
+         "spread": False},
+        {"kind": "damage", "side": "p1", "slot": 0, "pct": 20, "fainted": False}]
+    assert a.missed == [] and a.errors == []
+
+
+def test_the_winner_comes_from_the_board_when_the_names_differ(reg):
+    # The broadcast's banner names the player as the broadcast does; the sheet had another name.
+    renamed = {**SETUP, "names": {"p1": "sam t", "p2": "dk"}}
+    faints = [(300.0 + i, "message", {"text": f"The opposing {sp} fainted!"}) for i, sp in enumerate(("Raichu", "Grimmsnarl"))]
+    sendouts = [(310.0, "message", {"text": "The Trainer sent out Archaludon and Charizard!"})]
+    more = [(320.0 + i, "message", {"text": f"The opposing {sp} fainted!"}) for i, sp in enumerate(("Archaludon", "Charizard"))]
+    a = assemble(reg, renamed, [Event(t, k, d) for t, k, d in
+                                LEADS + faints + sendouts + more + [(745.0, "message", {"text": "GAME WINNER SAMUEL THOMPSON"})]])
+    assert a.entries[-1]["kind"] == "end" and a.entries[-1]["winner"] == "p1"

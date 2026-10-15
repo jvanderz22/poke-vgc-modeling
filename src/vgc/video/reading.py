@@ -28,7 +28,6 @@ from vgc.battle import entry as journal
 from vgc.regulation import Regulation
 from vgc.video import review
 from vgc.video.assemble import Assembler
-from vgc.video.said import Vocabulary
 from vgc.video.screen import ScreenReader, Settler, scale
 
 # Frames come about every quarter second; a jump longer than this is a seek forward or a stall.
@@ -53,6 +52,7 @@ class Status:
     ended: bool = False
     ms: float = 0.0                   # how long this frame took to read
     resynced: bool = False            # the journal had been edited by hand, and was taken as it stands
+    left: str | None = None           # the player on the left of the screen, once the reader can tell
 
     def as_dict(self) -> dict[str, Any]:
         return {k: v for k, v in self.__dict__.items()}
@@ -62,12 +62,9 @@ class Reading:
     """One battle being read. Not thread-safe by itself: `lock` is for the caller."""
 
     def __init__(self, reg: Regulation, setup: dict[str, Any], source: str):
-        names = setup.get("names") or {}
-        vocab = Vocabulary.from_sheets(reg.dex, setup["p1"], setup["p2"],
-                                       {"L": names.get("p1"), "R": names.get("p2")})
         self.reg, self.setup, self.source = reg, setup, source
         self.screen, self.settler = ScreenReader(), Settler()
-        self.asm = Assembler(reg, setup, vocab)
+        self.asm = Assembler(reg, setup)
         self.lock = threading.Lock()
         self.read_to: float | None = None
         self.message: str | None = None
@@ -141,7 +138,8 @@ class Reading:
         return Status(entries=new, read_to=self.read_to, message=self.message, missed=len(missed),
                       recent_missed=[{"t": m["t"], "why": m["why"], "what": str(m["what"])[:120]}
                                      for m in missed[-3:]],
-                      provisional=len(out.provisional), gaps=list(self.gaps), ended=self.ended, **kw)
+                      provisional=len(out.provisional), gaps=list(self.gaps), ended=self.ended,
+                      left=self.asm.side["L"] if self.asm.oriented else None, **kw)
 
     def _log(self) -> None:
         out = self.asm.out

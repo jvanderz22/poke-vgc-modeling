@@ -879,3 +879,16 @@ def test_a_finished_game_is_not_read_on(client, watched, monkeypatch):
     r = client.post(f"/api/battles/{bid}/read?video_s=900", content=b"not even an image",
                     headers={"content-type": "image/jpeg"})
     assert r.status_code == 200 and r.json()["ended"] and r.json()["entries"] == []
+
+
+def test_sheet_reads_beyond_one_waiting_are_turned_away(client, monkeypatch):
+    """Each queued read holds its image, and a pile of them took the deployed server past 2 GB."""
+    import threading
+
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(webapp, "_SHEET_READS", threading.BoundedSemaphore(1))
+    webapp._SHEET_READS.acquire()  # a read already under way
+    r = client.post("/api/sheet/read", content=b"\x89PNG", headers={"content-type": "image/png"})
+    assert r.status_code == 429
+    webapp._SHEET_READS.release()
