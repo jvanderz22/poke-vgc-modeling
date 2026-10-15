@@ -104,6 +104,12 @@ waiting on its results). A reading lives in the server's memory: a restart ends 
 again on the same battle carries on from its journal. The reader knows one broadcast layout
 (Louisville's, [video-findings](video-findings.md)) and is unscored until PLAN-video step 3.
 
+An entry made by hand on this page carries the player's time as `video_s` too, so a game entered
+by hand beside its video is a transcription the reader can be scored against:
+`vgc video score READ HAND` lines a read journal up with a hand one turn by turn and reports
+PLAN-video's gates (`vgc.video.score`). READ and HAND are each a battle id, a battle's JSON, or a
+`vgc video read --json`.
+
 The player is the YouTube IFrame API's, so the page knows the video's own time. While capturing,
 **Record clip** saves the player as `<video>-<time>.webm` with a `.json` beside it: the player's
 time sampled every 200 ms. **Save frame** saves one PNG named by its video time. These are the

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, ApiError, type ReadStatus, type Species } from "../api";
+import { api, ApiError, type Entry, type ReadStatus, type Species } from "../api";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
 import {
@@ -28,6 +28,13 @@ export function WatchPage({ reg, route, navigate, pool }: {
   // Bumped when the battle reader writes to the journal, so the battle half shows it.
   const [refresh, setRefresh] = useState(0);
   const onRead = useCallback(() => setRefresh((n) => n + 1), []);
+  // The player's time, set by the video half. An entry made by hand carries it, as the reader's
+  // do, so a transcription lines up with the video and with a read of it (PLAN-video step 3).
+  const videoTime = useRef<() => number | null>(() => null);
+  const stampEntries = useCallback((entries: Entry[]) => {
+    const at = videoTime.current();
+    return at === null ? entries : entries.map((e) => ("video_s" in e ? e : { ...e, video_s: Math.round(at * 100) / 100 }));
+  }, []);
 
   // The battle page navigates to itself (stepping back through turns, the next game of a Bo3).
   // Here those stay beside the video; anything else leaves the page as it would anyway.
@@ -42,11 +49,12 @@ export function WatchPage({ reg, route, navigate, pool }: {
   return (
     <div className="watch-page">
       <VideoColumn reg={reg} route={route} navigate={navigate}
-                   watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} />
+                   watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead}
+                   onPlayer={(f) => { videoTime.current = f; }} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
-                           navigate={inPage} teams={[]} refresh={refresh} />
+                           navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -72,7 +80,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onPlayer }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -80,6 +88,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead }: 
   onWatch: (f: (w: WatchSheets) => WatchSheets) => void;
   reading: boolean;
   onRead: () => void;
+  onPlayer: (time: () => number | null) => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -121,7 +130,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead }: 
     if (!route.video || !host.current) return;
     setPlayerProblem(null);
     return mountPlayer(host.current, route.video, route.start,
-                       (p) => { player.current = p; },
+                       (p) => { player.current = p; onPlayer(() => p.getCurrentTime()); },
                        (message) => setPlayerProblem(message));
   }, [route.video, route.start]);
 

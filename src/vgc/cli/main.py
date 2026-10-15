@@ -1316,6 +1316,70 @@ def cmd_video_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def _journal(source: str, reg) -> tuple[list[dict], dict | None, str]:
+    """A journal to score: a battle id in the local store, or a JSON file holding a battle (its
+    `journal` and `setup`), a `vgc video read --json` (`entries`, `setup`), or a bare list."""
+    from vgc.web import live
+
+    p = Path(source)
+    if p.exists():
+        blob = json.loads(p.read_text())
+        name = p.stem
+    else:
+        blob = live.load(reg.id, source)
+        if blob is None:
+            raise SystemExit(f"no such file or battle: {source}")
+        name = blob.get("name") or source
+    if isinstance(blob, list):
+        return blob, None, name
+    return blob.get("journal", blob.get("entries", [])), blob.get("setup"), name
+
+
+def cmd_video_score(args: argparse.Namespace) -> int:
+    from vgc.video import score
+
+    reg = _reg(args)
+    if len(args.pairs) % 2:
+        raise SystemExit("give READ HAND pairs")
+    version = None
+    if not args.no_wp:
+        from vgc.wp.models import OPEN, in_battle_version
+
+        version = in_battle_version(reg.id, OPEN)
+    scores = []
+    for read_src, hand_src in zip(args.pairs[::2], args.pairs[1::2]):
+        read, read_setup, _ = _journal(read_src, reg)
+        hand, hand_setup, name = _journal(hand_src, reg)
+        s = score.compare(read, hand, name)
+        setup = hand_setup or read_setup
+        if version and setup:
+            score.with_wp(s, reg, setup, read, hand, version)
+        scores.append(s)
+    g = score.gates(scores)
+    if args.json:
+        print(json.dumps({"gates": g, "battles": [{"name": s.name, "kinds": s.kinds, "turns": {
+            "read": s.turns_read, "hand": s.turns_hand, "paired": s.turns_paired},
+            "target_differs": s.target_differs, "hp": s.hp, "wp": s.wp, "examples": s.examples}
+            for s in scores]}, indent=1, default=str))
+        return 0
+    for s in scores:
+        print(f"{s.name}: {s.turns_hand} turns by hand, {s.turns_read} read, {s.turns_paired} paired")
+        print(f"  {'kind':<9}{'hand':>6}{'read':>6}{'match':>7}{'wrong':>7}{'missed':>8}")
+        for kind in sorted(s.kinds, key=lambda k: -s.kinds[k]["hand"]):
+            c = s.kinds[kind]
+            print(f"  {kind:<9}{c['hand']:>6}{c['read']:>6}{c['matched']:>7}{c['wrong']:>7}{c['missed']:>8}")
+        if s.target_differs:
+            print(f"  {s.target_differs} matched moves with a different target")
+        for ex in s.examples[:args.examples]:
+            print(f"  turn {ex['turn']}: " + "; ".join(f"{k} {v}" for k, v in ex.items() if k != "turn"))
+    print()
+    for gate in ("G-read", "G-hp", "G-wp"):
+        v = g[gate]
+        print(f"{gate}: {v['verdict']}  " + "  ".join(f"{k}: {x}" for k, x in v.items() if k != "verdict"))
+    print(g["note"])
+    return 0
+
+
 def cmd_wp_registry(args: argparse.Namespace) -> int:
     from vgc.wp.models import REGISTRY
 
@@ -1420,6 +1484,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = video.add_parser("review", help="what the reader missed or read on a guess, and moments you flagged")
     p.add_argument("--all", action="store_true", help="include OCR noise")
     p.set_defaults(func=cmd_video_review)
+    p = with_reg(video.add_parser("score", help="a read journal against a hand transcription of the same game: "
+                                                 "PLAN-video step 3's gates"))
+    p.add_argument("pairs", nargs="+", metavar="READ HAND",
+                   help="pairs of journals: a battle id, a battle's JSON, or a `vgc video read --json`")
+    p.add_argument("--no-wp", action="store_true", help="skip G-wp (needs the WP model)")
+    p.add_argument("--examples", type=int, default=10, help="wrong and missed entries to show per battle")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_video_score)
 
     p = with_reg(sub.add_parser("calc",help="damage calc (Champions rules, doubles by default)"))
     p.add_argument("--attacker", required=True, help='set spec, lines joined by "|"')

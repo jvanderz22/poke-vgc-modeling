@@ -18,7 +18,11 @@ provisional phrasings and moments flagged on the watch page go to a review log (
 `POST /api/battles/{id}/read` (`vgc.video.reading`), which runs the same reader and appends to the
 battle's journal; rewinds are skipped, skips ahead are logged as gaps, and hand edits are taken as
 the journal. It replaces the planned WebSocket with one POST per frame, sent when the last is
-answered. G-latency and the reader's speed on the Fly machine are not measured yet.
+answered. G-latency and the reader's speed on the Fly machine are not measured yet. For step 3, entries made
+by hand on the watch page carry `video_s`, and `vgc video score READ HAND ...` scores reads against
+transcriptions (`vgc.video.score`): turns are paired by what was used in them rather than by time
+or number, and each gate passes only when its exact interval clears the threshold, so a handful of
+battles reads "undecided", not "pass".
 
 ---
 

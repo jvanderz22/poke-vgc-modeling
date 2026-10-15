@@ -23,13 +23,15 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams, refresh = 0 }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
   teams: SavedTeam[];
   /** Bumped when something other than this page wrote to the battle (the video reader). */
   refresh?: number;
+  /** Adds to each entry before it is logged: the watch page puts the video's time on it. */
+  stamp?: (entries: Entry[]) => Entry[];
 }) {
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -58,13 +60,13 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0 }: {
       // Logging while looking at an earlier turn would append to the end, not to what is on
       // screen — so the first tap brings you back to the present, where the taps belong.
       if (step !== null) navigate({ tab: "battle", battle: id, step: null }, { replace: true });
-      setView(await api.log(id, entries, reg));
+      setView(await api.log(id, stamp ? stamp(entries) : entries, reg));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
     } finally {
       setBusy(false);
     }
-  }, [id, reg, step, navigate]);
+  }, [id, reg, step, navigate, stamp]);
 
   const undo = useCallback(async () => {
     if (!id) return;
