@@ -98,6 +98,24 @@ def test_a_rewind_is_skipped_until_the_video_is_past_what_was_read(reg, logged):
     assert sum(e["kind"] == "move" for e in journal) == 1
 
 
+def test_a_rewind_past_what_was_written_is_read_again(reg, logged):
+    """A first pass that saw nothing of the Close Combat (the capture had stopped) and came back at
+    the next decision point. A rewind to before it reads it, and the decision point that was still
+    open is read again rather than written twice."""
+    missed = [(t, Observation() if 186.0 <= t < 260.0 else obs) for t, obs in _script()]
+    r, frames, current = _reading(reg, missed)
+    journal = _feed(r, frames, current, until=260.5)
+    assert [e["kind"] for e in journal] == ["lead"] * 4 + ["turn"]
+    for t, obs in [(t, obs) for t, obs in _script() if t >= 249.0]:
+        current["obs"] = obs
+        s = r.frame(t, None)
+        journal += s.entries
+        if t == 249.0:
+            assert s.reread and not s.behind
+    assert [e["kind"] for e in journal] == ["lead"] * 4 + ["turn", "move", "damage", "turn"]
+    assert [e["n"] for e in journal if e["kind"] == "turn"] == [1, 2]
+
+
 def test_a_paused_player_reads_nothing_new(reg, logged):
     r, frames, current = _reading(reg, _script())
     _feed(r, frames, current, until=179.5)

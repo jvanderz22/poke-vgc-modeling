@@ -141,8 +141,9 @@ The line under the player says how far it has read, the last message, and how ma
 couldn't read (each with its time, under "What it couldn't read"). The journal stays yours:
 correct an entry by hand (undo, re-enter) and the reader takes the journal as it then stands and
 reads on from there. Rewinding skips frames until the video is past where the reading had got to,
-so nothing is read twice. Skipping ahead leaves a gap that isn't read; the page lists it and the
-review log keeps it. **Stop reading the battle** writes out what the reader still held (a move
+so nothing is read twice, unless it goes back to more than 2.5 s after the last thing written: that
+stretch is read again, so a second pass picks up what the first missed. Skipping ahead leaves a gap
+that isn't read; the page lists it and the review log keeps it. **Stop reading the battle** writes out what the reader still held (a move
 waiting on its results). A reading lives in the server's memory: a restart ends it, and reading
 again on the same battle carries on from its journal. The reader knows one broadcast layout
 (Louisville's, [video-findings](video-findings.md)) and is unscored until PLAN-video step 3.

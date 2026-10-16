@@ -8,8 +8,10 @@ this adds is what a live stream needs and a recorded clip doesn't:
   * **Time is the video's.** Each frame comes stamped with the player's time, and that is the
     time its events and entries carry (`video_s` on each entry, and in the review log).
   * **Seeking.** A frame behind what has been read (a rewind, or the player paused) is skipped:
-    the reader keeps its journal and doesn't read it twice. A jump forward leaves a gap, which is
-    reported and logged; what happened in it is not read.
+    the reader keeps its journal and doesn't read it twice. A rewind to past the last thing it
+    wrote is read again, from the journal: that is how a second pass picks up what the first
+    missed. A jump forward leaves a gap, which is reported and logged; what happened in it is not
+    read.
   * **Hand edits.** The battle's journal is the record, and it can be corrected by hand while the
     reader runs. When it no longer ends where the reader left it, the reader takes the journal as
     it now stands and carries on from there.
@@ -35,6 +37,9 @@ GAP_S = 2.0
 # A frame this close to the last one read is the same moment: the player paused, or the page
 # sent it twice.
 SAME_S = 0.05
+# A rewind to this long after the last thing written is read again. A message is up for 2 s at
+# most, so one that was written is off the screen by then and can't be read twice.
+REREAD_AFTER_S = 2.5
 
 
 @dataclass
@@ -52,6 +57,7 @@ class Status:
     ended: bool = False
     ms: float = 0.0                   # how long this frame took to read
     resynced: bool = False            # the journal had been edited by hand, and was taken as it stands
+    reread: bool = False              # a rewind past everything written: read again from this frame
     left: str | None = None           # the player on the left of the screen, once the reader can tell
     # Regions the page reads itself but has never sent lines for (the server restarted, say): the
     # page reads every region on its next frame.
@@ -103,12 +109,17 @@ class Reading:
         is the lines the page OCR'd itself, by region (ScreenReader.observe)."""
         if self.ended:
             return self._status()
+        reread = False
         if self.read_to is not None:
-            if abs(video_s - self.read_to) < SAME_S or video_s < self.read_to:
+            same = abs(video_s - self.read_to) < SAME_S
+            if same or (video_s < self.read_to and video_s - self._written_to() < REREAD_AFTER_S):
                 if read:
                     self.screen.take(read)
-                return self._status(behind=video_s < self.read_to and abs(video_s - self.read_to) >= SAME_S)
-            if video_s - self.read_to > GAP_S:
+                return self._status(behind=not same and video_s < self.read_to)
+            if video_s < self.read_to:
+                self._reread(video_s)
+                reread = True
+            elif video_s - self.read_to > GAP_S:
                 self.gaps.append((self.read_to, video_s))
                 self.asm._miss(self.read_to, f"{self.read_to:.1f}s to {video_s:.1f}s",
                                "not read: the video skipped ahead")
@@ -121,7 +132,34 @@ class Reading:
         self.read_to = video_s
         if any(e["kind"] == "end" for e in self.asm.out.entries[self._sent:]):
             self._finish()
-        return self._status(ms=(time.perf_counter() - start) * 1000, unread=sorted(self.screen.unread))
+        return self._status(ms=(time.perf_counter() - start) * 1000, unread=sorted(self.screen.unread),
+                            reread=reread)
+
+    def _written_to(self) -> float:
+        """The video time of the last thing read into the journal, or waiting to be: a later
+        rewind can be read again without reading anything twice."""
+        times = [e.get("t", e.get("video_s")) for e in self.asm.out.entries]
+        if self.asm.pending is not None:
+            times.append(self.asm.pending.t)
+        return max((t for t in times if t is not None), default=float("-inf"))
+
+    def _reread(self, video_s: float) -> None:
+        """Read again from `video_s`, a rewind past everything written. The move waiting on its
+        results is written with what it has; a decision point not yet closed is dropped, to be read
+        again; the rest is the journal's, as after a hand edit."""
+        a = self.asm
+        a._flush(video_s)
+        a.decision, a.snapshot = None, {}
+        a.lead_check, a.lead_plates = None, {}
+        a.replaying = False
+        a.banners = [(t, b) for t, b in a.banners if t < video_s]
+        a.hints = [h for h in a.hints if h[0] < video_s]
+        sent = self._sent  # what the flush wrote still goes out with this frame
+        self.read_to = video_s
+        self.resync(a.out.entries)
+        self._sent = sent
+        self.settler = Settler()
+        self.gaps = [(s, min(e, video_s)) for s, e in self.gaps if s < video_s]
 
     def finish(self) -> Status:
         """Write out what is still held (a move waiting on its results, a turn's last plates)."""

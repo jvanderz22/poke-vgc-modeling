@@ -1010,7 +1010,8 @@ def test_a_moment_flagged_while_watching_lands_in_the_review_log(client, tmp_pat
 
 def test_a_watched_battle_is_read_frame_by_frame(client, watched, tmp_path, monkeypatch):
     """A frame of the video goes to the battle reader; its reply says where the reading stands.
-    Before the leads there is nothing to write, and a still player is not read twice."""
+    Before the leads there is nothing to write, a still player is not read twice, and a rewind
+    with nothing written yet is simply read again."""
     from vgc.web import app as webapp
 
     monkeypatch.setattr(paths, "DATA", tmp_path)
@@ -1022,8 +1023,8 @@ def test_a_watched_battle_is_read_frame_by_frame(client, watched, tmp_path, monk
     s = r.json()
     assert s["read_to"] == 182.5 and s["entries"] == [] and not s["ended"] and s["errors"] == []
     assert client.post(url, content=frame, headers={"content-type": "image/jpeg"}).json()["read_to"] == 182.5
-    behind = client.post(url.replace("182.5", "100.0"), content=frame, headers={"content-type": "image/jpeg"})
-    assert behind.json()["behind"]
+    rewound = client.post(url.replace("182.5", "100.0"), content=frame, headers={"content-type": "image/jpeg"})
+    assert rewound.json()["reread"] and not rewound.json()["behind"] and rewound.json()["read_to"] == 100.0
     assert client.delete(f"/api/battles/{watched['id']}/read").json() == {"stopped": True, "entries": []}
     assert client.get(f"/api/battles/{watched['id']}").json()["journal"] == []
 
