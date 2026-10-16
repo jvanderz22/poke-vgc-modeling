@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, sideNames, type LiveMon, type LiveView, type SpeedRead, type TrajectoryRow } from "../api";
 import { useEngine } from "../engine";
-import { across, type Side } from "../screen";
+import { videoAcross, videoSlots, type Side } from "../screen";
 import { BRING, PRETTY, toId, turnLines, turnStart } from "../turn";
 import type { Navigate, Route } from "../router";
 import { hpClass, LABEL, ORDER, standing } from "./BattleState";
@@ -199,8 +199,8 @@ function Condition({ id, view, side, name }: { id: string; view: LiveView; side?
 }
 
 /** The field: the four Pokémon on it with all they are known to carry, the field and side
- *  conditions with the turns they have left, and who moves first. Each player's two are a column,
- *  the one on the left of the screen first. */
+ *  conditions with the turns they have left, and who moves first. Each player's two are a row, the
+ *  player on the left of the screen on top, each row in the order the video draws its plates. */
 export function FieldPanel({ view, name, left, onPick, selected }: {
   view: LiveView; name: Name; left: Side;
   onPick?: (side: Side, slot: number) => void;
@@ -222,13 +222,13 @@ export function FieldPanel({ view, name, left, onPick, selected }: {
         )))}
       </div>
       <div className="wb-cards">
-        {[0, 1].flatMap((slot) => sides.map((side) => {
+        {sides.flatMap((side) => videoSlots(side, left).map((slot) => {
           const m = at(side, slot);
           return m
-            ? <MonCard key={`${side}${slot}`} view={view} mon={m} side={side} slot={slot} who={names[side]} name={name}
+            ? <MonCard key={`${side}${slot}`} view={view} mon={m} side={side} slot={slot} left={left} who={names[side]} name={name}
                        selected={selected?.side === side && selected.slot === slot}
                        onPick={onPick && (() => onPick(side, slot))} />
-            : <div key={`${side}${slot}`} className={`wb-card empty ${side}`}>{names[side]} · {across(side, slot)}: empty</div>;
+            : <div key={`${side}${slot}`} className={`wb-card empty ${side}`}>{names[side]} · {videoAcross(side, slot, left)}: empty</div>;
         }))}
       </div>
       <SpeedChart view={view} />
@@ -238,8 +238,8 @@ export function FieldPanel({ view, name, left, onPick, selected }: {
 
 /** One Pokémon on the field. Its moves are the four the sheet shows; where the sheet is hidden,
  *  the ones it has used and "Unknown" for the rest, each with the likeliest moves a hover away. */
-function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
-  view: LiveView; mon: LiveMon; side: Side; slot: number; who: string; name: Name;
+function MonCard({ view, mon, side, slot, left, who, name, selected, onPick }: {
+  view: LiveView; mon: LiveMon; side: Side; slot: number; left: Side; who: string; name: Name;
   selected: boolean; onPick?: () => void;
 }) {
   const boosts = Object.entries(mon.boosts).filter(([, n]) => n).map(([k, n]) => `${n > 0 ? "▲" : "▼"} ${BOOSTS[k] ?? k} ${n > 0 ? "+" : "−"}${Math.abs(n)}`);
@@ -262,7 +262,7 @@ function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
     <>
       <b>{mon.forme}</b>
       {mon.status && <span className={`chip status-${mon.status}`}>{mon.status}</span>}
-      <span className="tiny dim wb-card-where" title={who}>{across(side, slot)}</span>
+      <span className="tiny dim wb-card-where" title={who}>{videoAcross(side, slot, left)}</span>
       <span className="wb-card-hp mono">{pct(mon.hp)}%</span>
     </>
   );
@@ -453,8 +453,10 @@ export function TeamStrips({ view, name, left }: { view: LiveView; name: Name; l
       {[left, other(left)].map((side) => {
         const mons = view.sides[side].mons;
         const seen = mons.filter((m) => m.state !== "unrevealed" && m.state !== "not_brought").length;
+        // The two on the field in the order the video draws them, as the field panel has them.
+        const place = (m: LiveMon) => m.state === "active" && m.slot != null ? videoSlots(side, left).indexOf(m.slot) : m.slot ?? 0;
         const rows = mons.map((m) => ({ m, st: standing(m, seen) }))
-          .sort((a, b) => ORDER.indexOf(a.st) - ORDER.indexOf(b.st) || (a.m.slot ?? 0) - (b.m.slot ?? 0));
+          .sort((a, b) => ORDER.indexOf(a.st) - ORDER.indexOf(b.st) || place(a.m) - place(b.m));
         const standingLeft = rows.filter((r) => r.st === "field" || r.st === "back").length;
         const unknownBrought = seen < BRING;
         return (
@@ -473,7 +475,7 @@ export function TeamStrips({ view, name, left }: { view: LiveView; name: Name; l
                   <div key={m.species} className={`wb-mini ${side} st-${st}`} title={`${m.forme}: ${set}${moves ? `\n${moves}` : ""}`}>
                     <div className="wb-mini-top">
                       <span className="wb-mini-name">{m.forme}</span>
-                      <span className="wb-mini-state">{st === "field" && m.slot != null ? across(side, m.slot) : LABEL[st]}</span>
+                      <span className="wb-mini-state">{st === "field" && m.slot != null ? videoAcross(side, m.slot, left) : LABEL[st]}</span>
                     </div>
                     <div className="wb-mini-hp">
                       <span className={`board-hp${shown ? "" : " empty"}`}>{shown && <i className={hpClass(m.hp)} style={{ width: `${pct(m.hp)}%` }} />}</span>

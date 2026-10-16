@@ -26,3 +26,19 @@ export function across(side: Side, slot: number): "left" | "right" {
 export function screenOrder(): Pos[] {
   return ROWS.flatMap((side) => [0, 1].map((x) => ({ side, slot: slotAt(side, x) })));
 }
+
+// A watched video is laid out differently: the two players side by side, all four plates in one
+// line along the bottom. The left player's run outward-in from the left edge (slot 0 first) and
+// the right player's mirror them, slot 0 on the right edge (video-findings, "The right side's
+// plates run the other way").
+
+/** `side`'s two field slots as the video draws them, left to right, with `left` the player on
+ *  the left of the screen. */
+export function videoSlots(side: Side, left: Side): [number, number] {
+  return side === left ? [0, 1] : [1, 0];
+}
+
+/** Where a slot is drawn on the video, as a word. */
+export function videoAcross(side: Side, slot: number, left: Side): "left" | "right" {
+  return videoSlots(side, left)[0] === slot ? "left" : "right";
+}
