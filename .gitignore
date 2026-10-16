@@ -10,6 +10,8 @@ data/replays/
 data/matrices/
 data/selfplay/
 *.onnx
+# 273 bytes, written by scripts/ctc_head.py, and the watch page's build needs it.
+!frontend/src/ocr/ctc-head.onnx
 *.npz
 checkpoints/
 

@@ -8,7 +8,11 @@ export type Img = { data: Uint8Array | Uint8ClampedArray; width: number; height:
 export type Tensor = { data: Float32Array; dims: readonly number[] };
 /** One model run: the input tensor in, its first output out. */
 export type Run = (input: Tensor) => Promise<Tensor>;
-export type Engine = { det: Run; rec: Run; keys: string[] };
+/** The recognizer run, reduced to what CTCLabelDecode takes from its output: each step's likeliest
+ *  character (`argmax(axis=2)`) and that character's probability (`max(axis=2)`), batch × steps. */
+export type RecRun = (input: Tensor) => Promise<Best>;
+export type Best = { best: Int32Array; p: Float32Array; steps: number };
+export type Engine = { det: Run; rec: RecRun; keys: string[] };
 /** A line as `screen._lines` gives it: the text and its box, in the image's own pixels. */
 export type Line = [text: string, x0: number, y0: number, x1: number, y1: number];
 type Pt = [number, number];
@@ -378,9 +382,23 @@ function rot90(img: Img): Img {
 
 // --- recognition ----------------------------------------------------------------------------
 
+/** CTCLabelDecode's argmax and max over the recognizer's output (batch × steps × characters), the
+ *  first of equal maxima as numpy's argmax takes it. */
+export function ctcBest(preds: Tensor): Best {
+  const [n, steps, classes] = preds.dims;
+  const best = new Int32Array(n * steps), p = new Float32Array(n * steps);
+  for (let s = 0; s < n * steps; s++) {
+    const at = s * classes;
+    let k0 = 0, v = preds.data[at];
+    for (let k = 1; k < classes; k++) if (preds.data[at + k] > v) { v = preds.data[at + k]; k0 = k; }
+    best[s] = k0; p[s] = v;
+  }
+  return { best, p, steps };
+}
+
 /** ch_ppocr_rec: TextRecognizer with CTCLabelDecode. Lines are read in batches of six, narrowest
  *  first, each batch padded to its widest. Returns each line's text and score, in order. */
-async function recognize(imgs: Img[], run: Run, keys: string[]): Promise<[string, number][]> {
+async function recognize(imgs: Img[], run: RecRun, keys: string[]): Promise<[string, number][]> {
   const chars = ["blank", ...keys, " "];
   const ratios = imgs.map((im) => im.width / im.height);
   const order = ratios.map((r, i) => ({ r, i })).sort((a, b) => a.r - b.r || a.i - b.i).map((e) => e.i);
@@ -395,15 +413,12 @@ async function recognize(imgs: Img[], run: Run, keys: string[]): Promise<[string
       const rw = Math.min(width, Math.ceil(REC_H * ratios[i]));
       normalize(resize(imgs[i], rw, REC_H), input, n * 3 * REC_H * width, width);
     });
-    const preds = await run({ data: input, dims: [batch.length, 3, REC_H, width] });
-    const [, steps, classes] = preds.dims;
+    const { best: bests, p: ps, steps } = await run({ data: input, dims: [batch.length, 3, REC_H, width] });
     batch.forEach((i, n) => {
       let text = "", prev = -1;
       const confs: number[] = [];
       for (let t = 0; t < steps; t++) {
-        const at = (n * steps + t) * classes;
-        let best = 0, p = preds.data[at];
-        for (let k = 1; k < classes; k++) if (preds.data[at + k] > p) { p = preds.data[at + k]; best = k; }
+        const best = bests[n * steps + t], p = ps[n * steps + t];
         if (best !== prev && best !== 0) {
           text += chars[best] ?? "";
           confs.push(Math.round(p * 1e5) / 1e5);

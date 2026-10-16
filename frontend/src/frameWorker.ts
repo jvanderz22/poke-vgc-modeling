@@ -54,11 +54,19 @@ async function battle(job: Extract<FrameJob, { kind: "battle" }>): Promise<Frame
   ctx.drawImage(bitmap, 0, 0);
   const pixels = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
   const sig = signature(pixels.data);
-  const blob = await battleCanvas.convertToBlob({ type: "image/jpeg", quality: job.quality });
-  const draw = performance.now() - began;
-  if (!reader) return { id: job.id, blob, read: null, sig, ms: { draw, mask: 0, ocr: 0 } };
-  const read = await reader.read({ data: pixels.data, width: pixels.width, height: pixels.height, channels: 4 });
-  return { id: job.id, blob, read, sig, ms: { draw, ...reader.last } };
+  // The JPEG encodes while the regions are read: the two only share the pixels, already copied
+  // out, and the canvas isn't drawn on again until this frame has been answered. `draw` is the
+  // time the frame waited on drawing and encoding, so the parts still add up to the whole.
+  const encoding = battleCanvas.convertToBlob({ type: "image/jpeg", quality: job.quality });
+  encoding.catch(() => { /* awaited below; a read that throws first is the error reported */ });
+  const drawn = performance.now() - began;
+  const read = reader
+    ? await reader.read({ data: pixels.data, width: pixels.width, height: pixels.height, channels: 4 })
+    : null;
+  const waiting = performance.now();
+  const blob = await encoding;
+  const draw = drawn + performance.now() - waiting;
+  return { id: job.id, blob, read, sig, ms: { draw, ...(reader ? reader.last : { mask: 0, ocr: 0 }) } };
 }
 
 self.onmessage = async ({ data: job }: MessageEvent<FrameJob>) => {
