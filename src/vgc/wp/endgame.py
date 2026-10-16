@@ -346,6 +346,8 @@ def facts(reg: Regulation, battle, sets: dict[str, dict[str, Any]]) -> dict[str,
     out: dict[str, Any] = {
         "hp": {sid: _our_hp(m) if sid == me and m.hp_max else _their_hp(m) for sid, m in mons.items()},
         "mega": {sid: bool(sets[sid].get("mega")) for sid in mons},
+        # A Mega assumed for this turn (`_mega`), whose ability the solver announces on the field.
+        "evolving": {sid: bool(sets[sid].get("mega")) and not m.mega for sid, m in mons.items()},
         "fainted": {sid: sum(x.state == "fainted" for x in state.sides[sid].mons) for sid in mons},
         "boosts": {sid: {k: v for k, v in m.boosts.items() if v} for sid, m in mons.items()},
         "consumed": {sid: bool(m.lost_item) and not m.item for sid, m in mons.items()},

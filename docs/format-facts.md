@@ -109,6 +109,18 @@ in Speed order relative to each other.
   in screen order with no default and recorded in the order clicked
   ([battle-entry-flows](battle-entry-flows.md)).
 
+### A Mega Evolution announces the Mega's ability before anyone moves
+
+A Pokémon Mega Evolves at the start of the turn, before any move, priority included, and its Mega's
+ability then announces as a switch-in's does, in Speed order. Mega Charizard Y's Drought turns rain
+to sun that turn. A Mega already out does not announce again.
+
+- **Source:** the rules; `runMegaEvo` in the pinned build. Caught 2026-10-16: the engine set an
+  assumed Mega up in its forme under the battle's weather, so a Charizard yet to Mega Evolve
+  played its whole search in Pelipper's rain (0.20 for the Pelipper side where sun gives 0.02).
+- **In code:** `evolving` in `doubles.facts` and `endgame.facts`; the solver's `setUp` announces
+  those abilities once the field is written.
+
 ## Durations
 
 ### Five turns, eight only with the item, and a late start counts from the next turn

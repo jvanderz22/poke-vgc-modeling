@@ -9,7 +9,9 @@
  * if absent). A field about a Pokémon takes a list, one entry per active Pokémon in team order; a
  * single value is the first one's, which is how every 1v1 position is written:
  *   {format, p1: "<team text>", p2: "<team text>",
- *    setup: {hp: {p1, p2} (percent), mega: {p1: bool, p2: bool}, fainted: {p1: n, p2: n},
+ *    setup: {hp: {p1, p2} (percent), mega: {p1: bool, p2: bool} (in its Mega forme),
+ *            evolving: {p1: bool, p2: bool} (that Mega is assumed to happen this turn, so its
+ *            ability announces on the field written here), fainted: {p1: n, p2: n},
  *            weather: [id, turns], terrain: [id, turns], trickroom: turns,
  *            boosts: {p1: {...}, p2: {...}}, consumed: {p1: bool, p2: bool},
  *            choicelock: {p1: moveid, p2: moveid}, timesAttacked: {p1: n, p2: n},
@@ -47,7 +49,7 @@
 // the search). A change that cannot (a comment, pruning that is switched off, speed that leaves
 // every answer as it was) keeps it, and so keeps every cached answer. A forgotten bump is caught
 // by `vgc wp cache-check`, which solves a sample of cached answers again without the cache.
-const VERSION = 1;
+const VERSION = 2;
 
 const path = require('path');
 const crypto = require('crypto');
@@ -130,6 +132,12 @@ function setUp(pos) {
 	b.choose('p2', 'team 1234');
 	const s = pos.setup || {};
 	const f = b.field;
+	// The Mega formes first, so that what their abilities do on arriving (Drought's sun) is wiped
+	// with the leads' and the field is the position's. One assumed to Mega Evolve this turn
+	// (`evolving`) announces its ability again once the field is written, below.
+	for (const side of b.sides) side.pokemon.slice(0, actives(pos, side) + benched(pos, side)).forEach((me, i) => {
+		if (per(s.mega, side, i)) b.actions.runMegaEvo(me);
+	});
 	f.clearWeather(); f.clearTerrain();
 	for (const id of Object.keys(f.pseudoWeather)) f.removePseudoWeather(id);
 	for (const side of b.sides) {
@@ -149,7 +157,6 @@ function setUp(pos) {
 			if (i < n && !per(s.fresh, side, i)) { me.activeTurns = 3; me.activeMoveActions = 3; }
 			const pct = per(s.hp, side, i) ?? 100;
 			me.sethp(Math.max(1, Math.round(me.maxhp * pct / 100)));
-			if (per(s.mega, side, i)) b.actions.runMegaEvo(me);
 		});
 	}
 	// `empty` (PLAN-policy stage 4): slots whose Pokémon has just fainted, for a root that is a
@@ -210,6 +217,12 @@ function setUp(pos) {
 			side.sideConditions[id].duration = turns;
 		}
 	}
+	// A Mega Evolution at the start of this turn, before anyone moves, announces the Mega's ability
+	// against the field as it stands, in Speed order (Trick Room inverts it): Mega Charizard Y's
+	// Drought turns rain to sun. Written as already done, it played the whole search in the rain.
+	const evolving = b.sides.flatMap(side => side.pokemon.slice(0, actives(pos, side)).filter((me, i) => per(s.evolving, side, i)));
+	evolving.sort((x, y) => y.getActionSpeed() - x.getActionSpeed());
+	for (const me of evolving) b.singleEvent('Start', me.getAbility(), me.abilityState, me);
 	// What `endTurn` does before every later request: disable the moves a lock (or Taunt, or a
 	// move that cannot be used twice) rules out. Without it the root offered a choice-locked
 	// Pokémon all four moves, and choosing another one did nothing but fail.

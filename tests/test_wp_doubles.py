@@ -4,6 +4,7 @@ held-out replays as the human check will read them."""
 from __future__ import annotations
 
 import json
+import subprocess
 
 from vgc import paths
 from vgc.wp import doubles, solver
@@ -109,3 +110,31 @@ def test_temper_pulls_a_sure_answer_in_without_turning_it():
             assert (t > 0.5) == (x > 0.5)
             assert abs(t - 0.5) < abs(x - 0.5)
     assert 0.95 < doubles.temper(1.0) < 0.99
+
+
+def _first_turn_weather(position, setup):
+    """The weather after one turn of `position` with `setup`, everyone Protecting or Wide Guarding."""
+    r = subprocess.run(["node", str(solver.SOLVER), str(paths.SHOWDOWN)], capture_output=True, text=True, check=True,
+                       input=json.dumps({**position, "setup": setup,
+                                         "debug": {"p1": "move 4, pass", "p2": "move 4, move 4"}}))
+    return json.loads(r.stdout)["weather"]
+
+
+def test_an_assumed_mega_announces_its_ability_on_the_field_as_it_stands(reg):
+    """Charizard holding its Charizardite Y comes in under Pelipper's rain. It is assumed to Mega
+    Evolve on the first turn, and Drought then turns the rain to sun: solved in the rain, Pelipper's
+    Weather Ball read as winning (0.20 where it is about 0.02). A Mega already out does not
+    announce again, so sun the battle has seen run out does not come back."""
+    from vgc.battle.entry import Battle
+
+    blob = json.loads((paths.ROOT / "tests" / "fixtures" / "solver" / "assumed_mega_in_rain.json").read_text())
+    got = doubles.plan(reg, Battle(reg, blob["setup"], blob["journal"]), {"depth": 0})
+    assert got["eligible"] and got["kind"] == "1v2"
+    pos = got["jobs"][0]["position"]
+    setup = pos["setup"]
+    assert setup["weather"][0] == "raindance"
+    assert setup["mega"] == {"p2": [False, True]} and setup["evolving"] == {"p2": [False, True]}
+    assert _first_turn_weather(pos, setup)[0] == "sunnyday"
+    out = {k: v for k, v in setup.items() if k != "evolving"}
+    assert _first_turn_weather(pos, out)[0] == "raindance"
+    assert _first_turn_weather(pos, {k: v for k, v in out.items() if k != "weather"})[0] == ""

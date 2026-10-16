@@ -216,6 +216,9 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
         "hp": {sid: [endgame._our_hp(m) if sid == me and m.hp_max else endgame._their_hp(m) for m in ms]
                for sid, ms in mons.items()},
         "mega": {sid: [bool(s.get("mega")) for s in side_sets[sid]] for sid in mons},
+        # A Mega assumed for this turn (`with_megas`), whose ability the solver announces on the field.
+        "evolving": {sid: [bool(s.get("mega")) and not m.mega for m, s in zip(ms, side_sets[sid])]
+                     for sid, ms in mons.items()},
         "fainted": {sid: sum(x.state == "fainted" for x in state.sides[sid].mons) for sid in mons},
         "boosts": {sid: [{k: v for k, v in m.boosts.items() if v} for m in ms] for sid, ms in mons.items()},
         "consumed": {sid: [bool(m.lost_item) and not m.item for m in ms] for sid, ms in mons.items()},
@@ -238,7 +241,7 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
     tr = state.pseudo.get("trickroom")
     out["trickroom"] = left(tr, endgame.FIELD_TURNS) or None if tr is not None else None
     # A list that says nothing for any Pokémon is left out, as `compose` prunes the 1v1's.
-    for k in ("boosts", "consumed", "status", "timesAttacked", "stall", "fresh", "choicelock", "mega"):
+    for k in ("boosts", "consumed", "status", "timesAttacked", "stall", "fresh", "choicelock", "mega", "evolving"):
         out[k] = {sid: v for sid, v in out[k].items() if any(v)}
     return out
 

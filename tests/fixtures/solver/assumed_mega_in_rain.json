@@ -1,0 +1,444 @@
+{
+ "note": "Carson Confer vs Paul Chua, game 1, after turn 5 (watched battle 31e4b04ce751): Pelipper alone in rain against a paralysed Venusaur and a Charizard holding its Charizardite Y, not yet Mega Evolved.",
+ "setup": {
+  "perspective": "spectator",
+  "names": {
+   "p1": "Carson Confer",
+   "p2": "Paul Chua"
+  },
+  "p1": [
+   {
+    "species": "Raichu",
+    "item": "Raichunite Y",
+    "ability": "Lightning Rod",
+    "moves": [
+     "Zap Cannon",
+     "Focus Blast",
+     "Fake Out",
+     "Protect"
+    ],
+    "nature": "Timid"
+   },
+   {
+    "species": "Basculegion-F",
+    "item": "Focus Sash",
+    "ability": "Swift Swim",
+    "moves": [
+     "Muddy Water",
+     "Shadow Ball",
+     "Ice Beam",
+     "Protect"
+    ],
+    "nature": "Modest"
+   },
+   {
+    "species": "Sneasler",
+    "item": "White Herb",
+    "ability": "Unburden",
+    "moves": [
+     "Dire Claw",
+     "Close Combat",
+     "Rock Slide",
+     "Protect"
+    ],
+    "nature": "Adamant"
+   },
+   {
+    "species": "Pelipper",
+    "item": "Damp Rock",
+    "ability": "Drizzle",
+    "moves": [
+     "Weather Ball",
+     "Hurricane",
+     "Helping Hand",
+     "Wide Guard"
+    ],
+    "nature": "Bold"
+   },
+   {
+    "species": "Golisopod",
+    "item": "Golisopite",
+    "ability": "Emergency Exit",
+    "moves": [
+     "Leech Life",
+     "Iron Head",
+     "Sucker Punch",
+     "Protect"
+    ],
+    "nature": "Adamant"
+   },
+   {
+    "species": "Archaludon",
+    "item": "Leftovers",
+    "ability": "Stamina",
+    "moves": [
+     "Electro Shot",
+     "Dragon Pulse",
+     "Flash Cannon",
+     "Protect"
+    ],
+    "nature": "Bold"
+   }
+  ],
+  "p2": [
+   {
+    "species": "Garchomp",
+    "item": "Choice Scarf",
+    "ability": "Rough Skin",
+    "moves": [
+     "Dragon Claw",
+     "Earthquake",
+     "Rock Slide",
+     "Stomping Tantrum"
+    ],
+    "nature": "Adamant"
+   },
+   {
+    "species": "Sylveon",
+    "item": "Fairy Feather",
+    "ability": "Pixilate",
+    "moves": [
+     "Hyper Voice",
+     "Quick Attack",
+     "Yawn",
+     "Detect"
+    ],
+    "nature": "Modest"
+   },
+   {
+    "species": "Venusaur",
+    "item": "Life Orb",
+    "ability": "Chlorophyll",
+    "moves": [
+     "Leaf Storm",
+     "Sludge Bomb",
+     "Earth Power",
+     "Protect"
+    ],
+    "nature": "Modest"
+   },
+   {
+    "species": "Charizard",
+    "item": "Charizardite Y",
+    "ability": "Blaze",
+    "moves": [
+     "Heat Wave",
+     "Weather Ball",
+     "Ancient Power",
+     "Protect"
+    ],
+    "nature": "Timid"
+   },
+   {
+    "species": "Incineroar",
+    "item": "Sitrus Berry",
+    "ability": "Intimidate",
+    "moves": [
+     "Fake Out",
+     "Flare Blitz",
+     "Throat Chop",
+     "Parting Shot"
+    ],
+    "nature": "Impish"
+   },
+   {
+    "species": "Toxapex",
+    "item": "Leftovers",
+    "ability": "Regenerator",
+    "moves": [
+     "Infestation",
+     "Wide Guard",
+     "Baneful Bunker",
+     "Toxic"
+    ],
+    "nature": "Relaxed"
+   }
+  ]
+ },
+ "journal": [
+  {
+   "kind": "lead",
+   "side": "p2",
+   "slot": 0,
+   "species": "Garchomp"
+  },
+  {
+   "kind": "lead",
+   "side": "p2",
+   "slot": 1,
+   "species": "Sylveon"
+  },
+  {
+   "kind": "lead",
+   "side": "p1",
+   "slot": 0,
+   "species": "Raichu"
+  },
+  {
+   "kind": "lead",
+   "side": "p1",
+   "slot": 1,
+   "species": "Basculegion-F"
+  },
+  {
+   "kind": "turn",
+   "n": 1
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 0,
+   "move": "Protect",
+   "target": null,
+   "spread": false
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 0,
+   "move": "Stomping Tantrum",
+   "target": {
+    "side": "p1",
+    "slot": 1
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 1,
+   "pct": 55,
+   "fainted": false
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 1,
+   "move": "Ice Beam",
+   "target": {
+    "side": "p2",
+    "slot": 0
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p2",
+   "slot": 0,
+   "pct": 0,
+   "fainted": true
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 1,
+   "move": "Hyper Voice",
+   "target": null,
+   "spread": true,
+   "results": [
+    {
+     "side": "p1",
+     "slot": 0,
+     "result": "protected"
+    }
+   ]
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 1,
+   "pct": 5,
+   "fainted": false
+  },
+  {
+   "kind": "switch",
+   "side": "p2",
+   "slot": 0,
+   "species": "Venusaur"
+  },
+  {
+   "kind": "turn",
+   "n": 2
+  },
+  {
+   "kind": "mega",
+   "side": "p1",
+   "species": "Raichu",
+   "forme": "Raichu-Mega-Y",
+   "item": "Raichunite Y"
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 1,
+   "move": "Quick Attack",
+   "target": {
+    "side": "p1",
+    "slot": 1
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 1,
+   "pct": 0,
+   "fainted": true
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 0,
+   "move": "Zap Cannon",
+   "target": {
+    "side": "p2",
+    "slot": 0
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p2",
+   "slot": 0,
+   "pct": 65,
+   "fainted": false
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 0,
+   "move": "Earth Power",
+   "target": {
+    "side": "p1",
+    "slot": 0
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 0,
+   "pct": 16,
+   "fainted": false
+  },
+  {
+   "kind": "switch",
+   "side": "p1",
+   "slot": 1,
+   "species": "Sneasler"
+  },
+  {
+   "kind": "turn",
+   "n": 3
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 1,
+   "move": "Protect",
+   "target": null,
+   "spread": false
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 1,
+   "move": "Quick Attack",
+   "target": {
+    "side": "p1",
+    "slot": 0
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 0,
+   "pct": 0,
+   "fainted": true
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 0,
+   "move": "Earth Power",
+   "target": {
+    "side": "p1",
+    "slot": 1
+   },
+   "spread": false,
+   "result": "protected"
+  },
+  {
+   "kind": "switch",
+   "side": "p1",
+   "slot": 0,
+   "species": "Pelipper"
+  },
+  {
+   "kind": "answer",
+   "question": "q27.0",
+   "option": 0,
+   "species": "Pelipper",
+   "label": "Drizzle \u2014 weather turns to raindance"
+  },
+  {
+   "kind": "turn",
+   "n": 4
+  },
+  {
+   "kind": "turn",
+   "n": 5
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 0,
+   "move": "Helping Hand",
+   "target": null,
+   "spread": false
+  },
+  {
+   "kind": "move",
+   "side": "p1",
+   "slot": 1,
+   "move": "Dire Claw",
+   "target": {
+    "side": "p2",
+    "slot": 1
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p2",
+   "slot": 1,
+   "pct": 0,
+   "fainted": true
+  },
+  {
+   "kind": "move",
+   "side": "p2",
+   "slot": 0,
+   "move": "Earth Power",
+   "target": {
+    "side": "p1",
+    "slot": 1
+   },
+   "spread": false
+  },
+  {
+   "kind": "damage",
+   "side": "p1",
+   "slot": 1,
+   "pct": 0,
+   "fainted": true
+  },
+  {
+   "kind": "switch",
+   "side": "p2",
+   "slot": 1,
+   "species": "Charizard"
+  }
+ ]
+}
