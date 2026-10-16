@@ -555,14 +555,11 @@ def test_deleting_a_battle_removes_it(client, started):
 
 @pytest.fixture(scope="module")
 def two_sheets():
-    """Two legal open sheets: the benchmark's fillers, six each. The fillers' Whimsicott holds a
-    Covert Cloak, which M-C doesn't have, and a battle won't start from an illegal sheet; the
-    benchmark is left as it is, since changing it means re-solving it."""
+    """Two legal open sheets: the benchmark's fillers, six each."""
     from vgc.regulation import load_regulation
     from vgc.wp import benchmark
 
-    fillers = benchmark.load(load_regulation("reg_mc"))["fillers"].replace("@ Covert Cloak", "@ Mental Herb")
-    sets = fillers.strip().split("\n\n")
+    sets = benchmark.load(load_regulation("reg_mc"))["fillers"].strip().split("\n\n")
     return "\n\n".join(sets[:6]), "\n\n".join(sets[1:7])
 
 
