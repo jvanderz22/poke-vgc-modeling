@@ -89,3 +89,26 @@ def test_an_item_banner_is_read_on_its_owners_side(observe):
 
 def test_a_faint(observe):
     assert observe("r5-faint").message == "Gardevoir fainted!"
+
+
+def test_scenery_moving_behind_the_regions_is_not_read_again():
+    """The animated screens put white shapes (a jacket, a Pokémon) in the banner regions on most
+    frames. A shape isn't text, so it mustn't send a region back to OCR."""
+    pytest.importorskip("rapidocr")
+    from PIL import Image
+
+    frame = scale(Image.open(FRAMES / "r5-choosing.jpg"))
+    reader = ScreenReader()
+    reader.observe(frame)
+    reader.observe(frame)  # a changed region is read again on the frame after
+    read = reader.ocr_calls
+
+    h, w = frame.shape[:2]
+    moved = frame.copy()
+    for key in ("banner_L", "banner_R", "message"):
+        x0, y0, x1, y1 = reader.layout.regions[key]
+        cx, cy = int((x0 + x1) / 2 * w), int((y0 + y1) / 2 * h)
+        moved[cy - 30:cy + 30, cx - 40:cx + 40] = 255
+    obs = reader.observe(moved)
+    assert reader.ocr_calls == read
+    assert obs.choosing and obs.message is None

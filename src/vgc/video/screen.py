@@ -114,9 +114,21 @@ def _lines(img: np.ndarray) -> list[tuple[str, float, float, float, float]]:
             for b, t in zip(out.boxes, out.txts) if str(t).strip()]
 
 
-def _white(img: np.ndarray) -> np.ndarray:
-    """Where the broadcast's text is: near-white in every channel."""
-    return img.min(axis=2) > 200
+def _text(img: np.ndarray) -> np.ndarray:
+    """Where the broadcast's text is: near-white strokes with something dark near them.
+
+    Near-white alone (min channel > 200) caught the scenery: the animated "choosing actions" screen
+    changed the banner regions on 84–90% of frames with no banner up, and OCR ran on 238 of 239.
+    A stroke of text is 2–4 px at WORK_WIDTH, so white that survives a 5×5 opening is a shape
+    (a jacket, a Pokémon, a light), and text sits on a dark bar or has a dark edge. Over 5 minutes
+    of round 6 this ran OCR 46% less often and lost no event but misreads of the sheet cards.
+    """
+    import cv2  # with RapidOCR (opencv-python-headless), like everything that reads pixels here
+
+    white = (img.min(axis=2) > 200).astype(np.uint8)
+    shape = cv2.dilate(cv2.morphologyEx(white, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8)), np.ones((3, 3), np.uint8))
+    dark = cv2.dilate((img.max(axis=2) < 90).astype(np.uint8), np.ones((9, 9), np.uint8))
+    return (white & (1 - shape) & dark).astype(bool)
 
 
 # --- reading a region -----------------------------------------------------------------------
@@ -228,7 +240,7 @@ class ScreenReader:
 
     def _region(self, frame: np.ndarray, key: str) -> list:
         crop = self._crop(frame, key)
-        mask = _white(crop)
+        mask = _text(crop)
         prev = self._masks.get(key)
         same = prev is not None and prev.shape == mask.shape and np.count_nonzero(prev ^ mask) < CHANGED * mask.size
         # The first frame of new text is often mid-fade, and reads as garbage that the frames after

@@ -219,6 +219,18 @@ The same run found the change check barely skipping: OCR ran on 238 of the 239 f
 "choosing actions" screen is animated (trainers, Pokémon, lights), and the banner regions saw their
 white pixels change on 84–90% of frames with no banner up.
 
+The check now looks only at text-like pixels: near-white in thin strokes (gone after a 5×5
+opening) with something dark nearby (`screen._text`). Over 5 minutes of round 6 (200–500 s, 1,197
+frames, 2 threads, three runs side by side):
+
+| Change check | OCR calls | CPU | Events against the white check |
+|---|---|---|---|
+| white pixels (as it was) | 4,185 | 1,472 s | 141 |
+| text-like pixels | 2,277 | 1,086 s | 138 matched; 3 lost and 2 added, all misreads of the sheet cards and scoreboard |
+| text-like, and a region under 0.2% text-like skips OCR | 1,987 | 1,009 s | lost "A critical hit!", and the small field region flickered empty, re-reporting the field 11 times |
+
+The third is not used.
+
 ## Decision gate (step 1)
 
 This source passes: the message line, the nameplates and the HP numbers are all readable. Step 2
