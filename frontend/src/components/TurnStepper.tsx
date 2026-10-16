@@ -482,7 +482,7 @@ export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUn
       ...(chances.length ? [{ label: `${chances.map((c) => `${c.label} (${c.chance}%)`).join(" · ")}`,
                               tone: "toggle" as const, pressed: ticked, pick: tick,
                               title: "the move's added effect: tick it if it happened" }] : []),
-      { label: "KO", tone: "danger", pick: ko },
+      { label: "KO", pick: ko },
       { label: "Missed", tone: "ghost", pick: how("miss") },
       { label: "Protected", tone: "ghost", pick: how("protected") },
       { label: "No effect", tone: "ghost", pick: how("immune") },
@@ -609,13 +609,13 @@ export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUn
       case "faint":
         return {
           id: `extra:faint:${posKey(p)}`, prompt: <>{m.forme} fainted?</>, back, dflt: 0,
-          options: [{ label: "Fainted", tone: "danger", pick: () => logAndClose([{ kind: "faint", side: p.side, slot: p.slot }], `${m.forme} fainted`) }],
+          options: [{ label: "Fainted", pick: () => logAndClose([{ kind: "faint", side: p.side, slot: p.slot }], `${m.forme} fainted`) }],
         };
       case "hp":
         return hpStage(p, {
           id: `extra:hp:${posKey(p)}`, back,
           submit: (v) => logAndClose(hpSet(p, v), `${m.forme} on ${v}${p.side === own && m.hp_max != null ? " HP" : "%"}`),
-          extra: [{ label: "KO", tone: "danger", pick: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) }],
+          extra: [{ label: "KO", pick: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) }],
           keys: { k: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) },
         });
     }
@@ -925,7 +925,7 @@ export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUn
         extra: [
           { label: `As expected: ${expect}${unit}`, pick: () => void finish(hpSet(pos, expect, r.key)) },
           { label: "Didn't happen", tone: "ghost", pick: () => void finish([]) },
-          { label: "KO", tone: "danger", pick: () => void finish(hpSet(pos, 0, r.key)) },
+          { label: "KO", pick: () => void finish(hpSet(pos, 0, r.key)) },
         ],
         dflt: 0,
         keys: { k: () => void finish(hpSet(pos, 0, r.key)) },
@@ -1126,6 +1126,7 @@ export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUn
                     title={o.title} disabled={busy || o.disabled} onClick={o.pick}>
               {help && i < 9 && <span className="key-badge">{i + 1}</span>}
               {o.label}
+              {s.dflt === i && <kbd className="default-key" title="↵ accepts this">↵</kbd>}
             </button>
           ))}
         </div>

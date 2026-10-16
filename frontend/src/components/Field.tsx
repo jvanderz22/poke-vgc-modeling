@@ -15,7 +15,7 @@ export function ActiveCard({ mon, own, onHp, onPick, selected }: {
   onPick: () => void;
   selected: boolean;
 }) {
-  const boosts = STAT_ORDER.filter((s) => mon.boosts[s]).map((s) => `${s} ${mon.boosts[s] > 0 ? "+" : ""}${mon.boosts[s]}`);
+  const boosts = STAT_ORDER.filter((s) => mon.boosts[s]).map((s) => `${mon.boosts[s] > 0 ? "▲" : "▼"} ${s} ${mon.boosts[s] > 0 ? "+" : ""}${mon.boosts[s]}`);
   return (
     <div className={`active-card${selected ? " selected" : ""}`}>
       <button className="active-name" onClick={onPick}>
@@ -54,6 +54,9 @@ export function ActiveCard({ mon, own, onHp, onPick, selected }: {
   );
 }
 
+/** Red and green are one colour to a deuteranope, so the verdict is a shape too. */
+const GLYPH: Record<string, string> = { faster: "▲", slower: "▼", undecided: "?" };
+
 function Arrow({ read, watching }: { read: SpeedRead; watching: boolean }) {
   const text = read.verdict === "faster" ? (watching ? `${read.mine} first` : "you move first")
     : read.verdict === "slower" ? (watching ? `${read.theirs} first` : "they move first")
@@ -63,6 +66,7 @@ function Arrow({ read, watching }: { read: SpeedRead; watching: boolean }) {
       read.their_speed
         ? `${read.mine} ${read.my_speed?.[0]}–${read.my_speed?.[1]} vs ${read.theirs} ${read.their_speed[0]}–${read.their_speed[1]}`
         : undefined}>
+      <span aria-hidden="true">{GLYPH[read.verdict] ?? "?"} </span>
       {read.mine} → {read.theirs}: {text}{read.trick_room ? " (Trick Room)" : ""}
     </span>
   );

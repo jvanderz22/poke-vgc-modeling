@@ -207,7 +207,7 @@ function HpPad({ view, sel, onLog, onDone, busy }: {
           <button key={p} className="ghost" disabled={busy}
                   onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, pct: p })}>{p}%</button>
         ))}
-        <button className="danger" disabled={busy}
+        <button className="ghost" disabled={busy}
                 onClick={() => log({ kind: "damage", side: sel.side, slot: sel.slot, fainted: true })}>KO</button>
       </div>
       {own && mon.hp_max != null && (

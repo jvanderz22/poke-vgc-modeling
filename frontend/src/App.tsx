@@ -7,6 +7,7 @@ import { SimulatePanel } from "./components/SimulatePanel";
 import { TeamLibrary } from "./components/TeamLibrary";
 import { WatchPage } from "./components/WatchPage";
 import { linkProps, TABS, tabRoute, useRoute, type Tab } from "./router";
+import { useTheme, type ThemePref } from "./theme";
 
 const REG = "reg_mc";
 const LAST_TEAM = `vgc:${REG}:lastTeam`;
@@ -27,8 +28,23 @@ function writeLastTeam(id: string | null) {
   try { id ? localStorage.setItem(LAST_TEAM, id) : localStorage.removeItem(LAST_TEAM); } catch { /* ignore */ }
 }
 
+const THEME_LABEL: Record<ThemePref, string> = { system: "system", light: "light", dark: "dark" };
+const NEXT_THEME: Record<ThemePref, ThemePref> = { system: "light", light: "dark", dark: "system" };
+
+/** Sun for light, moon for dark, a half-filled circle for following the system. */
+function ThemeIcon({ pref }: { pref: ThemePref }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      {pref === "light" && <><circle cx="8" cy="8" r="3" /><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1" /></>}
+      {pref === "dark" && <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z" />}
+      {pref === "system" && <><circle cx="8" cy="8" r="5.5" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11Z" fill="currentColor" /></>}
+    </svg>
+  );
+}
+
 export default function App() {
   const [route, navigate] = useRoute();
+  const [theme, cycleTheme] = useTheme();
   const [health, setHealth] = useState<Health | null>(null);
   const [models, setModels] = useState<{ models: ModelRow[]; default: string | null } | null>(null);
   const [pool, setPool] = useState<Species[]>([]);
@@ -80,6 +96,11 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <button className="icon-btn theme-btn" onClick={cycleTheme}
+                title={`Theme: ${THEME_LABEL[theme]} (click for ${THEME_LABEL[NEXT_THEME[theme]]})`}
+                aria-label={`Theme: ${THEME_LABEL[theme]}. Switch to ${THEME_LABEL[NEXT_THEME[theme]]}.`}>
+          <ThemeIcon pref={theme} />
+        </button>
       </header>
 
       <main>

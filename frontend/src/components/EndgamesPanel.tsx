@@ -131,8 +131,8 @@ function GameList({ games, route, navigate }: {
         // A game is the thing worth linking to, so each row is a real link to its own URL.
         <a key={g.replay} className="game-row" aria-current={g.replay === route.replay}
            {...linkProps({ ...route, replay: g.replay, step: null }, navigate)}>
-          <span className={`dot ${g.correct ? "ok" : "bad"}`}
-                title={g.correct ? "the favoured side won" : "the favoured side lost"} />
+          <span className={`verdict-mark ${g.correct ? "ok" : "bad"}`}
+                title={g.correct ? "the favoured side won" : "the favoured side lost"}>{g.correct ? "✓" : "✗"}</span>
           <span className="game-who">
             {g.players.p1} <span className="dim">vs</span> {g.players.p2}
           </span>

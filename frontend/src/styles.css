@@ -5,20 +5,94 @@
 @layer bootstrap;
 @import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
 
+/* Colours are tokens by role, and a role has one job. The two players own blue and orange and
+   nothing else does: selection, buttons and focus are neutral, so a colour on the board always
+   says whose it is. Status colours never travel alone; a glyph or a word goes with them, because
+   good and bad are one colour to a deuteranope and warn sits close to the second player's orange.
+   A faded thing is a text colour, not an opacity, so its contrast is known in both themes.
+
+   Dark is the default; `data-theme="light"` on <html> swaps the values. src/theme.ts sets it (and
+   Bootstrap's `data-bs-theme`) from the viewer's choice or the system setting, and index.html sets
+   it before the first paint. Contrast figures are WCAG ratios on --panel. */
 :root {
-  --bg: #12141a;
-  --panel: #1b1e26;
-  --panel-2: #161922;
-  --line: #2c3040;
-  --text: #e6e8ee;
-  --dim: #9aa1b4;
-  --good: #46c07a;
-  --warn: #e0a74a;
-  --bad: #e06666;
-  --accent: #6aa9ff;
+  color-scheme: dark;
+  /* Surfaces. Raised is lighter than panel here and darker in light: a card sits on its panel. */
+  --bg: #111318;
+  --panel: #1a1d24;
+  --raised: #232731;
+  --raised-2: #2a2f3b;      /* popovers over raised content */
+  --track: #0d0f13;         /* bar troughs, chips, keycaps */
+  --input: #0d0f13;
+  --line: #343a48;
+  --line-strong: #4a5162;
+  --shadow: rgba(0, 0, 0, .45);
+  /* Text */
+  --text: #e6e8ee;          /* 13.8 */
+  --dim: #a3a9ba;           /* 7.2 */
+  --faint: #868d9f;         /* 5.1: fainted, not yet seen */
+  --ghost: #6a7083;         /* 3.4: never coming (not brought) */
   /* The two players, everywhere a side is told apart: the split bar, the field, the strips. */
-  --p1: #6aa9ff;
-  --p2: #e0a74a;
+  --p1: #6aa9ff;            /* 7.0 */
+  --p2: #ec8f3e;            /* 6.9 */
+  --on-side: #07101f;       /* text on a filled player colour */
+  /* Status */
+  --good: #46c07a;          /* 7.3 */
+  --warn: #e3c04a;          /* 9.6 */
+  --bad: #ec6f6f;           /* 5.7 */
+  --ask: #a89cff;           /* 7.1: a question waiting for an answer */
+  /* Interaction */
+  --primary: #e6e8ee;
+  --on-primary: #111318;    /* 15.2 */
+  --selection: #e6e8ee;
+  --focus: #e6e8ee;
+  /* The game's own conventions */
+  --hp-ok: #46c07a;
+  --hp-mid: #e3c04a;
+  --hp-low: #ec6f6f;
+  --stat-up: #f2917f;
+  --stat-down: #86b4ec;
+  --st-brn: #f0805c;
+  --st-par: #e3c04a;
+  --st-psn: #d483c8;
+  --st-slp: #a3a9ba;
+  --st-frz: #5fcbdc;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --raised: #f3f4f7;
+  --raised-2: #ffffff;
+  --track: #e3e6ec;
+  --input: #ffffff;
+  --line: #d3d8e1;
+  --line-strong: #b4bbc8;
+  --shadow: rgba(20, 24, 33, .14);
+  --text: #171a21;          /* 17.4 */
+  --dim: #565d70;           /* 6.6 */
+  --faint: #687083;         /* 5.0 */
+  --ghost: #8e95a4;         /* 3.0: on a panel only */
+  --p1: #2563c9;            /* 5.7 */
+  --p2: #a35200;            /* 5.6 */
+  --on-side: #ffffff;
+  --good: #1a7542;          /* 5.7 */
+  --warn: #7d5800;          /* 6.4 */
+  --bad: #b53030;           /* 6.1 */
+  --ask: #5b4bd1;           /* 6.2 */
+  --primary: #171a21;
+  --on-primary: #ffffff;    /* 17.4 */
+  --selection: #171a21;
+  --focus: #171a21;
+  --hp-ok: #1f8a4f;
+  --hp-mid: #c28c00;
+  --hp-low: #c63c3c;
+  --stat-up: #b8442f;
+  --stat-down: #2f63a8;
+  --st-brn: #b8442f;
+  --st-par: #7d5800;
+  --st-psn: #94368a;
+  --st-slp: #565d70;
+  --st-frz: #0f7486;
 }
 
 * { box-sizing: border-box; }
@@ -46,6 +120,8 @@ code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   padding: 6px 13px; border-radius: 8px; font-size: 14px; cursor: pointer;
 }
 .tab[aria-selected="true"] { background: var(--panel); border-color: var(--line); color: var(--text); }
+.theme-btn { display: inline-flex; align-items: center; justify-content: center; }
+.theme-btn svg { width: 15px; height: 15px; }
 
 main { padding: 16px; max-width: 1040px; margin: 0 auto; }
 
@@ -63,21 +139,29 @@ main { padding: 16px; max-width: 1040px; margin: 0 auto; }
 label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 5px; }
 
 input[type="text"], textarea {
-  width: 100%; background: #0e1015; color: var(--text);
+  width: 100%; background: var(--input); color: var(--text);
   border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px;
   font-size: 14px; font-family: inherit;
 }
 textarea { min-height: 170px; resize: vertical; font: 12px/1.45 ui-monospace, Menlo, monospace; }
-input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--focus); }
+/* One ring for keyboard focus everywhere. The stepper's ↵ default is marked differently (a
+   keycap), so the two can never be mistaken for each other. */
+:is(button, a, summary, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 button {
-  background: var(--accent); color: #07101f; border: 0; border-radius: 8px;
+  background: var(--primary); color: var(--on-primary); border: 0; border-radius: 8px;
   padding: 9px 15px; font-weight: 650; font-size: 14px; cursor: pointer; font-family: inherit;
 }
 button:disabled { opacity: .45; cursor: default; }
 button.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
-button.danger { background: transparent; color: var(--bad); border: 1px solid var(--line); font-weight: 500; }
-button.link { background: none; border: 0; color: var(--accent); padding: 0; font-weight: 500; }
+button.danger { background: transparent; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 45%, var(--panel)); font-weight: 500; }
+/* Text links are told from text by an underline, not a colour: colour belongs to the players. */
+button.link {
+  background: none; border: 0; color: var(--text); padding: 0; font-weight: 500;
+  text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px;
+}
+button.link:hover { text-decoration-color: currentColor; }
 
 /* Bootstrap's grid claims `.row` too. Being unlayered, everything here outranks it, but its
    `.row > *` rule has no counterpart to lose to — so the width it forces on every child is
@@ -90,36 +174,51 @@ button.link { background: none; border: 0; color: var(--accent); padding: 0; fon
   .grid2, .split { grid-template-columns: 1fr; }
 }
 
-.banner { border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; border: 1px solid; }
-.banner.bad { border-color: var(--bad); background: #2a1618; }
-.banner.warn { border-color: var(--warn); background: #2a2216; }
-.banner.ok { border-color: var(--good); background: #14241b; }
+.banner {
+  position: relative; border-radius: 8px; padding: 10px 12px 10px 36px; font-size: 13px; margin-bottom: 14px;
+  border: 1px solid color-mix(in srgb, var(--tone) 50%, var(--panel));
+  background: color-mix(in srgb, var(--tone) 10%, var(--panel));
+}
+.banner::before {
+  position: absolute; left: 11px; top: 11px; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--tone); color: var(--panel); font: 800 11px/17px system-ui, sans-serif; text-align: center;
+}
+.banner.bad { --tone: var(--bad); }
+.banner.bad::before { content: "×"; }
+.banner.warn { --tone: var(--warn); }
+.banner.warn::before { content: "!"; }
+.banner.ok { --tone: var(--good); }
+.banner.ok::before { content: "✓"; }
 .banner b { font-weight: 650; }
 
 .team-row {
   display: flex; align-items: center; gap: 8px; width: 100%;
-  background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+  background: var(--raised); border: 1px solid var(--line); color: var(--text);
   border-radius: 8px; padding: 9px 11px; margin-bottom: 7px; cursor: pointer; text-align: left;
   font-weight: 500; font-size: 14px;
 }
-.team-row[aria-current="true"] { border-color: var(--accent); }
+.team-row[aria-current="true"] { border-color: var(--selection); }
 .team-row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
 .dot.ok { background: var(--good); }
 .dot.bad { background: var(--bad); }
-.dot.unknown { background: var(--dim); }
+/* Right or wrong said by shape too: a dot's colour alone is one colour to a deuteranope. */
+.verdict-mark { font-size: 12px; font-weight: 700; text-align: center; }
+.verdict-mark.ok { color: var(--good); }
+.verdict-mark.bad { color: var(--bad); }
+.dot.unknown { background: var(--faint); }
 
 .mon-chip {
   display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px;
-  border: 1px solid var(--line); color: var(--dim); margin: 0 5px 5px 0; background: var(--panel-2);
+  border: 1px solid var(--line); color: var(--dim); margin: 0 5px 5px 0; background: var(--raised);
 }
 
 .opt { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
 .opt:last-child { border-bottom: 0; }
 .opt .wp { font-variant-numeric: tabular-nums; font-weight: 650; width: 58px; flex: none; }
-.bar { flex: 1; height: 7px; background: #0e1015; border-radius: 4px; overflow: hidden; min-width: 60px; }
-.bar > i { display: block; height: 100%; background: var(--accent); }
+.bar { flex: 1; height: 7px; background: var(--track); border-radius: 4px; overflow: hidden; min-width: 60px; }
+.bar > i { display: block; height: 100%; background: var(--p1); }
 .opt .who { flex: 2; min-width: 190px; font-size: 13px; }
 .opt .leads { color: var(--dim); font-size: 12px; }
 
@@ -142,7 +241,7 @@ table.stats td { font-variant-numeric: tabular-nums; }
   background: transparent; color: var(--dim); border: 0; border-radius: 0;
   padding: 5px 11px; font-size: 12px; font-weight: 500; cursor: pointer;
 }
-.seg[aria-pressed="true"] { background: var(--panel-2); color: var(--text); }
+.seg[aria-pressed="true"] { background: var(--raised); color: var(--text); font-weight: 650; box-shadow: inset 0 0 0 1px var(--dim); border-radius: 7px; }
 
 /* --- species picker --- */
 .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
@@ -153,7 +252,7 @@ table.stats td { font-variant-numeric: tabular-nums; }
 
 .picked {
   display: flex; align-items: center; gap: 6px;
-  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
   padding: 8px 10px; font-size: 13px; min-height: 37px;
 }
 .picked-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -162,20 +261,23 @@ table.stats td { font-variant-numeric: tabular-nums; }
   position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
   max-height: 260px; overflow-y: auto; margin: 0; padding: 4px; list-style: none;
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  box-shadow: 0 10px 30px var(--shadow);
 }
 .option {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
   width: 100%; background: none; border: 0; border-radius: 6px; color: var(--text);
   padding: 6px 8px; font-size: 13px; font-weight: 500; text-align: left; cursor: pointer;
 }
-.option.active { background: var(--panel-2); }
+.option.active { background: var(--raised); }
 
 .team-list { max-height: 230px; overflow-y: auto; }
 
 /* --- Pokémon badges (Bootstrap .badge, sized for these lists) --- */
 .mon-badges { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-.mon-badge { font-size: 12px; font-weight: 600; padding: .34em .7em; }
+.mon-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: .3em .75em; border-radius: 999px; border: 1px solid; }
+/* Leads ringed in the text colour, the back two outlined: which two start is its own decision. */
+.mon-badge.lead { background: var(--raised); color: var(--text); border-color: var(--text); }
+.mon-badge.back { background: transparent; color: var(--dim); border-color: var(--line); font-weight: 500; }
 .mon-badge-extra { opacity: .72; margin-left: 5px; font-weight: 500; }
 .bring-sep { color: var(--dim); font-size: 12px; padding: 0 1px; }
 
@@ -190,7 +292,7 @@ table.stats td { font-variant-numeric: tabular-nums; }
 .tab { position: relative; }
 .tab-dot {
   position: absolute; top: 6px; right: 6px;
-  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text);
 }
 
 /* Bootstrap's reboot sets its own body/link colours; keep the app's palette. */
@@ -207,36 +309,36 @@ select.form-select { max-width: 260px; }
 .ev:not(.ev-p1):not(.ev-p2) { color: var(--dim); font-style: italic; }
 
 .wp-chip { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
-.wp-track { display: block; width: 88px; height: 6px; background: #0e1015; border-radius: 3px; overflow: hidden; }
-.wp-track > i { display: block; height: 100%; background: var(--accent); }
+.wp-track { display: block; width: 88px; height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; }
+.wp-track > i { display: block; height: 100%; background: var(--p1); }
 
 /* --- endgame browser ------------------------------------------------------------------ */
 .hint-block {
-  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px;
   padding: 10px 12px; margin: 0; font: 12px/1.45 ui-monospace, Menlo, monospace;
 }
 
 .game-list { max-height: 560px; overflow-y: auto; padding: 6px; }
 .game-row {
-  display: grid; grid-template-columns: 7px 1fr auto; gap: 4px 8px; align-items: center;
+  display: grid; grid-template-columns: 12px 1fr auto; gap: 4px 8px; align-items: center;
   width: 100%; text-align: left; background: transparent; border: 1px solid transparent;
   border-radius: 8px; padding: 7px 8px; color: var(--text); font-weight: 500;
 }
-.game-row:hover { background: var(--panel-2); }
-.game-row[aria-current="true"] { border-color: var(--accent); background: var(--panel-2); }
+.game-row:hover { background: var(--raised); }
+.game-row[aria-current="true"] { border-color: var(--selection); background: var(--raised); }
 .game-who { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-wp { font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 650; }
 .game-meta { grid-column: 2 / 4; }
 
 /* Side colours are used as a running identity — the tag, the WP bar, the scrubber ticks. */
 .side-tag { font-weight: 650; }
-.side-tag.p1 { color: var(--accent); }
-.side-tag.p2 { color: #e0a74a; }
+.side-tag.p1 { color: var(--p1); }
+.side-tag.p2 { color: var(--p2); }
 
 .scrub { display: flex; gap: 2px; align-items: stretch; height: 48px; margin-top: 12px; }
 /* Each tick is the whole win probability, split: p2's share on top, p1's below it. */
 .scrub-tick {
-  flex: 1; min-width: 4px; height: 100%; padding: 0; background: #0e1015; border: 0;
+  flex: 1; min-width: 4px; height: 100%; padding: 0; background: var(--track); border: 0;
   border-radius: 2px; overflow: hidden; display: flex; flex-direction: column;
   outline-offset: 2px;
 }
@@ -244,11 +346,11 @@ select.form-select { max-width: 260px; }
    shadow painted on its background would sit underneath them. Outlines paint above descendants. */
 .scrub-tick[aria-current="true"] { outline: 2px solid var(--text); outline-offset: -2px; }
 .scrub-tick > i { display: block; width: 100%; }
-.tick-p1 { background: var(--accent); }
-.tick-p2 { background: #e0a74a; }
+.tick-p1 { background: var(--p1); }
+.tick-p2 { background: var(--p2); }
 
-.wp-split { height: 12px; background: #e0a74a; border-radius: 6px; overflow: hidden; }
-.wp-split-p1 { display: block; height: 100%; background: var(--accent); }
+.wp-split { height: 12px; background: var(--p2); border-radius: 6px; overflow: hidden; }
+.wp-split-p1 { display: block; height: 100%; background: var(--p1); }
 
 .board { display: flex; flex-direction: column; gap: 5px; }
 .board-mon {
@@ -256,21 +358,21 @@ select.form-select { max-width: 260px; }
   font-size: 13px; padding: 3px 0;
 }
 .board-mon.bench { color: var(--dim); }
-.board-mon.fainted { color: var(--dim); text-decoration: line-through; opacity: .6; }
+.board-mon.fainted { color: var(--faint); text-decoration: line-through; }
 .board-mon.active .board-name { font-weight: 650; }
 /* Neither of these has an HP to show: one has not been seen, the other is not in the game. The
    dashed track says "no number here"; the solid-but-empty one says "and there never will be". */
-.board-mon.unknown { color: var(--dim); opacity: .65; }
-.board-mon.unselected { color: var(--dim); opacity: .38; }
+.board-mon.unknown { color: var(--faint); font-style: italic; }
+.board-mon.unselected { color: var(--ghost); }
 .board-hp.empty { background: transparent; border: 1px dashed var(--line); }
 .board-mon.unselected .board-hp.empty { border-style: solid; }
 .board-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-status { font-size: 9px; padding: .2em .45em; margin-left: 6px; vertical-align: 1px; }
-.board-hp { display: block; height: 6px; background: #0e1015; border-radius: 3px; overflow: hidden; }
+.board-hp { display: block; height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; }
 .board-hp > i { display: block; height: 100%; }
-.hp-ok { background: var(--good); }
-.hp-low { background: var(--warn); }
-.hp-crit { background: var(--bad); }
+.hp-ok { background: var(--hp-ok); }
+.hp-low { background: var(--hp-mid); }
+.hp-crit { background: var(--hp-low); }
 .board-pct { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* The settled result: outlined and muted, because it is the one tick the model did not produce.
@@ -283,10 +385,10 @@ select.form-select { max-width: 260px; }
 /* Side badges on turn-summary lines, in the two colours the WP bar uses. */
 .ev-side {
   display: inline-block; min-width: 18px; text-align: center; border-radius: 999px;
-  font-size: 10px; font-weight: 700; padding: .18em .5em; flex: none; color: #07101f;
+  font-size: 10px; font-weight: 700; padding: .18em .5em; flex: none; color: var(--on-side);
 }
-.ev-side.p1 { background: var(--accent); }
-.ev-side.p2 { background: #e0a74a; }
+.ev-side.p1 { background: var(--p1); }
+.ev-side.p2 { background: var(--p2); }
 
 /* End-of-turn slots: a switch puts what left and what came in on one line. */
 .slots-after { display: flex; flex-direction: column; gap: 6px; }
@@ -296,7 +398,7 @@ select.form-select { max-width: 260px; }
 .slot-pct { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; flex: none; }
 .slot-mon.active .slot-name { font-weight: 650; }
 .slot-mon.bench { color: var(--dim); }
-.slot-mon.fainted { color: var(--dim); text-decoration: line-through; opacity: .6; }
+.slot-mon.fainted { color: var(--faint); text-decoration: line-through; }
 .slot-arrow { color: var(--dim); font-size: 12px; flex: none; }
 
 /* Navigation is links now, so they are URLs you can copy, open in a tab, or reload onto. They
@@ -308,7 +410,7 @@ a.btn-link {
   border: 1px solid var(--line); border-radius: 8px; padding: 9px 15px;
   font-weight: 500; font-size: 14px;
 }
-a.btn-link:hover { background: var(--panel-2); }
+a.btn-link:hover { background: var(--raised); }
 
 /* Pushed to the end of the stepper's control row, so the number stays with the controls. */
 .step-wp {
@@ -327,14 +429,14 @@ a.btn-link:hover { background: var(--panel-2); }
    number drawn as a solid bar would claim a precision the belief does not have. */
 .wp-bar {
   position: relative; display: block; height: 10px; border-radius: 5px; overflow: hidden;
-  background: #0e1015; border: 1px solid var(--line);
+  background: var(--track); border: 1px solid var(--line);
 }
-.wp-range { position: absolute; top: 0; bottom: 0; background: rgba(106, 169, 255, .28); }
+.wp-range { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--p1) 30%, var(--track)); }
 .wp-mark {
   position: absolute; top: -1px; bottom: -1px; width: 3px; margin-left: -1px;
-  background: var(--accent); border-radius: 2px;
+  background: var(--p1); border-radius: 2px;
 }
-.wp-fill { display: block; height: 100%; background: var(--accent); opacity: .95; }
+.wp-fill { display: block; height: 100%; background: var(--p1); }
 .wp-num { color: var(--text); font-size: 15px; }
 /* In a 1v1 the engine's answer leads and the model's sits under it, set apart as the second
    opinion rather than a refinement of the first. */
@@ -349,10 +451,10 @@ a.btn-link:hover { background: var(--panel-2); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 .active-card {
-  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 9px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px 9px;
   display: flex; flex-direction: column; gap: 6px; min-width: 0;
 }
-.active-card.selected { border-color: var(--accent); }
+.active-card.selected { outline: 2px solid var(--selection); outline-offset: 1px; }
 .active-card.empty {
   color: var(--dim); font-size: 12px; display: flex; align-items: center; justify-content: center;
   border-style: dashed; min-height: 92px;
@@ -364,12 +466,12 @@ a.btn-link:hover { background: var(--panel-2); }
 
 .hp-bar {
   position: relative; display: block; width: 100%; height: 20px; padding: 0;
-  background: #0e1015; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: var(--track); border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
 }
 .hp-fill { position: absolute; inset: 0 auto 0 0; display: block; }
-.hp-fill.good { background: rgba(70, 192, 122, .45); }
-.hp-fill.warn { background: rgba(224, 167, 74, .45); }
-.hp-fill.bad  { background: rgba(224, 102, 102, .45); }
+.hp-fill.good { background: color-mix(in srgb, var(--hp-ok) 45%, var(--track)); }
+.hp-fill.warn { background: color-mix(in srgb, var(--hp-mid) 45%, var(--track)); }
+.hp-fill.bad  { background: color-mix(in srgb, var(--hp-low) 45%, var(--track)); }
 .hp-text {
   position: relative; display: block; line-height: 18px; font-size: 11px; color: var(--text);
   text-align: center; font-family: ui-monospace, Menlo, monospace;
@@ -378,14 +480,25 @@ a.btn-link:hover { background: var(--panel-2); }
 .chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .chip {
   font-size: 10px; padding: 1px 6px; border-radius: 999px;
-  background: #0e1015; border: 1px solid var(--line); color: var(--dim);
+  background: var(--track); border: 1px solid var(--line); color: var(--dim);
 }
-.chip.known { color: var(--text); border-color: #3a4358; }
+.chip.known { color: var(--text); border-color: var(--line-strong); }
 .chip.unknown { border-style: dashed; }
-.chip.boost { color: var(--accent); border-color: #2d4467; }
-.chip.field { color: var(--warn); border-color: #4a3d24; }
-.chip.status-brn, .chip.status-psn, .chip.status-tox { color: var(--bad); }
-.chip.status-par, .chip.status-slp, .chip.status-frz { color: var(--warn); }
+/* A boost is neutral, its direction in the glyph: blue here would read as the first player's. */
+.chip.boost { color: var(--text); border-color: var(--line-strong); }
+/* Weather, terrain and rooms belong to nobody, so they are neutral; a side's own conditions take
+   its colour (.chip.field.p1 / .p2, further down). */
+.chip.field { color: var(--text); border-color: var(--line-strong); }
+/* Status in the game's own colours, which a player already reads without thinking. */
+.chip[class*="status-"] {
+  color: var(--st); font-weight: 650;
+  background: color-mix(in srgb, var(--st) 14%, var(--panel)); border-color: color-mix(in srgb, var(--st) 45%, var(--panel));
+}
+.chip.status-brn { --st: var(--st-brn); }
+.chip.status-par { --st: var(--st-par); }
+.chip.status-psn, .chip.status-tox { --st: var(--st-psn); }
+.chip.status-slp { --st: var(--st-slp); }
+.chip.status-frz { --st: var(--st-frz); }
 .small-chips .chip { font-size: 10px; }
 
 .speed-strip {
@@ -395,20 +508,23 @@ a.btn-link:hover { background: var(--panel-2); }
 .speed-read { font-size: 11px; color: var(--dim); }
 .speed-read.faster { color: var(--good); }
 .speed-read.slower { color: var(--bad); }
-.speed-read.undecided { color: var(--warn); }
+/* Not decided is the absence of an answer, not a warning. */
+.speed-read.undecided { color: var(--dim); }
 
 /* Entry. Every button here is a tap in a game on a clock, so they are large and never move. */
 .entry-bar { position: sticky; bottom: 0; z-index: 4; }
 .pad { display: flex; flex-wrap: wrap; gap: 6px; }
 .pad button { padding: 10px 13px; }
 .hp-pad button { min-width: 56px; font-family: ui-monospace, Menlo, monospace; }
-.seg[aria-pressed="true"] { background: var(--accent); color: #07101f; }
 .stepper { display: inline-flex; align-items: center; gap: 4px; }
 .stepper-label { font-size: 12px; color: var(--dim); min-width: 26px; text-align: center; }
 .stepper button { padding: 6px 11px; }
 
 /* Questions. Loud on purpose: an unanswered one is information walking out of the door. */
-.q-panel { border-color: #3d4a2c; background: #1c2018; }
+.q-panel, .q-batch {
+  border: 1.5px solid color-mix(in srgb, var(--ask) 55%, var(--panel)); border-radius: 10px;
+  background: color-mix(in srgb, var(--ask) 9%, var(--panel));
+}
 .q-card { padding: 8px 0; border-top: 1px solid var(--line); }
 .q-card:first-of-type { border-top: 0; }
 .q-prompt { font-size: 13px; margin-bottom: 7px; }
@@ -428,11 +544,11 @@ a.btn-link:hover { background: var(--panel-2); }
   padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px;
   color: var(--text); text-decoration: none;
 }
-.battle-row:hover { background: var(--panel-2); }
+.battle-row:hover { background: var(--raised); }
 .battle-row button { padding: 4px 9px; font-size: 12px; }
 
 select {
-  background: #0e1015; color: var(--text); border: 1px solid var(--line);
+  background: var(--input); color: var(--text); border: 1px solid var(--line);
   border-radius: 8px; padding: 9px 10px; font-size: 14px; font-family: inherit;
 }
 
@@ -453,12 +569,12 @@ select {
   background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 999px;
   width: 28px; height: 28px; padding: 0; font-size: 15px; line-height: 1;
 }
-.icon-btn[aria-expanded="true"] { color: var(--text); border-color: var(--accent); }
+.icon-btn[aria-expanded="true"] { color: var(--text); border-color: var(--selection); }
 
 /* In the flow under the header, not floating: it must never cover an answer button, and with
    nothing yet in "turn so far" there is nothing else for it to sit over. */
 .help-pop {
-  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
   margin-bottom: 10px;
 }
 .help-pop table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -467,7 +583,7 @@ select {
 .help-pop td:first-child { white-space: nowrap; flex: none; min-width: 92px; }
 @media (max-width: 700px) { .help-pop tbody { grid-template-columns: 1fr; } }
 kbd {
-  font: 11px ui-monospace, Menlo, monospace; background: #0e1015; color: var(--text);
+  font: 11px ui-monospace, Menlo, monospace; background: var(--track); color: var(--text);
   border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
 }
 
@@ -476,7 +592,7 @@ kbd {
   display: block; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 6px;
   color: var(--text); font-weight: 400; font-size: 13px; padding: 3px 6px;
 }
-.turn-line:hover { background: var(--panel-2); }
+.turn-line:hover { background: var(--raised); }
 .turn-check { color: var(--good); }
 .turn-line.bad .turn-check, .turn-err { color: var(--bad); }
 
@@ -484,11 +600,16 @@ kbd {
 .stage-prompt { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
 .stage-opts { display: flex; flex-wrap: wrap; gap: 8px; }
 .stage-opt { position: relative; padding: 12px 16px; font-size: 14px; min-width: 120px; text-align: left; }
-.stage-opt.ghost[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
-/* The default is what ↵ accepts. Stages whose answer is evidence never have one. */
-.stage-opt.is-default { outline: 2px solid var(--accent); outline-offset: 2px; }
-.stage-opt.next:not(.ghost):not(.danger) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
-.stage-opt.is-default.next:not(.ghost):not(.danger) { background: var(--panel-2); }
+.stage-opt.ghost[aria-pressed="true"] { border-color: var(--selection); color: var(--text); }
+/* The default is what ↵ accepts, marked with a keycap and a firmer border, not an outline: an
+   outline is what focus looks like. Stages whose answer is evidence never have one. */
+.stage-opt.is-default { border-color: var(--dim) !important; }
+.default-key {
+  margin-left: 8px; font: 600 10.5px/1 ui-monospace, Menlo, monospace; color: var(--dim);
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; background: var(--panel);
+}
+.stage-opt.next:not(.ghost):not(.danger) { background: var(--raised); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+.stage-opt.is-default.next:not(.ghost):not(.danger) { background: var(--raised); }
 .opt-sub { font-weight: 400; font-size: 11px; opacity: .7; margin-left: 4px; }
 /* A side and slot under a Pokémon's name: kept on one line, the name cut first. Flex so the cut
    name sits on the text's baseline, which an inline-block with overflow hidden does not. */
@@ -546,17 +667,23 @@ main:has(> .battle-page) { max-width: 1600px; }
 .wp-line { justify-content: space-between; margin-bottom: 6px; }
 .wp-num.big { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .gate-tag-row { gap: 6px; }
-.gate-tag { font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 999px; border: 1px solid; }
-.gate-tag.ok { color: var(--good); border-color: #2d5a3f; }
-.gate-tag.warn { color: var(--warn); border-color: #4a3d24; }
-.gate-tag.bad { color: var(--bad); border-color: #5a2d2d; }
+.gate-tag {
+  font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 999px; border: 1px solid;
+  color: var(--tone); border-color: color-mix(in srgb, var(--tone) 45%, var(--panel));
+}
+.gate-tag.ok { --tone: var(--good); }
+.gate-tag.ok::before { content: "✓ "; }
+.gate-tag.warn { --tone: var(--warn); }
+.gate-tag.warn::before { content: "! "; }
+.gate-tag.bad { --tone: var(--bad); }
+.gate-tag.bad::before { content: "× "; }
 
 .info { position: relative; display: inline-flex; }
 .info-btn { width: 24px; height: 24px; font-size: 13px; }
 .info-pop {
   position: absolute; z-index: 20; top: calc(100% + 6px); width: min(360px, 80vw);
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .45); font-size: 12px; color: var(--dim); text-align: left;
+  box-shadow: 0 10px 30px var(--shadow); font-size: 12px; color: var(--dim); text-align: left;
 }
 .info-pop.right { right: 0; }
 .info-pop.left { left: 0; }
@@ -570,7 +697,7 @@ main:has(> .battle-page) { max-width: 1600px; }
   flex: 1; min-width: 6px; max-width: 28px; padding: 0 0 14px; background: transparent; border: 0;
   display: flex; flex-direction: column; justify-content: flex-end; position: relative;
 }
-.curve-bar > i { display: block; width: 100%; background: var(--accent); opacity: .7; border-radius: 2px 2px 0 0; }
+.curve-bar > i { display: block; width: 100%; background: var(--p1); opacity: .7; border-radius: 2px 2px 0 0; }
 .curve-bar:hover > i, .curve-bar[aria-current="true"] > i { opacity: 1; }
 .curve-bar[aria-current="true"] { outline: 1px solid var(--text); outline-offset: 1px; }
 .curve-turn { position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; color: var(--dim); text-align: center; }
@@ -599,12 +726,12 @@ main:has(> .battle-page) { max-width: 1600px; }
   .state-row .board-hp, .st-chips { grid-column: 1 / -1; }
 }
 /* The four standings, told apart at a glance: in play, gone, never coming, and not yet known. */
-.st-field .st-label { color: var(--accent); }
-.st-fainted .st-name { text-decoration: line-through; color: var(--dim); }
-.st-fainted { opacity: .7; }
-.st-out { opacity: .38; }
+.st-field .st-label { color: var(--text); font-weight: 650; }
+.st-fainted, .st-fainted .st-pct, .st-fainted .st-label { color: var(--faint); }
+.st-fainted .st-name { text-decoration: line-through; color: var(--faint); }
+.st-out, .st-out .st-name, .st-out .st-label, .st-out .chip { color: var(--ghost); }
 .st-out .board-hp.empty { border-style: solid; }
-.st-unknown { opacity: .7; }
+.st-unknown, .st-unknown .st-label { color: var(--faint); }
 .st-unknown .st-label { font-style: italic; }
 .worked-out { margin-top: 8px; }
 .worked-out summary { cursor: pointer; }
@@ -616,31 +743,31 @@ main:has(> .battle-page) { max-width: 1600px; }
    * the filled button, which logs what is selected. */
 .stage-opt.next::after { content: "›"; margin-left: 10px; opacity: .45; font-weight: 400; }
 .stage-opt.next.danger::after { content: none; }
-button.commit { background: var(--accent); color: #07101f; border: 0; font-weight: 650; }
-button.commit:disabled { background: var(--panel-2); color: var(--dim); border: 1px dashed var(--line); opacity: 1; }
+button.commit { background: var(--primary); color: var(--on-primary); border: 0; font-weight: 650; }
+button.commit:disabled { background: var(--raised); color: var(--dim); border: 1px dashed var(--line); opacity: 1; }
 .stage-opt.commit { min-width: 160px; }
 
 button.choice {
   display: inline-flex; align-items: center; gap: 8px; text-align: left;
-  background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 500;
+  background: var(--raised); color: var(--text); border: 1px solid var(--line); font-weight: 500;
 }
 button.choice::before {
   content: ""; flex: none; width: 14px; height: 14px; border-radius: 50%;
   border: 2px solid var(--dim); box-sizing: border-box;
 }
 button.choice.check::before { border-radius: 3px; }
-button.choice[aria-checked="true"] { border-color: var(--accent); background: rgba(106, 169, 255, .14); }
+button.choice[aria-checked="true"] { border-color: var(--selection); background: color-mix(in srgb, var(--text) 7%, var(--raised)); }
 button.choice[aria-checked="true"]::before {
-  border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px var(--panel-2);
+  border-color: var(--selection); background: var(--selection); box-shadow: inset 0 0 0 2px var(--raised);
 }
-button.choice.check[aria-checked="true"]::before { box-shadow: none; content: "✓"; color: #07101f; font-size: 11px; line-height: 10px; text-align: center; }
+button.choice.check[aria-checked="true"]::before { box-shadow: none; content: "✓"; color: var(--raised); font-size: 11px; line-height: 10px; text-align: center; }
 button.choice:disabled { opacity: .4; }
 
 .order-badge {
   display: inline-block; min-width: 18px; height: 18px; border-radius: 9px; margin-right: 6px;
-  background: var(--accent); color: #07101f; font: 700 11px/18px ui-monospace, Menlo, monospace; text-align: center;
+  background: var(--text); color: var(--bg); font: 700 11px/18px ui-monospace, Menlo, monospace; text-align: center;
 }
-.q-batch { display: flex; flex-direction: column; margin-bottom: 10px; }
+.q-batch { display: flex; flex-direction: column; margin-bottom: 10px; padding: 2px 12px 10px; }
 .q-batch .q-card.answered .q-prompt { color: var(--text); }
 .q-confirm { margin-top: 10px; gap: 12px; }
 .q-confirm .commit { padding: 11px 18px; }
@@ -656,20 +783,20 @@ button.choice:disabled { opacity: .4; }
 .pending-list li { padding: 2px 0; }
 .pending-list .link { margin-left: 10px; font-size: 12px; color: var(--dim); }
 .typed-move input[aria-invalid="true"] { border-color: var(--bad); }
-.q-card.knock-on { margin-left: 18px; padding-left: 12px; border-left: 2px solid #2d4467; }
+.q-card.knock-on { margin-left: 18px; padding-left: 12px; border-left: 2px solid var(--line-strong); }
 .wp-band-note { margin-top: 6px; line-height: 1.45; }
-.wp-key.band { display: inline-block; width: 14px; height: 8px; border-radius: 2px; background: rgba(106, 169, 255, .28); vertical-align: 0; }
+.wp-key.band { display: inline-block; width: 14px; height: 8px; border-radius: 2px; background: color-mix(in srgb, var(--p1) 30%, var(--track)); vertical-align: 0; }
 .follows { margin: -4px 0 8px; }
 
 /* A Bo3: the next game, and each game's line. */
-.series-next { border-color: var(--accent); }
+.series-next { border-color: var(--selection); }
 .series-games { display: flex; flex-direction: column; gap: 6px; }
 .series-game {
   display: grid; grid-template-columns: 64px 90px 1fr; gap: 8px; align-items: baseline;
   padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--text);
-  background: var(--panel-2); text-decoration: none;
+  background: var(--raised); text-decoration: none;
 }
-.series-game.current { border-color: var(--accent); }
+.series-game.current { border-color: var(--selection); }
 .series-game-n { font-weight: 600; }
 @media (max-width: 520px) { .series-game { grid-template-columns: 1fr; gap: 2px; } }
 
@@ -679,7 +806,7 @@ button.choice:disabled { opacity: .4; }
 @media (max-width: 720px) { .sheet-cards { grid-template-columns: 1fr; } }
 .sheet-card {
   display: flex; flex-direction: column; gap: 6px; padding: 8px;
-  border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); min-width: 0;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--raised); min-width: 0;
 }
 .sheet-card.empty { background: transparent; border-style: dashed; }
 .sheet-head { display: flex; align-items: center; gap: 8px; }
@@ -689,8 +816,8 @@ button.choice:disabled { opacity: .4; }
 .sheet-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .sheet-card input { width: 100%; min-width: 0; padding: 6px 8px; }
 .sheet-card input.unknown { border-color: var(--bad); }
-.nature-arrows .up { color: var(--bad); }
-.nature-arrows .down { color: var(--accent); }
+.nature-arrows .up { color: var(--stat-up); }
+.nature-arrows .down { color: var(--stat-down); }
 .sheet-import { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .sheet-drop { border: 1px dashed var(--line); border-radius: 6px; padding: 14px 12px; text-align: center; font-size: 13px; color: var(--dim); }
 .sheet-drop.over { border-color: currentColor; color: inherit; }
@@ -730,7 +857,7 @@ main:has(> .watch-page) { max-width: none; }
 .watch-flag { margin: 6px 2px 0; gap: 8px; }
 .watch-reading { margin: 6px 2px 0; display: grid; gap: 2px; }
 .watch-reading code { font-size: 0.95em; }
-.manual-link:hover, .manual-toggle .link:hover { color: var(--accent); }
+.manual-link:hover, .manual-toggle .link:hover { color: var(--text); }
 .manual-link, .manual-toggle .link { color: var(--dim); }
 .manual-toggle { justify-content: flex-end; margin: 0 2px 4px; }
 /* Asks for the start once both sheets are whole; sticky, so it is seen from anywhere in the forms. */
@@ -759,8 +886,9 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .h2-inline.bright { color: var(--text); }
 .p1 { --side: var(--p1); }
 .p2 { --side: var(--p2); }
-.chip.field.p1 { color: var(--p1); border-color: #2d4467; }
-.chip.field.p2 { color: var(--p2); border-color: #4a3d24; }
+.chip.field.p1 { color: var(--p1); border-color: color-mix(in srgb, var(--p1) 45%, var(--panel)); }
+.chip.field.p2 { color: var(--p2); border-color: color-mix(in srgb, var(--p2) 45%, var(--panel)); }
+.chip-side { font-weight: 650; max-width: 10ch; margin-right: 4px; vertical-align: bottom; }
 
 /* The number: one, the size of the question; the split bar in the two players' colours. */
 .wb-win-head { display: flex; align-items: baseline; gap: 8px; }
@@ -776,11 +904,11 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-curve { margin-top: 8px; }
 .wb-curve-plot { position: relative; height: 56px; }
 .wb-curve-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.wb-curve-plot polyline { fill: none; stroke: #7d849a; stroke-width: 2; stroke-linejoin: round; }
+.wb-curve-plot polyline { fill: none; stroke: var(--faint); stroke-width: 2; stroke-linejoin: round; }
 .wb-curve-plot line.mid { stroke: var(--line); stroke-dasharray: 3 3; }
 .wb-dot {
   position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; padding: 0; border-radius: 50%;
-  background: #7d849a; border: 0; cursor: pointer;
+  background: var(--faint); border: 0; cursor: pointer;
 }
 .wb-dot:hover, .wb-dot[aria-current="true"] { background: var(--text); outline: 2px solid var(--text); outline-offset: 1px; }
 .wb-dot.engine { width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; background: var(--p1); cursor: default; }
@@ -792,10 +920,10 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-field-head { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .wb-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .wb-card {
-  background: var(--panel-2); border: 1px solid var(--line); border-top: 2px solid var(--side);
+  background: var(--raised); border: 1px solid var(--line); border-top: 2px solid var(--side);
   border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; min-width: 0;
 }
-.wb-card.selected { border-color: var(--accent); }
+.wb-card.selected { outline: 2px solid var(--selection); outline-offset: 1px; }
 .wb-card.empty { color: var(--dim); font-size: 12px; border-style: dashed; border-top-style: solid; justify-content: center; min-height: 60px; }
 .wb-card-name {
   display: flex; align-items: baseline; gap: 5px; min-width: 0; width: 100%;
@@ -809,31 +937,32 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-moves { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
 .wb-moves > li { position: relative; font-size: 12px; line-height: 18px; white-space: nowrap; overflow: visible; text-overflow: ellipsis; min-width: 0; }
 .wb-unknown {
-  background: none; border: 0; padding: 0; font: inherit; font-size: 12px; font-style: italic; color: #7d849a;
-  text-decoration: underline dotted #4b5164; text-underline-offset: 3px; cursor: help;
+  background: none; border: 0; padding: 0; font: inherit; font-size: 12px; font-style: italic; color: var(--faint);
+  text-decoration: underline dotted var(--line-strong); text-underline-offset: 3px; cursor: help;
 }
 .wb-likely {
   display: none; position: absolute; z-index: 30; left: 0; top: calc(100% + 4px); width: 240px;
   flex-direction: column; gap: 3px; white-space: normal;
-  background: #232734; border: 1px solid #3a4358; border-radius: 10px; padding: 9px 11px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  background: var(--raised-2); border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px; box-shadow: 0 10px 30px var(--shadow);
 }
 .wb-moves > li:hover .wb-likely, .wb-moves > li:focus-within .wb-likely { display: flex; }
 .wb-likely-row { display: grid; grid-template-columns: 96px 1fr 34px; gap: 8px; align-items: center; font-size: 12px; }
-.board-hp > i.likely { background: var(--p2); }
+.board-hp > i.likely { background: var(--side, var(--dim)); }
 /* What being on the field says about its next move: a lock, a first turn, a Protect that may fail. */
 .chip.flag { font-weight: 600; }
-.chip.flag.lock { color: var(--text); border-color: #c9cedb; background: #2a2e3b; }
-.chip.flag.go { color: var(--good); border-color: #2d5a3f; }
-.chip.flag.warn { color: var(--warn); border-color: #4a3d24; }
-.wb-moves > li.locked { font-weight: 650; background: #2a2e3b; border-radius: 4px; margin: 0 -4px; padding: 0 4px; }
-.wb-moves > li.barred { color: #5c6275; }
+.chip.flag.lock { color: var(--text); border-color: var(--dim); background: var(--raised-2); }
+.chip.flag.go { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, var(--panel)); }
+.chip.flag.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--panel)); }
+.chip.flag.warn::before { content: "! "; }
+.wb-moves > li.locked { font-weight: 650; background: var(--raised-2); border-radius: 4px; margin: 0 -4px; padding: 0 4px; }
+.wb-moves > li.barred { color: var(--ghost); }
 
 /* Speed: ranges on one axis; hatched is everything its nature and points allow, solid is narrowed. */
 .wb-speed { border-top: 1px solid var(--line); padding-top: 7px; display: flex; flex-direction: column; gap: 3px; }
 .wb-speed-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
 .wb-speed-row { display: grid; grid-template-columns: 104px 1fr 56px; gap: 8px; align-items: center; height: 13px; }
 .wb-speed-name { font-size: 11px; font-weight: 600; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--side); }
-.wb-speed-track { position: relative; height: 8px; background: #0e1015; border-radius: 3px; }
+.wb-speed-track { position: relative; height: 8px; background: var(--track); border-radius: 3px; }
 .wb-speed-track > i {
   position: absolute; top: 0; bottom: 0; border-radius: 3px; border: 1px solid var(--side);
   background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--side) 60%, transparent) 0 2px, transparent 2px 5px);
@@ -842,8 +971,8 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-speed-range { font-size: 10px; }
 .wb-pairs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .wb-pair { font-size: 10.5px; line-height: 17px; padding: 0 7px; border-radius: 5px; white-space: nowrap; }
-.wb-pair.decided { background: rgba(106, 169, 255, .15); border: 1px solid var(--accent); color: var(--text); }
-.wb-pair.open { border: 1px dashed #3a4358; color: var(--dim); }
+.wb-pair.decided { background: var(--raised); border: 1px solid var(--line-strong); color: var(--text); }
+.wb-pair.open { border: 1px dashed var(--line-strong); color: var(--dim); }
 
 /* The turn as it happened, this one and the last, each line with the video time it was read at. */
 .wb-log-head { gap: 8px; margin-bottom: 2px; }
@@ -854,7 +983,7 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
   flex: 1; text-align: left; background: transparent; border: 0; border-radius: 6px;
   color: var(--text); font-weight: 400; font-size: 12.5px; padding: 2px 4px;
 }
-.wb-line:hover { background: var(--panel-2); }
+.wb-line:hover { background: var(--raised); }
 .wb-lines.prev .wb-line { color: var(--dim); font-size: 12px; }
 .wb-lines > li.bad .turn-check { color: var(--bad); }
 .wb-time { font-size: 10.5px; flex: none; }
@@ -867,13 +996,15 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-mini {
   box-sizing: border-box; padding: 4px 8px; border-radius: 7px; min-width: 0; gap: 2px;
   display: flex; flex-direction: column; justify-content: space-between;
-  background: var(--panel-2); border: 1px solid var(--line);
+  background: var(--raised); border: 1px solid var(--line);
 }
 .wb-mini.st-field { background: var(--panel); border-color: var(--side); }
-.wb-mini.st-fainted { opacity: .6; }
-.wb-mini.st-fainted .wb-mini-name { text-decoration: line-through; color: var(--dim); }
-.wb-mini.st-out { opacity: .4; background: transparent; border-style: dashed; }
-.wb-mini.st-unknown { opacity: .7; border-style: dashed; }
+.wb-mini.st-fainted, .wb-mini.st-fainted .mono { color: var(--faint); }
+.wb-mini.st-fainted .wb-mini-name { text-decoration: line-through; color: var(--faint); }
+.wb-mini.st-out { background: transparent; border-style: dashed; color: var(--ghost); }
+.wb-mini.st-out .wb-mini-state, .wb-mini.st-out .wb-mini-set { color: var(--ghost); }
+.wb-mini.st-unknown { border-style: dashed; color: var(--faint); }
+.wb-mini.st-unknown .wb-mini-name { font-style: italic; font-weight: 500; }
 .wb-mini-top { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
 .wb-mini-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-mini.st-field .wb-mini-name { font-weight: 700; }

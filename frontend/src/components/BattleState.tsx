@@ -66,7 +66,7 @@ function SideState({ view, side, own, title, extra }: {
       </div>
       <div className="state-rows">
         {rows.map(({ m, st }) => {
-          const boosts = STAT_ORDER.filter((k) => m.boosts[k]).map((k) => `${k} ${m.boosts[k] > 0 ? "+" : ""}${m.boosts[k]}`);
+          const boosts = STAT_ORDER.filter((k) => m.boosts[k]).map((k) => `${m.boosts[k] > 0 ? "▲" : "▼"} ${k} ${m.boosts[k] > 0 ? "+" : ""}${m.boosts[k]}`);
           const sp = !own ? spreads.get(m.species) : undefined;
           // A set the sheet gives whole has nothing left to rank, and whether the corpus ever saw
           // it is not news. One set left is a set this battle has pinned: nothing open either.

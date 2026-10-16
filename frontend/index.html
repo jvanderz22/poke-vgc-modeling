@@ -3,8 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>VGC Companion</title>
+    <!-- The theme before the first paint; src/theme.ts takes over from here and uses the same rule. -->
+    <script>
+      (function () {
+        var pref = null;
+        try { pref = localStorage.getItem("vgc:theme"); } catch (e) {}
+        var theme = pref === "light" || pref === "dark" ? pref
+          : window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.setAttribute("data-bs-theme", theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

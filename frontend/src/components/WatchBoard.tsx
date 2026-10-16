@@ -189,8 +189,10 @@ const fieldName = (id: string, name: Name) => PRETTY[toId(id)] ?? name(id);
 function Condition({ id, view, side, name }: { id: string; view: LiveView; side?: Side; name: Name }) {
   const t = view.timers?.find((x) => x.id === id && (x.side ?? undefined) === side);
   const why = t && `Up through turn ${t.last}${t.by ? `, from ${t.by}` : ""}${t.extended_by ? ` (${name(t.extended_by)})` : ""}`;
+  const who = side && sideNames(view)[side];
   return (
-    <span className={`chip field${side ? ` ${side}` : ""}`} title={why}>
+    <span className={`chip field${side ? ` ${side}` : ""}`} title={who ? `${who}${why ? `. ${why}` : ""}` : why}>
+      {who && <span className="chip-side side-name">{who}</span>}
       {fieldName(id, name)}{t && <> · {t.left} left</>}
     </span>
   );
@@ -240,7 +242,7 @@ function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
   view: LiveView; mon: LiveMon; side: Side; slot: number; who: string; name: Name;
   selected: boolean; onPick?: () => void;
 }) {
-  const boosts = Object.entries(mon.boosts).filter(([, n]) => n).map(([k, n]) => `${BOOSTS[k] ?? k} ${n > 0 ? "+" : "−"}${Math.abs(n)}`);
+  const boosts = Object.entries(mon.boosts).filter(([, n]) => n).map(([k, n]) => `${n > 0 ? "▲" : "▼"} ${BOOSTS[k] ?? k} ${n > 0 ? "+" : "−"}${Math.abs(n)}`);
   const known = mon.moves.length ? mon.moves : mon.moves_used;
   const likely = view.menu[side].actives.find((a) => a?.slot === slot)?.likely ?? [];
   const unknown = Math.max(0, 4 - known.length);
