@@ -143,7 +143,10 @@ correct an entry by hand (undo, re-enter) and the reader takes the journal as it
 reads on from there. Rewinding skips frames until the video is past where the reading had got to,
 so nothing is read twice, unless it goes back to more than 2.5 s after the last thing written: that
 stretch is read again, so a second pass picks up what the first missed. Skipping ahead leaves a gap
-that isn't read; the page lists it and the review log keeps it. **Stop reading the battle** writes out what the reader still held (a move
+that isn't read; the page lists it and the review log keeps it. A hidden tab or a covered window
+isn't painted, so the capture stops while the video plays on. A picture that stays the same to the
+pixel for 1.5 s of playing video is held back rather than sent as the moments it isn't, and once it
+moves again the page takes the video back to where it stopped and says so under the player. **Stop reading the battle** writes out what the reader still held (a move
 waiting on its results). A reading lives in the server's memory: a restart ends it, and reading
 again on the same battle carries on from its journal. The reader knows one broadcast layout
 (Louisville's, [video-findings](video-findings.md)) and is unscored until PLAN-video step 3.

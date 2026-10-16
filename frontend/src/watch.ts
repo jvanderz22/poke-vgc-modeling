@@ -241,7 +241,7 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
       const { draw, mask, ocr } = shot.ms;
       // Taking the picture and handing it to the worker and back: the rest of the time.
       const take = performance.now() - began - draw - mask - ocr;
-      return { jpeg: shot.blob, read: shot.read, ms: { take, ...shot.ms } };
+      return { jpeg: shot.blob, read: shot.read, sig: shot.sig, ms: { take, ...shot.ms } };
     },
     startOcr: async (config) => {
       const done = await ask({ kind: "ocr", config });
@@ -323,16 +323,29 @@ const BATTLE_INTERVAL_MS = 250;
 /** The reader works at 1200 wide (`screen.WORK_WIDTH`); a larger frame only costs upload. */
 const BATTLE_WIDTH = 1200;
 
-/** A battle frame, what the page read off it, and where the time went (`take` is the picture
- *  being taken and passed to the worker). */
-export type BattleShot = { jpeg: Blob; read: RegionLines | null; ms: FrameMs & { take: number } };
+/** A battle frame, what the page read off it, a hash of its pixels, and where the time went
+ *  (`take` is the picture being taken and passed to the worker). */
+export type BattleShot = { jpeg: Blob; read: RegionLines | null; sig: number; ms: FrameMs & { take: number } };
+
+/** A picture the same to the pixel for this long while the video plays is a capture that has
+ *  stopped: a hidden tab or a covered window isn't painted, though the video plays on. The
+ *  broadcast itself never holds that still (over 300 s of a game, one frame step at most). */
+const STALLED_S = 1.5;
 
 /** Stream frames for the battle reader, each with the video time it shows. A frame goes only once
  *  the last has been answered, so a slow host reads fewer frames instead of falling behind, and
- *  none goes while the video is paused (`time` gives null). Returns the stopper. */
+ *  none goes while the video is paused (`time` gives null).
+ *
+ *  A picture that stops changing while the video plays (STALLED_S) is not sent as the moments it
+ *  isn't. Once it moves again, `onStalled` is told when it stopped, to take the video back there:
+ *  the reader reads a rewind past what it has written again, so nothing in between is lost.
+ *  Returns the stopper. */
 export function streamFrames(cap: Capture, time: () => number | null,
-                             onFrame: (shot: BattleShot, videoS: number) => Promise<void>): () => void {
+                             onFrame: (shot: BattleShot, videoS: number) => Promise<void>,
+                             onStalled: (from: number, to: number) => void): () => void {
   let stopped = false;
+  let last: { sig: number; since: number } | null = null;  // the picture, and when it was first seen
+  let stalled: number | null = null;  // when the picture stopped changing, while frames are held
   const loop = async () => {
     while (!stopped) {
       const began = Date.now();
@@ -341,7 +354,21 @@ export function streamFrames(cap: Capture, time: () => number | null,
         let shot: BattleShot | null = null;
         try { shot = await cap.battleFrame(0.85, BATTLE_WIDTH); } catch (e) { console.error(e); }
         if (stopped) break;
-        if (shot) try { await onFrame(shot, at); } catch { /* reported by onFrame; keep reading */ }
+        if (shot) {
+          const same = last !== null && shot.sig === last.sig;
+          if (last && same && at - last.since > STALLED_S) {
+            stalled ??= last.since;
+          } else if (!same && stalled !== null) {
+            // Moving again: this frame isn't sent; the video goes back to where it stopped.
+            const from = stalled;
+            stalled = last = null;
+            onStalled(from, at);
+            shot = null;
+          } else if (!last || !same || at < last.since) {
+            last = { sig: shot.sig, since: at };
+          }
+        }
+        if (shot && stalled === null) try { await onFrame(shot, at); } catch { /* reported by onFrame; keep reading */ }
       }
       await new Promise((ok) => window.setTimeout(ok, Math.max(0, BATTLE_INTERVAL_MS - (Date.now() - began))));
     }

@@ -19,7 +19,7 @@ export type FrameMs = { draw: number; mask: number; ocr: number };
 export type FrameDone =
   | { id: number; blob: Blob }
   | { id: number; thumb: Float32Array }
-  | { id: number; blob: Blob; read: RegionLines | null; ms: FrameMs }
+  | { id: number; blob: Blob; read: RegionLines | null; sig: number; ms: FrameMs }
   | { id: number; ocr: true }
   | { id: number; error: string };
 
@@ -28,6 +28,15 @@ let canvas: OffscreenCanvas | null = null;
 // shared canvas meanwhile would be the picture it encodes.
 let battleCanvas: OffscreenCanvas | null = null;
 let reader: import("./ocr/screen.ts").RegionReader | null = null;
+
+/** A hash of every pixel: the same number only for the same picture (`streamFrames` tells a
+ *  capture that has stopped by it). About 2 ms on a 1200-wide frame. */
+function signature(px: Uint8ClampedArray): number {
+  const words = new Uint32Array(px.buffer, px.byteOffset, px.byteLength >> 2);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < words.length; i++) h = Math.imul(h ^ words[i], 0x01000193);
+  return h >>> 0;
+}
 
 function sized(c: OffscreenCanvas | null, w: number, h: number): OffscreenCanvas {
   if (!c) return new OffscreenCanvas(w, h);
@@ -43,12 +52,13 @@ async function battle(job: Extract<FrameJob, { kind: "battle" }>): Promise<Frame
   battleCanvas = sized(battleCanvas, bitmap.width, bitmap.height);
   const ctx = battleCanvas.getContext("2d", { willReadFrequently: true })!;
   ctx.drawImage(bitmap, 0, 0);
-  const pixels = reader ? ctx.getImageData(0, 0, bitmap.width, bitmap.height) : null;
+  const pixels = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+  const sig = signature(pixels.data);
   const blob = await battleCanvas.convertToBlob({ type: "image/jpeg", quality: job.quality });
   const draw = performance.now() - began;
-  if (!reader || !pixels) return { id: job.id, blob, read: null, ms: { draw, mask: 0, ocr: 0 } };
+  if (!reader) return { id: job.id, blob, read: null, sig, ms: { draw, mask: 0, ocr: 0 } };
   const read = await reader.read({ data: pixels.data, width: pixels.width, height: pixels.height, channels: 4 });
-  return { id: job.id, blob, read, ms: { draw, ...reader.last } };
+  return { id: job.id, blob, read, sig, ms: { draw, ...reader.last } };
 }
 
 self.onmessage = async ({ data: job }: MessageEvent<FrameJob>) => {

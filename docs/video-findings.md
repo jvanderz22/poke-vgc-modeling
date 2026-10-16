@@ -300,6 +300,27 @@ the server's reader gave the same 22 of those 23, from the same 327 regions read
 **Download.** The models are 31 MB and onnxruntime-web's WASM 27 MB (6.7 MB compressed), once; the
 models' URLs carry their hash and are cached for good. Loading them onto the GPU took 2.5–2.7 s.
 
+## A capture that stops (2026-10-16)
+
+Watched in production (Carson Confer vs Paul Chua, game 1, omC2XtMO8yk): the Pelipper sent out at
+the end of turn 3 (2349.8 s) was never written, and nor was anything else until 2372.9: not its
+Drizzle, the rain, or turn 4's decision point. Every frame was answered, at a normal rate, and the
+review log had nothing for the stretch. Read offline, on the same frames, by the server's OCR and by
+the page's (`rapid.ts`, in Node), the switch, the answer and the turn were all written. Holding one
+picture from 2336 to 2373 while the times ran on gave exactly the production journal: nothing
+until the first fresh frame, whose decision point wrote the Earth Power that had been waiting since
+2331.8. So the picture had stopped and the player's clock had not. A hidden tab or a covered window
+isn't painted, and its capture stops with it.
+
+The broadcast itself never holds that still: over 300 s of the game (2070–2372 s, 4 frames a
+second), no picture was the same to the pixel for more than one frame step. The page now hashes each
+battle frame, holds back one unchanged for 1.5 s of playing video, and takes the video back to where
+it stopped once it moves.
+
+A second pass, rewound to 2340, read nothing either: the reader skipped every frame before where it
+had got to (2372.9). A rewind to more than 2.5 s past the last thing written is now read again from
+the journal. A message is up for 2 s at most, so nothing written is read twice.
+
 ## Decision gate (step 1)
 
 This source passes: the message line, the nameplates and the HP numbers are all readable. Step 2

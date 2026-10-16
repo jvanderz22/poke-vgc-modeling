@@ -136,6 +136,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   const [battleReading, setBattleReading] = useState(true);
   const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
+  // The last stretch the capture stopped for while the video played, which it went back to read.
+  const [stalled, setStalled] = useState<{ from: number; to: number } | null>(null);
   const answered = useRef<number[]>([]);
   // Where the last few frames' time went, to say why reading is slow when it is.
   const spent = useRef<Spent[]>([]);
@@ -240,11 +242,14 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         setReadError(e instanceof ApiError ? e.message : String(e));
         throw e;
       }
+    }, (from, to) => {
+      player.current?.seekTo(from, true);
+      setStalled({ from, to });
     });
   }, [capturing, battleReading, battle, route.video, reg, onRead]);
 
   // A different battle (the next game of a Bo3) starts unread.
-  useEffect(() => { setBattleReading(true); setReadStatus(null); }, [battle]);
+  useEffect(() => { setBattleReading(true); setReadStatus(null); setStalled(null); }, [battle]);
   const left = readStatus?.left;
   useEffect(() => { if (left) onLeft(left); }, [left, onLeft]);
   // Under SLOW_RATE frames a second a short message can go by unread: said at the top of the
@@ -412,7 +417,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {battle && ((capturing && battleReading) || readStatus) && (
-        <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} where={where} error={readError} ocr={ocr} />
+        <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} where={where} error={readError} ocr={ocr}
+                     stalled={stalled} />
       )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
@@ -425,9 +431,10 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
 }
 
 /** Where the battle reader stands: what it read last, how fast, and what it couldn't read. */
-function ReadingLine({ status, on, rate, where, error, ocr }: {
+function ReadingLine({ status, on, rate, where, error, ocr, stalled }: {
   status: ReadStatus | null; on: boolean; rate: number; where: string; error: string | null;
   ocr: { where: "loading" | "page" | "server"; why?: string } | null;
+  stalled: { from: number; to: number } | null;
 }) {
   const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   return (
@@ -459,6 +466,12 @@ function ReadingLine({ status, on, rate, where, error, ocr }: {
             <div className="warn-text">
               Under 2 frames a second: a short message can be missed.
               {where && <> A frame takes {where}.</>}
+            </div>
+          )}
+          {stalled && (
+            <div className="warn-text">
+              The picture stopped from {clock(stalled.from)} to {clock(stalled.to)} while the video played (a hidden
+              tab or a covered window isn't captured), so the video went back to {clock(stalled.from)} to read it.
             </div>
           )}
           {status.behind && status.read_to !== null && (
