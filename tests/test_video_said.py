@@ -162,6 +162,13 @@ def test_hospitality_names_the_one_healed_and_its_host(dex):
     assert parse("The opposing Floette drank down all the matcha that Sinistcha made!", v).who[1] == Who("R", "Sinistcha")
 
 
+def test_a_heal_that_names_no_source(dex, vocab):
+    # Seen in production (2026-10-16): Grassy Terrain's heal at the end of the turn.
+    s = parse("Sneasler had its HP restored.", vocab)
+    assert (s.kind, s.who, s.data, s.provisional) == ("heal", (Who("L", "Sneasler"),), {"cause": "restored"}, False)
+    assert parse("The opposing Raichu had its HP restored.", vocab).who == (Who("R", "Raichu"),)
+
+
 def test_a_move_off_a_sheet_read_short_is_read_from_the_learnset(dex, vocab):
     # Round 6: the sheet reader left Knock Off blank on Tyranitar's card.
     right = [{"species": "Tyranitar", "item": "Tyranitarite", "moves": ["Protect", "Rock Slide", "Low Kick"]}]

@@ -511,8 +511,12 @@ class Assembler:
             elif (m.status or None) != s.data.get("status"):
                 self._write(t, {"kind": "status", "side": side, "slot": m.position, "status": s.data.get("status")})
         elif s.kind in ("chip", "heal"):
-            # What moves the HP is the plate that follows; the message says why.
-            self.hints.append((t, s.who[0], s.data["cause"]))
+            # What moves the HP is the plate that follows; the message says why. A heal that names
+            # no source, outside a move, is Grassy Terrain's when the grass is up.
+            cause = s.data["cause"]
+            if cause == "restored" and self.rp.state.terrain == "grassyterrain":
+                cause = "grassyterrain"
+            self.hints.append((t, s.who[0], cause))
             if s.kind == "heal" and s.data["cause"] == "hospitality":
                 # The host's ability announcing on arrival, said as a message: it answers the
                 # switch-in question as a banner would, and when is Speed evidence.

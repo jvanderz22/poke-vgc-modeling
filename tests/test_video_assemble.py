@@ -154,6 +154,24 @@ def test_hospitality_heals_the_partner_of_the_sinistcha_sent_in(reg):
     assert a.missed == [] and a.errors == []
 
 
+def test_a_plain_heal_under_grass_is_grassy_terrain(reg):
+    # Seen in production (2026-10-16): "Sneasler had its HP restored." at the end of the turn.
+    rows = LEADS + [
+        (186.0, "message", {"text": "Grass grew to cover the battlefield!"}),
+        (190.0, "message", {"text": "The opposing Raichu used Volt Tackle!"}),
+        (191.0, "plate", {"slot": "L0", "name": "Sneasler", "hp": 50}),
+        (195.0, "message", {"text": "Sneasler had its HP restored."}),
+        (196.0, "plate", {"slot": "L0", "name": "Sneasler", "hp": 56}),
+        (200.0, "choosing", {}),
+        *[(200.2, "plate", {"slot": s, "name": n, "hp": hp})
+          for s, n, hp in (("L0", "Sneasler", 56), ("L1", "Gardevoir", 100), ("R0", "Grimmsnarl", 100),
+                           ("R1", "Raichu", 100))],
+    ]
+    entries, a = _read(reg, rows)
+    assert {"kind": "heal", "side": "p1", "slot": 0, "pct": 56, "eot": "grassyterrain"} in entries
+    assert a.missed == [] and a.errors == []
+
+
 def test_a_number_nothing_explains_waits_for_the_still_plates(reg):
     # A plate sliding past during a switch read "Gardevoir 10%"; the decision point's plates say 100.
     entries, _ = _read(reg, LEADS + [

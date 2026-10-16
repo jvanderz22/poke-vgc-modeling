@@ -40,6 +40,7 @@ CONFIRMED = {
     "field:Psychic Terrain:on", "field:Psychic Terrain:off", "field:Electric Terrain:on",
     "field:RainDance:on", "field:RainDance:off", "field:Sandstorm:on", "side:Light Screen:on",
     "banner:item", "banner:ability", "forfeit_notice", "lost", "hospitality",
+    "restored",
 }
 
 # What starts and ends each field effect, as the game says it.
@@ -245,6 +246,9 @@ PATTERNS: list[tuple[str, str]] = [
     ("drain", r"^(?P<who>.+?) had its energy drained$"),
     # Sinistcha's Hospitality, on arrival: its ally gets back a quarter of its HP.
     ("hospitality", r"^(?P<who>.+?) drank down all the matcha that (?P<host>.+?) made$"),
+    # The game's plain heal, with no source named: Grassy Terrain at the end of the turn, or a move
+    # that heals (Heal Pulse, Life Dew). Which one is the assembler's to say, from the field.
+    ("restored", r"^(?P<who>.+?) had its HP restored$"),
     ("berry", r"^(?P<who>.+?) restored its HP using its (?P<item>.+)$"),
     ("sash", r"^(?P<who>.+?) hung on using its (?P<item>.+)$"),
     ("herb", r"^(?P<who>.+?) returned its stats to normal using its (?P<item>.+)$"),
@@ -383,6 +387,8 @@ def _read(pid: str, g: dict[str, str], vocab: Vocabulary, full: str) -> Said | N
         name = re.sub(r"(?i)^the opposing\s+", "", g["host"])
         host = _who(("the opposing " if w.side == "R" else "") + name, vocab)
         return said("heal", (w, host), cause="hospitality") if host else None
+    if pid == "restored":
+        return said("heal", (w,), cause="restored")
     if pid in ("went_back", "eject"):
         return said("withdraw", (w,), side=w.side)
     if pid in _SIMPLE:
