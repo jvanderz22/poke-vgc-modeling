@@ -820,6 +820,13 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-moves > li:hover .wb-likely, .wb-moves > li:focus-within .wb-likely { display: flex; }
 .wb-likely-row { display: grid; grid-template-columns: 96px 1fr 34px; gap: 8px; align-items: center; font-size: 12px; }
 .board-hp > i.likely { background: var(--p2); }
+/* What being on the field says about its next move: a lock, a first turn, a Protect that may fail. */
+.chip.flag { font-weight: 600; }
+.chip.flag.lock { color: var(--text); border-color: #c9cedb; background: #2a2e3b; }
+.chip.flag.go { color: var(--good); border-color: #2d5a3f; }
+.chip.flag.warn { color: var(--warn); border-color: #4a3d24; }
+.wb-moves > li.locked { font-weight: 650; background: #2a2e3b; border-radius: 4px; margin: 0 -4px; padding: 0 4px; }
+.wb-moves > li.barred { color: #5c6275; }
 
 /* Speed: ranges on one axis; hatched is everything its nature and points allow, solid is narrowed. */
 .wb-speed { border-top: 1px solid var(--line); padding-top: 7px; display: flex; flex-direction: column; gap: 3px; }

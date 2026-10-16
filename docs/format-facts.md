@@ -109,6 +109,23 @@ in Speed order relative to each other.
   in screen order with no default and recorded in the order clicked
   ([battle-entry-flows](battle-entry-flows.md)).
 
+## Durations
+
+### Five turns, eight only with the item, and a late start counts from the next turn
+
+Weather, terrain and screens last five turns, Tailwind four, Trick Room five. Damp Rock, Heat
+Rock, Smooth Rock and Icy Rock make a weather eight, Terrain Extender a terrain, Light Clay a
+screen, held by whatever put it up. An item nobody has seen is taken to be something else, as the
+game's own count would be: five until the item shows. A turn counts if its end is reached with the
+condition up, so one that goes up before turn 1 (a lead's Drizzle) or after a turn's end (a
+replacement's Psychic Surge) starts with the next turn.
+
+- **Source:** the rules; "assume five, eight if the held item does it" confirmed from play,
+  2026-10-16.
+- **In code:** `Replay.timers` (the turn each counts from and who put it up), `live.timers`. A
+  `field` or `side` tap names nobody, so the setter is the one Pokémon on that side with the
+  ability or the move for it, or nobody, which is five.
+
 ## A series
 
 ### A team is locked for a Bo3, Stat Points included

@@ -148,6 +148,15 @@ class Replay:
     guarded: set[tuple[str, str]] = field(default_factory=set)
     guarded_before: set[tuple[str, str]] = field(default_factory=set)
     shielded: set[tuple[str, str]] = field(default_factory=set)
+    # The turn each Pokémon last came in, keyed (side, species). Its first turn out is the one
+    # after, whether it led (turn 0), was a replacement or came in mid-turn: Fake Out works then.
+    came_in: dict[tuple[str, str], int] = field(default_factory=dict)
+    # A replacement has come in, so the turn's actions and end-of-turn effects are over: what goes
+    # up now (a replacement's Drizzle) is first counted down at the end of the next turn.
+    turn_over: bool = False
+    # Each field and side condition up, keyed ("weather" | "terrain" | "pseudo" | "side:p1", id):
+    # the turn it counts from (its first of five) and who put it up, where an entry says.
+    timers: dict[tuple[str, str], dict[str, Any]] = field(default_factory=dict)
     # What the replay did on its own after a move, by the move's journal index (Life Orb's recoil),
     # so the page can say so on the move's line.
     applied: dict[int, list[str]] = field(default_factory=dict)
@@ -292,7 +301,42 @@ def _apply_entry(rp: Replay, reg: Regulation, index: int, entry: dict[str, Any])
     if kind not in ENTRY_KINDS:
         raise EntryError(f"unknown kind {kind!r}")
     rp._index, rp._n = index, 0        # question ids are scoped to the entry that raised them
+    before, by = _conditions(rp.state), _setter(rp, entry)
     _HANDLERS[kind](rp, reg, entry)
+    after = _conditions(rp.state)
+    for key in before - after:
+        rp.timers.pop(key, None)
+    for key in after - before:
+        # Before turn 1, or once a replacement is in, the first end of turn it sees is the next.
+        late = not rp.state.started or rp.turn_over
+        rp.timers[key] = {"from": rp.state.turn + (1 if late else 0), "by": by}
+
+
+def _conditions(state: BattleState) -> set[tuple[str, str]]:
+    """Every field and side condition up, as `Replay.timers` keys them."""
+    out = {("pseudo", p) for p in state.pseudo}
+    if state.weather:
+        out.add(("weather", state.weather))
+    if state.terrain:
+        out.add(("terrain", state.terrain))
+    for sid, side in state.sides.items():
+        out |= {(f"side:{sid}", c) for c in side.conditions}
+    return out
+
+
+def _setter(rp: Replay, e: dict[str, Any]) -> tuple[str, str] | None:
+    """Who an entry says put a condition up, if anything it does does: the mover, the Pokémon
+    arriving, or the one whose ability a question was about. A `field` or `side` tap names nobody."""
+    kind = e.get("kind")
+    if kind in ("lead", "switch"):
+        return e["side"], e["species"]
+    if kind == "move":
+        m = rp.state.at(e["side"], int(e["slot"]))
+        return (e["side"], m.species) if m is not None else None
+    if kind == "answer":
+        q = next((x for x in rp.questions if x.id == e.get("question")), None)
+        return (q.side, q.species) if q is not None else None
+    return None
 
 
 def _qid(rp: Replay) -> str:
@@ -362,8 +406,13 @@ def _on_switch(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 
 def _bring_in(rp: Replay, reg: Regulation, side: str, slot: int, m: Mon) -> None:
+    # Only a replacement fills an empty slot once the battle is under way: a fainted Pokémon's
+    # place stays empty until the turn is over (`decision_point` reads the journal the same way).
+    if rp.state.started and rp.state.at(side, slot) is None:
+        rp.turn_over = True
     rp.state.switch_in(side, slot, m, m.forme)
     rp.last_in[(side, slot)] = m.species
+    rp.came_in[(side, m.species)] = rp.state.turn
     rp.tox_since.pop((side, m.species), None)
     if rp.state.started:
         # A Pokémon that comes in mid-turn does not act in it, and nothing is owed any more on a
@@ -403,6 +452,7 @@ def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
         if effect in rules.FIELD_MOVES and n >= since + rules.FIELD_TURNS:
             rp.state.set_pseudo(effect, False)
     rp.state.begin_turn(n)
+    rp.turn_over = False
     rp.acted, rp.moved, rp.awaiting = [], False, None
     rp.eot_done = set()
     rp.fx = None

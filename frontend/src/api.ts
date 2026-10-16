@@ -257,6 +257,19 @@ export type LiveMon = {
   moves: string[]; moves_used: string[];
   nature: string | null; stats: Record<string, number> | null;
   ability_unknown: string[];
+  /** On the field only (`live.on_field`): the move a Choice item holds it to, whether its next
+   *  move is its first since coming in (Fake Out works), and whether a Protect held the turn before. */
+  locked?: string | null;
+  first_turn_out?: boolean;
+  protected_last?: boolean;
+};
+
+/** A condition that runs out (`live.timers`): the turn it counts from, its last, and the turns it
+ *  has left counting this one. Five unless what put it up is known to hold the item that makes it
+ *  eight (`extended_by`). */
+export type Timer = {
+  what: "weather" | "terrain" | "pseudo" | "side"; side: "p1" | "p2" | null; id: string;
+  from: number; last: number; left: number; by: string | null; extended_by: string | null;
 };
 
 /** `follows` is what the move does to stats on its own once it connects (logged for you), and
@@ -441,6 +454,7 @@ export type LiveView = {
   journal: Entry[];
   sides: Record<"p1" | "p2", { mons: LiveMon[]; conditions: Record<string, number>; sheet: boolean }>;
   field: { weather: string | null; terrain: string | null; pseudo: Record<string, number> };
+  timers?: Timer[];
   menu: Record<"p1" | "p2", SideMenu>;
   questions: Question[];
   derived: string[];

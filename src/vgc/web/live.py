@@ -332,10 +332,96 @@ def series_view(reg: Regulation, blob: dict[str, Any], state) -> dict[str, Any] 
 
 # --- the screen ----------------------------------------------------------------------------
 
-def mon_view(state, m, own: bool) -> dict[str, Any]:
+CHOICE_ITEMS = {"choiceband", "choicespecs", "choicescarf"}
+PROTECTS = {"protect", "detect", "spikyshield", "kingsshield", "banefulbunker", "silktrap",
+            "burningbulwark", "obstruct"}
+
+
+def upcoming(rp: entry.Replay, sid: str, m) -> int:
+    """The turn this Pokémon chooses its next move for: this one while it has still to act in it,
+    else the next (it has acted, the turn is over, or the battle has not started)."""
+    st = rp.state
+    done = not st.started or rp.turn_over or (sid, m.species) in rp.acted
+    return st.turn + (1 if done else 0)
+
+
+def on_field(rp: entry.Replay, sid: str, m) -> dict[str, Any]:
+    """What only being on the field says about a Pokémon's next move.
+
+    `locked` is the move a Choice item (or Gorilla Tactics) holds it to: the last it used since
+    it came in, until it leaves. `first_turn_out` is that move being its first since it came in,
+    the only turn Fake Out and First Impression work. `protected_last` is a Protect that held on
+    the turn before: another straight after works one time in three."""
+    if m.state != "active":
+        return {"locked": None, "first_turn_out": False, "protected_last": False}
+    turn = upcoming(rp, sid, m)
+    came = rp.came_in.get((sid, m.species))
+    held = m.item in CHOICE_ITEMS or m.ability == "gorillatactics"
+    # `guarded` is this turn's Protects and `guarded_before` the last turn's; one used before it
+    # last came in was undone by the switch.
+    last = rp.guarded if turn == rp.state.turn + 1 else rp.guarded_before
+    return {
+        "locked": m.last_move if held and m.last_move else None,
+        "first_turn_out": came is not None and turn == came + 1,
+        "protected_last": (sid, m.species) in last and came is not None and came < turn - 1,
+    }
+
+
+# How many turns a condition lasts, counting the one it went up in (or, after the turn's end, the
+# next): what the game does when nothing extends it. The item that makes it eight, held by
+# whatever put it up.
+LASTS = {"weather": 5, "terrain": 5, "reflect": 5, "lightscreen": 5, "auroraveil": 5, "tailwind": 4,
+         "safeguard": 5, "mist": 5, "trickroom": 5, "magicroom": 5, "wonderroom": 5, "gravity": 5}
+EXTENDED_BY = {"raindance": "damprock", "sunnyday": "heatrock", "sandstorm": "smoothrock", "snow": "icyrock",
+               "reflect": "lightclay", "lightscreen": "lightclay", "auroraveil": "lightclay"}
+# What can put a weather or terrain up, for a `field` tap that does not say who did.
+SET_BY_MOVE = {"snow": "snowscape"}
+
+
+def _setter(rp: entry.Replay, what: str, cid: str, by: tuple[str, str] | None):
+    """The Pokémon that put a condition up: the one the entry named, else the only one on the side
+    it could have come from that has the ability or the move for it."""
+    from vgc.battle import rules
+
+    sides = [what[5:]] if what.startswith("side:") else ["p1", "p2"]
+    if by is not None:
+        return next((m for m in rp.state.sides[by[0]].mons if m.species == by[1]), None)
+    by_ability = {**rules.WEATHER_ON_START, **rules.TERRAIN_ON_START}
+    move = SET_BY_MOVE.get(cid, cid)
+    could = [m for sid in sides for m in rp.state.sides[sid].mons
+             if m.state not in ("unrevealed", "not_brought")
+             and (by_ability.get(m.ability or "") == cid or move in m.moves or move in m.moves_used)]
+    return could[0] if len(could) == 1 else None
+
+
+def timers(rp: entry.Replay) -> list[dict[str, Any]]:
+    """Each condition up that runs out, with its last turn and the turns it has left, counting the
+    one being played. Five (four for Tailwind) unless what put it up is known to hold the item that
+    makes it eight: an item nobody has seen is taken to be something else, as the game would."""
+    st = rp.state
+    now = st.turn + (1 if not st.started or rp.turn_over else 0)
+    out = []
+    for (what, cid), t in sorted(rp.timers.items()):
+        kind = what.split(":")[0]
+        lasts = LASTS.get(kind if kind in ("weather", "terrain") else cid)
+        if lasts is None or (kind == "weather" and cid not in EXTENDED_BY):
+            continue                      # Spikes, or a weather that lasts until its holder leaves
+        ext = "terrainextender" if kind == "terrain" else EXTENDED_BY.get(cid)
+        m = _setter(rp, what, cid, t["by"])
+        extended = ext is not None and m is not None and ext in (m.item, m.lost_item)
+        last = t["from"] + (8 if extended else lasts) - 1
+        if last < now:
+            continue                      # over, and the journal has not said so yet
+        out.append({"what": kind, "side": what[5:] if kind == "side" else None, "id": cid,
+                    "from": t["from"], "last": last, "left": last - now + 1,
+                    "by": m.species if m is not None else None, "extended_by": ext if extended else None})
+    return out
+
+
+def mon_view(state, m, own: bool, rp: entry.Replay | None = None, sid: str | None = None) -> dict[str, Any]:
     """One Pokémon as the screen shows it. `hp_exact` only for your own side, because that is all
     the cartridge gives you: real numbers for yours and a percentage for theirs."""
-    return {
+    return ({} if rp is None or sid is None else on_field(rp, sid, m)) | {
         "species": m.species, "forme": m.forme, "state": m.state, "slot": m.position,
         "hp": round(m.hp, 4), "hp_max": m.hp_max if own else None,
         "hp_exact": round(m.hp * m.hp_max) if own and m.hp_max else None,
@@ -855,12 +941,13 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "perspective": perspective(blob), "players": blob["setup"].get("names", {}),
         "turn": state.turn, "started": state.started, "ended": state.ended, "winner": state.winner,
         "entries": len(battle.journal), "journal": battle.journal,
-        "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
+        "sides": {sid: {"mons": [mon_view(state, m, sid == mine, battle.rp, sid) for m in state.sides[sid].mons],
                         "conditions": dict(sorted(state.sides[sid].conditions.items())),
                         "sheet": state.sides[sid].sheet}
                   for sid in ("p1", "p2")},
         "field": {"weather": state.weather, "terrain": state.terrain,
                   "pseudo": dict(sorted(state.pseudo.items()))},
+        "timers": timers(battle.rp),
         "menu": {sid: menu(reg, state, sid) for sid in ("p1", "p2")},
         "questions": [q.to_json() for q in battle.rp.questions],
         "derived": battle.rp.derived,

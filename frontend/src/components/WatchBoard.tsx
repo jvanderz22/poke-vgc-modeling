@@ -15,6 +15,8 @@ import { Info } from "./Popover";
 type Name = (id: string) => string;
 
 const pct = (x: number) => Math.round(x * 100);
+// Moves that work only on their user's first turn out.
+const FIRST_TURN_MOVES = new Set(["fakeout", "firstimpression"]);
 const BOOSTS: Record<string, string> = { atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe", accuracy: "Acc", evasion: "Eva" };
 const other = (s: Side): Side => (s === "p1" ? "p2" : "p1");
 
@@ -169,7 +171,7 @@ function Curve({ id, reg, view, route, navigate, engine }: {
       </div>
       <div className="wb-curve-turns">
         {points.map((p, i) => (
-          <span key={p.index} style={{ left: `${x(i)}%` }}>{live && i === points.length - 1 ? "now" : `T${p.turn}`}</span>
+          <span key={p.index} style={{ left: `${x(i)}%` }}>{i === points.length - 1 ? "now" : `T${p.turn}`}</span>
         ))}
       </div>
       {route.step !== null && (
@@ -179,33 +181,19 @@ function Curve({ id, reg, view, route, navigate, engine }: {
   );
 }
 
-/** How many turns a condition has left, this one included, from the turn it went up. Screens last
- *  eight with Light Clay, and while a side's items are not all known that is still possible. */
-const LASTS: Record<string, number> = {
-  reflect: 5, lightscreen: 5, auroraveil: 5, tailwind: 4, safeguard: 5, mist: 5,
-  trickroom: 5, gravity: 5, magicroom: 5, wonderroom: 5,
-};
-const CLAY = new Set(["reflect", "lightscreen", "auroraveil"]);
-
 /** A field or side condition by its own name (Rain, not the move Rain Dance that set it). */
 const fieldName = (id: string, name: Name) => PRETTY[toId(id)] ?? name(id);
 
-function turnsLeft(id: string, since: number, turn: number, mons: LiveMon[]): string | null {
-  const lasts = LASTS[id];
-  if (lasts == null) return null;
-  const left = (n: number) => since + n - turn;
-  if (CLAY.has(id)) {
-    if (mons.some((m) => m.item === "lightclay")) return left(8) > 0 ? `${left(8)}` : null;
-    const maybe = mons.some((m) => m.item === null && m.state !== "not_brought");
-    if (maybe) return `${Math.max(1, left(5))}–${left(8)}`;
-  }
-  return left(lasts) > 0 ? `${left(lasts)}` : null;
-}
-
-function Condition({ id, since, view, side, name }: { id: string; since: number; view: LiveView; side?: Side; name: Name }) {
-  const mons = side ? view.sides[side].mons : [];
-  const left = typeof since === "number" ? turnsLeft(id, since, view.turn, mons) : null;
-  return <span className={`chip field${side ? ` ${side}` : ""}`}>{fieldName(id, name)}{left && <> · {left} left</>}</span>;
+/** A condition, with the turns it has left (this one included) where it runs out: five, or eight
+ *  once what put it up is known to hold the item for it (`live.timers`). */
+function Condition({ id, view, side, name }: { id: string; view: LiveView; side?: Side; name: Name }) {
+  const t = view.timers?.find((x) => x.id === id && (x.side ?? undefined) === side);
+  const why = t && `Up through turn ${t.last}${t.by ? `, from ${t.by}` : ""}${t.extended_by ? ` (${name(t.extended_by)})` : ""}`;
+  return (
+    <span className={`chip field${side ? ` ${side}` : ""}`} title={why}>
+      {fieldName(id, name)}{t && <> · {t.left} left</>}
+    </span>
+  );
 }
 
 /** The field: the four Pokémon on it with all they are known to carry, the field and side
@@ -224,11 +212,11 @@ export function FieldPanel({ view, name, left, onPick, selected }: {
       <div className="wb-field-head">
         <span className="h2-inline">On the field</span>
         <span style={{ flex: 1 }} />
-        {view.field.weather && <span className="chip field">{fieldName(view.field.weather, name)}</span>}
-        {view.field.terrain && <span className="chip field">{fieldName(view.field.terrain, name)}</span>}
-        {Object.entries(view.field.pseudo).map(([id, since]) => <Condition key={id} id={id} since={since} view={view} name={name} />)}
-        {sides.flatMap((s) => Object.entries(view.sides[s].conditions).map(([id, since]) => (
-          <Condition key={`${s}${id}`} id={id} since={since} view={view} side={s} name={name} />
+        {view.field.weather && <Condition id={view.field.weather} view={view} name={name} />}
+        {view.field.terrain && <Condition id={view.field.terrain} view={view} name={name} />}
+        {Object.keys(view.field.pseudo).map((id) => <Condition key={id} id={id} view={view} name={name} />)}
+        {sides.flatMap((s) => Object.keys(view.sides[s].conditions).map((id) => (
+          <Condition key={`${s}${id}`} id={id} view={view} side={s} name={name} />
         )))}
       </div>
       <div className="wb-cards">
@@ -256,6 +244,15 @@ function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
   const known = mon.moves.length ? mon.moves : mon.moves_used;
   const likely = view.menu[side].actives.find((a) => a?.slot === slot)?.likely ?? [];
   const unknown = Math.max(0, 4 - known.length);
+  // What being on the field says about its next move (`live.on_field`).
+  const fakeOut = known.some((mv) => FIRST_TURN_MOVES.has(toId(mv)));
+  const flags = [
+    mon.locked && { text: `Locked into ${name(mon.locked)}`, tone: "lock", title: "Its Choice item holds it to the move it last used until it switches out" },
+    mon.first_turn_out && (fakeOut || unknown > 0) && {
+      text: fakeOut ? "Fake Out ready" : "First turn out", tone: "go",
+      title: "Its first turn since coming in: the only turn Fake Out and First Impression work" },
+    mon.protected_last && { text: "Protect may fail", tone: "warn", title: "It protected last turn: another straight after works one time in three" },
+  ].filter(Boolean) as { text: string; tone: string; title: string }[];
   const item = mon.item === "" ? (mon.lost_item ? `${name(mon.lost_item)} (used)` : "no item") : mon.item ? name(mon.item) : null;
   const ability = mon.ability ? name(mon.ability)
     : mon.ability_unknown.length ? `not ${mon.ability_unknown.map(name).join(", ")}` : null;
@@ -273,6 +270,11 @@ function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
         ? <button type="button" className="wb-card-name" onClick={onPick}>{title}</button>
         : <div className="wb-card-name">{title}</div>}
       <span className="board-hp"><i className={hpClass(mon.hp)} style={{ width: `${pct(mon.hp)}%` }} /></span>
+      {flags.length > 0 && (
+        <div className="chips">
+          {flags.map((f) => <span key={f.text} className={`chip flag ${f.tone}`} title={f.title}>{f.text}</span>)}
+        </div>
+      )}
       {(boosts.length > 0 || mon.volatiles.length > 0) && (
         <div className="chips">
           {boosts.map((b) => <span key={b} className="chip boost">{b}</span>)}
@@ -285,7 +287,9 @@ function MonCard({ view, mon, side, slot, who, name, selected, onPick }: {
         {mon.nature && <span className="dim">{mon.nature}</span>}
       </div>
       <ul className="wb-moves">
-        {known.map((mv) => <li key={mv}>{name(mv)}</li>)}
+        {known.map((mv) => (
+          <li key={mv} className={mon.locked ? (toId(mv) === mon.locked ? "locked" : "barred") : undefined}>{name(mv)}</li>
+        ))}
         {Array.from({ length: unknown }, (_, i) => (
           <li key={`u${i}`}>
             <button className="wb-unknown" type="button" aria-describedby={likely.length ? `likely-${side}${slot}` : undefined}>Unknown</button>

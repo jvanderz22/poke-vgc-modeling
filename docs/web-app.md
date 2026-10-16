@@ -112,9 +112,13 @@ battle is a column beside it (`WatchBoard.tsx`). Top to bottom:
   walks back to that turn.
 - **The field**: the four on it with everything known about each (HP, boosts, item, ability,
   nature, moves; on a hidden sheet "Unknown" for a move not yet seen, with the likeliest a hover
-  away), the field and side conditions with the turns they have left where the page can count
-  them, and Speed as ranges on one axis. A hatched range is all the nature and Stat Points allow;
-  a solid one has been narrowed by turn order. Each pair under it is decided or open.
+  away), and what being on the field says about its next move (`live.on_field`): locked into a
+  move by a Choice item, Fake Out ready on its first turn out, or a Protect that may fail after one
+  held the turn before. Then the field and side conditions with the turns they have left, counting
+  the one being played (`live.timers`, from what put each up and the turn it counts from, as the
+  replay records them), and Speed as ranges on one axis. A hatched range is all the nature and
+  Stat Points allow; a solid one has been narrowed by turn order. Each pair under it is decided or
+  open.
 - **The turn so far and the one before it**, each line with the video time it was read at; a time
   puts the video there.
 - Both sides in full (`BattleState`), folded away.
