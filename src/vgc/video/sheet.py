@@ -130,6 +130,17 @@ def vocabulary(dex: Dex) -> dict[str, list[tuple[str, str]]]:
             add(to_id(base + _GENDER_FORMES[forme]), "species", s["name"])
         if forme in _REGIONAL_FORMES:
             add(to_id(_REGIONAL_FORMES[forme] + base), "species", s["name"])
+    # A sheet prints the base name for a forme whose base isn't legal itself: "FLOETTE" for
+    # Floette-Eternal. Without this the nearest name was the item Floettite, the card had no
+    # species line, and nothing on it was read (flagged in prod, 2026-10-15). Only where the base
+    # has one legal forme: a base with several says nothing about which.
+    formes: dict[str, set[str]] = {}
+    for s in dex.species.values():
+        if not s.get("battleOnly"):
+            formes.setdefault(to_id(s.get("baseSpecies") or s["name"]), set()).add(s["name"])
+    for base, names in formes.items():
+        if len(names) == 1 and not any(kind == "species" for kind, _ in vocab.get(base, [])):
+            add(base, "species", next(iter(names)))
     for kind, table in (("ability", dex.abilities), ("nature", dex.natures),
                         ("item", dex.items), ("move", dex.moves)):
         for entry in table.values():

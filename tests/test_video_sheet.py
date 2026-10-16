@@ -32,6 +32,8 @@ def test_exact_names_match_their_kind(vocab):
 def test_a_sheet_spells_formes_its_own_way(vocab):
     assert match("BASCULEGION (FEMALE)", vocab).name == "Basculegion-F"
     assert match("BASCULEGION", vocab).name == "Basculegion"
+    # The base name, when only one of its formes is legal: not the nearest item (Floettite).
+    assert (match("FLOETTE", vocab).kind, match("FLOETTE", vocab).name) == ("species", "Floette-Eternal")
 
 
 def test_a_mega_forme_is_never_a_sheet_species(vocab):
@@ -75,6 +77,17 @@ def test_lines_are_grouped_into_cards_by_position(reg):
     assert raichu.moves == ["Zap Cannon", "Focus Blast", "Fake Out", "Protect"]
     # The stat labels after a nature are dropped; the facecam's text is off the sheet.
     assert read.unread == [] and read.notes == []
+
+
+def test_a_card_printed_with_the_base_name_is_read_whole(reg):
+    lines = [Line("SECR", 1, 313, 220, 400, 249)]
+    lines += _card(896, 139, "FLOETTE", "Flower Veil", "Modest",
+                   ["Light of Ruin", "Moonblast", "Calm Mind", "Protect"], "Floettite")
+    read = assemble(lines, reg.dex)
+    [floette] = read.entries
+    assert (floette.species, floette.ability, floette.nature, floette.item) == \
+        ("Floette-Eternal", "Flower Veil", "Modest", "Floettite")
+    assert floette.moves == ["Light of Ruin", "Moonblast", "Calm Mind", "Protect"]
 
 
 def test_an_unreadable_field_is_left_blank_and_reported(reg):
