@@ -23,7 +23,7 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
@@ -34,6 +34,9 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   stamp?: (entries: Entry[]) => Entry[];
   /** Start turn 1 once the leads are in; off while the video reader writes the turns itself. */
   autoStart?: boolean;
+  /** Show what logs a tap by hand: the stepper, the free-form bar, forfeiting. The watch page
+   *  hides them until asked, since the video reader fills the journal. */
+  manual?: boolean;
 }) {
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -108,7 +111,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
           </span>
         </div>
         <div className="row">
-          {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} />}
+          {manual && step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} />}
           <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
         </div>
       </div>
@@ -119,7 +122,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
         <div className="battle-work">
           {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
           {step === null
-            ? <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
+            ? manual && <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
                            onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
                            onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
                            preview={<>
@@ -128,7 +131,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
                            </>} />
             : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
 
-          {step === null && freeForm && (
+          {manual && step === null && freeForm && (
             <>
               <div className="row free-form-head">
                 <span className="tiny dim">Something else: the free-form entry bar</span>
@@ -149,9 +152,9 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
             <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
             <TurnCurve id={id} reg={reg} view={view} route={route} navigate={navigate} />
           </div>
-          <Field view={view} selected={freeForm ? selected : null}
-                 onPick={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })}
-                 onHp={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })} />
+          <Field view={view} selected={manual && freeForm ? selected : null}
+                 onPick={(side, slot) => !manual ? undefined : freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })}
+                 onHp={(side, slot) => !manual ? undefined : freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })} />
         </div>
       </div>
 

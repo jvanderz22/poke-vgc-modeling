@@ -727,3 +727,5 @@ main:has(> .watch-page) { max-width: none; }
 .watch-flag { margin: 6px 2px 0; gap: 8px; }
 .watch-reading { margin: 6px 2px 0; display: grid; gap: 2px; }
 .watch-reading code { font-size: 0.95em; }
+.watch-manual { display: block; margin: 10px 2px 0; color: var(--dim); }
+.watch-manual:hover { color: var(--accent); }

@@ -31,6 +31,9 @@ export function WatchPage({ reg, route, navigate, pool }: {
   // While the reader is on it writes turn 1 itself, at the first choice screen; the battle half
   // starting it too would put the reader's turns one ahead.
   const [readerOn, setReaderOn] = useState(false);
+  // The taps made by hand, hidden until asked for: the reader fills the journal, and the match
+  // half is for watching it. Shown again on each visit.
+  const [manual, setManual] = useState(false);
   // The player's time, set by the video half. An entry made by hand carries it, as the reader's
   // do, so a transcription lines up with the video and with a read of it (PLAN-video step 3).
   const videoTime = useRef<() => number | null>(() => null);
@@ -53,12 +56,13 @@ export function WatchPage({ reg, route, navigate, pool }: {
     <div className="watch-page">
       <VideoColumn reg={reg} route={route} navigate={navigate}
                    watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} onReaderOn={setReaderOn}
-                   onPlayer={(f) => { videoTime.current = f; }} />
+                   onPlayer={(f) => { videoTime.current = f; }}
+                   manual={manual} onManual={setManual} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
-                           autoStart={!readerOn} />
+                           autoStart={!readerOn} manual={manual} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -84,7 +88,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, manual, onManual }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -94,6 +98,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   onRead: () => void;
   onReaderOn: (on: boolean) => void;
   onPlayer: (time: () => number | null) => void;
+  manual: boolean;
+  onManual: (on: boolean) => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -356,6 +362,11 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
           A later frame disagreed with what is in the form; the form kept its value. Check:
           <ul style={{ margin: "2px 0 0 16px", padding: 0 }}>{conflicts.map((c) => <li key={c}>{c}</li>)}</ul>
         </div>
+      )}
+      {battle && (
+        <button className="link tiny watch-manual" aria-pressed={manual} onClick={() => onManual(!manual)}>
+          {manual ? "Hide the manual inputs" : "Enter taps by hand…"}
+        </button>
       )}
     </div>
   );
