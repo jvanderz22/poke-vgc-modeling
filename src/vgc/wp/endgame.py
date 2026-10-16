@@ -41,6 +41,7 @@ from __future__ import annotations
 import copy
 from typing import Any
 
+from vgc.battle import rules
 from vgc.regulation import STAT_IDS, Regulation, to_id
 from vgc.wp import solver
 
@@ -68,10 +69,13 @@ def _left(state, sid: str) -> list[Any]:
     return [m for m in state.sides[sid].mons if m.state == "active"]
 
 
-def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
+def reason(reg: Regulation, state, both_closed: bool = False,
+           sleep: dict[tuple[str, str], int] | None = None) -> str | None:
     """Why this position is not a 1v1 the solver can be asked about, or None when it is.
     `both_closed` says two closed sheets can be answered: a replay can be read again with each
-    candidate pair of sets shown (`LogBattle.with_sets`), a hand-entered battle cannot."""
+    candidate pair of sets shown (`LogBattle.with_sets`), a hand-entered battle cannot. `sleep` is
+    the tries each Pokémon seen falling asleep has spent asleep (`Replay.sleep_tries`): with it, its
+    counter is known well enough to solve."""
     if not state.started or state.ended:
         return "the battle is not in progress"
     for sid in ("p1", "p2"):
@@ -82,11 +86,44 @@ def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
         m = _left(state, sid)[0]
         if m.volatiles - SOLVED_VOLATILES:
             return f"{m.species} has {', '.join(sorted(m.volatiles - SOLVED_VOLATILES))}, which the solver cannot set up"
-        if m.status and m.status not in STATUSES:
+        if m.status == "slp" and (sid, m.species) in (sleep or {}):
+            if not sleep_left(m, sleep[(sid, m.species)]):
+                return f"{m.species} has been asleep longer than sleep lasts: a wake or a turn is missing"
+        elif m.status and m.status not in STATUSES:
             return f"{m.species} is {m.status}, whose turn counter is not shown"
     if not both_closed and not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
         return "neither side's set is known"
     return None
+
+
+def sleep_left(m: Any, tries: int) -> list[tuple[int, float]]:
+    """The counter `m`, asleep for `tries` failed tries, can have now (`rules.sleep_left`)."""
+    return rules.sleep_left(tries, early_bird=to_id(m.ability or "") == "earlybird")
+
+
+def sleep_draws(battle) -> list[tuple[dict[str, list[int]], float, str]]:
+    """Each way the sleep counters of the Pokémon asleep on the field can stand, as the solver's
+    `sleep` (the counter each has left, by slot), with its probability and a label for the page.
+    Sleep's counter is hidden, but the draw it came from and the tries since say what it can be
+    (`rules.sleep_left`)."""
+    state = battle.rp.state
+    tries = getattr(battle.rp, "sleep_tries", None) or {}
+    draws: list[tuple[dict[str, list[int]], float, str]] = [({}, 1.0, "")]
+    for sid in ("p1", "p2"):
+        on = sorted(_left(state, sid), key=lambda x: x.position if x.position is not None else 9)
+        for i, m in enumerate(on):
+            if m.status != "slp" or (sid, m.species) not in tries:
+                continue
+            nxt = []
+            for counters, p, label in draws:
+                for n, q in sleep_left(m, tries[(sid, m.species)]):
+                    c = {k: list(v) for k, v in counters.items()}
+                    c.setdefault(sid, [0] * len(on))[i] = n
+                    more = ("wakes on its next try" if n == 1 else
+                            f"sleeps through {n - 1} more {'try' if n == 2 else 'tries'}")
+                    nxt.append((c, p * q, f"{label} · {m.species} {more}"))
+            draws = nxt
+    return draws
 
 
 # --- the two sets ---------------------------------------------------------------------------
@@ -355,7 +392,7 @@ def facts(reg: Regulation, battle, sets: dict[str, dict[str, Any]]) -> dict[str,
         "fainted": {sid: sum(x.state == "fainted" for x in state.sides[sid].mons) for sid in mons},
         "boosts": {sid: {k: v for k, v in m.boosts.items() if v} for sid, m in mons.items()},
         "consumed": {sid: bool(m.lost_item) and not m.item for sid, m in mons.items()},
-        "status": {sid: m.status for sid, m in mons.items() if m.status in STATUSES},
+        "status": {sid: m.status for sid, m in mons.items() if m.status in STATUSES or m.status == "slp"},
         "sides": {sid: {c: left(since, SIDE_TURNS[c]) for c, since in state.sides[sid].conditions.items()
                         if c in SIDE_TURNS and left(since, SIDE_TURNS[c])} for sid in mons},
         "timesAttacked": {sid: n for sid, m in mons.items()
@@ -392,7 +429,8 @@ def plan(reg: Regulation, battle, search: dict[str, Any], sets: list[dict[str, A
     state = battle.rp.state
     closed_both = sets is None and not any(state.sides[sid].sheet or sid == state.perspective
                                            for sid in ("p1", "p2"))
-    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"))
+    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"),
+                 sleep=getattr(battle.rp, "sleep_tries", None))
     if why:
         return {"eligible": False, "reason": why}
     notes: list[str] = []
@@ -467,9 +505,12 @@ def plan(reg: Regulation, battle, search: dict[str, Any], sets: list[dict[str, A
         fixed = tuple(pair[sid]["sp"] if c.get("known") else None for sid, c in (("p1", c1), ("p2", c2)))
         for name, k in partition_joint(reg, (pair["p1"], pair["p2"]), js, f, fixed).items():
             sides = {sid: {**pair[sid], "sp": sp} for sid, sp in zip(("p1", "p2"), k["sp"])}
-            jobs.append({"sets": (listed["p1"].index(c1["set"]), listed["p2"].index(c2["set"])), "class": name,
-                         "weight": combo["weight"] * k["weight"], "spe": k["spe"],
-                         "position": compose(reg, sides["p1"], sides["p2"], f, search)})
+            pos = compose(reg, sides["p1"], sides["p2"], f, search)
+            # One position per counter a sleeping Pokémon's sleep can have.
+            for counters, p, label in sleep_draws(seen):
+                jobs.append({"sets": (listed["p1"].index(c1["set"]), listed["p2"].index(c2["set"])),
+                             "class": name + label, "weight": combo["weight"] * k["weight"] * p, "spe": k["spe"],
+                             "position": {**pos, "setup": {**pos["setup"], "sleep": counters}} if counters else pos})
     return {"eligible": bool(jobs), "reason": None if jobs else "no set to solve",
             "sets": {sid: [{"set": {k: v for k, v in x.items() if k not in ("sp", "mega")},
                             "weight": round(w, 4)} for x, w in zip(listed[sid], shares[sid])]

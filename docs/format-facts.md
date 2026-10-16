@@ -150,9 +150,8 @@ drowsy, and the target falls asleep at the end of the turn after Yawn was used.
   `moves.ts`. Caught 2026-10-16 (Carson Confer vs Paul Chua, game 2): the engine took no account
   of a pending Yawn and refused every position with a sleeping Pokémon.
 - **In code:** `rules.sleep_left`; `Replay.yawned` and `Replay.sleep_tries` (a try per turn mark spent
-  on the field); `doubles.sleep_draws` splits a position by counter; the solver's `sleep` and `yawn`,
-  and its races skip a sleeping Pokémon's turns (`asleepFor`). A 1v1 with a sleeping Pokémon is
-  still refused.
+  on the field); `endgame.sleep_draws` splits a position, 1v1 or doubles, by counter; the solver's
+  `sleep` and `yawn`, and its races skip a sleeping Pokémon's turns (`asleepFor`).
 
 ## A series
 

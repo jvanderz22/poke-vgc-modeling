@@ -250,3 +250,28 @@ def test_a_closed_sheet_from_the_stands_is_solved_over_pairs_of_likely_sets(reg)
         m = endgame._left(shown, sid)[0]
         assert shown.sides[sid].sheet and m.nature == s["nature"]
         assert set(m.moves) == {endgame.to_id(x) for x in s["moves"]}
+
+
+def test_a_1v1_with_a_sleeping_pokemon_is_solved_once_per_counter_it_can_have(reg):
+    """Sneasler fell asleep from Yawn at the end of turn 5 and failed one try in turn 6: its counter
+    is 1 (it wakes on its next try) a third of the time and 2 otherwise. Without the tries, refused."""
+    blob = json.loads((paths.ROOT / "tests" / "fixtures" / "solver" / "yawn_then_sleep.json").read_text())
+    journal = blob["journal"]
+    mark = next(i for i, e in enumerate(journal) if e["kind"] == "turn" and e["n"] == 7) + 1
+    b = Battle(reg, blob["setup"], journal[:mark] + [
+        {"kind": "damage", "side": "p1", "slot": 0, "pct": 0, "fainted": True},
+        {"kind": "damage", "side": "p2", "slot": 1, "pct": 0, "fainted": True}])
+    assert "turn counter" in endgame.reason(reg, b.rp.state)
+    assert endgame.reason(reg, b.rp.state, sleep=b.rp.sleep_tries) is None
+    got = endgame.plan(reg, b, {**solver.SEARCH, "depth": 0})
+    assert got["eligible"]
+    by = {}
+    for j in got["jobs"]:
+        by.setdefault(j["position"]["setup"]["sleep"]["p1"][0], []).append(j)
+        assert j["position"]["setup"]["status"] == {"p1": "slp"}
+    assert sorted(by) == [1, 2]
+    total = sum(j["weight"] for j in got["jobs"])
+    assert sum(j["weight"] for j in by[1]) / total == pytest.approx(1 / 3)
+    assert all(j["class"].endswith("Sneasler wakes on its next try") for j in by[1])
+    for n in (1, 2):
+        assert 0 <= solver.solve_uncached(by[n][0]["position"])["value"] <= 1

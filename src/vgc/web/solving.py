@@ -420,7 +420,7 @@ def policy_reason(reg: Regulation, battle) -> str | None:
 def reason(reg: Regulation, battle) -> tuple[str | None, type]:
     """Why the engine is not asked about this position (None when it is), and which solve answers
     it: a 1v1's deepening one, or a doubles position's within the deadline."""
-    why = endgame.reason(reg, battle.rp.state)
+    why = endgame.reason(reg, battle.rp.state, sleep=getattr(battle.rp, "sleep_tries", None))
     if why is None:
         return None, Solve
     dwhy = doubles_reason(reg, battle)

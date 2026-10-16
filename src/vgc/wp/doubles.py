@@ -29,7 +29,6 @@ from __future__ import annotations
 import random
 from typing import Any
 
-from vgc.battle import rules
 from vgc.regulation import Regulation, to_id
 from vgc.wp import endgame, solver
 
@@ -81,7 +80,7 @@ def reason(reg: Regulation, state, both_closed: bool = False,
                 return (f"{m.species} has {', '.join(sorted(m.volatiles - endgame.SOLVED_VOLATILES))}, "
                         "which the solver cannot set up")
             if m.status == "slp" and (sid, m.species) in (sleep or {}):
-                if not _sleep_left(m, sleep[(sid, m.species)]):
+                if not endgame.sleep_left(m, sleep[(sid, m.species)]):
                     return f"{m.species} has been asleep longer than sleep lasts: a wake or a turn is missing"
             elif m.status and m.status not in endgame.STATUSES:
                 return f"{m.species} is {m.status}, whose turn counter is not shown"
@@ -452,42 +451,13 @@ def plan(reg: Regulation, battle, search: dict[str, Any] | None = None) -> dict[
     of likely sets as well, and one per counter a sleeping Pokémon's sleep can have — with its
     weight, or why there is none."""
     got = _plan(reg, battle, search)
-    draws = sleep_draws(battle)
+    draws = endgame.sleep_draws(battle)
     if not got.get("eligible") or draws == [({}, 1.0, "")]:
         return got
     jobs = [{**j, "order": j["order"] + label, "weight": j["weight"] * p,
              "position": {**j["position"], "setup": {**j["position"]["setup"], "sleep": counters}}}
             for j in got["jobs"] for counters, p, label in draws]
     return {**got, "jobs": sorted(jobs, key=lambda j: -j["weight"])}
-
-
-def _sleep_left(m: Any, tries: int) -> list[tuple[int, float]]:
-    return rules.sleep_left(tries, early_bird=to_id(m.ability or "") == "earlybird")
-
-
-def sleep_draws(battle) -> list[tuple[dict[str, list[int]], float, str]]:
-    """Each way the sleep counters of the Pokémon asleep on the field can stand, as the solver's
-    `sleep` (the counter each has left, by slot), with its probability and a label for the page.
-    Sleep's counter is hidden, but the draw it came from and the tries since say what it can be
-    (`rules.sleep_left`)."""
-    state = battle.rp.state
-    tries = getattr(battle.rp, "sleep_tries", None) or {}
-    draws: list[tuple[dict[str, list[int]], float, str]] = [({}, 1.0, "")]
-    for sid in ("p1", "p2"):
-        on = actives(state, sid)
-        for i, m in enumerate(on):
-            if m.status != "slp" or (sid, m.species) not in tries:
-                continue
-            nxt = []
-            for counters, p, label in draws:
-                for n, q in _sleep_left(m, tries[(sid, m.species)]):
-                    c = {k: list(v) for k, v in counters.items()}
-                    c.setdefault(sid, [0] * len(on))[i] = n
-                    more = ("wakes on its next try" if n == 1 else
-                            f"sleeps through {n - 1} more {'try' if n == 2 else 'tries'}")
-                    nxt.append((c, p * q, f"{label} · {m.species} {more}"))
-            draws = nxt
-    return draws
 
 
 def _plan(reg: Regulation, battle, search: dict[str, Any] | None = None) -> dict[str, Any]:
