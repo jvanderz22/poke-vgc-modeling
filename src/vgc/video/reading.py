@@ -53,6 +53,9 @@ class Status:
     ms: float = 0.0                   # how long this frame took to read
     resynced: bool = False            # the journal had been edited by hand, and was taken as it stands
     left: str | None = None           # the player on the left of the screen, once the reader can tell
+    # Regions the page reads itself but has never sent lines for (the server restarted, say): the
+    # page reads every region on its next frame.
+    unread: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {k: v for k, v in self.__dict__.items()}
@@ -95,21 +98,22 @@ class Reading:
         a.asked = {q.id: self.read_to or 0.0 for q in a.rp.questions}
         self._sent = len(entries)
 
-    def frame(self, video_s: float, image: Any) -> Status:
-        """Read one frame (a PIL image or an RGB array) taken at `video_s` into the video."""
+    def frame(self, video_s: float, image: Any, read: dict[str, list] | None = None) -> Status:
+        """Read one frame (a PIL image or an RGB array) taken at `video_s` into the video. `read`
+        is the lines the page OCR'd itself, by region (ScreenReader.observe)."""
         if self.ended:
             return self._status()
         if self.read_to is not None:
-            if abs(video_s - self.read_to) < SAME_S:
-                return self._status()
-            if video_s < self.read_to:
-                return self._status(behind=True)
+            if abs(video_s - self.read_to) < SAME_S or video_s < self.read_to:
+                if read:
+                    self.screen.take(read)
+                return self._status(behind=video_s < self.read_to and abs(video_s - self.read_to) >= SAME_S)
             if video_s - self.read_to > GAP_S:
                 self.gaps.append((self.read_to, video_s))
                 self.asm._miss(self.read_to, f"{self.read_to:.1f}s to {video_s:.1f}s",
                                "not read: the video skipped ahead")
         start = time.perf_counter()
-        for e in self.settler.feed(video_s, self.screen.observe(scale(image))):
+        for e in self.settler.feed(video_s, self.screen.observe(scale(image), read)):
             self.asm.feed(e)
             if e.kind == "message":
                 self.message = e.data["text"]
@@ -117,7 +121,7 @@ class Reading:
         self.read_to = video_s
         if any(e["kind"] == "end" for e in self.asm.out.entries[self._sent:]):
             self._finish()
-        return self._status(ms=(time.perf_counter() - start) * 1000)
+        return self._status(ms=(time.perf_counter() - start) * 1000, unread=sorted(self.screen.unread))
 
     def finish(self) -> Status:
         """Write out what is still held (a move waiting on its results, a turn's last plates)."""

@@ -9,6 +9,7 @@ on an x86 laptop, 2026-10-15). The models and their answers are the same.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 THREADS = 2
@@ -31,6 +32,15 @@ def _quiet_sessions() -> None:
 
     init_sess_opts._spin_off = True  # type: ignore[attr-defined]
     OrtInferSession._init_sess_opts = staticmethod(init_sess_opts)
+
+
+def browser_models(engine: Any) -> dict[str, Any]:
+    """What the watch page needs to run `engine`'s models itself (frontend/src/ocr/rapid.ts): the
+    detector's and recognizer's files, as RapidOCR resolved them, and the recognizer's characters
+    without the blank and the space RapidOCR adds around them."""
+    det, rec = engine._load_det_model(), engine._load_rec_model()
+    return {"det": Path(det.session.session._model_path), "rec": Path(rec.session.session._model_path),
+            "keys": list(rec.postprocess_op.character[1:-1])}
 
 
 def rapid_ocr(limit_side_len: int, needed_for: str) -> Any:

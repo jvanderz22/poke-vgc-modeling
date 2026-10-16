@@ -1,6 +1,8 @@
 // The one place that talks to the Python backend. Every type here mirrors a response in
 // src/vgc/web/app.py; if one changes, this file is where it is felt.
 
+import type { OcrConfig, RegionLines } from "./ocr/screen.ts";
+
 export type Problem = { severity: "error" | "warning"; code: string; message: string; pokemon: string | null };
 
 export type Mon = {
@@ -418,6 +420,8 @@ export type ReadStatus = {
   resynced: boolean;
   /** The player on the left of the screen, once the reader has worked it out from the Pokémon. */
   left: "p1" | "p2" | null;
+  /** Regions the page reads itself but the server has no lines for: read them all again. */
+  unread?: string[];
   errors: string[];
 };
 
@@ -566,10 +570,16 @@ export const api = {
     call<{ at: string }>("/api/video/flag", { method: "POST", body: JSON.stringify({ video, video_s, note }) }),
   /** One frame of the video beside a watched battle, for the battle reader. What it settles is
    *  appended to the battle's journal; the reply says what, and where the reading stands. */
-  readFrame: (battle: string, frame: Blob, videoS: number, video: string, reg: string) =>
-    call<ReadStatus>(`/api/battles/${battle}/read?video_s=${videoS}&video=${encodeURIComponent(video)}&regulation=${reg}`, {
-      method: "POST", body: frame, headers: { "content-type": frame.type || "image/jpeg" },
-    }),
+  readFrame: (battle: string, frame: Blob, videoS: number, video: string, reg: string, read: RegionLines | null = null) => {
+    // Lines the page read itself go first, their length in a header; the server then runs no OCR.
+    const lines = read ? new TextEncoder().encode(JSON.stringify(read)) : null;
+    return call<ReadStatus>(`/api/battles/${battle}/read?video_s=${videoS}&video=${encodeURIComponent(video)}&regulation=${reg}`, {
+      method: "POST", body: lines ? new Blob([lines, frame]) : frame,
+      headers: { "content-type": frame.type || "image/jpeg", ...(lines ? { "x-ocr-lines": String(lines.length) } : {}) },
+    });
+  },
+  /** What the page needs to read a battle's frames itself: the server's models, the layout. */
+  ocrConfig: () => call<OcrConfig>("/api/video/ocr"),
   /** Stop reading: what the reader still held is written to the journal. */
   stopReading: (battle: string, reg: string) =>
     call<{ stopped: boolean }>(`/api/battles/${battle}/read?regulation=${reg}`, { method: "DELETE" }),

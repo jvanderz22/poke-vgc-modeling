@@ -95,13 +95,17 @@ class Event:
 
 # --- OCR ------------------------------------------------------------------------------------
 
+# The detector's default scales the *short* side up to 736 px, which turns a thin strip of the
+# frame into an enormous image. Capping the long side keeps a region's OCR under 0.1 s. The watch
+# page's own OCR caps it the same (GET /api/video/ocr).
+DET_LIMIT = 960
+
+
 @lru_cache(maxsize=1)
 def _engine():
     from vgc.video.ocr import rapid_ocr
 
-    # The detector's default scales the *short* side up to 736 px, which turns a thin strip of the
-    # frame into an enormous image. Capping the long side keeps a region's OCR under 0.1 s.
-    return rapid_ocr(960, "reading a video")
+    return rapid_ocr(DET_LIMIT, "reading a video")
 
 
 def _lines(img: np.ndarray) -> list[tuple[str, float, float, float, float]]:
@@ -233,6 +237,10 @@ class ScreenReader:
         # Whether a region's last read was made on a frame after its change, not the first one.
         self._checked: dict[str, bool] = {}
         self.ocr_calls = 0
+        # Lines the page read itself for this frame (observe's `read`), and the regions it has
+        # never sent lines for, which it is asked to read again.
+        self._given: dict[str, list] | None = None
+        self.unread: set[str] = set()
 
     def _crop(self, frame: np.ndarray, key: str) -> np.ndarray:
         h, w = frame.shape[:2]
@@ -240,6 +248,13 @@ class ScreenReader:
         return frame[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)]
 
     def _region(self, frame: np.ndarray, key: str) -> list:
+        if self._given is not None:
+            # The page ran the change check and the OCR: a region it didn't send is unchanged.
+            if key in self._given:
+                self._lines[key] = self._given[key]
+            elif key not in self._lines:
+                self.unread.add(key)
+            return self._lines.get(key, [])
         crop = self._crop(frame, key)
         mask = _text(crop)
         prev = self._masks.get(key)
@@ -254,8 +269,26 @@ class ScreenReader:
         self._lines[key] = _lines(crop)
         return self._lines[key]
 
-    def observe(self, frame: np.ndarray) -> Observation:
-        """One RGB frame (H×W×3, uint8), already scaled to about WORK_WIDTH."""
+    def take(self, read: dict[str, list]) -> None:
+        """Keep the page's lines for a frame that isn't observed (a repeat, a rewind): the page
+        won't send a region again until it changes."""
+        self._lines.update(read)
+
+    def observe(self, frame: np.ndarray, read: dict[str, list] | None = None) -> Observation:
+        """One RGB frame (H×W×3, uint8), already scaled to about WORK_WIDTH.
+
+        `read` is the lines the watch page OCR'd itself on this frame, by region, in the frame's
+        pixels (frontend/src/ocr): it runs the change check and RapidOCR's pipeline on WebGPU, so
+        the server reads none of it. Regions it leaves out are unchanged. Without it, the server
+        checks and reads every region itself."""
+        self._given = read
+        self.unread = set()
+        try:
+            return self._observe(frame)
+        finally:
+            self._given = None
+
+    def _observe(self, frame: np.ndarray) -> Observation:
         h, w = frame.shape[:2]
         r = self.layout.regions
         mx0, _, mx1, _ = r["message"]

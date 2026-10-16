@@ -316,6 +316,77 @@ def video_review(all: bool = False) -> dict[str, Any]:
     return review.summary(review.load(), quiet=not all)
 
 
+_ocr_lock = threading.Lock()
+_ocr: dict[str, Any] = {}
+
+
+def _ocr_models() -> dict[str, Any]:
+    """The battle reader's models as RapidOCR resolved them, with a version from their bytes so the
+    page can cache them for good. Loads them on first use (the reader would anyway)."""
+    with _ocr_lock:
+        if not _ocr:
+            import hashlib
+
+            try:
+                from vgc.video import ocr, screen
+
+                models = ocr.browser_models(screen._engine())
+            except (ImportError, RuntimeError) as e:
+                raise HTTPException(501, f"this server can't read video: {e}") from e
+            digest = hashlib.sha256()
+            for part in ("det", "rec"):
+                digest.update(models[part].read_bytes())
+            _ocr.update(models, version=digest.hexdigest()[:12])
+        return _ocr
+
+
+@app.get("/api/video/ocr")
+def video_ocr() -> dict[str, Any]:
+    """What the watch page needs to read a battle's regions itself (frontend/src/ocr), so the server
+    doesn't: the models' URLs, the recognizer's characters, the detector's cap, and the layout and
+    change threshold the server's own reader uses. Its lines go with each frame to `read_frame`."""
+    from vgc.video import screen
+
+    m = _ocr_models()
+    return {"version": m["version"], "det": f"/api/video/ocr/det.onnx?v={m['version']}",
+            "rec": f"/api/video/ocr/rec.onnx?v={m['version']}", "keys": m["keys"],
+            "limit": screen.DET_LIMIT, "work_width": screen.WORK_WIDTH, "changed": screen.CHANGED,
+            "regions": screen.BROADCAST_2026.regions}
+
+
+@app.get("/api/video/ocr/{part}.onnx")
+def video_ocr_model(part: str) -> FileResponse:
+    """One of the reader's models. Its URL carries the version, so it is cached for good."""
+    if part not in ("det", "rec"):
+        raise HTTPException(404, "no such model")
+    return FileResponse(_ocr_models()[part], media_type="application/octet-stream",
+                        headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+
+READ_LINES_LIMIT = 64 * 1024
+
+
+def _read_lines(data: bytes, header: str | None, regions: dict[str, Any]) -> tuple[dict[str, list] | None, bytes]:
+    """Split a frame's body into the lines the page read itself and the JPEG. With `x-ocr-lines: n`,
+    the body starts with n bytes of UTF-8 JSON `{region: [[text, x0, y0, x1, y1], ...]}`; without
+    it, the body is the JPEG alone and the server reads it."""
+    if header is None:
+        return None, data
+    try:
+        n = int(header)
+    except ValueError as e:
+        raise HTTPException(422, "x-ocr-lines is the length of the lines") from e
+    if not 0 < n <= min(READ_LINES_LIMIT, len(data)):
+        raise HTTPException(413 if n > READ_LINES_LIMIT else 422, "x-ocr-lines is out of range")
+    try:
+        raw = json.loads(data[:n].decode("utf-8"))
+        lines = {key: [(str(t), float(x0), float(y0), float(x1), float(y1)) for t, x0, y0, x1, y1 in got]
+                 for key, got in raw.items() if key in regions}
+    except (ValueError, TypeError, AttributeError) as e:
+        raise HTTPException(422, f"the lines aren't lines by region: {e}") from e
+    return lines, data[n:]
+
+
 # Battles being read off a video, by battle id: in memory, so a restart ends them. The journal is
 # the record; a reading restarted on the same battle carries on from it (`Reading.resync`).
 _readings: dict[str, Any] = {}
@@ -330,7 +401,10 @@ async def read_frame(battle_id: str, request: Request, video_s: float, video: st
     stamped with its `video_s`; the reply says what was added and where the reading stands.
 
     One frame at a time per battle: the page sends the next when this one has been answered, so a
-    slow host reads fewer frames rather than falling behind. PLAN-video step 4."""
+    slow host reads fewer frames rather than falling behind. PLAN-video step 4.
+
+    A page that reads the regions itself (GET /api/video/ocr) puts its lines before the JPEG and
+    says how many bytes they take in `x-ocr-lines`; the server then runs no OCR on the frame."""
     reg = _reg(regulation)
     data = await request.body()
     if not data:
@@ -339,8 +413,10 @@ async def read_frame(battle_id: str, request: Request, video_s: float, video: st
         raise HTTPException(413, f"frame over {FRAME_LIMIT // (1024 * 1024)} MB")
     try:
         from vgc.video.reading import Reading
+        from vgc.video.screen import BROADCAST_2026
     except ImportError as e:
         raise HTTPException(501, f"this server can't read video: {e}") from e
+    lines, data = _read_lines(data, request.headers.get("x-ocr-lines"), BROADCAST_2026.regions)
 
     def run() -> dict[str, Any]:
         import io
@@ -369,7 +445,7 @@ async def read_frame(battle_id: str, request: Request, video_s: float, video: st
             resynced = not reading.follows(b.journal)
             if resynced:
                 reading.resync(b.journal)
-            status = reading.frame(video_s, image)
+            status = reading.frame(video_s, image, lines)
             status.resynced = resynced
             if status.entries:
                 for e in status.entries:

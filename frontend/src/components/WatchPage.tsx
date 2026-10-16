@@ -125,6 +125,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
   const answered = useRef<number[]>([]);
+  // Where a battle's frames are OCR'd: on this page's GPU once the models have loaded, on the
+  // server before then or without WebGPU (the deployed server's shared CPU can't keep up alone).
+  const [ocr, setOcr] = useState<{ where: "loading" | "page" | "server"; why?: string } | null>(null);
 
   // The capture reads the latest sheets through a ref: it outlives any one render.
   const latest = useRef(watch);
@@ -203,9 +206,10 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       const p = player.current;
       return p && p.getPlayerState() === 1 ? p.getCurrentTime() : null;
     };
-    return streamFrames(capture.current, playing, async (jpeg, at) => {
+    return streamFrames(capture.current, playing, async (jpeg, at, read) => {
       try {
-        const s = await api.readFrame(battle, jpeg, Math.round(at * 1000) / 1000, video, reg);
+        const s = await api.readFrame(battle, jpeg, Math.round(at * 1000) / 1000, video, reg, read);
+        if (s.unread?.length) capture.current?.resetOcr();
         const now = Date.now();
         answered.current = [...answered.current.filter((x) => now - x < 5000), now];
         setReadStatus(s);
@@ -244,12 +248,20 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
     if (!box.current) return;
     setCaptureError(null);
     try {
-      capture.current = await startCapture(box.current, () => {
+      const cap = await startCapture(box.current, () => {
         capture.current = null;
         setCapturing(false);
+        setOcr(null);
         if (recorder.current) void stopRecording();
       });
+      capture.current = cap;
       setCapturing(true);
+      // Frames go to the server unread until the models are on the GPU (a 31 MB download, once).
+      setOcr({ where: "loading" });
+      api.ocrConfig().then((config) => cap.startOcr(config)).then(
+        () => setOcr({ where: "page" }),
+        (e) => setOcr({ where: "server", why: e instanceof Error ? e.message : String(e) }),
+      );
     } catch (e) {
       // Declining the share prompt lands here too, and needs no message.
       if (e instanceof CaptureError) setCaptureError(e.message);
@@ -355,7 +367,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {battle && ((capturing && battleReading) || readStatus) && (
-        <ReadingLine status={readStatus} on={capturing && battleReading} rate={answered.current.length / 5} error={readError} />
+        <ReadingLine status={readStatus} on={capturing && battleReading} rate={answered.current.length / 5} error={readError} ocr={ocr} />
       )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
@@ -373,8 +385,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
 }
 
 /** Where the battle reader stands: what it read last, how fast, and what it couldn't read. */
-function ReadingLine({ status, on, rate, error }: {
+function ReadingLine({ status, on, rate, error, ocr }: {
   status: ReadStatus | null; on: boolean; rate: number; error: string | null;
+  ocr: { where: "loading" | "page" | "server"; why?: string } | null;
 }) {
   const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   return (
@@ -387,9 +400,14 @@ function ReadingLine({ status, on, rate, error }: {
             {status.ended ? "Read to the end of the game." : on ? "Reading" : "Not reading"}
             {status.read_to !== null && <> · up to {clock(status.read_to)}</>}
             {on && rate > 0 && <> · {rate.toFixed(1)} frames/s</>}
+            {on && ocr && <> · {ocr.where === "page" ? "read on this computer's GPU"
+              : ocr.where === "loading" ? "loading the reader onto the GPU" : "read on the server"}</>}
             {status.missed > 0 && <> · <span className="warn-text">{status.missed} not read</span></>}
             {status.provisional > 0 && <> · {status.provisional} read on an unconfirmed phrasing</>}
           </div>
+          {on && ocr?.where === "server" && ocr.why && (
+            <div className="dim">Read on the server ({ocr.why}), which may not keep up for a whole game.</div>
+          )}
           {status.message && <div className="dim">Last message: “{status.message}”</div>}
           {status.left && (
             <div className="dim">

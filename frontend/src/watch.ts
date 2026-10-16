@@ -5,6 +5,7 @@ import type { SheetRead } from "./api";
 import { emptySheet, filled, type SheetEntry } from "./sheet";
 import { entriesFromRead } from "./components/SheetFromImage";
 import type { FrameDone, FrameJob } from "./frameWorker";
+import type { OcrConfig, RegionLines } from "./ocr/screen.ts";
 
 // --- the video ------------------------------------------------------------------------------
 
@@ -121,6 +122,14 @@ export type Capture = {
   frame: (type?: string, quality?: number, maxWidth?: number) => Promise<Blob | null>;
   /** A 64×36 grey thumbnail, for telling one picture from the next. */
   thumb: () => Promise<Float32Array | null>;
+  /** A frame for the battle reader, at most `maxWidth` across, with the lines the page read off
+   *  it itself once `startOcr` has worked (null before, or without WebGPU). */
+  battleFrame: (quality: number, maxWidth: number) => Promise<{ jpeg: Blob; read: RegionLines | null } | null>;
+  /** Load the server's OCR models onto the GPU, so battle frames are read here. Throws when the
+   *  browser can't (no WebGPU); the server reads them then. */
+  startOcr: (config: OcrConfig) => Promise<boolean>;
+  /** Read every region on the next battle frame: the server lost what it had been sent. */
+  resetOcr: () => void;
   size: () => { width: number; height: number };
   stop: () => void;
 };
@@ -176,18 +185,23 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
   };
   let stopped = false;
 
+  type Without<T> = T extends unknown ? Omit<T, "id"> : never;
+  /** A message to the worker and its answer; null once stopped. */
+  const ask = (msg: Without<FrameJob>, transfer: Transferable[] = []) => new Promise<FrameDone | null>((ok) => {
+    const id = nextJob++;
+    pending.set(id, ok);
+    worker.postMessage({ id, ...msg } as FrameJob, transfer);
+  });
+
   /** The picture now at `width` × `height`, handed to the worker; null once stopped. */
-  const job = async (width: number, height: number, rest: { kind: "encode"; type: string; quality: number } | { kind: "thumb" }) => {
+  const job = async (width: number, height: number,
+                     rest: { kind: "encode"; type: string; quality: number } | { kind: "thumb" } | { kind: "battle"; quality: number }) => {
     if (stopped || !video.videoWidth) return null;
     const scale = width === video.videoWidth && height === video.videoHeight
       ? {} : { resizeWidth: width, resizeHeight: height, resizeQuality: "high" as const };
     const bitmap = await createImageBitmap(video, scale);
     if (stopped) { bitmap.close(); return null; }
-    const done = await new Promise<FrameDone | null>((ok) => {
-      const id = nextJob++;
-      pending.set(id, ok);
-      worker.postMessage({ id, bitmap, ...rest } satisfies FrameJob, [bitmap]);
-    });
+    const done = await ask({ bitmap, ...rest }, [bitmap]);
     if (done && "error" in done) throw new Error(`Couldn't take a frame: ${done.error}`);
     return done;
   };
@@ -218,6 +232,19 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
                              { kind: "encode", type, quality });
       return done && "blob" in done ? done.blob : null;
     },
+    battleFrame: async (quality, maxWidth) => {
+      const k = Math.min(1, maxWidth / (video.videoWidth || 1));
+      const done = await job(Math.round(video.videoWidth * k), Math.round(video.videoHeight * k), { kind: "battle", quality });
+      if (!done || !("read" in done)) return null;
+      const shot = done as Extract<FrameDone, { read: unknown }>;
+      return { jpeg: shot.blob, read: shot.read };
+    },
+    startOcr: async (config) => {
+      const done = await ask({ kind: "ocr", config });
+      if (done && "error" in done) throw new Error(done.error);
+      return !!done;
+    },
+    resetOcr: () => { void ask({ kind: "ocr-reset" }); },
   };
 }
 
@@ -296,17 +323,17 @@ const BATTLE_WIDTH = 1200;
  *  the last has been answered, so a slow host reads fewer frames instead of falling behind, and
  *  none goes while the video is paused (`time` gives null). Returns the stopper. */
 export function streamFrames(cap: Capture, time: () => number | null,
-                             onFrame: (jpeg: Blob, videoS: number) => Promise<void>): () => void {
+                             onFrame: (jpeg: Blob, videoS: number, read: RegionLines | null) => Promise<void>): () => void {
   let stopped = false;
   const loop = async () => {
     while (!stopped) {
       const began = Date.now();
       const at = time();
       if (at !== null) {
-        let jpeg: Blob | null = null;
-        try { jpeg = await cap.frame("image/jpeg", 0.85, BATTLE_WIDTH); } catch (e) { console.error(e); }
+        let shot: { jpeg: Blob; read: RegionLines | null } | null = null;
+        try { shot = await cap.battleFrame(0.85, BATTLE_WIDTH); } catch (e) { console.error(e); }
         if (stopped) break;
-        if (jpeg) try { await onFrame(jpeg, at); } catch { /* reported by onFrame; keep reading */ }
+        if (shot) try { await onFrame(shot.jpeg, at, shot.read); } catch { /* reported by onFrame; keep reading */ }
       }
       await new Promise((ok) => window.setTimeout(ok, Math.max(0, BATTLE_INTERVAL_MS - (Date.now() - began))));
     }

@@ -238,6 +238,51 @@ frames, 2 threads, three runs side by side):
 
 The third is not used.
 
+With both changes deployed, a watch read cleanly for about 5 minutes and then dropped frames again.
+From the restart to the end of that watch the machine used 314 CPU-s, nearly all in the 6 minutes of
+reading: about 0.85 of a core, several times a shared-cpu-4x's baseline. It ran on burst credit until
+that ran out. Two other cuts were tried on 5 minutes of round 6 and not used: skipping OCR on banner
+regions with almost no text-like pixels (44 fewer calls than the text-like check, within noise), and
+finding the lines from the text-like mask in place of the detector (8% less CPU, but it split
+two-line messages, flickered the field and lost plates: 31 events lost, 22 added).
+
+## Read on the page's GPU (2026-10-16)
+
+So the page reads the frames itself. RapidOCR's pipeline is ported to TypeScript
+(`frontend/src/ocr`): the same model files, served by the app (`GET /api/video/ocr`), run by
+onnxruntime-web on WebGPU in the frame worker, with the server's change check, layout and threshold.
+The page sends each frame with the lines of the regions it read; the server interprets them and runs
+no OCR. Without WebGPU, or until the models load, the server reads the frames as before.
+
+**Speed.** Single-threaded WASM is too slow (the page can't have threads: the YouTube player rules out
+cross-origin isolation); WebGPU is not. On this laptop's Radeon Pro 555X, in Chrome 155:
+
+| | WebGPU | WASM |
+|---|---|---|
+| detector, the message strip (256×960, padded as RapidOCR pads it) | 52 ms | 404 ms |
+| detector, a plate (96×192) | 12 ms | 57 ms |
+| recogniser, three lines | 55 ms | 446 ms |
+| recogniser, four wide lines | 91 ms | 815 ms |
+
+Over 60 s of round 5 (420–480 s, 241 frames at 4 fps), the whole of a frame's reading on the page
+(change check and OCR) took 93 ms at the median, 246 at p90, 623 at most (the first frame, which
+reads all nine regions); 132 ms at the median on a frame that read something, 23 on one that didn't.
+The change check itself had first taken 102 ms a frame, a min/max filter comparing every pixel of
+every window; counting from running sums made it 23.
+
+**Reads.** `scripts/analysis/browser_ocr_parity.py` runs the port in Node against RapidOCR, two
+readers side by side on the same crops. Over 60 s each of round 6 (200–260 s) and round 5
+(420–480 s), 757 crops: the same lines in 692 (91%), the same boxes within 3 px in 735. The
+differences mostly favour the port: plates read "100%" where RapidOCR read "1000%", the sheet cards
+"Sp. Atk" for ".Ak", and RapidOCR's stray "." and "e" and "无房" are gone. Events: 37 of 39 the same
+in round 6 (the other two the sheet cards' banner junk, now with "Sp. Atk" in it), 23 of 24 in round
+5. The one only RapidOCR settled was its own misread: an HP read "%L" and "%64" became a plate with no
+HP, where the port read "77%" and "79%". On the GPU in Chrome, the round 5 window's lines put through
+the server's reader gave the same 22 of those 23, from the same 327 regions read.
+
+**Download.** The models are 31 MB and onnxruntime-web's WASM 27 MB (6.7 MB compressed), once; the
+models' URLs carry their hash and are cached for good. Loading them onto the GPU took 2.5–2.7 s.
+
 ## Decision gate (step 1)
 
 This source passes: the message line, the nameplates and the HP numbers are all readable. Step 2

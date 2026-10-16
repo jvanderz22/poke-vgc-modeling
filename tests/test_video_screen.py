@@ -117,3 +117,24 @@ def test_scenery_moving_behind_the_regions_is_not_read_again():
     obs = reader.observe(moved)
     assert reader.ocr_calls == read
     assert obs.choosing and obs.message is None
+
+
+def test_lines_the_page_read_stand_in_for_the_servers_own(monkeypatch):
+    """With the page's lines the server runs no OCR: a region sent is read, one left out is as it
+    was, and one never sent is asked for again."""
+    import numpy as np
+
+    from vgc.video import screen
+
+    monkeypatch.setattr(screen, "_lines", lambda crop: pytest.fail("the server ran OCR"))
+    frame = np.zeros((675, 1200, 3), np.uint8)
+    reader = ScreenReader()
+    message = [("Gardevoir used Moonblast!", 10.0, 5.0, 300.0, 30.0)]
+    plate = [("Gardevoir", 5.0, 5.0, 100.0, 25.0)]
+    obs = reader.observe(frame, {"message": message, "L0": plate})
+    assert obs.message == "Gardevoir used Moonblast!" and obs.plates["L0"].name == "Gardevoir"
+    others = set(reader.layout.regions) - {"message", "L0"}
+    assert reader.unread == others
+    obs = reader.observe(frame, {"field": []})
+    assert obs.message == "Gardevoir used Moonblast!" and obs.plates["L0"].name == "Gardevoir"
+    assert reader.unread == others - {"field"}

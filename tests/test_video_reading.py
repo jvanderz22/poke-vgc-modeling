@@ -54,7 +54,7 @@ def _reading(reg, script):
     frames = iter(script)
     current = {"looks": 0}
 
-    def observe(_img):
+    def observe(_img, _read=None):
         current["looks"] += 1
         return current["obs"]
 
@@ -160,9 +160,27 @@ def test_the_reply_says_which_player_is_on_the_left(reg, logged):
     flipped = {**SETUP, "p1": SETUP["p2"], "p2": SETUP["p1"]}
     r = live_reading.Reading(reg, flipped, "youtube:test")
     current = {"obs": Observation()}
-    r.screen.observe = lambda _img: current["obs"]
+    r.screen.observe = lambda _img, _read=None: current["obs"]
     assert r.frame(170.0, None).left is None
     current["obs"] = Observation(message="Go! Sneasler and Gardevoir!")
     statuses = [r.frame(t, None) for t in (179.0, 179.25, 179.5)]
     assert statuses[-1].left == "p2"
     assert [(e["side"], e["species"]) for s in statuses for e in s.entries] == [("p2", "Sneasler"), ("p2", "Gardevoir")]
+
+
+def test_the_pages_lines_for_a_frame_not_read_are_kept(reg, logged, monkeypatch):
+    """The page sends a region once, when it changes. Lines sent with a frame the reader skips (a
+    repeat of the last video time) must still count, or that region would never be sent again."""
+    import numpy as np
+
+    from vgc.video import screen
+
+    monkeypatch.setattr(screen, "_lines", lambda crop: pytest.fail("the server ran OCR"))
+    r = live_reading.Reading(reg, SETUP, "youtube:test")
+    frame = np.zeros((675, 1200, 3), np.uint8)
+    first = [("Go! Sneasler and Gardevoir!", 10.0, 5.0, 400.0, 30.0)]
+    status = r.frame(170.0, frame, {"message": first})
+    assert set(status.unread) == set(screen.BROADCAST_2026.regions) - {"message"}
+    later = [("Sneasler used Fake Out!", 10.0, 5.0, 400.0, 30.0)]
+    r.frame(170.0, frame, {"message": later})  # the same video time: not read
+    assert r.screen._lines["message"] == later

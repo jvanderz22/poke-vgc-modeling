@@ -889,6 +889,40 @@ def test_a_watched_battle_is_read_frame_by_frame(client, watched, tmp_path, monk
     assert client.get(f"/api/battles/{watched['id']}").json()["journal"] == []
 
 
+def test_the_page_gets_the_readers_own_models_and_layout(client):
+    """The watch page reads frames on its GPU with what the server reads with: the same model
+    files, the same characters, the same regions and threshold."""
+    pytest.importorskip("rapidocr")
+    from vgc.video import screen
+
+    cfg = client.get("/api/video/ocr").json()
+    assert cfg["limit"] == screen.DET_LIMIT and cfg["changed"] == screen.CHANGED
+    assert cfg["regions"] == {k: list(v) for k, v in screen.BROADCAST_2026.regions.items()}
+    assert len(cfg["keys"]) > 1000 and cfg["det"].endswith(f"v={cfg['version']}")
+    r = client.get(cfg["det"])
+    assert r.status_code == 200 and len(r.content) > 1_000_000 and "immutable" in r.headers["cache-control"]
+    assert client.get("/api/video/ocr/cls.onnx").status_code == 404
+
+
+def test_a_frame_the_page_read_itself_runs_no_ocr_on_the_server(client, watched, tmp_path, monkeypatch):
+    from vgc.video import screen
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    monkeypatch.setattr(webapp, "_readings", {})
+    monkeypatch.setattr(screen, "_lines", lambda crop: pytest.fail("the server ran OCR"))
+    frame = (paths.ROOT / "tests" / "fixtures" / "video" / "r5-choosing.jpg").read_bytes()
+    read = {region: [] for region in screen.BROADCAST_2026.regions}
+    read["message"] = [["Trainers are choosing actions", 300.0, 20.0, 700.0, 50.0]]
+    lines = json.dumps(read).encode()
+    url = f"/api/battles/{watched['id']}/read?video_s=182.5&video=abc123"
+    r = client.post(url, content=lines + frame, headers={"content-type": "image/jpeg", "x-ocr-lines": str(len(lines))})
+    assert r.status_code == 200, r.text
+    assert r.json()["read_to"] == 182.5 and r.json()["unread"] == []
+    bad = client.post(url.replace("182.5", "183"), content=frame, headers={"content-type": "image/jpeg", "x-ocr-lines": "12"})
+    assert bad.status_code == 422
+
+
 def test_only_a_watched_battle_is_read_off_a_video(client, started):
     r = client.post(f"/api/battles/{started['id']}/read?video_s=1", content=b"x", headers={"content-type": "image/jpeg"})
     assert r.status_code == 409
