@@ -872,6 +872,10 @@ body:has(.watch-page.live) .app-header > .dim { display: none; }
 main:has(> .watch-page.live) { padding: 10px 16px; }
 .watch-page.live { grid-template-columns: minmax(0, 2fr) minmax(400px, 1fr); gap: 14px; }
 .watch-page.live .watch-video { top: 52px; }
+/* The player is as wide as the column allows, but no taller than leaves the controls and both
+   sixes on screen under it: the header, the controls and the two strips take about 340px. A shared
+   tab's own banner ("Sharing this tab…") takes the window's height with it, and this follows. */
+.watch-page.live .watch-player { max-width: max(480px, calc((100dvh - 340px) * 16 / 9)); }
 @media (max-width: 1100px) {
   .watch-page.live { grid-template-columns: 1fr; }
   .watch-page.live .watch-video { position: static; }
