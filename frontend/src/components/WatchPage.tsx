@@ -44,6 +44,8 @@ export function WatchPage({ reg, route, navigate, pool }: {
   const [strips, setStrips] = useState<HTMLDivElement | null>(null);
   // The player on the left of the screen, once the reader has worked it out from the Pokémon.
   const [left, setLeft] = useState<"p1" | "p2">("p1");
+  // The reader's frames a second while it is under the rate a short message needs, else null.
+  const [slow, setSlow] = useState<number | null>(null);
   const stampEntries = useCallback((entries: Entry[]) => {
     const at = videoTime.current();
     return at === null ? entries : entries.map((e) => ("video_s" in e ? e : { ...e, video_s: Math.round(at * 100) / 100 }));
@@ -64,13 +66,13 @@ export function WatchPage({ reg, route, navigate, pool }: {
       <VideoColumn reg={reg} route={route} navigate={navigate}
                    watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} onReaderOn={setReaderOn}
                    onPlayer={(p) => { player.current = p; videoTime.current = () => p.getCurrentTime(); }}
-                   strips={setStrips} onLeft={setLeft} />
+                   strips={setStrips} onLeft={setLeft} onSlow={setSlow} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
                            autoStart={!readerOn} manual={manual} onManual={setManual}
-                           watch={{ strips, left, onSeek: seek }} />
+                           watch={{ strips, left, onSeek: seek, alert: slow !== null && <SlowReading rate={slow} /> }} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -96,7 +98,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, strips, onLeft }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, strips, onLeft, onSlow }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -109,6 +111,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   /** Where the battle half draws both sixes, under the video. */
   strips: (el: HTMLDivElement | null) => void;
   onLeft: (side: "p1" | "p2") => void;
+  onSlow: (rate: number | null) => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -236,6 +239,11 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   useEffect(() => { setBattleReading(true); setReadStatus(null); }, [battle]);
   const left = readStatus?.left;
   useEffect(() => { if (left) onLeft(left); }, [left, onLeft]);
+  // Under SLOW_RATE frames a second a short message can go by unread: said at the top of the
+  // battle column too, where it is seen, and not only in the reading line under the strips.
+  const rate = answered.current.length / 5;
+  const slow = capturing && battleReading && !!battle && rate > 0 && rate < SLOW_RATE ? Math.round(rate * 10) / 10 : null;
+  useEffect(() => { onSlow(slow); }, [slow, onSlow]);
   useEffect(() => { onReaderOn(capturing && battleReading && !!battle); }, [capturing, battleReading, battle, onReaderOn]);
 
   async function stopReading() {
@@ -395,7 +403,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {battle && ((capturing && battleReading) || readStatus) && (
-        <ReadingLine status={readStatus} on={capturing && battleReading} rate={answered.current.length / 5} error={readError} ocr={ocr} />
+        <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} error={readError} ocr={ocr} />
       )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
@@ -438,7 +446,7 @@ function ReadingLine({ status, on, rate, error, ocr }: {
               {status.left === "p2" && " (the sheets were read the other way round; the Pokémon say so)"}.
             </div>
           )}
-          {on && rate > 0 && rate < 2 && (
+          {on && rate > 0 && rate < SLOW_RATE && (
             <div className="warn-text">Under 2 frames a second: a short message can be missed.</div>
           )}
           {status.behind && status.read_to !== null && (
@@ -583,6 +591,21 @@ function useSheetErrors(reg: string, sheets: WatchSheets["sheets"]): (Problem[] 
     return () => { live = false; window.clearTimeout(t); };
   }, [reg, texts[0], texts[1]]);  // eslint-disable-line react-hooks/exhaustive-deps
   return errors;
+}
+
+/** Below this many frames a second the reader can miss a message that is only on screen briefly. */
+const SLOW_RATE = 2;
+
+/** The reader falling behind, as a warning at the top of the battle column. */
+function SlowReading({ rate }: { rate: number }) {
+  return (
+    <span className="chip flag warn slow-reading" role="status"
+          title={`Reading ${rate.toFixed(1)} frames a second, under ${SLOW_RATE}: a short message can be missed`}>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+           strokeLinejoin="round" aria-hidden="true"><path d="M8 2 15 14H1z" /><path d="M8 6.5v3.5M8 12v.01" /></svg>
+      {rate.toFixed(1)} frames/s
+    </span>
+  );
 }
 
 /** The video column's controls, drawn small: a capture, the reader, a flag. */

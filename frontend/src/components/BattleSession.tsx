@@ -48,7 +48,9 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   /** Beside a video (the watch page): the battle as a column for reading at a glance, both sixes
    *  in `strips` under the video, `left` the player on the left of the screen, and `onSeek` to
    *  put the video at an entry's time. */
-  watch?: { strips: HTMLElement | null; left: Side; onSeek?: (seconds: number) => void };
+  watch?: { strips: HTMLElement | null; left: Side; onSeek?: (seconds: number) => void;
+            /** Something about the reading to see from anywhere: drawn at the top of the column. */
+            alert?: ReactNode };
 }) {
   const name = useNames(reg);
   const [view, setView] = useState<LiveView | null>(null);
@@ -154,7 +156,10 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
           {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
           {/* A forfeit is something the reader cannot see, so it is here whether taps are being
               entered by hand or not. */}
-          {step === null && !view.ended && <span style={{ marginLeft: "auto" }}><Forfeit view={view} onLog={log} busy={busy} menu /></span>}
+          <span className="row" style={{ marginLeft: "auto", gap: 6 }}>
+            {watch.alert}
+            {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} menu />}
+          </span>
         </div>
         {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
         {stepper}
