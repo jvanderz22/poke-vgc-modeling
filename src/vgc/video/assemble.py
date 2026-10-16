@@ -23,7 +23,7 @@ from typing import Any
 from vgc.battle import entry as journal
 from vgc.battle.state import Mon
 from vgc.regulation import Regulation, to_id
-from vgc.video.said import Said, Vocabulary, Who, banner, best, parse
+from vgc.video.said import Said, Vocabulary, Who, banner, best, parse, trainer_id
 from vgc.video.screen import Event
 
 # Which player is on which side of the screen, until the leads say otherwise: the watch page gives
@@ -576,6 +576,11 @@ class Assembler:
         return s
 
     def _sendout(self, t: float, s: Said) -> None:
+        if s.data.get("trainer"):
+            # What the game calls the right player ("The Trainer", "Alex™"), which the setup's
+            # names needn't match: a forfeit's "… lost!" will use it.
+            for v in self.vocabs.values():
+                v.trainers[trainer_id(s.data["trainer"])] = "R"
         side = self.side[s.who[0].side]
         if not self.started:
             if side in self.led:

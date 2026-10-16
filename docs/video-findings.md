@@ -95,6 +95,12 @@ that Sinistcha made!" (Hospitality, on Sinistcha's arrival). The ability announc
 not a banner, and names its host. The still plates put Floette's HP right at the next decision
 point anyway, but as an unexplained heal, and the switch-in question went unanswered.
 
+Watched in production (2026-10-16, at 7:34:58 of JET7oW_RiLI, Louisville round 8): a forfeit read
+"The battle has ended due to a forfeit." then "Alex™ lost!", not "The Trainer lost!". The right
+player is called whatever their send-outs called them ("Alex™ sent out …"), and that in-game name
+needn't match the broadcast's ("Alex Madara"). So the reader keeps the name from the send-outs and
+matches the loser against it, ignoring the ™ (OCR may read it as "TM").
+
 **The broadcast can cut away mid-turn.** In round 6 nothing was on screen for about 30 seconds at
 the end of a turn, and the opposing Sneasler fainted unseen (sandstorm, from 21%). The next thing
 shown was its replacement. The reader works such a faint out from the next decision point's plates

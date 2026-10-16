@@ -132,8 +132,23 @@ class Vocabulary:
                         k: dex.moves[k]["name"] for k in sp.get("moves", []) if k in dex.moves}
                 if e.get("item"):
                     items[to_id(e["item"])] = e["item"]
-        trainers = {to_id(n): side for side, n in (names or {}).items() if n}
+        trainers = {trainer_id(n): side for side, n in (names or {}).items() if n}
         return cls(printed, moves, items, trainers, open_moves)
+
+
+def trainer_id(name: str) -> str:
+    """A trainer's name as an id, without the ™ the game prints after it (which OCR may read as
+    "TM")."""
+    return to_id(re.sub(r"\s*(?:™|TM)$", "", name.strip()))
+
+
+def trainer_side(name: str, vocab: Vocabulary) -> str | None:
+    """The screen side a printed trainer name is: the name the right player's send-outs used, or
+    a player's name from the setup. "The Trainer" is always the right player."""
+    key = trainer_id(name)
+    if key == "thetrainer":
+        return "R"
+    return best(key, vocab.trainers) if vocab.trainers else None
 
 
 def best(text: str, table: dict[str, str]) -> str | None:
@@ -201,9 +216,9 @@ def _alt(table: dict[str, str]) -> str:
 # that matches wins, so the specific comes before the general ("…used…" last but one).
 PATTERNS: list[tuple[str, str]] = [
     ("sendout_L", r"^Go! (?P<who>.+)$"),
-    ("sendout_R", r"^.+? sent out (?P<who>.+)$"),
+    ("sendout_R", r"^(?P<trainer>.+?) sent out (?P<who>.+)$"),
     ("withdraw_L", r"^(?P<who>.+?), come back$"),
-    ("withdraw_R", r"^.+? withdrew (?P<who>.+)$"),
+    ("withdraw_R", r"^(?P<trainer>.+?) withdrew (?P<who>.+)$"),
     ("went_back", r"^(?P<who>.+?) went back to .+$"),
     ("eject", r"^(?P<who>.+?) is switched out with the Eject (?:Button|Pack)$"),
     ("dragged", r"^(?P<who>.+?) was dragged out$"),
@@ -243,8 +258,9 @@ PATTERNS: list[tuple[str, str]] = [
     ("feint", r"^(?P<who>.+?) fell for the feint$"),
     ("forfeit", r"^(?P<trainer>.+?) forfeited(?: the match)?$"),
     ("forfeit_notice", r"^The battle has ended due to a forfeit$"),
-    # From the left player's view the right one is "the Trainer"; "You lost" is provisional.
-    ("lost", r"^(?P<loser>The Trainer|You) lost$"),
+    # From the left player's view the right one is "the Trainer", or their in-game name ("Alex™"),
+    # whichever their send-outs used; "You lost" is provisional.
+    ("lost", r"^(?P<loser>.+?) lost$"),
     ("move", r"^(?P<who>.+?) used (?P<move>.+)$"),
 ]
 _COMPILED = [(pid, re.compile(rx)) for pid, rx in PATTERNS]
@@ -296,7 +312,8 @@ def _read(pid: str, g: dict[str, str], vocab: Vocabulary, full: str) -> Said | N
     if pid in ("sendout_L", "sendout_R", "withdraw_L", "withdraw_R"):
         side = pid[-1]
         who = _pair(g["who"], vocab, side)
-        return said(pid.rsplit("_", 1)[0], who, side=side) if who else None
+        trainer = {"trainer": g["trainer"]} if g.get("trainer") else {}
+        return said(pid.rsplit("_", 1)[0], who, side=side, **trainer) if who else None
     if pid == "swap":
         a, b = _who(g["a"], vocab), _who(g["b"], vocab)
         return said("swap", (a, b)) if a and b else None
@@ -313,10 +330,12 @@ def _read(pid: str, g: dict[str, str], vocab: Vocabulary, full: str) -> Said | N
     if pid == "forfeit_notice":
         return said("forfeit_notice")
     if pid == "lost":
-        return Said("lost", (), {"winner": "L" if g["loser"] == "The Trainer" else "R"}, full,
-                    "lost" if g["loser"] == "The Trainer" else "lost:you")
+        if g["loser"] == "You":
+            return Said("lost", (), {"winner": "R"}, full, "lost:you")
+        side = trainer_side(g["loser"], vocab)
+        return said("lost", winner={"L": "R", "R": "L"}[side]) if side else None
     if pid == "forfeit":
-        side = vocab.trainers.get(to_id(g["trainer"]))
+        side = trainer_side(g["trainer"], vocab)
         return said("forfeit", winner={"L": "R", "R": "L"}.get(side)) if side else None
     w = _who(g["who"], vocab)
     if w is None:

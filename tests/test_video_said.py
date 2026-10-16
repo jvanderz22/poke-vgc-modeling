@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from vgc.regulation import load_regulation
-from vgc.video.said import Vocabulary, Who, banner, parse
+from vgc.video.said import Vocabulary, Who, banner, parse, trainer_id
 
 
 def _sheet(*rows: tuple[str, str, list[str]]) -> list[dict]:
@@ -176,3 +176,14 @@ def test_how_a_forfeit_reads(vocab):
     assert parse("The battle has ended due to a forfeit.", vocab).kind == "forfeit_notice"
     s = parse("The Trainer lost!", vocab)
     assert (s.kind, s.data, s.provisional) == ("lost", {"winner": "L"}, False)
+
+
+def test_a_loser_named_as_their_send_outs_named_them(vocab):
+    # Louisville round 8 printed the right player's in-game name: "Alex™ sent out …", then
+    # "Alex™ lost!". The name is only known once a send-out has said it.
+    assert parse("Alex™ sent out Raichu!", vocab).data["trainer"] == "Alex™"
+    assert parse("Alex™ lost!", vocab).kind == "unknown"
+    vocab.trainers[trainer_id("Alex™")] = "R"
+    for text in ("Alex™ lost!", "AlexTM lost!", "Alex lost"):
+        s = parse(text, vocab)
+        assert (s.kind, s.data, s.provisional) == ("lost", {"winner": "L"}, False), text

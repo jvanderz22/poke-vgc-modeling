@@ -291,6 +291,23 @@ def test_intimidate_and_defiant_are_matched_to_their_own_messages(reg):
     assert (raichu.boosts.get("atk"), kingambit.boosts.get("atk")) == (-1, 1)
 
 
+def test_a_forfeit_names_the_loser_as_the_game_named_them(reg):
+    # The setup's names are the broadcast's, which needn't be the in-game ones: the loser is
+    # matched to the name the right player's send-out used.
+    setup = {"perspective": "spectator", "names": {"p1": "Enrique Grimaldo", "p2": "A. Madara"},
+             "p1": [_set("Floette-Eternal", "Flower Veil", "Modest", "Floettite", ["Moonblast", "Dazzling Gleam", "Calm Mind", "Protect"]),
+                    _set("Incineroar", "Intimidate", "Adamant", "Sitrus Berry", ["Fake Out", "Flare Blitz", "Parting Shot", "Throat Chop"])],
+             "p2": [_set("Raichu", "Lightning Rod", "Timid", "Raichunite Y", ["Fake Out", "Zap Cannon", "Focus Blast", "Protect"]),
+                    _set("Kingambit", "Defiant", "Adamant", "Life Orb", ["Sucker Punch", "Kowtow Cleave", "Swords Dance", "Protect"])]}
+    rows = [(26101.5, "message", {"text": "Alex™ sent out Raichu and Kingambit the Paldea Champion!"}),
+            (26105.76, "message", {"text": "Go! Floette the Champion-Tiered and Incineroar the Feisty!"}),
+            (26114.27, "choosing", {}),
+            (27298.0, "message", {"text": "The battle has ended due to a forfeit."}),
+            (27300.0, "message", {"text": "Alex™ lost!"})]
+    a = assemble(reg, setup, [Event(t, k, d) for t, k, d in rows])
+    assert {k: v for k, v in a.entries[-1].items() if k != "t"} == {"kind": "end", "winner": "p1", "by": "forfeit"}
+
+
 def test_a_send_out_the_frames_missed_is_taken_from_the_plates(reg):
     # Read slowly enough, "Go! Sneasler and Gardevoir!" goes by unread, and with it the whole game.
     entries, a = _read(reg, [r for r in LEADS if not r[2].get("text", "").startswith("Go!")] + [

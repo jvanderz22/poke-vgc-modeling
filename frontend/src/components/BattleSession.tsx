@@ -154,8 +154,8 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
         <div className="watch-rail-bar tiny dim">
           {view.series && <>game {view.series.game} of a Bo{view.series.best_of} ({view.series.score.p1}–{view.series.score.p2}) · </>}
           {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
-          {/* A forfeit is something the reader cannot see, so it is here whether taps are being
-              entered by hand or not. */}
+          {/* The reader sees a forfeit only when the game shows it, so this is here whether taps
+              are being entered by hand or not. */}
           <span className="row" style={{ marginLeft: "auto", gap: 6 }}>
             {watch.alert}
             {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} menu />}
