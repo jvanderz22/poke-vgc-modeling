@@ -108,7 +108,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   const [flagNote, setFlagNote] = useState<string | null>(null);
   const [flagged, setFlagged] = useState<string | null>(null);
   // The battle reader: on while frames are going to it, and what it said last.
-  const [battleReading, setBattleReading] = useState(false);
+  // On by default: once there is a battle, a captured player is read. Waiting for a second button
+  // read nothing in prod (2026-10-16), with the capture running and no sign anything was wrong.
+  const [battleReading, setBattleReading] = useState(true);
   const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
   const answered = useRef<number[]>([]);
@@ -147,7 +149,6 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   }, []);
 
   const stop = useCallback(() => {
-    setBattleReading(false);
     if (recorder.current) void stopRecording();
     capture.current?.stop();
     capture.current = null;
@@ -180,8 +181,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
     }, () => !full(latest.current));
   }, [capturing, sheetsWanted, reg, onWatch]);
 
-  // The battle is read while there is one and the reader is on: a frame every quarter second while
-  // the video plays, none while it is paused.
+  // The battle is read while there is one, the player is captured, and reading hasn't been stopped:
+  // a frame every quarter second while the video plays, none while it is paused.
   const battle = route.battle;
   useEffect(() => {
     if (!capturing || !battleReading || !battle || !capture.current || !route.video) return;
@@ -208,7 +209,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   }, [capturing, battleReading, battle, route.video, reg, onRead]);
 
   // A different battle (the next game of a Bo3) starts unread.
-  useEffect(() => { setBattleReading(false); setReadStatus(null); }, [battle]);
+  useEffect(() => { setBattleReading(true); setReadStatus(null); }, [battle]);
 
   async function stopReading() {
     setBattleReading(false);
@@ -314,7 +315,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
             <button className="ghost" onClick={saveFrame}>Save frame</button>
           </>
         ) : (
-          <button onClick={start}>{reading ? "Capture the player and read the sheets" : "Capture the player"}</button>
+          <button onClick={start}>
+            {reading ? "Capture the player and read the sheets" : battleReading ? "Capture the player and read the battle" : "Capture the player"}
+          </button>
         )}
         <span style={{ flex: 1 }} />
         <button className="ghost" title="Something the page got wrong or didn't catch: noted at this point in the video, to look at later"
@@ -339,8 +342,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         {capturing && " A recorded clip saves as a .webm and a .json of the video's times, for building the battle reader."}
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
-      {battle && (battleReading || readStatus) && (
-        <ReadingLine status={readStatus} on={battleReading} rate={answered.current.length / 5} error={readError} />
+      {battle && ((capturing && battleReading) || readStatus) && (
+        <ReadingLine status={readStatus} on={capturing && battleReading} rate={answered.current.length / 5} error={readError} />
       )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>

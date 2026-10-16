@@ -699,7 +699,9 @@ button.choice:disabled { opacity: .4; }
    stays in view while the match half scrolls; the battle page inside it stacks to one column. */
 main:has(> .watch-page) { max-width: none; }
 .watch-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.watch-video { position: sticky; top: 12px; min-width: 0; }
+/* Below the sticky header, not under it: whatever covers the player is in the capture, and the
+   header's own name was read as a player's. */
+.watch-video { position: sticky; top: 70px; min-width: 0; }
 .watch-match { min-width: 0; }
 .watch-player { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
 .watch-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
