@@ -12,6 +12,7 @@ pasted one, so a move the species can't learn is flagged rather than trusted.
 
 from __future__ import annotations
 
+import re
 import statistics
 import threading
 from dataclasses import asdict, dataclass, field
@@ -31,6 +32,8 @@ MARGIN = 0.08
 # Basculegion-F, "ALOLAN NINETALES" for Ninetales-Alola.
 _GENDER_FORMES = {"F": "female", "M": "male"}
 _REGIONAL_FORMES = {"Alola": "alolan", "Galar": "galarian", "Hisui": "hisuian", "Paldea": "paldean"}
+# A forme named in brackets after its base: "FLOETTE (ETERNAL FLOWER)", "TAUROS (AQUA BREED)".
+_BRACKETED = re.compile(r"^(?P<base>[^(]+?)\s*\((?P<qual>[^)]*)\)?\s*$")
 
 # The validator's Stat Point checks don't apply: a sheet never shows Stat Points.
 _SP_CODES = {"sp_unspent", "sp_zero", "sp_budget", "sp_stat_cap", "sp_negative"}
@@ -113,9 +116,28 @@ class SheetRead:
 
 # --- vocabulary -----------------------------------------------------------------------------
 
-def vocabulary(dex: Dex) -> dict[str, list[tuple[str, str]]]:
+class Vocabulary(dict[str, list[tuple[str, str]]]):
+    """Every name a sheet can show, keyed by `to_id`: id -> [(kind, dex name)]. `formes` holds, for
+    each legal species, its base's legal formes and the words that name each one."""
+
+    formes: dict[str, list[tuple[str, frozenset[str]]]]
+
+
+def _forme_words(forme: str) -> frozenset[str]:
+    """The words a sheet may use for a forme: "Paldea-Aqua" is paldea or paldean, and aqua."""
+    out = set()
+    for part in forme.split("-"):
+        out |= {to_id(w) for w in part.split()}
+        if part in _GENDER_FORMES:
+            out.add(_GENDER_FORMES[part])
+        if part in _REGIONAL_FORMES:
+            out.add(_REGIONAL_FORMES[part])
+    return frozenset(out)
+
+
+def vocabulary(dex: Dex) -> Vocabulary:
     """Every name a sheet can show, keyed by `to_id`: id -> [(kind, dex name)]."""
-    vocab: dict[str, list[tuple[str, str]]] = {}
+    vocab = Vocabulary()
 
     def add(key: str, kind: str, name: str) -> None:
         if (kind, name) not in vocab.setdefault(key, []):
@@ -128,6 +150,10 @@ def vocabulary(dex: Dex) -> dict[str, list[tuple[str, str]]]:
         base, forme = s.get("baseSpecies") or s["name"], s.get("forme") or ""
         if forme in _GENDER_FORMES:
             add(to_id(base + _GENDER_FORMES[forme]), "species", s["name"])
+            # The base is the male one, and a sheet says so: "BASCULEGION (MALE)" was read as the
+            # nearer "basculegionfemale" (2026-10-16).
+            if forme == "F" and to_id(base) in dex.species:
+                add(to_id(base + "male"), "species", dex.species[to_id(base)]["name"])
         if forme in _REGIONAL_FORMES:
             add(to_id(_REGIONAL_FORMES[forme] + base), "species", s["name"])
     # A sheet prints the base name for a forme whose base isn't legal itself: "FLOETTE" for
@@ -141,6 +167,11 @@ def vocabulary(dex: Dex) -> dict[str, list[tuple[str, str]]]:
     for base, names in formes.items():
         if len(names) == 1 and not any(kind == "species" for kind, _ in vocab.get(base, [])):
             add(base, "species", next(iter(names)))
+    vocab.formes = {}
+    for names in formes.values():
+        family = [(n, _forme_words(dex.species[to_id(n)].get("forme") or "")) for n in sorted(names)]
+        for n in names:
+            vocab.formes[n] = family
     for kind, table in (("ability", dex.abilities), ("nature", dex.natures),
                         ("item", dex.items), ("move", dex.moves)):
         for entry in table.values():
@@ -153,6 +184,10 @@ def match(text: str, vocab: dict[str, list[tuple[str, str]]]) -> Match | None:
     key = to_id(text)
     if not key:
         return None
+    # A species with a bracket is settled by the bracket, never by the nearest name to the whole,
+    # nor by the whole as one name: "BASCULEGION ()" is not the bare base.
+    if (b := _BRACKETED.match(text)) and (base := match(b["base"], vocab)) and base.kind == "species":
+        return _bracketed(base, b["qual"], vocab)
     if key in vocab:
         hits = vocab[key]
         return Match(*hits[0], 1.0) if len(hits) == 1 else None
@@ -172,6 +207,28 @@ def match(text: str, vocab: dict[str, list[tuple[str, str]]]) -> Match | None:
         return None
     hits = vocab[cand]
     return Match(*hits[0], best) if len(hits) == 1 else None
+
+
+def _bracketed(m: Match, qual: str, vocab: dict[str, list[tuple[str, str]]]) -> Match | None:
+    """A species with its forme in brackets: the base's legal forme that the most of the bracket's
+    words name. "FLOETTE (ETERNAL FLOWER)" matched nothing as a whole, so the card was dropped
+    (flagged in prod, 2026-10-15). With no forme named, the base: "(MIDDAY FORM)" and "(MALE)" are
+    the base's own names. Two formes named as well as each other is no answer."""
+    family = getattr(vocab, "formes", {}).get(m.name)
+    if not family:
+        return None
+    words = {to_id(w) for w in re.split(r"[\s()]+", qual) if w}
+    scored = sorted(((len(w & words), n) for n, w in family if w), reverse=True)
+    if scored and scored[0][0]:
+        if len(scored) > 1 and scored[1][0] == scored[0][0]:
+            return None
+        return Match("species", scored[0][1], m.ratio)
+    # Across a gender the base is the male, and a different Pokémon from the female: only "MALE"
+    # says so. A misread "FEMAIE" is left unread, not taken for the male.
+    if any(w & {_GENDER_FORMES["F"]} for _, w in family):
+        male = next((n for n, w in family if not w), None)
+        return Match("species", male, m.ratio) if male and _GENDER_FORMES["M"] in words else None
+    return m
 
 
 # --- layout ---------------------------------------------------------------------------------
