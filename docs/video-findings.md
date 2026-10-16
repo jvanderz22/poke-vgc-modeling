@@ -49,6 +49,12 @@ actions"). During a move they are hidden, and only the Pokémon whose HP changed
 Its number counts down to the new value over about a second (100 → 82 → 75 → 66 → 60), then holds.
 The value to read is the settled one.
 
+**The right side's plates run the other way.** The left plates are in the order the leads were sent
+out (L0 the first); the right ones are reversed (R1 the first). Three games of three: Louisville
+r5 and r6 game 1, and JET7oW_RiLI game 2 (2026-10-16). So the plates at the first decision point
+give the leads, slots included, when a send-out message was missed: one that reading too slowly
+missed had left that game 2 unstarted, with nothing after it read (`assemble._lead_from_plates`).
+
 ## Messages
 
 Each message is up for 1.5–2 s, with gaps of about 0.25–2 s between them. At 4 frames a second

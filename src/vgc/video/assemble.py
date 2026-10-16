@@ -42,6 +42,9 @@ SNAPSHOT_S = 1.0
 # How far behind the frames a settled event can be: it is stamped with when it first showed, and
 # reported a couple of frames later.
 SETTLE_LAG_S = 0.75
+# The plates in the order each side sent its leads out: the right side's run the other way (R1 was
+# sent out first in all three games read so far, Louisville r5 and r6 and JET7oW_RiLI game 2).
+LEAD_PLATES = {"L": ("L0", "L1"), "R": ("R1", "R0")}
 
 
 @dataclass
@@ -107,6 +110,10 @@ class Assembler:
         self.held: dict[str, list[tuple[float, Who]]] = {"p1": [], "p2": []}
         self.forfeit = False
         self.won: tuple[float, str] | None = None  # (when, winner) once a side has nothing left
+        # A decision point seen before both sides' leads were read, and the names on its plates:
+        # the leads a missed send-out didn't give (`_lead_from_plates`).
+        self.lead_check: float | None = None
+        self.lead_plates: dict[str, str | None] = {}
 
     def use(self, rp: journal.Replay) -> None:
         """Read on from this replay, keeping each stat step it applies (`_boost`)."""
@@ -312,6 +319,8 @@ class Assembler:
 
     def feed(self, e: Event) -> None:
         self._write_won()
+        if self.lead_check is not None and not (e.kind == "plate" and e.t - self.lead_check <= SNAPSHOT_S):
+            self._lead_from_plates()
         if self.decision is not None and not (e.kind == "plate" and e.t - self.decision <= SNAPSHOT_S):
             self._close_decision()
         if e.kind == "message":
@@ -344,14 +353,58 @@ class Assembler:
                 self._hp(e.t, who, e.data["hp"], cause=cause)
             # Otherwise nothing on screen says why it changed (a plate sliding past during a
             # switch reads "dee 10%"): the next decision point's still plates settle it.
+        elif e.kind == "plate" and self.lead_check is not None:
+            self.lead_plates[e.data["slot"]] = e.data.get("name")
         elif e.kind == "choosing" and self.started:
             self._flush(e.t)
             self.decision = e.t
+        elif e.kind == "choosing":
+            self.lead_check, self.lead_plates = e.t, {}
+
+    def _lead_from_plates(self) -> None:
+        """Lead from a decision point's plates for a side whose send-out wasn't read. A message is
+        up for a couple of seconds, and a slow enough frame rate reads it once or not at all; until
+        both sides have led, nothing after is read, so one missed send-out lost a whole game. The
+        plates show every lead at the first decision point and stay up while the players choose."""
+        t, plates = self.lead_check, self.lead_plates
+        self.lead_check, self.lead_plates = None, {}
+        assert t is not None
+        if not self.oriented:
+            # Which sheet is on the left, from the names: settled only if just one way round reads
+            # every plate (a species on both sheets reads either way).
+            fits = [flip for flip in (False, True)
+                    if plates and all(n and best(n, self.vocabs[flip].names[s[0]]) for s, n in plates.items())]
+            if len(fits) != 1:
+                return
+            self.oriented = True
+            self.side, self.vocab = (FLIPPED, self.vocabs[True]) if fits[0] else (SIDE, self.vocabs[False])
+        before = {q.id for q in self.rp.questions}
+        for screen, slots in LEAD_PLATES.items():
+            side = self.side[screen]
+            names = [plates.get(s) for s in slots]
+            species = [best(n, self.vocab.names[screen]) if n else None for n in names]
+            if side in self.led or None in species or species[0] == species[1]:
+                continue
+            for slot, sp in enumerate(species):
+                self._write(t, {"kind": "lead", "side": side, "slot": slot, "species": sp})
+            self.led.add(side)
+            self._miss(t, f"{species[0]} and {species[1]} sent out", "not read: the leads were taken from the plates")
+        # Their switch-in abilities announced before this decision point: a banner since the last
+        # message read can still answer them.
+        for q in self.rp.questions:
+            if q.id not in before:
+                self.asked[q.id] = t - BANNER_WINDOW_S
+        self.started = self.led == {"p1", "p2"}
+        if self.started:
+            self.decision = t
+            self._close_decision()
 
     def tick(self, t: float) -> None:
         """The frames have reached `t`. Read live, a decision point is closed (its turn written)
         once its plates have had time to come in, not when the next message comes, which is after
         the players have chosen."""
+        if self.lead_check is not None and t - self.lead_check > SNAPSHOT_S + SETTLE_LAG_S:
+            self._lead_from_plates()
         if self.decision is not None and t - self.decision > SNAPSHOT_S + SETTLE_LAG_S:
             self._close_decision()
         if self.won is not None and t - self.won[0] > SETTLE_LAG_S:
@@ -584,6 +637,8 @@ class Assembler:
         self._write(t, {"kind": "end", "winner": winner})
 
     def finish(self, t: float) -> Assembly:
+        if self.lead_check is not None:
+            self._lead_from_plates()
         self._close_decision()
         self._flush(t)
         self._write_won()

@@ -289,3 +289,38 @@ def test_intimidate_and_defiant_are_matched_to_their_own_messages(reg):
     assert [e["kind"] for e in a.entries] == ["lead"] * 4 + ["answer", "turn"]
     raichu, kingambit = journal.replay(reg, setup, a.entries).state.sides["p2"].mons
     assert (raichu.boosts.get("atk"), kingambit.boosts.get("atk")) == (-1, 1)
+
+
+def test_a_send_out_the_frames_missed_is_taken_from_the_plates(reg):
+    # Read slowly enough, "Go! Sneasler and Gardevoir!" goes by unread, and with it the whole game.
+    entries, a = _read(reg, [r for r in LEADS if not r[2].get("text", "").startswith("Go!")] + [
+        (249.9, "message", {"text": "Sneasler used Close Combat!"}),
+        (253.6, "plate", {"slot": "R1", "name": "Raichu", "hp": 20})])
+    assert entries[:5] == [
+        {"kind": "lead", "side": "p2", "slot": 0, "species": "Raichu"},
+        {"kind": "lead", "side": "p2", "slot": 1, "species": "Grimmsnarl"},
+        {"kind": "lead", "side": "p1", "slot": 0, "species": "Sneasler"},
+        {"kind": "lead", "side": "p1", "slot": 1, "species": "Gardevoir"},
+        {"kind": "turn", "n": 1}]
+    assert entries[5]["kind"] == "move"
+    assert [m["why"] for m in a.missed] == ["not read: the leads were taken from the plates"]
+
+
+def test_both_send_outs_missed_and_the_sheets_the_other_way_round(reg):
+    flipped = {**SETUP, "p1": RIGHT, "p2": LEFT, "names": {"p1": "DORIAN KANG", "p2": "SAMUEL THOMPSON"}}
+    a = assemble(reg, flipped, [Event(t, k, d) for t, k, d in LEADS if k != "message"])
+    entries = [{k: v for k, v in e.items() if k != "t"} for e in a.entries]
+    assert entries == [
+        {"kind": "lead", "side": "p2", "slot": 0, "species": "Sneasler"},
+        {"kind": "lead", "side": "p2", "slot": 1, "species": "Gardevoir"},
+        {"kind": "lead", "side": "p1", "slot": 0, "species": "Raichu"},
+        {"kind": "lead", "side": "p1", "slot": 1, "species": "Grimmsnarl"},
+        {"kind": "turn", "n": 1}]
+    assert a.errors == []
+
+
+def test_plates_before_the_battle_lead_nobody(reg):
+    entries, _ = _read(reg, [(10.0, "choosing", {}),
+                             (10.2, "plate", {"slot": "R0", "name": "More videos", "hp": None}),
+                             (10.2, "plate", {"slot": "R1", "name": "YouTube", "hp": None})])
+    assert entries == []
