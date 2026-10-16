@@ -748,7 +748,8 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
 
   function baseStage(): Stage {
     if (!view.started) {
-      const ready = (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.some(Boolean));
+      // Two leads a side: one was enough here before, so turn 1 could start with a slot empty.
+      const ready = (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.every(Boolean));
       return {
         id: "preview",
         prompt: ready ? "Leads are in." : "Team preview: who led?",
