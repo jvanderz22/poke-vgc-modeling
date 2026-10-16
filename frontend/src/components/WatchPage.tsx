@@ -8,6 +8,7 @@ import {
 } from "../watch";
 import { mountPlayer, type YouTubePlayer } from "../youtube";
 import { BattleSession } from "./BattleSession";
+import { Menu } from "./Popover";
 import { SheetForm } from "./SheetForm";
 
 type WatchRoute = Extract<Route, { tab: "watch" }>;
@@ -331,34 +332,51 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       {playerProblem && <p className="small err" style={{ margin: "6px 2px" }}>{playerProblem}</p>}
       <div className="row watch-controls">
         {capturing ? (
-          <>
-            <button className="ghost" onClick={stop}>Stop capturing</button>
-            {battle && (battleReading
-              ? <button className="ghost recording" onClick={() => void stopReading()}>● Stop reading the battle</button>
-              : <button onClick={() => { setReadError(null); setBattleReading(true); }}>Read the battle</button>)}
-            {recordingSince === null
-              ? <button className="ghost" onClick={() => {
-                  if (!capture.current || !route.video) return;
-                  recorder.current = startRecording(capture.current, route.video, videoTime);
-                  setRecordingSince(Date.now());
-                  setNow(Date.now());
-                }}>Record clip</button>
-              : <button className="ghost recording" onClick={() => void stopRecording()}>
-                  ● Stop recording · {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
-                </button>}
-            <button className="ghost" onClick={saveFrame}>Save frame</button>
-          </>
+          <button className="tool-btn on" onClick={stop} title="Capturing the player: click to stop" aria-label="Stop capturing">
+            <Icon name="capture" />
+          </button>
         ) : (
-          <button onClick={start}>
-            {reading ? "Capture the player and read the sheets" : battleReading ? "Capture the player and read the battle" : "Capture the player"}
+          <button className="small-btn" onClick={start} title="Chrome or Edge: share this tab when asked. Only the player is captured.">
+            <Icon name="capture" />
+            {reading ? "Capture and read the sheets" : battleReading ? "Capture and read the battle" : "Capture the player"}
+          </button>
+        )}
+        {capturing && battle && (battleReading
+          ? <button className="tool-btn live" onClick={() => void stopReading()} title="Reading the battle: click to stop" aria-label="Stop reading the battle">
+              <Icon name="read" /><span className="tool-label">Reading</span>
+            </button>
+          : <button className="tool-btn" onClick={() => { setReadError(null); setBattleReading(true); }} title="Read the battle" aria-label="Read the battle">
+              <Icon name="read" /><span className="tool-label">Read</span>
+            </button>)}
+        {recordingSince !== null && (
+          <button className="tool-btn live" onClick={() => void stopRecording()} title="Recording a clip: click to stop and save it" aria-label="Stop recording">
+            <span className="rec-dot" /><span className="tool-label mono">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</span>
           </button>
         )}
         <span style={{ flex: 1 }} />
-        <button className="ghost" title="Something the page got wrong or didn't catch: noted at this point in the video, to look at later"
-                onClick={() => { setFlagNote(flagNote === null ? "" : null); setFlagged(null); }}>
-          ⚑ Flag this moment
+        <button className={`tool-btn${flagNote !== null ? " on" : ""}`} aria-expanded={flagNote !== null}
+                title="Flag this moment: something the page got wrong or didn't catch, noted at this point in the video"
+                aria-label="Flag this moment" onClick={() => { setFlagNote(flagNote === null ? "" : null); setFlagged(null); }}>
+          <Icon name="flag" />
         </button>
-        <button className="link tiny" onClick={() => navigate({ ...route, video: null, start: 0 })}>change video</button>
+        <Menu label="More: clips, frames, another video">
+          {(close) => (
+            <>
+              {capturing && (recordingSince === null
+                ? <button role="menuitem" onClick={() => {
+                    close();
+                    if (!capture.current || !route.video) return;
+                    recorder.current = startRecording(capture.current, route.video, videoTime);
+                    setRecordingSince(Date.now());
+                    setNow(Date.now());
+                  }}>Record a clip</button>
+                : <button role="menuitem" onClick={() => { close(); void stopRecording(); }}>Stop recording and save</button>)}
+              {capturing && <button role="menuitem" onClick={() => { close(); void saveFrame(); }}>Save this frame</button>}
+              {capturing && <span className="menu-note">A clip saves as a .webm and a .json of the video's times, for building the battle reader.</span>}
+              <button role="menuitem" onClick={() => { close(); navigate({ ...route, video: null, start: 0 }); }}>Change video</button>
+            </>
+          )}
+        </Menu>
       </div>
       {flagNote !== null && (
         <form className="row watch-flag" onSubmit={(e) => { e.preventDefault(); void saveFlag(); }}>
@@ -374,7 +392,6 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         {!capturing && "Chrome or Edge: share this tab when asked. Only the player is captured."}
         {capturing && sheetsWanted && status}
         {capturing && reading && !sheetsWanted && "Both sheets are full, so no more are read. Check them and start the battle from the sheets."}
-        {capturing && " A recorded clip saves as a .webm and a .json of the video's times, for building the battle reader."}
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {battle && ((capturing && battleReading) || readStatus) && (
@@ -566,4 +583,16 @@ function useSheetErrors(reg: string, sheets: WatchSheets["sheets"]): (Problem[] 
     return () => { live = false; window.clearTimeout(t); };
   }, [reg, texts[0], texts[1]]);  // eslint-disable-line react-hooks/exhaustive-deps
   return errors;
+}
+
+/** The video column's controls, drawn small: a capture, the reader, a flag. */
+function Icon({ name }: { name: "capture" | "read" | "flag" }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+         strokeLinejoin="round" aria-hidden="true">
+      {name === "capture" && <><rect x="1.5" y="2.5" width="13" height="9" rx="1.5" /><path d="M5.5 14h5M8 11.5V14" /></>}
+      {name === "read" && <><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8z" /><circle cx="8" cy="8" r="2" /></>}
+      {name === "flag" && <path d="M3.5 14.5V2.5M3.5 2.5h8l-1.8 3 1.8 3h-8" />}
+    </svg>
+  );
 }

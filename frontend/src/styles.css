@@ -843,7 +843,32 @@ main:has(> .watch-page) { max-width: none; }
 .watch-match { min-width: 0; }
 .watch-player { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
 .watch-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.watch-controls { margin: 8px 2px 0; gap: 10px; }
+.watch-controls { margin: 6px 0 0; gap: 6px; flex-wrap: nowrap; }
+/* The video's controls: small, an icon each, with a word only where a state needs one. */
+.tool-btn {
+  display: inline-flex; align-items: center; gap: 5px; height: 28px; min-width: 28px; padding: 0 7px;
+  background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 7px;
+  font-size: 12px; font-weight: 500; justify-content: center;
+}
+.tool-btn:hover { color: var(--text); }
+.tool-btn svg, .watch-controls .small-btn svg { width: 15px; height: 15px; flex: none; }
+.tool-btn.on, .tool-btn[aria-expanded="true"] { color: var(--text); border-color: var(--selection); }
+.tool-btn.live { color: var(--bad); border-color: var(--bad); }
+.watch-controls .small-btn { display: inline-flex; align-items: center; gap: 6px; }
+.rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+.menu-pop {
+  position: absolute; z-index: 20; top: calc(100% + 6px); min-width: 220px; display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+.menu-pop.right { right: 0; }
+.menu-pop.left { left: 0; }
+.menu-pop > button {
+  background: none; border: 0; border-radius: 6px; color: var(--text); text-align: left;
+  font-size: 13px; font-weight: 500; padding: 7px 10px;
+}
+.menu-pop > button:hover, .menu-pop > button:focus-visible { background: var(--raised); }
+.menu-note { font-size: 11px; color: var(--dim); padding: 4px 10px 6px; line-height: 1.4; }
 .watch-sheet { margin-bottom: 14px; }
 .watch-name { width: 100%; margin-bottom: 6px; font-weight: 600; }
 .watch-match .battle-top { grid-template-columns: 1fr; }
@@ -873,15 +898,15 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .watch-page.live { grid-template-columns: minmax(0, 2fr) minmax(400px, 1fr); gap: 14px; }
 .watch-page.live .watch-video { top: 52px; }
 /* The player is as wide as the column allows, but no taller than leaves the controls and both
-   sixes on screen under it: the header, the controls and the two strips take about 340px. A shared
+   sixes on screen under it: the header, the controls and the two strips take about 324px. A shared
    tab's own banner ("Sharing this tab…") takes the window's height with it, and this follows. */
-.watch-page.live .watch-player { max-width: max(480px, calc((100dvh - 340px) * 16 / 9)); }
+.watch-page.live .watch-player { max-width: max(480px, calc((100dvh - 324px) * 16 / 9)); }
 @media (max-width: 1100px) {
   .watch-page.live { grid-template-columns: 1fr; }
   .watch-page.live .watch-video { position: static; }
 }
 .watch-strips:empty { display: none; }
-.watch-rail .panel { padding: 10px 12px; margin-bottom: 10px; }
+.watch-rail .panel { padding: 8px 12px; margin-bottom: 8px; }
 .watch-rail-bar { display: flex; align-items: center; gap: 6px; margin: 0 2px 6px; min-height: 22px; }
 .watch-full > summary { cursor: pointer; color: var(--dim); }
 .watch-full[open] > summary { margin-bottom: 8px; }
@@ -896,7 +921,7 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 
 /* The number: one, the size of the question; the split bar in the two players' colours. */
 .wb-win-head { display: flex; align-items: baseline; gap: 8px; }
-.wb-big { font-size: 30px; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--side); line-height: 1.1; }
+.wb-big { font-size: 26px; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--side); line-height: 1.1; }
 .wb-small { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--side); }
 .wb-who { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-split { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 4px; background: var(--p2); }
@@ -905,8 +930,8 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-win-foot { margin-top: 6px; gap: 8px; flex-wrap: nowrap; }
 .wb-aside { font-size: 12px; color: var(--dim); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
 .wb-aside b { color: var(--text); }
-.wb-curve { margin-top: 8px; }
-.wb-curve-plot { position: relative; height: 56px; }
+.wb-curve { margin-top: 4px; }
+.wb-curve-plot { position: relative; height: 38px; }
 .wb-curve-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .wb-curve-plot polyline { fill: none; stroke: var(--faint); stroke-width: 2; stroke-linejoin: round; }
 .wb-curve-plot line.mid { stroke: var(--line); stroke-dasharray: 3 3; }
@@ -920,12 +945,12 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-curve-turns > span { position: absolute; transform: translateX(-50%); font-size: 9.5px; color: var(--dim); }
 
 /* The field: each player's two a column, everything known about each. */
-.wb-field { display: flex; flex-direction: column; gap: 8px; }
+.wb-field { display: flex; flex-direction: column; gap: 6px; }
 .wb-field-head { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .wb-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .wb-card {
   background: var(--raised); border: 1px solid var(--line); border-top: 2px solid var(--side);
-  border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  border-radius: 8px; padding: 5px 8px; display: flex; flex-direction: column; gap: 3px; min-width: 0;
 }
 .wb-card.selected { outline: 2px solid var(--selection); outline-offset: 1px; }
 .wb-card.empty { color: var(--dim); font-size: 12px; border-style: dashed; border-top-style: solid; justify-content: center; min-height: 60px; }
@@ -936,10 +961,12 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-card-name > b { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-card-hp { margin-left: auto; font-size: 12px; font-weight: 650; }
 .wb-card-where { flex: none; }
-.wb-card-set { display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px; color: var(--dim); }
+/* One line, cut short: the whole set is still under "Both sides in full". */
+.wb-card-set { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-card-set > * + * { margin-left: 5px; }
 .wb-card-set > span:not(.chip) + span:not(.chip)::before { content: "· "; }
 .wb-moves { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
-.wb-moves > li { position: relative; font-size: 12px; line-height: 18px; white-space: nowrap; overflow: visible; text-overflow: ellipsis; min-width: 0; }
+.wb-moves > li { position: relative; font-size: 12px; line-height: 16px; white-space: nowrap; overflow: visible; text-overflow: ellipsis; min-width: 0; }
 .wb-unknown {
   background: none; border: 0; padding: 0; font: inherit; font-size: 12px; font-style: italic; color: var(--faint);
   text-decoration: underline dotted var(--line-strong); text-underline-offset: 3px; cursor: help;
@@ -962,18 +989,18 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-moves > li.barred { color: var(--ghost); }
 
 /* Speed: ranges on one axis; hatched is everything its nature and points allow, solid is narrowed. */
-.wb-speed { border-top: 1px solid var(--line); padding-top: 7px; display: flex; flex-direction: column; gap: 3px; }
+.wb-speed { border-top: 1px solid var(--line); padding-top: 5px; display: flex; flex-direction: column; gap: 2px; }
 .wb-speed-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-.wb-speed-row { display: grid; grid-template-columns: 104px 1fr 56px; gap: 8px; align-items: center; height: 13px; }
+.wb-speed-row { display: grid; grid-template-columns: 104px 1fr 56px; gap: 8px; align-items: center; height: 12px; }
 .wb-speed-name { font-size: 11px; font-weight: 600; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--side); }
-.wb-speed-track { position: relative; height: 8px; background: var(--track); border-radius: 3px; }
+.wb-speed-track { position: relative; height: 7px; background: var(--track); border-radius: 3px; }
 .wb-speed-track > i {
   position: absolute; top: 0; bottom: 0; border-radius: 3px; border: 1px solid var(--side);
   background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--side) 60%, transparent) 0 2px, transparent 2px 5px);
 }
 .wb-speed-track > i.solid { background: var(--side); }
 .wb-speed-range { font-size: 10px; }
-.wb-pairs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.wb-pairs { display: flex; flex-wrap: wrap; gap: 3px 4px; margin-top: 3px; }
 .wb-pair { font-size: 10.5px; line-height: 17px; padding: 0 7px; border-radius: 5px; white-space: nowrap; }
 .wb-pair.decided { background: var(--raised); border: 1px solid var(--line-strong); color: var(--text); }
 .wb-pair.open { border: 1px dashed var(--line-strong); color: var(--dim); }
@@ -985,7 +1012,7 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 .wb-lines > li { display: flex; align-items: baseline; gap: 6px; }
 .wb-line {
   flex: 1; text-align: left; background: transparent; border: 0; border-radius: 6px;
-  color: var(--text); font-weight: 400; font-size: 12.5px; padding: 2px 4px;
+  color: var(--text); font-weight: 400; font-size: 12.5px; line-height: 18px; padding: 1px 4px;
 }
 .wb-line:hover { background: var(--raised); }
 .wb-lines.prev .wb-line { color: var(--dim); font-size: 12px; }

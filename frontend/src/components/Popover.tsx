@@ -24,3 +24,31 @@ export function Info({ label, children, align = "right" }: { label: string; chil
     </span>
   );
 }
+
+/** A ⋯ button that opens a short list of actions under it: the ones a page keeps out of its way.
+ *  Closed as the `Info` panel is (a second click, a click outside it, or Esc), and by picking one. */
+export function Menu({ label, children, align = "right" }: {
+  label: string; align?: "left" | "right";
+  children: (close: () => void) => ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const box = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopImmediatePropagation(); setOpen(false); } };
+    document.addEventListener("mousedown", away);
+    window.addEventListener("keydown", esc, true);
+    return () => { document.removeEventListener("mousedown", away); window.removeEventListener("keydown", esc, true); };
+  }, [open]);
+  return (
+    <span className="info" ref={box}>
+      <button className="tool-btn" aria-label={label} title={label} aria-haspopup="menu" aria-expanded={open}
+              aria-controls={id} onClick={() => setOpen(!open)}>
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3.5" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="12.5" cy="8" r="1.4" /></svg>
+      </button>
+      {open && <span className={`menu-pop ${align}`} id={id} role="menu" aria-label={label}>{children(() => setOpen(false))}</span>}
+    </span>
+  );
+}
