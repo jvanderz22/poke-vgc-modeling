@@ -199,8 +199,9 @@ function Condition({ id, view, side, name }: { id: string; view: LiveView; side?
 }
 
 /** The field: the four Pokémon on it with all they are known to carry, the field and side
- *  conditions with the turns they have left, and who moves first. Each player's two are a row, the
- *  player on the left of the screen on top, each row in the order the video draws its plates. */
+ *  conditions with the turns they have left, and who moves first. Each player's two are a row, as
+ *  the video draws the field from the left player's side: the right player's across the top, the
+ *  left player's along the bottom, each row in the order the video draws its plates. */
 export function FieldPanel({ view, name, left, onPick, selected }: {
   view: LiveView; name: Name; left: Side;
   onPick?: (side: Side, slot: number) => void;
@@ -222,7 +223,7 @@ export function FieldPanel({ view, name, left, onPick, selected }: {
         )))}
       </div>
       <div className="wb-cards">
-        {sides.flatMap((side) => videoSlots(side, left).map((slot) => {
+        {[other(left), left].flatMap((side) => videoSlots(side, left).map((slot) => {
           const m = at(side, slot);
           return m
             ? <MonCard key={`${side}${slot}`} view={view} mon={m} side={side} slot={slot} left={left} who={names[side]} name={name}

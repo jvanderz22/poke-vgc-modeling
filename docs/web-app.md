@@ -110,8 +110,9 @@ battle is a column beside it (`WatchBoard.tsx`). Top to bottom:
   this", with its gate verdict. Elsewhere the model's is the number. ⓘ says how each was made.
   Under it, the model's number at each turn so far, with the engine's as a dot at the end; a point
   walks back to that turn.
-- **The field**: the four on it, one row per player in the order the video draws their plates
-  (the right player's slot 0 is on the right edge), with everything known about each (HP, boosts,
+- **The field**: the four on it, one row per player as the video draws the field from the left
+  player's side (the right player's across the top), each row in the order the video draws its
+  plates (the right player's slot 0 is on the right edge), with everything known about each (HP, boosts,
   item, ability, nature, moves; on a hidden sheet "Unknown" for a move not yet seen, with the
   likeliest a hover away), and what being on the field says about its next move
   (`live.on_field`): locked into a move by a Choice item, Fake Out ready on its first turn out, or a Protect that may fail after one
