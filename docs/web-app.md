@@ -110,12 +110,14 @@ by hand beside its video is a transcription the reader can be scored against:
 PLAN-video's gates (`vgc.video.score`). READ and HAND are each a battle id, a battle's JSON, or a
 `vgc video read --json`.
 
-The player is the YouTube IFrame API's, so the page knows the video's own time. The capture runs at
-8 frames a second, twice what the readers sample. At 30 it made the video stutter, from copying the
-player out of the tab. While capturing, **Record clip** raises it to 30 for as long as it records and
-saves the player as saves the player as `<video>-<time>.webm` with a `.json` beside it: the player's
-time sampled every 200 ms. **Save frame** saves one PNG named by its video time. These are the
-fixtures the battle reader is built and scored on (PLAN-video steps 1–3). Keep them in
+The player is the YouTube IFrame API's, so the page knows the video's own time. The capture asks for
+8 frames a second, twice what the readers sample, and at most 1600 across, the most any reader
+takes. Both are asked for when the capture starts, since later limits save little; the frames are
+encoded in a worker (`frameWorker.ts`), off the page's thread. Without them the video stuttered
+([video-findings](video-findings.md#in-the-browser-2026-10-15)). While capturing, **Record clip**
+saves the player as `<video>-<time>.webm`, at the capture's 8 frames a second, with a `.json`
+beside it: the player's time sampled every 200 ms. **Save frame** saves one PNG named by its video
+time. These are the fixtures the battle reader is built and scored on (PLAN-video steps 1–3). Keep them in
 `data/video/`, which is gitignored: a battle is a few hundred MB. `vgc video frames CLIP` turns a
 clip into PNGs named by clip time and video time (`vgc.video.clip`, decoded by PyAV).
 

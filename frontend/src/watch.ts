@@ -4,6 +4,7 @@
 import type { SheetRead } from "./api";
 import { emptySheet, filled, type SheetEntry } from "./sheet";
 import { entriesFromRead } from "./components/SheetFromImage";
+import type { FrameDone, FrameJob } from "./frameWorker";
 
 // --- the video ------------------------------------------------------------------------------
 
@@ -119,19 +120,23 @@ export type Capture = {
   /** The picture now, at the capture's full size or scaled down to `maxWidth`. */
   frame: (type?: string, quality?: number, maxWidth?: number) => Promise<Blob | null>;
   /** A 64×36 grey thumbnail, for telling one picture from the next. */
-  thumb: () => Float32Array;
+  thumb: () => Promise<Float32Array | null>;
   size: () => { width: number; height: number };
-  /** Change how many frames a second the capture delivers (a clip is recorded at RECORD_FPS). */
-  setFrameRate: (fps: number) => Promise<void>;
   stop: () => void;
 };
 
-/** The readers sample at most every quarter second (BATTLE_INTERVAL_MS), so a faster capture only
- *  costs: at 30 fps, copying the player out of the tab made the video itself stutter. At 8 fps the
- *  frame a sample takes is at most 125 ms older than the video time stamped on it. */
-const CAPTURE_FPS = 8;
-/** A recorded clip keeps the full rate: it is a fixture for the offline reader. */
-export const RECORD_FPS = 30;
+/** What the capture asks of the browser, when it starts: limits applied later only drop and shrink
+ *  frames after the tab has been captured, which saves little (measured 2026-10-15, Chrome 141).
+ *
+ *  - 8 frames a second: the readers sample at most every quarter second, so a faster capture only
+ *    costs, and at 30 the video itself stuttered. A frame a sample takes is at most 125 ms older
+ *    than the video time stamped on it. A recorded clip is 8 a second too.
+ *  - At most 1600 across, the most any reader takes (SHEET_WIDTH). With no limit, Chrome rendered
+ *    the whole tab at 3.5× to capture the player sharply (3150 wide for a 900 px player), where the
+ *    screen is 2×. The limit applies to the cropped player, not to the tab, and keeps its shape.
+ *
+ *  Together they cut the capture's CPU from about 71 points of a core to 17. */
+const CAPTURE = { frameRate: { ideal: 8, max: 8 }, width: { max: 1600 }, height: { max: 1600 } };
 
 /** Capture the pixels of `target`, the element around the player.
  *
@@ -144,7 +149,7 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
   if (!CropTarget) throw new CaptureError("Capturing the video needs Chrome or Edge, which can capture just the player.");
 
   const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: { frameRate: { ideal: CAPTURE_FPS, max: CAPTURE_FPS } }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
+    video: CAPTURE, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
   } as DisplayMediaStreamOptions);
   const [track] = stream.getVideoTracks();
   const stopTracks = () => stream.getTracks().forEach((t) => t.stop());
@@ -160,20 +165,41 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
   video.srcObject = stream;
   await video.play();
 
-  const small = document.createElement("canvas");
-  small.width = 64;
-  small.height = 36;
-  // Kept on the GPU: drawing the video into a CPU canvas copies the whole frame down to scale it.
-  // Here the GPU scales it and only the 64×36 result is read back.
-  const sctx = small.getContext("2d", { willReadFrequently: false })!;
-  const full = document.createElement("canvas");
+  // The page only takes the picture (createImageBitmap, which scales it without holding the page);
+  // the worker draws, reads and encodes it.
+  const worker = new Worker(new URL("./frameWorker.ts", import.meta.url), { type: "module" });
+  const pending = new Map<number, (done: FrameDone | null) => void>();
+  let nextJob = 0;
+  worker.onmessage = ({ data }: MessageEvent<FrameDone>) => {
+    pending.get(data.id)?.(data);
+    pending.delete(data.id);
+  };
   let stopped = false;
+
+  /** The picture now at `width` × `height`, handed to the worker; null once stopped. */
+  const job = async (width: number, height: number, rest: { kind: "encode"; type: string; quality: number } | { kind: "thumb" }) => {
+    if (stopped || !video.videoWidth) return null;
+    const scale = width === video.videoWidth && height === video.videoHeight
+      ? {} : { resizeWidth: width, resizeHeight: height, resizeQuality: "high" as const };
+    const bitmap = await createImageBitmap(video, scale);
+    if (stopped) { bitmap.close(); return null; }
+    const done = await new Promise<FrameDone | null>((ok) => {
+      const id = nextJob++;
+      pending.set(id, ok);
+      worker.postMessage({ id, bitmap, ...rest } satisfies FrameJob, [bitmap]);
+    });
+    if (done && "error" in done) throw new Error(`Couldn't take a frame: ${done.error}`);
+    return done;
+  };
 
   const stop = () => {
     if (stopped) return;
     stopped = true;
     stopTracks();
     video.srcObject = null;
+    worker.terminate();
+    pending.forEach((ok) => ok(null));
+    pending.clear();
   };
   // "Stop sharing" in the browser's own bar ends the track without asking the page.
   track.addEventListener("ended", () => { stop(); onEnded(); });
@@ -182,23 +208,15 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
     stream,
     stop,
     size: () => ({ width: video.videoWidth, height: video.videoHeight }),
-    setFrameRate: (fps) => track.applyConstraints({ frameRate: { ideal: fps, max: fps } }).catch(() => {}),
-    thumb: () => {
-      sctx.drawImage(video, 0, 0, 64, 36);
-      const px = sctx.getImageData(0, 0, 64, 36).data;
-      const out = new Float32Array(64 * 36);
-      for (let i = 0; i < out.length; i++) out[i] = px[4 * i] * 0.299 + px[4 * i + 1] * 0.587 + px[4 * i + 2] * 0.114;
-      return out;
+    thumb: async () => {
+      const done = await job(64, 36, { kind: "thumb" });
+      return done && "thumb" in done ? done.thumb : null;
     },
-    frame: (type = "image/jpeg", quality = 0.9, maxWidth = Infinity) => {
-      if (stopped || !video.videoWidth) return Promise.resolve(null);
-      const k = Math.min(1, maxWidth / video.videoWidth);
-      const w = Math.round(video.videoWidth * k), h = Math.round(video.videoHeight * k);
-      // Setting a canvas's size reallocates it, even to the size it already has.
-      if (full.width !== w) full.width = w;
-      if (full.height !== h) full.height = h;
-      full.getContext("2d")!.drawImage(video, 0, 0, full.width, full.height);
-      return new Promise((ok) => full.toBlob(ok, type, quality));
+    frame: async (type = "image/jpeg", quality = 0.9, maxWidth = Infinity) => {
+      const k = Math.min(1, maxWidth / (video.videoWidth || 1));
+      const done = await job(Math.round(video.videoWidth * k), Math.round(video.videoHeight * k),
+                             { kind: "encode", type, quality });
+      return done && "blob" in done ? done.blob : null;
     },
   };
 }
@@ -209,7 +227,8 @@ const CHANGED = 1.5;
 /** A frame is sent no sooner than this after the last, and only if the picture changed; a still
  *  picture is sent again after REPEAT_MS, in case the read before it was cut short. */
 const INTERVAL_MS = 1500;
-/** A sheet reads the same from 1600 wide as from a full Retina capture; the server reads at 1280. */
+/** A sheet reads the same from 1600 wide as from a full Retina capture; the server reads at 1280.
+ *  The capture is no wider than this (CAPTURE). */
 const SHEET_WIDTH = 1600;
 const REPEAT_MS = 15000;
 
@@ -230,17 +249,20 @@ export function readFrames(cap: Capture, onFrame: (jpeg: Blob) => Promise<void>,
     if (stopped || inFlight || !wanted()) return;
     const now = Date.now();
     if (now - lastAt < INTERVAL_MS) return;
-    const g = cap.thumb();
-    if (lastSent && distance(g, lastSent) < CHANGED && now - lastAt < REPEAT_MS) return;
-    // Claimed before the frame is encoded: encoding a large capture outlasts the 250 ms between
-    // ticks, and every tick that got past this check while it ran sent a frame of its own.
+    // Claimed before anything is awaited: taking and encoding a frame can outlast the 250 ms
+    // between ticks, and every tick that got past this check while it ran sent a frame of its own.
     inFlight = true;
     try {
+      const g = await cap.thumb();
+      if (!g || stopped) return;
+      if (lastSent && distance(g, lastSent) < CHANGED && now - lastAt < REPEAT_MS) return;
       const jpeg = await cap.frame("image/jpeg", 0.9, SHEET_WIDTH);
       if (!jpeg || stopped) return;
       lastSent = g;
       lastAt = now;
       await onFrame(jpeg);
+    } catch (e) {
+      console.error(e);
     } finally {
       inFlight = false;
     }
@@ -281,9 +303,10 @@ export function streamFrames(cap: Capture, time: () => number | null,
       const began = Date.now();
       const at = time();
       if (at !== null) {
-        const jpeg = await cap.frame("image/jpeg", 0.85, BATTLE_WIDTH);
-        if (!jpeg || stopped) break;
-        try { await onFrame(jpeg, at); } catch { /* reported by onFrame; keep reading */ }
+        let jpeg: Blob | null = null;
+        try { jpeg = await cap.frame("image/jpeg", 0.85, BATTLE_WIDTH); } catch (e) { console.error(e); }
+        if (stopped) break;
+        if (jpeg) try { await onFrame(jpeg, at); } catch { /* reported by onFrame; keep reading */ }
       }
       await new Promise((ok) => window.setTimeout(ok, Math.max(0, BATTLE_INTERVAL_MS - (Date.now() - began))));
     }
@@ -304,7 +327,6 @@ export function startRecording(cap: Capture, videoId: string,
   const { width, height } = cap.size();
   let t0 = 0;
   const sample = () => times.push({ ms: Math.round(performance.now() - t0), ...clock() });
-  void cap.setFrameRate(RECORD_FPS);
   rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
   rec.onstart = () => { t0 = performance.now(); sample(); };
   rec.start(1000);
@@ -313,13 +335,10 @@ export function startRecording(cap: Capture, videoId: string,
     stop: () => new Promise((ok) => {
       window.clearInterval(timer);
       sample();
-      rec.onstop = () => {
-        void cap.setFrameRate(CAPTURE_FPS);
-        ok({
-          webm: new Blob(chunks, { type: mime || "video/webm" }),
-          meta: { video: videoId, mime: mime || "video/webm", width, height, recorded, times },
-        });
-      };
+      rec.onstop = () => ok({
+        webm: new Blob(chunks, { type: mime || "video/webm" }),
+        meta: { video: videoId, mime: mime || "video/webm", width, height, recorded, times },
+      });
       rec.stop();
     }),
   };

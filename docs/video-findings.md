@@ -169,6 +169,31 @@ detector caps the long side at 1280 (366 MB, faster, and it read two moves the f
 blank, both confirmed in the footage); and the server turns away a sheet read when one is running
 and one waiting (429). Idle, the server holds 70 MB.
 
+## In the browser (2026-10-15)
+
+Watching made the video stutter and the browser heavy. The capture was the cost, not the reading.
+Measured on a probe page in Chrome 141 at 2× (a 900 px box, cropped like the player), CPU of the
+whole browser over 12 s, median of three, 23 points of it the probe page itself:
+
+| Capture | Frames | CPU |
+|---|---|---|
+| none | | 23% |
+| 30 fps, no size limit (as it was) | 3150×1770 | 94% |
+| 8 fps, no size limit | 3150×1770 | 77% |
+| 8 fps, at most 1600 across | 1600×900 | 40% |
+| 30 fps at most 1600, lowered to 8 after | 1600×900 | 52% (41–76) |
+
+With no size limit Chrome renders the captured tab at 3.5× (`screenPixelRatio`) to capture the
+crop sharply, where the screen is 2×: the player, video and all, drawn at three times the pixels. A
+limit asked for when the capture starts applies to the cropped player, not the tab, and keeps its
+shape (width and height both limited; width alone gave 1422×800). Limits applied after it starts
+only drop and shrink frames: the render stays at 3.5×, and a frame rate can't be raised past the
+one it started with, so the capture can't switch to 30 for a clip.
+
+Taking a frame on the page (draw to a canvas, `toBlob`) held its thread for a median 16–34 ms,
+up to 87, several times a second. In a worker it holds the page for under 3 ms and left no task
+over 50 ms.
+
 ## Decision gate (step 1)
 
 This source passes: the message line, the nameplates and the HP numbers are all readable. Step 2
