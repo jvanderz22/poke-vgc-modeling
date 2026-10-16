@@ -660,6 +660,41 @@ def test_watching_needs_two_legal_sheets(client, two_sheets, battles_dir):
     assert r.status_code == 200, r.text
 
 
+def test_the_speed_read_scales_by_what_is_on_the_field(client, two_sheets, battles_dir):
+    """The read goes through the multipliers the turn-order belief uses, so a Choice Scarf counts.
+
+    Jolly Basculegion is 108–143 and Bold Volcarona is 120–152, which overlap. Under a Scarf
+    Basculegion is 162–214, so it moves first whatever either spent. Tailwind behind Volcarona
+    doubles it to 240–304, which flips the read. This is the board from a watched Bo3
+    (b7b57b4dbcd9, turn 6), where the Scarf was ignored and the read said "not decided yet".
+    """
+    basculegion = ("Basculegion @ Choice Scarf\nAbility: Adaptability\nEVs: 32 Atk / 32 Spe / 2 HP\n"
+                   "Jolly Nature\n- Wave Crash\n- Last Respects\n- Phantom Force\n- Flip Turn")
+    volcarona = ("Volcarona @ Life Orb\nAbility: Flame Body\nEVs: 32 HP / 32 Def / 2 SpD\n"
+                 "Bold Nature\n- Rage Powder\n- Overheat\n- Struggle Bug\n- Protect")
+    p1 = two_sheets[0].split("\n\n")
+    p2 = two_sheets[1].split("\n\n")
+    p1[[s.split(" @")[0] for s in p1].index("Garchomp")] = basculegion
+    p2[[s.split(" @")[0] for s in p2].index("Garchomp")] = volcarona
+    r = client.post("/api/battles", json={"p1_team": "\n\n".join(p1), "their_team": "\n\n".join(p2)})
+    assert r.status_code == 200, r.text
+    bid = r.json()["id"]
+
+    v = entries(client, bid,
+                {"kind": "lead", "side": "p1", "slot": 0, "species": "Basculegion"},
+                {"kind": "lead", "side": "p2", "slot": 0, "species": "Volcarona"})
+    assert not v["errors"]
+    read = next(r for r in v["speed"] if r["mine"] == "Basculegion" and r["theirs"] == "Volcarona")
+    assert read["verdict"] == "faster"
+    assert read["my_speed"] == [162, 214] and read["their_speed"] == [120, 152]
+
+    v = entries(client, bid, {"kind": "side", "side": "p2", "condition": "tailwind", "on": True})
+    assert not v["errors"]
+    read = next(r for r in v["speed"] if r["mine"] == "Basculegion" and r["theirs"] == "Volcarona")
+    assert read["verdict"] == "slower"
+    assert read["their_speed"] == [240, 304]
+
+
 def test_a_watched_turn_narrows_both_sides(client, watched):
     """Both sides' spreads are hidden, so both get a belief panel, and the number is still there:
     player 1's chance, from the open-sheet model."""

@@ -492,10 +492,39 @@ def speed_read(reg: Regulation, state, beliefs: dict) -> list[dict[str, Any]]:
     than resolved to whichever end happens to be likelier, because the cost of being told
     "you outspeed" and being wrong is a lost game and the cost of "not yet" is nothing.
     """
+    from vgc.battle import rules
+    from vgc.battle.state import MoveEvent
     from vgc.belief import speed as speed_channel
 
+    def scale(m) -> tuple[float, float]:
+        """What multiplies this Pokémon's Speed stat right now: the held item, boosts, Tailwind,
+        paralysis, a weather or terrain Speed ability. It is the same `effective_speed` the
+        turn-order belief reads, so the two cannot disagree about what a Choice Scarf does.
+
+        Whatever is hidden widens it. An unseen item could be any legal one that scales Speed, and
+        an unseen ability any that is still possible."""
+        side = state._side_of(m)
+        items = ([m.item] if m.item is not None else
+                 ["", *(i for i in speed_channel.ITEM_MULT if reg.dex.get_item(i))])
+        ability = state._active_ability(m)
+        abilities = [ability] if ability else (rules.still_possible(reg, m) or [None])
+        now = {"order_boosts": m.boosts, "order_status": m.status,
+               "order_side_conditions": list(state.sides[side].conditions),
+               "order_weather": state.weather, "order_terrain": state.terrain}
+        mults = [speed_channel.effective_speed(1, MoveEvent(item=i, ability=a, **now))
+                 for i in items for a in abilities]
+        return min(mults), max(mults)
+
     def band(m) -> tuple[float, float] | None:
-        """The Speed this Pokémon could have, at its widest given what is known."""
+        """The Speed this Pokémon could have right now, at its widest given what is known."""
+        stat_band = unscaled(m)
+        if stat_band is None:
+            return None
+        lo, hi = scale(m)
+        return stat_band[0] * lo, stat_band[1] * hi
+
+    def unscaled(m) -> tuple[float, float] | None:
+        """The Speed stat this Pokémon could have, before anything on the field scales it."""
         stat = (m.stats or {}).get("spe")
         if stat:
             return float(stat), float(stat)
