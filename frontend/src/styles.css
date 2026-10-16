@@ -790,6 +790,8 @@ button.choice:disabled { opacity: .4; }
 
 /* A Bo3: the next game, and each game's line. */
 .series-next { border-color: var(--selection); }
+/* Bootstrap's grid keeps a `.row`'s children from shrinking; this sentence has to, to wrap. */
+.series-next > span { flex: 1 1 240px; min-width: 0; }
 .series-games { display: flex; flex-direction: column; gap: 6px; }
 .series-game {
   display: grid; grid-template-columns: 64px 90px 1fr; gap: 8px; align-items: baseline;
@@ -907,7 +909,7 @@ main:has(> .watch-page.live) { padding: 10px 16px; }
 }
 .watch-strips:empty { display: none; }
 .watch-rail .panel { padding: 8px 12px; margin-bottom: 8px; }
-.watch-rail-bar { display: flex; align-items: center; gap: 6px; margin: 0 2px 6px; min-height: 22px; }
+.watch-rail-bar { display: flex; align-items: center; gap: 6px; margin: 0 2px 6px; min-height: 28px; }
 .watch-full > summary { cursor: pointer; color: var(--dim); }
 .watch-full[open] > summary { margin-bottom: 8px; }
 .watch-full .battle-state { padding: 0; border: 0; margin: 0; background: transparent; }

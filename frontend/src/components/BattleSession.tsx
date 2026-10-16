@@ -8,7 +8,7 @@ import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
 import { BattleState } from "./BattleState";
-import { Info } from "./Popover";
+import { Info, Menu } from "./Popover";
 import { SheetForm, useSheetDraft } from "./SheetForm";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import { SpeciesPicker } from "./SpeciesPicker";
@@ -152,7 +152,9 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
         <div className="watch-rail-bar tiny dim">
           {view.series && <>game {view.series.game} of a Bo{view.series.best_of} ({view.series.score.p1}–{view.series.score.p2}) · </>}
           {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
-          {manual && step === null && !view.ended && <span className="row" style={{ marginLeft: "auto" }}><Forfeit view={view} onLog={log} busy={busy} /></span>}
+          {/* A forfeit is something the reader cannot see, so it is here whether taps are being
+              entered by hand or not. */}
+          {step === null && !view.ended && <span style={{ marginLeft: "auto" }}><Forfeit view={view} onLog={log} busy={busy} menu /></span>}
         </div>
         {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
         {stepper}
@@ -690,7 +692,11 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
 
 /** Ending the game early, for either side. The other side wins; it is one `end` entry like any
  *  other, so undo takes it back. */
-function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
+function Forfeit({ view, onLog, busy, menu = false }: {
+  view: LiveView; onLog: (e: Entry[]) => void; busy: boolean;
+  /** Behind a ⋯ menu rather than as two buttons: beside a video, where it is rarely wanted. */
+  menu?: boolean;
+}) {
   const names = sideNames(view);
   const label: Record<Side, string> = view.perspective === "spectator"
     ? { p1: `${names.p1} forfeits`, p2: `${names.p2} forfeits` } : { p1: "I forfeit", p2: "Your opponent forfeits" };
@@ -700,6 +706,15 @@ function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) =>
       onLog([{ kind: "end", winner, by: "forfeit" }]);
     }
   };
+  if (menu) {
+    return (
+      <Menu label="End the game: a forfeit">
+        {(close) => (["p1", "p2"] as Side[]).map((s) => (
+          <button key={s} role="menuitem" disabled={busy} onClick={() => { close(); quit(s); }}>{label[s]}…</button>
+        ))}
+      </Menu>
+    );
+  }
   return (
     <>
       {(["p1", "p2"] as Side[]).map((s) => (
