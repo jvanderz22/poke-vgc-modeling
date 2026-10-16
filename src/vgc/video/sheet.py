@@ -332,14 +332,12 @@ _vocab = lru_cache(maxsize=4)(vocabulary)  # a Dex hashes by identity, and a reg
 
 @lru_cache(maxsize=1)
 def _engine():
-    try:
-        from rapidocr import RapidOCR
-    except ImportError as e:  # an optional dependency: pip install -e '.[video]'
-        raise RuntimeError("reading a sheet needs RapidOCR: pip install -e '.[video]'") from e
+    from vgc.video.ocr import rapid_ocr
+
     # The detector's default only ever scales a frame up, so a full-size capture (2342×1324) was
     # read whole: 670 MB at its peak, which a few queued reads took past a 2 GB server. Capping the
     # long side at 1280 halved that, ran faster, and read two moves the full size left blank.
-    return RapidOCR(params={"Det.limit_side_len": 1280, "Det.limit_type": "max", "Global.log_level": "error"})
+    return rapid_ocr(1280, "reading a sheet")
 
 
 _ENGINE_LOCK = threading.Lock()  # one engine, shared by the web app's worker threads

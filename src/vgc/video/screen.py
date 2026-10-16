@@ -97,13 +97,11 @@ class Event:
 
 @lru_cache(maxsize=1)
 def _engine():
-    try:
-        from rapidocr import RapidOCR
-    except ImportError as e:
-        raise RuntimeError("reading a video needs RapidOCR: pip install -e '.[video]'") from e
+    from vgc.video.ocr import rapid_ocr
+
     # The detector's default scales the *short* side up to 736 px, which turns a thin strip of the
     # frame into an enormous image. Capping the long side keeps a region's OCR under 0.1 s.
-    return RapidOCR(params={"Det.limit_side_len": 960, "Det.limit_type": "max", "Global.log_level": "error"})
+    return rapid_ocr(960, "reading a video")
 
 
 def _lines(img: np.ndarray) -> list[tuple[str, float, float, float, float]]:

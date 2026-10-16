@@ -155,7 +155,7 @@ until the next decision point, so its damage is right but written as unexplained
 p90, 516 ms at p99, 731 ms at most, so 4 frames a second about keeps up. Two games read at once
 roughly doubled it. The page sends a frame only once the last is answered, so a
 slower host reads fewer frames; the page warns below 2 a second. The Fly machine
-(shared-cpu-4x) is not measured.
+(shared-cpu-4x) read about one frame in 4 s ([below](#on-the-deployed-machine-2026-10-15)).
 
 ## Served (2026-10-15)
 
@@ -193,6 +193,31 @@ one it started with, so the capture can't switch to 30 for a clip.
 Taking a frame on the page (draw to a canvas, `toBlob`) held its thread for a median 16–34 ms,
 up to 87, several times a second. In a worker it holds the page for under 3 ms and left no task
 over 50 ms.
+
+## On the deployed machine (2026-10-15)
+
+Watching on the deployed app read about one frame every 4 s ("the video skipped ahead" every
+3.5–4 s in the review log). The Fly machine (shared-cpu-4x) was throttled: 373 s after a restart,
+`/proc/stat` showed each core about 52 s running the app, 96 s stolen by the host and 227 s idle.
+The CPU was the web process (194 CPU-s); the three solver processes had about 0.15 s each.
+
+Much of it was onnxruntime's thread pool, which by default takes a thread per core and spins them
+while they wait. CPU per frame of the battle reader, on 60 s of round 6 (232–292 s, the "choosing
+actions" screen and a turn) at 4 fps on an x86 laptop (i7-9750H):
+
+| onnxruntime | CPU a frame (median) | Wall a frame (median) |
+|---|---|---|
+| default (a thread per core, spinning) | 2250 ms | 417 ms |
+| spinning off | 1147 ms | 332 ms |
+| 2 threads, spinning off | 763 ms | 428 ms |
+| 1 thread, spinning off | 704 ms | 701 ms |
+
+Both readers now use 2 threads with spinning off (`vgc.video.ocr`). Whether the deployed machine
+then keeps up is not yet measured.
+
+The same run found the change check barely skipping: OCR ran on 238 of the 239 frames. The
+"choosing actions" screen is animated (trainers, Pokémon, lights), and the banner regions saw their
+white pixels change on 84–90% of frames with no banner up.
 
 ## Decision gate (step 1)
 
