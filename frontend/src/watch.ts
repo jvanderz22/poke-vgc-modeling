@@ -121,8 +121,17 @@ export type Capture = {
   /** A 64×36 grey thumbnail, for telling one picture from the next. */
   thumb: () => Float32Array;
   size: () => { width: number; height: number };
+  /** Change how many frames a second the capture delivers (a clip is recorded at RECORD_FPS). */
+  setFrameRate: (fps: number) => Promise<void>;
   stop: () => void;
 };
+
+/** The readers sample at most every quarter second (BATTLE_INTERVAL_MS), so a faster capture only
+ *  costs: at 30 fps, copying the player out of the tab made the video itself stutter. At 8 fps the
+ *  frame a sample takes is at most 125 ms older than the video time stamped on it. */
+const CAPTURE_FPS = 8;
+/** A recorded clip keeps the full rate: it is a fixture for the offline reader. */
+export const RECORD_FPS = 30;
 
 /** Capture the pixels of `target`, the element around the player.
  *
@@ -135,7 +144,7 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
   if (!CropTarget) throw new CaptureError("Capturing the video needs Chrome or Edge, which can capture just the player.");
 
   const stream = await navigator.mediaDevices.getDisplayMedia({
-    video: { frameRate: 30 }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
+    video: { frameRate: { ideal: CAPTURE_FPS, max: CAPTURE_FPS } }, audio: false, preferCurrentTab: true, selfBrowserSurface: "include",
   } as DisplayMediaStreamOptions);
   const [track] = stream.getVideoTracks();
   const stopTracks = () => stream.getTracks().forEach((t) => t.stop());
@@ -154,7 +163,9 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
   const small = document.createElement("canvas");
   small.width = 64;
   small.height = 36;
-  const sctx = small.getContext("2d", { willReadFrequently: true })!;
+  // Kept on the GPU: drawing the video into a CPU canvas copies the whole frame down to scale it.
+  // Here the GPU scales it and only the 64×36 result is read back.
+  const sctx = small.getContext("2d", { willReadFrequently: false })!;
   const full = document.createElement("canvas");
   let stopped = false;
 
@@ -171,6 +182,7 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
     stream,
     stop,
     size: () => ({ width: video.videoWidth, height: video.videoHeight }),
+    setFrameRate: (fps) => track.applyConstraints({ frameRate: { ideal: fps, max: fps } }).catch(() => {}),
     thumb: () => {
       sctx.drawImage(video, 0, 0, 64, 36);
       const px = sctx.getImageData(0, 0, 64, 36).data;
@@ -181,8 +193,10 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
     frame: (type = "image/jpeg", quality = 0.9, maxWidth = Infinity) => {
       if (stopped || !video.videoWidth) return Promise.resolve(null);
       const k = Math.min(1, maxWidth / video.videoWidth);
-      full.width = Math.round(video.videoWidth * k);
-      full.height = Math.round(video.videoHeight * k);
+      const w = Math.round(video.videoWidth * k), h = Math.round(video.videoHeight * k);
+      // Setting a canvas's size reallocates it, even to the size it already has.
+      if (full.width !== w) full.width = w;
+      if (full.height !== h) full.height = h;
       full.getContext("2d")!.drawImage(video, 0, 0, full.width, full.height);
       return new Promise((ok) => full.toBlob(ok, type, quality));
     },
@@ -290,6 +304,7 @@ export function startRecording(cap: Capture, videoId: string,
   const { width, height } = cap.size();
   let t0 = 0;
   const sample = () => times.push({ ms: Math.round(performance.now() - t0), ...clock() });
+  void cap.setFrameRate(RECORD_FPS);
   rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
   rec.onstart = () => { t0 = performance.now(); sample(); };
   rec.start(1000);
@@ -298,10 +313,13 @@ export function startRecording(cap: Capture, videoId: string,
     stop: () => new Promise((ok) => {
       window.clearInterval(timer);
       sample();
-      rec.onstop = () => ok({
-        webm: new Blob(chunks, { type: mime || "video/webm" }),
-        meta: { video: videoId, mime: mime || "video/webm", width, height, recorded, times },
-      });
+      rec.onstop = () => {
+        void cap.setFrameRate(CAPTURE_FPS);
+        ok({
+          webm: new Blob(chunks, { type: mime || "video/webm" }),
+          meta: { video: videoId, mime: mime || "video/webm", width, height, recorded, times },
+        });
+      };
       rec.stop();
     }),
   };
