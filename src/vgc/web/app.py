@@ -49,16 +49,16 @@ def _reg(reg_id: str):
         raise HTTPException(400, f"unknown regulation {reg_id!r}: {e}") from e
 
 
-def _validate(text: str, reg) -> dict[str, Any]:
+def _validate(text: str, reg, sheet: bool = False) -> dict[str, Any]:
     from vgc.teams.showdown_text import TeamParseError, parse_team
-    from vgc.teams.validate import is_legal, validate_team
+    from vgc.teams.validate import is_legal, validate_sheet, validate_team
 
     try:
         team = parse_team(text)
     except TeamParseError as e:
         return {"ok": False, "legal": False, "problems": [{"severity": "error", "code": "parse",
                                                            "message": str(e), "pokemon": None}], "mons": []}
-    problems = validate_team(team, reg)
+    problems = (validate_sheet if sheet else validate_team)(team, reg)
     from vgc.teams.sets import calc_stats
 
     mons = []
@@ -151,6 +151,7 @@ if _PASSWORD:
 class TeamText(BaseModel):
     text: str
     regulation: str = "reg_mc"
+    sheet: bool = Field(default=False, description="an open team sheet: no Stat Points to check")
 
 
 class SaveTeam(BaseModel):
@@ -242,7 +243,7 @@ def models(regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.post("/api/validate")
 def validate(body: TeamText) -> dict[str, Any]:
-    return _validate(body.text, _reg(body.regulation))
+    return _validate(body.text, _reg(body.regulation), sheet=body.sheet)
 
 
 SHEET_IMAGE_LIMIT = 15 * 1024 * 1024
@@ -730,24 +731,20 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
         text = saved.text
     if not text:
         raise HTTPException(422, "give a team, or the id of one in the library")
+    _require_legal(reg, text, "your team")
 
     if body.their_team:
-        from vgc.teams.showdown_text import TeamParseError, parse_team
-
-        try:
-            theirs = [{"species": m.species, "item": m.item or "", "ability": m.ability,
-                       "moves": list(m.moves), "nature": m.nature}
-                      for m in parse_team(body.their_team).members]
-        except TeamParseError as e:
-            raise HTTPException(422, f"their sheet: {e}") from e
+        theirs = _sheet(reg, body.their_team, "their")
     else:
         if len(body.their_species) != reg.team_size:
             raise HTTPException(422, f"give their sheet, or exactly {reg.team_size} species")
         theirs = [{"species": s} for s in body.their_species]
-
-    unknown = [m["species"] for m in theirs if reg.dex.get_species(m["species"]) is None]
-    if unknown:
-        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+        unknown = [s for s in body.their_species if reg.dex.get_species(s) is None]
+        if unknown:
+            raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+        nums = [reg.dex.get_species(s)["num"] for s in body.their_species]
+        if reg.species_clause and len(set(nums)) < len(nums):
+            raise HTTPException(422, f"Species Clause: their species repeat ({', '.join(body.their_species)})")
 
     from vgc.wp.models import CLOSED, OPEN, in_battle_version
 
@@ -763,18 +760,27 @@ def _best_of(n: int) -> int:
     return n
 
 
-def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
+def _require_legal(reg, text: str, whose: str, sheet: bool = False):
+    """A battle starts only from a legal team: each error the validator finds is named in a 422.
+    A sheet is held to everything but the Stat Points, which it never shows."""
     from vgc.teams.showdown_text import TeamParseError, parse_team
+    from vgc.teams.validate import validate_sheet, validate_team
 
     try:
-        out = [{"species": m.species, "item": m.item or "", "ability": m.ability,
-                "moves": list(m.moves), "nature": m.nature} for m in parse_team(text).members]
+        team = parse_team(text)
     except TeamParseError as e:
-        raise HTTPException(422, f"{whose} sheet: {e}") from e
-    unknown = [m["species"] for m in out if reg.dex.get_species(m["species"]) is None]
-    if unknown:
-        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
-    return out
+        raise HTTPException(422, f"{whose}: {e}") from e
+    errors = [p for p in (validate_sheet if sheet else validate_team)(team, reg) if p.severity == "error"]
+    if errors:
+        raise HTTPException(422, f"{whose} isn't legal in {reg.name}: "
+                                 + "; ".join(f"{p.pokemon}: {p.message}" if p.pokemon else p.message for p in errors))
+    return team
+
+
+def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
+    team = _require_legal(reg, text, f"{whose} sheet", sheet=True)
+    return [{"species": m.species, "item": m.item or "", "ability": m.ability,
+             "moves": list(m.moves), "nature": m.nature} for m in team.members]
 
 
 def _watch(reg, body: NewBattle) -> dict[str, Any]:

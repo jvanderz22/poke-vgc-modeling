@@ -145,5 +145,14 @@ def validate_team(team: Team, reg: Regulation) -> list[Problem]:
     return out
 
 
+# What an open team sheet can't be held to: it never shows Stat Points.
+SHEET_HIDDEN = {"sp_unspent", "sp_zero", "sp_budget", "sp_stat_cap", "sp_negative"}
+
+
+def validate_sheet(team: Team, reg: Regulation) -> list[Problem]:
+    """`validate_team` for an open team sheet: everything but the Stat Point checks."""
+    return [p for p in validate_team(team, reg) if p.code not in SHEET_HIDDEN]
+
+
 def is_legal(problems: list[Problem]) -> bool:
     return not any(p.severity == "error" for p in problems)

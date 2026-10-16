@@ -35,9 +35,6 @@ _REGIONAL_FORMES = {"Alola": "alolan", "Galar": "galarian", "Hisui": "hisuian", 
 # A forme named in brackets after its base: "FLOETTE (ETERNAL FLOWER)", "TAUROS (AQUA BREED)".
 _BRACKETED = re.compile(r"^(?P<base>[^(]+?)\s*\((?P<qual>[^)]*)\)?\s*$")
 
-# The validator's Stat Point checks don't apply: a sheet never shows Stat Points.
-_SP_CODES = {"sp_unspent", "sp_zero", "sp_budget", "sp_stat_cap", "sp_negative"}
-
 MOVES_PER_SET = 4
 
 
@@ -367,8 +364,8 @@ def read_sheet(image: str | Path | bytes, reg: Regulation) -> SheetRead:
 def problems(read: SheetRead, reg: Regulation) -> list[Any]:
     """The validator's verdict on what was read, without the Stat Point checks a sheet can't meet."""
     from vgc.teams.showdown_text import parse_team
-    from vgc.teams.validate import validate_team
+    from vgc.teams.validate import validate_sheet
 
     if not any(e.species for e in read.entries):
         return []
-    return [p for p in validate_team(parse_team(read.showdown()), reg) if p.code not in _SP_CODES]
+    return validate_sheet(parse_team(read.showdown()), reg)

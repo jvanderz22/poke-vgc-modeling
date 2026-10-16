@@ -368,6 +368,21 @@ def test_the_wrong_number_of_species_is_refused(client, teams, battles_dir):
     assert r.status_code == 422
 
 
+def test_the_same_species_twice_is_refused(client, teams, battles_dir):
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_species": THEIR_SIX[:5] + THEIR_SIX[:1]})
+    assert r.status_code == 422 and "Species Clause" in r.json()["detail"]
+
+
+def test_a_battle_is_not_started_from_an_illegal_team(client, teams, battles_dir):
+    """Yours is held to everything, Stat Points included; their sheet to all a sheet shows."""
+    first, rest = teams[0].split("\n", 1)
+    mine = f"{first}\n- Splash\n{rest}"
+    r = client.post("/api/battles", json={"my_team": mine, "their_species": THEIR_SIX})
+    assert r.status_code == 422 and "your team" in r.json()["detail"]
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_team": teams[1].replace("- ", "- Splash\n- ", 1)})
+    assert r.status_code == 422 and "their sheet" in r.json()["detail"]
+
+
 def test_wp_is_the_position_as_shown_and_says_how_wide(started):
     """The number is the position with their unrevealed sets left unknown, which beat averaging
     over drawn sets on held-out closed-sheet games. The draws are still made: the 10th-to-90th
@@ -540,11 +555,14 @@ def test_deleting_a_battle_removes_it(client, started):
 
 @pytest.fixture(scope="module")
 def two_sheets():
-    """Two legal open sheets: the benchmark's fillers, six each."""
+    """Two legal open sheets: the benchmark's fillers, six each. The fillers' Whimsicott holds a
+    Covert Cloak, which M-C doesn't have, and a battle won't start from an illegal sheet; the
+    benchmark is left as it is, since changing it means re-solving it."""
     from vgc.regulation import load_regulation
     from vgc.wp import benchmark
 
-    sets = benchmark.load(load_regulation("reg_mc"))["fillers"].strip().split("\n\n")
+    fillers = benchmark.load(load_regulation("reg_mc"))["fillers"].replace("@ Covert Cloak", "@ Mental Herb")
+    sets = fillers.strip().split("\n\n")
     return "\n\n".join(sets[:6]), "\n\n".join(sets[1:7])
 
 
@@ -573,6 +591,18 @@ def test_a_watched_battle_knows_both_sheets_and_neither_spread(watched):
 def test_watching_needs_both_sheets(client, two_sheets, battles_dir):
     r = client.post("/api/battles", json={"p1_team": two_sheets[0]})
     assert r.status_code == 422
+
+
+def test_watching_needs_two_legal_sheets(client, two_sheets, battles_dir):
+    """A sheet read off a video with a field misread is refused, naming what is wrong. A sheet's
+    Stat Points aren't checked: it never shows them."""
+    p1 = two_sheets[0].replace("Ability: Grassy Surge", "Ability: Drizzle")
+    r = client.post("/api/battles", json={"p1_team": p1, "their_team": two_sheets[1]})
+    assert r.status_code == 422
+    assert "player 1's sheet" in r.json()["detail"] and "Rillaboom" in r.json()["detail"]
+    blank = "\n".join(ln for ln in two_sheets[1].splitlines() if not ln.startswith("EVs:"))
+    r = client.post("/api/battles", json={"p1_team": two_sheets[0], "their_team": blank})
+    assert r.status_code == 200, r.text
 
 
 def test_a_watched_turn_narrows_both_sides(client, watched):

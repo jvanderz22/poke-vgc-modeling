@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, ApiError, type Entry, type ReadStatus, type Species } from "../api";
+import { api, ApiError, type Entry, type Problem, type ReadStatus, type Species } from "../api";
 import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
 import {
@@ -423,6 +423,8 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
   const [error, setError] = useState<string | null>(null);
   const [p1, p2] = watch.sheets;
   const ready = filled(p1) === SHEET_SIZE && filled(p2) === SHEET_SIZE;
+  const errors = useSheetErrors(reg, watch.sheets);
+  const legal = errors.every((e) => e !== null && e.length === 0);
 
   const setSheet = (i: 0 | 1) => (s: typeof p1) =>
     onWatch((w) => ({ ...w, sheets: i === 0 ? [s, w.sheets[1]] : [w.sheets[0], s] }));
@@ -470,11 +472,21 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
                  placeholder={`Player ${i + 1}'s name`} className="watch-name" />
           <SheetForm reg={reg} pool={pool} value={watch.sheets[i]} onChange={setSheet(i)}
                      label={`Player ${i + 1}'s open team sheet`} />
+          {errors[i]?.length ? (
+            <ul className="problems">
+              {errors[i]!.map((p, k) => <li key={k} className={p.severity}>{p.pokemon ? `${p.pokemon}: ` : ""}{p.message}</li>)}
+            </ul>
+          ) : null}
         </div>
       ))}
       <div className="row" style={{ marginTop: 10 }}>
-        <button disabled={busy || !ready} onClick={start}>Start watching{bestOf === 3 ? " game 1 of a Bo3" : ""}</button>
+        <button disabled={busy || !ready || !legal} onClick={start}>Start watching{bestOf === 3 ? " game 1 of a Bo3" : ""}</button>
         {!ready && <span className="tiny dim">{filled(p1)}/{SHEET_SIZE} and {filled(p2)}/{SHEET_SIZE} on the sheets</span>}
+        {ready && !legal && (
+          <span className="tiny dim">
+            {errors.some((e) => e?.length) ? "Not legal yet: fix what is listed under the sheets." : "Checking the sheets…"}
+          </span>
+        )}
       </div>
       {error && <p className="small err" style={{ marginBottom: 0 }}>{error}</p>}
       <p className="tiny dim" style={{ margin: "10px 2px 0" }}>
@@ -483,4 +495,23 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
       </p>
     </div>
   );
+}
+
+/** Each full sheet's errors from the validator, as the sheets change: a battle won't start from an
+ *  illegal sheet, so what is wrong is shown where it can be fixed. null while unchecked. */
+function useSheetErrors(reg: string, sheets: WatchSheets["sheets"]): (Problem[] | null)[] {
+  const texts = sheets.map((s) => (filled(s) === SHEET_SIZE ? toShowdown(s) : null));
+  const [errors, setErrors] = useState<(Problem[] | null)[]>([null, null]);
+  useEffect(() => {
+    setErrors([null, null]);
+    let live = true;
+    const t = window.setTimeout(() => {
+      void Promise.all(texts.map((x) => (x === null ? null : api.validate(x, reg, true).then(
+        // A check that didn't come back blocks nothing: starting the battle checks again.
+        (v) => v.problems.filter((p) => p.severity === "error"), () => []))))
+        .then((out) => { if (live) setErrors(out); });
+    }, 300);
+    return () => { live = false; window.clearTimeout(t); };
+  }, [reg, texts[0], texts[1]]);  // eslint-disable-line react-hooks/exhaustive-deps
+  return errors;
 }

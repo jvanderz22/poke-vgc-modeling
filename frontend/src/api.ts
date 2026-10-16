@@ -523,8 +523,9 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   health: (reg: string) => call<Health>(`/api/health?regulation=${reg}`),
   models: (reg: string) => call<{ models: ModelRow[]; default: string | null; modes: Mode[] }>(`/api/models?regulation=${reg}`),
-  validate: (text: string, regulation: string) =>
-    call<Validation>("/api/validate", { method: "POST", body: JSON.stringify({ text, regulation }) }),
+  /** `sheet`: an open team sheet, held to everything but the Stat Points it never shows. */
+  validate: (text: string, regulation: string, sheet = false) =>
+    call<Validation>("/api/validate", { method: "POST", body: JSON.stringify({ text, regulation, sheet }) }),
   teams: (reg: string) => call<{ teams: SavedTeam[] }>(`/api/teams?regulation=${reg}`),
   saveTeam: (t: Partial<SavedTeam> & { name: string; text: string; regulation: string }) =>
     call<{ team: SavedTeam; validation: Validation }>("/api/teams", { method: "POST", body: JSON.stringify(t) }),
