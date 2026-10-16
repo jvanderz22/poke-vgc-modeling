@@ -8,14 +8,14 @@ const STAT_ORDER = ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"];
 /** What is known about whether a Pokémon is in this game. Four answers, and the page keeps them
  *  apart because they are different claims: one in the back is alive and can come in; one not
  *  brought never will; one that has not been seen may be either until four of its side have. */
-type Standing = "field" | "back" | "fainted" | "out" | "unknown";
+export type Standing = "field" | "back" | "fainted" | "out" | "unknown";
 
-const LABEL: Record<Standing, string> = {
+export const LABEL: Record<Standing, string> = {
   field: "on the field", back: "in the back", fainted: "fainted", out: "not brought", unknown: "brought?",
 };
-const ORDER: Standing[] = ["field", "back", "fainted", "unknown", "out"];
+export const ORDER: Standing[] = ["field", "back", "fainted", "unknown", "out"];
 
-function standing(m: LiveMon, seen: number): Standing {
+export function standing(m: LiveMon, seen: number): Standing {
   if (m.state === "active") return "field";
   if (m.state === "bench") return "back";
   if (m.state === "fainted") return "fainted";
@@ -24,7 +24,7 @@ function standing(m: LiveMon, seen: number): Standing {
   return seen >= BRING ? "out" : "unknown";
 }
 
-function hpClass(hp: number) {
+export function hpClass(hp: number) {
   return hp > 0.5 ? "hp-ok" : hp > 0.2 ? "hp-low" : "hp-crit";
 }
 
@@ -60,16 +60,18 @@ function SideState({ view, side, own, title, extra }: {
   return (
     <div className="side-state">
       <div className="side-head">
-        <b>{title}</b>
+        <b className="side-name" title={title}>{title}</b>
         <span className="tiny dim">{brought} of {BRING} brought {own || brought >= BRING ? "known" : "seen"}</span>
         {conditions.map((c) => <span key={c} className="chip field">{c}</span>)}
       </div>
       <div className="state-rows">
         {rows.map(({ m, st }) => {
-          const boosts = STAT_ORDER.filter((k) => m.boosts[k]).map((k) => `${k} ${m.boosts[k] > 0 ? "+" : ""}${m.boosts[k]}`);
+          const boosts = STAT_ORDER.filter((k) => m.boosts[k]).map((k) => `${m.boosts[k] > 0 ? "▲" : "▼"} ${k} ${m.boosts[k] > 0 ? "+" : ""}${m.boosts[k]}`);
           const sp = !own ? spreads.get(m.species) : undefined;
-          // One set left is a sheet, or a set this battle has pinned: nothing is open to show.
-          const ranked = !own ? sets.get(m.species) : undefined;
+          // A set the sheet gives whole has nothing left to rank, and whether the corpus ever saw
+          // it is not news. One set left is a set this battle has pinned: nothing open either.
+          const whole = m.moves.length > 0 && m.item !== null && m.ability !== null && m.nature !== null;
+          const ranked = !own && !whole ? sets.get(m.species) : undefined;
           const set = ranked && (ranked.off_meta || ranked.sets > 1) ? ranked : undefined;
           // A stat pinned at 0 is the unused offensive stat, which is 0 by construction: not news.
           const bounds = sp

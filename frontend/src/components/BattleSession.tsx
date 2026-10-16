@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, modeLabel, possessive, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { createPortal } from "react-dom";
+import { api, ApiError, modeLabel, possessive, sideNames, type BattleRow, type DecisionPoint, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { useEngine } from "../engine";
+import { useNames } from "../names";
+import { FieldPanel, TeamStrips, WatchLog, WinPanel } from "./WatchBoard";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -10,6 +14,7 @@ import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import { SpeciesPicker } from "./SpeciesPicker";
 import { TurnReview } from "./TurnReview";
 import { TurnStepper } from "./TurnStepper";
+import { turnLines, turnStart } from "../turn";
 import type { Pos } from "../screen";
 import { linkProps, tabRoute, type Navigate, type Route } from "../router";
 
@@ -23,12 +28,29 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true, onManual,
+                                watch }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
   teams: SavedTeam[];
+  /** Bumped when something other than this page wrote to the battle (the video reader). */
+  refresh?: number;
+  /** Adds to each entry before it is logged: the watch page puts the video's time on it. */
+  stamp?: (entries: Entry[]) => Entry[];
+  /** Start turn 1 once the leads are in; off while the video reader writes the turns itself. */
+  autoStart?: boolean;
+  /** Show what logs a tap by hand: the stepper, the free-form bar, forfeiting. The watch page
+   *  hides them until asked, since the video reader fills the journal. */
+  manual?: boolean;
+  /** Where the page can switch `manual` from, beside the log and the stepper. */
+  onManual?: (on: boolean) => void;
+  /** Beside a video (the watch page): the battle as a column for reading at a glance, both sixes
+   *  in `strips` under the video, `left` the player on the left of the screen, and `onSeek` to
+   *  put the video at an entry's time. */
+  watch?: { strips: HTMLElement | null; left: Side; onSeek?: (seconds: number) => void };
 }) {
+  const name = useNames(reg);
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +68,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
     setBusy(true);
     const load = step === null ? api.battle(id, reg) : api.battleAt(id, step, reg);
     load.then(setView).catch((e) => setError(String(e.message ?? e))).finally(() => setBusy(false));
-  }, [id, step, reg]);
+  }, [id, step, reg, refresh]);
 
   const log = useCallback(async (entries: Entry[]) => {
     if (!id) return;
@@ -56,13 +78,13 @@ export function BattleSession({ reg, route, navigate, teams }: {
       // Logging while looking at an earlier turn would append to the end, not to what is on
       // screen — so the first tap brings you back to the present, where the taps belong.
       if (step !== null) navigate({ tab: "battle", battle: id, step: null }, { replace: true });
-      setView(await api.log(id, entries, reg));
+      setView(await api.log(id, stamp ? stamp(entries) : entries, reg));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
     } finally {
       setBusy(false);
     }
-  }, [id, reg, step, navigate]);
+  }, [id, reg, step, navigate, stamp]);
 
   const undo = useCallback(async () => {
     if (!id) return;
@@ -77,9 +99,11 @@ export function BattleSession({ reg, route, navigate, teams }: {
   // Which four you brought, until you have said: the page cannot see your back.
   const yourFour = view.perspective !== "spectator" &&
     !view.sides[view.perspective].mons.some((m) => m.state === "not_brought");
+  const walk = (index: number) => navigate({ tab: "battle", battle: id, step: index }, { replace: true });
+  const pick = (side: Side, slot: number) => (freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot }));
 
-  return (
-    <div className="battle-page">
+  const banners = (
+    <>
       {error && <div className="banner bad">{error}</div>}
       {view.contradictions.map((c, i) => (
         <div key={i} className="banner warn">
@@ -91,6 +115,71 @@ export function BattleSession({ reg, route, navigate, teams }: {
           {view.errors[view.errors.length - 1]} — <button className="link" onClick={undo}>undo that</button>
         </div>
       )}
+    </>
+  );
+  const stepper = step === null && manual && (
+    <>
+      {onManual && (
+        <div className="row manual-toggle">
+          <button className="link tiny" onClick={() => onManual(false)}>Hide the manual inputs</button>
+        </div>
+      )}
+      <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
+                   onWalk={walk} onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
+                   preview={<>
+                     {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
+                     <Leads view={view} onLog={log} busy={busy} />
+                   </>} />
+      {freeForm && (
+        <>
+          <div className="row free-form-head">
+            <span className="tiny dim">The free-form entry bar</span>
+            <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
+          </div>
+          <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
+        </>
+      )}
+    </>
+  );
+
+  // Beside a video: one column, in the order it is glanced at (the number, the field, the turn),
+  // with both sixes under the video. The stepper goes on top when taps are being entered by hand.
+  if (watch) {
+    return (
+      <div className="battle-page watch-rail">
+        {banners}
+        {watch.strips && createPortal(<TeamStrips view={view} name={name} left={watch.left} />, watch.strips)}
+        <div className="watch-rail-bar tiny dim">
+          {view.series && <>game {view.series.game} of a Bo{view.series.best_of} ({view.series.score.p1}–{view.series.score.p2}) · </>}
+          {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
+          {manual && step === null && !view.ended && <span className="row" style={{ marginLeft: "auto" }}><Forfeit view={view} onLog={log} busy={busy} /></span>}
+        </div>
+        {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
+        {stepper}
+        {step !== null && <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
+        <WinPanel id={id} reg={reg} view={view} route={route} navigate={navigate} />
+        <FieldPanel view={view} name={name} left={watch.left}
+                    selected={manual && freeForm ? selected : null} onPick={manual && step === null ? pick : undefined} />
+        {step === null && !manual && (
+          <WatchLog view={view} onWalk={walk} onManual={onManual && (() => onManual(true))} onSeek={watch.onSeek} />
+        )}
+        {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
+        <details className="panel watch-full">
+          <summary className="small">Both sides in full: what is known about each set</summary>
+          <BattleState view={view} extra={{ p2: view.derived.length > 0 ? (
+            <div className="worked-out">
+              <div className="tiny dim">Worked out for you</div>
+              <ul className="tiny dim derived">{view.derived.slice(-8).map((d, i) => <li key={i}>{d}</li>)}</ul>
+            </div>
+          ) : undefined }} />
+        </details>
+      </div>
+    );
+  }
+
+  return (
+    <div className="battle-page">
+      {banners}
 
       <div className="battle-bar">
         <div>
@@ -102,7 +191,7 @@ export function BattleSession({ reg, route, navigate, teams }: {
           </span>
         </div>
         <div className="row">
-          {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} />}
+          {manual && step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} />}
           <a className="ghost tab" {...linkProps(tabRoute("battle"), navigate)}>All battles</a>
         </div>
       </div>
@@ -112,25 +201,11 @@ export function BattleSession({ reg, route, navigate, teams }: {
       <div className="battle-top">
         <div className="battle-work">
           {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
-          {step === null
-            ? <TurnStepper id={id} reg={reg} view={view} busy={busy} onLog={log} onUndo={undo}
-                           onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
-                           onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
-                           preview={<>
-                             {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
-                             <Leads view={view} onLog={log} busy={busy} />
-                           </>} />
-            : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
-
-          {step === null && freeForm && (
-            <>
-              <div className="row free-form-head">
-                <span className="tiny dim">The free-form entry bar</span>
-                <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
-              </div>
-              <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
-            </>
+          {step === null && !manual && (
+            <TurnLog view={view} onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
+                     onManual={onManual && (() => onManual(true))} />
           )}
+          {step === null ? stepper : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
           {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
         </div>
 
@@ -143,9 +218,9 @@ export function BattleSession({ reg, route, navigate, teams }: {
             <WPBar view={view} labelled={step === null && !!view.endgame?.eligible} />
             <TurnCurve id={id} reg={reg} view={view} route={route} navigate={navigate} />
           </div>
-          <Field view={view} selected={freeForm ? selected : null}
-                 onPick={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })}
-                 onHp={(side, slot) => freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })} />
+          <Field view={view} selected={manual && freeForm ? selected : null}
+                 onPick={(side, slot) => !manual ? undefined : freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })}
+                 onHp={(side, slot) => !manual ? undefined : freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot })} />
         </div>
       </div>
 
@@ -183,12 +258,13 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
   const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
   const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
+  const asOf = wp.as_of && !wp.as_of.current;
   return (
     <div className={`wp${labelled ? " second" : ""}`}>
       <div className="row wp-line">
         <span>
-          {labelled && <>Model: </>}<b className="wp-num big">{pct(wp.wp)}%</b>{" "}
-          <span className="small">{view.perspective === "spectator" ? `${sideNames(view).p1} wins` : "you win"}</span>
+          {labelled && <>Model: </>}<b className="wp-num big" style={asOf ? { opacity: 0.6 } : undefined}>{pct(wp.wp)}%</b>{" "}
+          <span className="small">{view.perspective === "spectator" ? <><Who name={sideNames(view).p1} /> wins</> : "you win"}</span>
         </span>
         <GateTag view={view}>
           {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 &&
@@ -196,6 +272,7 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           <p>{open > 0 ? `${open} of their six still open.` : `Band from ${wp.k} draws.`} {wp.regime}</p>
         </GateTag>
       </div>
+      <AsOf point={wp.as_of} />
       <div className="wp-bar">
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
@@ -213,6 +290,19 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Inside a turn a number stays where the turn started (or where its replacements were chosen)
+ *  and says so: the model was only trained on those points, and the engine would have every
+ *  Pokémon choose again from anywhere else. */
+function AsOf({ point }: { point?: DecisionPoint }) {
+  if (!point || point.current) return null;
+  return (
+    <div className="tiny dim">
+      {point.kind === "switch" ? <>As of the replacements at the end of turn {point.turn}</>
+        : <>As of the start of turn {point.turn}</>}; it updates when the turn is done.
     </div>
   );
 }
@@ -250,22 +340,7 @@ function GateTag({ view, children }: { view: LiveView; children?: ReactNode }) {
  *  A shallow answer rests partly on HP share, and the page says how much, but it is not faded: in
  *  the same check the answers resting ~half on HP share still beat the model. */
 function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView }) {
-  const [ans, setAns] = useState<EngineAnswer | null>(null);
-  useEffect(() => {
-    let live = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const tick = () => api.solve(id, reg).then((a) => {
-      if (!live) return;
-      setAns(a);
-      // A doubles answer has seconds, not minutes: ask again often enough to show it as it lands.
-      // The guesses at their bulk land after the answer, so keep asking until they have.
-      if (a.eligible && (a.searching != null || a.guesses?.pending)) timer = setTimeout(tick, a.kind ? 500 : 2000);
-    }).catch(() => { if (live) timer = setTimeout(tick, 5000); });
-    setAns(null);
-    tick();
-    return () => { live = false; clearTimeout(timer); };
-  }, [id, reg, view]);
-
+  const ans = useEngine(id, reg, view);
   if (!ans) return <div className="engine lead tiny dim">Engine: starting a search…</div>;
   if (!ans.eligible) return ans.reason ? <div className="engine lead tiny dim">Engine: {ans.reason}.</div> : null;
   const pct = (x: number) => Math.round(x * 100);
@@ -289,6 +364,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const hi = guesses.length > 1 ? Math.max(...guesses.map((g) => g.value)) : null;
   return (
     <div className="engine lead tiny dim">
+      <AsOf point={ans.as_of} />
       {ans.value != null && (
         <div className="wp-bar">
           {lo != null && hi != null &&
@@ -301,7 +377,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {policy ? "Model + policy:" : "Engine:"}{" "}
           {ans.value != null
             ? <><b className="wp-num">{pct(ans.value)}%</b>{" "}
-                {view.perspective === "spectator" ? `${sideNames(view).p1} wins` : "you win"}
+                {view.perspective === "spectator" ? <><Who name={sideNames(view).p1} /> wins</> : "you win"}
                 {policy ? <> (the policy's one-turn value {pct(ans.policy ?? 0)}%, the model {pct(ans.model ?? 0)}%)</>
                         : <> with best play from both sides</>}</>
             : <>searching…</>}
@@ -372,6 +448,51 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
       </details>
     </div>
   );
+}
+
+/** The turn so far, read-only: what the stepper lists above its questions, for when the taps are
+ *  being made by the video reader rather than by hand. A line walks the battle back to before it,
+ *  and the turns before this one are a click away. */
+function TurnLog({ view, onWalk, onManual }: { view: LiveView; onWalk: (index: number) => void; onManual?: () => void }) {
+  const lines = turnLines(view, sideNames(view));
+  const start = turnStart(view.journal);
+  let prev = -1;
+  for (let i = start - 1; i >= 0; i--) if (view.journal[i].kind === "turn") { prev = i; break; }
+  return (
+    <div className="panel turn-log">
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+        <h2 style={{ margin: 0 }}>{view.started ? `Turn ${view.turn}` : "Team preview"}</h2>
+        <span className="row">
+          {start >= 0 && (
+            <button className="ghost small-btn" onClick={() => onWalk(prev >= 0 ? prev : 0)}>
+              ← {prev >= 0 ? "last turn" : "leads"}
+            </button>
+          )}
+          {onManual && <button className="link tiny manual-link" onClick={onManual}>Enter taps by hand…</button>}
+        </span>
+      </div>
+      {lines.length === 0
+        ? <p className="tiny dim" style={{ margin: 0 }}>Nothing logged yet this turn.</p>
+        : (
+          <ol className="turn-lines">
+            {lines.map((l) => (
+              <li key={l.index}>
+                <button className={`turn-line${l.error ? " bad" : ""}`} onClick={() => onWalk(l.index)}
+                        title="Walk the battle back to just before this">
+                  <span className="turn-check">{l.error ? "!" : "✓"}</span> {l.text}
+                  {l.error && <span className="turn-err"> {l.error}</span>}
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+    </div>
+  );
+}
+
+/** A player's name in a line of text, cut short past a couple of words with the whole in its title. */
+function Who({ name }: { name: string }) {
+  return <span className="side-name" style={{ maxWidth: "20ch" }} title={name}>{name}</span>;
 }
 
 /** Where the series goes from here, once this game is over: the next game, set up when this one
@@ -519,17 +640,14 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
   const [pick, setPick] = useState<{ side: Side; slot: number } | null>(null);
   const filled = (side: Side, slot: number) =>
     view.sides[side].mons.find((m) => m.state === "active" && m.slot === slot);
+  const names = sideNames(view);
   return (
     <div className="panel">
       <h2>Leads</h2>
       <div className="lead-grid">
         {(["p2", "p1"] as Side[]).map((side) => (
           <div key={side} className="row">
-            {/* Wide enough for "Your opponent"; a long player name is cut, and its title has it whole. */}
-            <span className="dim small" title={sideNames(view)[side]}
-                  style={{ width: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {sideNames(view)[side]}
-            </span>
+            <span className="dim small side-name" style={{ width: 110 }} title={names[side]}>{names[side]}</span>
             {[0, 1].map((slot) => {
               const m = filled(side, slot);
               return (
@@ -585,7 +703,9 @@ function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) =>
   return (
     <>
       {(["p1", "p2"] as Side[]).map((s) => (
-        <button key={s} className="danger small-btn" disabled={busy} onClick={() => quit(s)}>{label[s]}</button>
+        <button key={s} className="danger small-btn" disabled={busy} onClick={() => quit(s)}>
+          <span className="side-name" style={{ maxWidth: "24ch" }} title={label[s]}>{label[s]}</span>
+        </button>
       ))}
     </>
   );

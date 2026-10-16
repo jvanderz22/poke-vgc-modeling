@@ -25,6 +25,27 @@ def test_a_position_that_is_not_a_1v1_starts_nothing(reg):
 
 
 @pytest.mark.showdown
+def test_a_tap_inside_a_turn_leaves_the_search_running(reg):
+    """The engine is asked at the decision point (`live.at_decision_point`), which a tap inside a
+    turn does not move, so the search under way goes on deepening rather than starting again."""
+    from vgc.web import live
+
+    battle = _battle(reg, "F2", "B")
+    battle.append({"kind": "turn", "n": battle.rp.state.turn + 1})
+    point, kind, _ = live.at_decision_point(battle)
+    try:
+        assert solving.request(reg, "f2b", point, kind)["eligible"]
+        running = solving._current
+        battle.append({"kind": "damage", "side": "p2", "slot": 0, "pct": 50})
+        point, kind, as_of = live.at_decision_point(battle)
+        assert not as_of["current"]
+        solving.request(reg, "f2b", point, kind)
+        assert solving._current is running and not running.cancelled
+    finally:
+        solving.cancel()
+
+
+@pytest.mark.showdown
 def test_it_deepens_until_every_line_ends(reg):
     """F2-B: Annihilape is locked into Close Combat and cannot touch Gholdengo, so best play wins.
     Every line has ended in a KO by three turns, and the search stops there."""

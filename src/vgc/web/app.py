@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
@@ -48,16 +49,16 @@ def _reg(reg_id: str):
         raise HTTPException(400, f"unknown regulation {reg_id!r}: {e}") from e
 
 
-def _validate(text: str, reg) -> dict[str, Any]:
+def _validate(text: str, reg, sheet: bool = False) -> dict[str, Any]:
     from vgc.teams.showdown_text import TeamParseError, parse_team
-    from vgc.teams.validate import is_legal, validate_team
+    from vgc.teams.validate import is_legal, validate_sheet, validate_team
 
     try:
         team = parse_team(text)
     except TeamParseError as e:
         return {"ok": False, "legal": False, "problems": [{"severity": "error", "code": "parse",
                                                            "message": str(e), "pokemon": None}], "mons": []}
-    problems = validate_team(team, reg)
+    problems = (validate_sheet if sheet else validate_team)(team, reg)
     from vgc.teams.sets import calc_stats
 
     mons = []
@@ -119,37 +120,103 @@ async def _lifespan(_: FastAPI):
 
 app = FastAPI(title="VGC battle companion", version="0.1", lifespan=_lifespan)
 
-# A password, for a copy served beyond this machine (`deploy/`): HTTP Basic, user `VGC_WEB_USER`
-# ("vgc" by default) and password `VGC_WEB_PASSWORD`. Unset, the app is open, as it is on
-# localhost. `/api/health` stays open for the platform's health check. Without it a public copy
-# would run anybody's solves and simulations on its owner's bill.
+# A password, for a copy served beyond this machine (`deploy/`): `VGC_WEB_PASSWORD`. Unset, the
+# app is open, as it is on localhost. `/api/health` stays open for the platform's health check.
+# Without it a public copy would run anybody's solves and simulations on its owner's bill.
+#
+# Both ways in take user `VGC_WEB_USER` ("vgc" by default) and that password. A browser signs in
+# at `/login`, which sets a signed cookie; a script (the MCP server, `fly_timing.py`) sends HTTP
+# Basic. A 401 never carries `WWW-Authenticate`, so the browser's own password dialog never opens.
 _PASSWORD = os.environ.get("VGC_WEB_PASSWORD")
 if _PASSWORD:
     import base64
+    import hashlib
+    import hmac
+    import html
     import secrets
+    import time
+    from string import Template
+    from urllib.parse import parse_qs, quote
 
     from fastapi import Request
-    from fastapi.responses import Response
+    from fastapi.responses import RedirectResponse, Response
 
-    @app.middleware("http")
-    async def _password(request: Request, call_next):
-        if request.url.path == "/api/health":
-            return await call_next(request)
-        header = request.headers.get("authorization", "")
+    _COOKIE = "vgc_session"
+    _SESSION_DAYS = 30
+
+    def _sign(expires: int) -> str:
+        # Keyed by the password, so changing the secret signs everybody out.
+        return hmac.new(_PASSWORD.encode(), f"vgc-session:{expires}".encode(), hashlib.sha256).hexdigest()
+
+    def _session_ok(token: str) -> bool:
+        expires, _, mac = token.partition(".")
+        return expires.isdigit() and int(expires) > time.time() \
+            and secrets.compare_digest(mac, _sign(int(expires)))
+
+    def _credentials_ok(user: str, password: str) -> bool:
+        return (secrets.compare_digest(user.encode(), os.environ.get("VGC_WEB_USER", "vgc").encode())
+                and secrets.compare_digest(password.encode(), _PASSWORD.encode()))
+
+    def _basic_ok(header: str) -> bool:
         try:
             user, _, password = base64.b64decode(header[6:]).decode().partition(":") \
                 if header.startswith("Basic ") else ("", "", "")
         except ValueError:
-            user, password = "", ""
-        if not (secrets.compare_digest(user.encode(), os.environ.get("VGC_WEB_USER", "vgc").encode())
-                and secrets.compare_digest(password.encode(), _PASSWORD.encode())):
-            return Response("password required", 401, {"WWW-Authenticate": 'Basic realm="vgc"'})
-        return await call_next(request)
+            return False
+        return _credentials_ok(user, password)
+
+    def _next(path: str | None) -> str:
+        # Only a path on this site: `//elsewhere.com` would make the form an open redirect.
+        return path if path and path.startswith("/") and not path.startswith("//") else "/"
+
+    @app.middleware("http")
+    async def _password(request: Request, call_next):
+        if request.url.path in ("/api/health", "/login", "/logout") \
+                or _session_ok(request.cookies.get(_COOKIE, "")) \
+                or _basic_ok(request.headers.get("authorization", "")):
+            return await call_next(request)
+        if request.url.path.startswith("/api/"):
+            return Response('{"detail": "password required"}', 401, media_type="application/json")
+        target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+        return RedirectResponse(f"/login?next={quote(target)}", 303)
+
+    def _login_page(next_path: str, user: str = "", wrong: bool = False) -> HTMLResponse:
+        error = '<p class="err">That username or password is not right.</p>' if wrong else ""
+        page = Template(LOGIN_PAGE).substitute(next=html.escape(next_path), user=html.escape(user),
+                                               error=error)
+        return HTMLResponse(page, 401 if wrong else 200)
+
+    @app.get("/login", include_in_schema=False)
+    def login_form(next: str = "/"):
+        return _login_page(_next(next))
+
+    @app.post("/login", include_in_schema=False)
+    async def login(request: Request):
+        # Parsed by hand: FastAPI's `Form` needs python-multipart for one field.
+        form = parse_qs((await request.body()).decode())
+        user, password = form.get("user", [""])[0], form.get("password", [""])[0]
+        next_path = _next(form.get("next", ["/"])[0])
+        if not _credentials_ok(user, password):
+            return _login_page(next_path, user, wrong=True)
+        expires = int(time.time()) + _SESSION_DAYS * 86400
+        page = RedirectResponse(next_path, 303)
+        # Fly ends TLS at its proxy, so the scheme the browser used is in the forwarded header.
+        https = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+        page.set_cookie(_COOKIE, f"{expires}.{_sign(expires)}", max_age=_SESSION_DAYS * 86400,
+                        httponly=True, secure=https, samesite="lax")
+        return page
+
+    @app.get("/logout", include_in_schema=False)
+    def logout():
+        page = RedirectResponse("/login", 303)
+        page.delete_cookie(_COOKIE)
+        return page
 
 
 class TeamText(BaseModel):
     text: str
     regulation: str = "reg_mc"
+    sheet: bool = Field(default=False, description="an open team sheet: no Stat Points to check")
 
 
 class SaveTeam(BaseModel):
@@ -242,10 +309,13 @@ def models(regulation: str = "reg_mc") -> dict[str, Any]:
 
 @app.post("/api/validate")
 def validate(body: TeamText) -> dict[str, Any]:
-    return _validate(body.text, _reg(body.regulation))
+    return _validate(body.text, _reg(body.regulation), sheet=body.sheet)
 
 
 SHEET_IMAGE_LIMIT = 15 * 1024 * 1024
+# Sheet reads take turns on one OCR engine; one running and one waiting is all that is worth
+# holding, and anything more is turned away rather than queued (each holds its image meanwhile).
+_SHEET_READS = threading.BoundedSemaphore(2)
 
 
 @app.post("/api/sheet/read")
@@ -279,10 +349,212 @@ async def sheet_read(request: Request, regulation: str = "reg_mc") -> dict[str, 
         read = read_sheet(data, reg)
         return {**read.as_dict(), "problems": [asdict(p) for p in problems(read, reg)]}
 
+    if not _SHEET_READS.acquire(blocking=False):
+        raise HTTPException(429, "still reading the frames before this one")
     try:
         return await run_in_threadpool(run)  # about three seconds of OCR: off the event loop
     except RuntimeError as e:  # RapidOCR missing: the server was built without '.[video]'
         raise HTTPException(501, str(e)) from e
+    finally:
+        _SHEET_READS.release()
+
+
+class VideoFlag(BaseModel):
+    video: str = Field(description="the YouTube id being watched")
+    video_s: float | None = Field(default=None, description="seconds into the video")
+    note: str = Field(default="", max_length=500)
+
+
+@app.post("/api/video/flag")
+def video_flag(body: VideoFlag) -> dict[str, Any]:
+    """A moment marked from the watch page: something the reader got wrong or didn't catch, kept
+    in the review log (`vgc.video.review`) beside what the reader itself missed."""
+    from vgc.video import review
+
+    return review.flag(f"youtube:{body.video}", body.video_s, body.note)
+
+
+@app.get("/api/video/review")
+def video_review(all: bool = False) -> dict[str, Any]:
+    """The review log, grouped: moments flagged, phrasings read provisionally, and what was missed."""
+    from vgc.video import review
+
+    return review.summary(review.load(), quiet=not all)
+
+
+_ocr_lock = threading.Lock()
+_ocr: dict[str, Any] = {}
+
+
+def _ocr_models() -> dict[str, Any]:
+    """The battle reader's models as RapidOCR resolved them, with a version from their bytes so the
+    page can cache them for good. Loads them on first use (the reader would anyway)."""
+    with _ocr_lock:
+        if not _ocr:
+            import hashlib
+
+            try:
+                from vgc.video import ocr, screen
+
+                models = ocr.browser_models(screen._engine())
+            except (ImportError, RuntimeError) as e:
+                raise HTTPException(501, f"this server can't read video: {e}") from e
+            digest = hashlib.sha256()
+            for part in ("det", "rec"):
+                digest.update(models[part].read_bytes())
+            _ocr.update(models, version=digest.hexdigest()[:12])
+        return _ocr
+
+
+@app.get("/api/video/ocr")
+def video_ocr() -> dict[str, Any]:
+    """What the watch page needs to read a battle's regions itself (frontend/src/ocr), so the server
+    doesn't: the models' URLs, the recognizer's characters, the detector's cap, and the layout and
+    change threshold the server's own reader uses. Its lines go with each frame to `read_frame`."""
+    from vgc.video import screen
+
+    m = _ocr_models()
+    return {"version": m["version"], "det": f"/api/video/ocr/det.onnx?v={m['version']}",
+            "rec": f"/api/video/ocr/rec.onnx?v={m['version']}", "keys": m["keys"],
+            "limit": screen.DET_LIMIT, "work_width": screen.WORK_WIDTH, "changed": screen.CHANGED,
+            "regions": screen.BROADCAST_2026.regions}
+
+
+@app.get("/api/video/ocr/{part}.onnx")
+def video_ocr_model(part: str) -> FileResponse:
+    """One of the reader's models. Its URL carries the version, so it is cached for good."""
+    if part not in ("det", "rec"):
+        raise HTTPException(404, "no such model")
+    return FileResponse(_ocr_models()[part], media_type="application/octet-stream",
+                        headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+
+READ_LINES_LIMIT = 64 * 1024
+
+
+def _read_lines(data: bytes, header: str | None, regions: dict[str, Any]) -> tuple[dict[str, list] | None, bytes]:
+    """Split a frame's body into the lines the page read itself and the JPEG. With `x-ocr-lines: n`,
+    the body starts with n bytes of UTF-8 JSON `{region: [[text, x0, y0, x1, y1], ...]}`; without
+    it, the body is the JPEG alone and the server reads it."""
+    if header is None:
+        return None, data
+    try:
+        n = int(header)
+    except ValueError as e:
+        raise HTTPException(422, "x-ocr-lines is the length of the lines") from e
+    if not 0 < n <= min(READ_LINES_LIMIT, len(data)):
+        raise HTTPException(413 if n > READ_LINES_LIMIT else 422, "x-ocr-lines is out of range")
+    try:
+        raw = json.loads(data[:n].decode("utf-8"))
+        lines = {key: [(str(t), float(x0), float(y0), float(x1), float(y1)) for t, x0, y0, x1, y1 in got]
+                 for key, got in raw.items() if key in regions}
+    except (ValueError, TypeError, AttributeError) as e:
+        raise HTTPException(422, f"the lines aren't lines by region: {e}") from e
+    return lines, data[n:]
+
+
+# Battles being read off a video, by battle id: in memory, so a restart ends them. The journal is
+# the record; a reading restarted on the same battle carries on from it (`Reading.resync`).
+_readings: dict[str, Any] = {}
+FRAME_LIMIT = 4 * 1024 * 1024
+
+
+@app.post("/api/battles/{battle_id}/read")
+async def read_frame(battle_id: str, request: Request, video_s: float, video: str = "",
+                     regulation: str = "reg_mc") -> dict[str, Any]:
+    """One frame of the video beside a watched battle, sent as the request body (JPEG), taken
+    `video_s` into the video. What it settles is appended to the battle's journal, each entry
+    stamped with its `video_s`; the reply says what was added and where the reading stands.
+
+    One frame at a time per battle: the page sends the next when this one has been answered, so a
+    slow host reads fewer frames rather than falling behind. PLAN-video step 4.
+
+    A page that reads the regions itself (GET /api/video/ocr) puts its lines before the JPEG and
+    says how many bytes they take in `x-ocr-lines`; the server then runs no OCR on the frame."""
+    reg = _reg(regulation)
+    data = await request.body()
+    if not data:
+        raise HTTPException(422, "no frame in the request")
+    if len(data) > FRAME_LIMIT:
+        raise HTTPException(413, f"frame over {FRAME_LIMIT // (1024 * 1024)} MB")
+    try:
+        from vgc.video.reading import Reading
+        from vgc.video.screen import BROADCAST_2026
+    except ImportError as e:
+        raise HTTPException(501, f"this server can't read video: {e}") from e
+    lines, data = _read_lines(data, request.headers.get("x-ocr-lines"), BROADCAST_2026.regions)
+
+    def run() -> dict[str, Any]:
+        import io
+
+        from PIL import Image, UnidentifiedImageError
+
+        blob, b = _battle(reg, battle_id)
+        if blob["setup"].get("perspective") != "spectator":
+            raise HTTPException(409, "only a watched game (both sheets open) can be read off a video")
+        if b.rp.state.ended and battle_id not in _readings:
+            # Over: what the broadcast shows next (the desk, the next game's sheets) isn't this game.
+            from vgc.video.reading import Status
+
+            return {**Status(read_to=video_s, ended=True).as_dict(), "errors": list(b.rp.errors)}
+        reading = _readings.get(battle_id)
+        if reading is None:
+            reading = _readings[battle_id] = Reading(reg, blob["setup"], f"youtube:{video}" if video else battle_id)
+            reading.resync(b.journal)
+        if not reading.lock.acquire(blocking=False):
+            raise HTTPException(409, "a frame of this battle is already being read")
+        try:
+            try:
+                image = Image.open(io.BytesIO(data)).convert("RGB")
+            except (UnidentifiedImageError, OSError) as e:
+                raise HTTPException(422, "that isn't an image this server can read") from e
+            resynced = not reading.follows(b.journal)
+            if resynced:
+                reading.resync(b.journal)
+            status = reading.frame(video_s, image, lines)
+            status.resynced = resynced
+            if status.entries:
+                for e in status.entries:
+                    b.append(e)
+                blob["journal"] = b.journal
+                blob["turn"] = b.rp.state.turn
+                blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+                live.save(reg.id, blob)
+                live.after_edit(reg, blob, b.rp.state.ended)
+            if status.ended:
+                _readings.pop(battle_id, None)
+            return {**status.as_dict(), "errors": list(b.rp.errors)}
+        finally:
+            reading.lock.release()
+
+    try:
+        return await run_in_threadpool(run)
+    except RuntimeError as e:  # RapidOCR missing: the server was built without '.[video]'
+        raise HTTPException(501, str(e)) from e
+
+
+@app.delete("/api/battles/{battle_id}/read")
+def stop_reading(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
+    """Stop reading: what the reader still held (a move waiting on its results) is written, and the
+    reading is dropped. Frames sent later start a new one from the journal as it stands."""
+    reg = _reg(regulation)
+    reading = _readings.pop(battle_id, None)
+    if reading is None:
+        return {"stopped": False}
+    with reading.lock:
+        blob, b = _battle(reg, battle_id)
+        if not reading.follows(b.journal):
+            return {"stopped": True, "entries": []}
+        status = reading.finish()
+        for e in status.entries:
+            b.append(e)
+        if status.entries:
+            blob["journal"] = b.journal
+            blob["turn"] = b.rp.state.turn
+            blob["result"] = b.rp.state.winner if b.rp.state.ended else None
+            live.save(reg.id, blob)
+            live.after_edit(reg, blob, b.rp.state.ended)
+        return {"stopped": True, "entries": status.entries}
 
 
 @app.get("/api/pool")
@@ -514,6 +786,35 @@ npm --prefix frontend run build</pre>
 <p>Then reload. <code>make web</code> does both. The API is already running —
 see <a style="color:#6aa9ff" href="/docs">/docs</a>.</p>"""
 
+# The deployed copy's sign-in (see `_PASSWORD`). Standalone, because the app's own bundle is
+# behind the password too. `$next`, `$user` and `$error` are filled in by `_login_page`.
+LOGIN_PAGE = """<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>VGC Companion</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+         background: #12141a; color: #e6e8ee; font: 15px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  form { width: 100%; max-width: 340px; background: #1b1e26; border: 1px solid #2c3040;
+         border-radius: 12px; padding: 24px; display: grid; gap: 14px; }
+  h1 { font-size: 16px; margin: 0; letter-spacing: .2px; }
+  label { display: grid; gap: 6px; color: #9aa1b4; font-size: 13px; }
+  input { font: inherit; color: inherit; background: #161922; border: 1px solid #2c3040;
+          border-radius: 8px; padding: 9px 11px; }
+  input:focus { outline: 2px solid #6aa9ff; outline-offset: -1px; border-color: transparent; }
+  button { font: inherit; font-weight: 600; color: #12141a; background: #6aa9ff; border: 0;
+           border-radius: 8px; padding: 9px 11px; cursor: pointer; }
+  .err { margin: 0; color: #e06666; font-size: 13px; }
+</style>
+<form method="post" action="/login">
+  <h1>VGC Companion</h1>
+  $error
+  <label>Username<input name="user" value="$user" autocomplete="username" autocapitalize="none" autofocus required></label>
+  <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+  <input type="hidden" name="next" value="$next">
+  <button type="submit">Sign in</button>
+</form>
+</html>"""
+
 
 @app.post("/api/simulate")
 def simulate_battle(body: SimulateRequest) -> dict[str, Any]:
@@ -601,24 +902,20 @@ def new_battle(body: NewBattle) -> dict[str, Any]:
         text = saved.text
     if not text:
         raise HTTPException(422, "give a team, or the id of one in the library")
+    _require_legal(reg, text, "your team")
 
     if body.their_team:
-        from vgc.teams.showdown_text import TeamParseError, parse_team
-
-        try:
-            theirs = [{"species": m.species, "item": m.item or "", "ability": m.ability,
-                       "moves": list(m.moves), "nature": m.nature}
-                      for m in parse_team(body.their_team).members]
-        except TeamParseError as e:
-            raise HTTPException(422, f"their sheet: {e}") from e
+        theirs = _sheet(reg, body.their_team, "their")
     else:
         if len(body.their_species) != reg.team_size:
             raise HTTPException(422, f"give their sheet, or exactly {reg.team_size} species")
         theirs = [{"species": s} for s in body.their_species]
-
-    unknown = [m["species"] for m in theirs if reg.dex.get_species(m["species"]) is None]
-    if unknown:
-        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+        unknown = [s for s in body.their_species if reg.dex.get_species(s) is None]
+        if unknown:
+            raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
+        nums = [reg.dex.get_species(s)["num"] for s in body.their_species]
+        if reg.species_clause and len(set(nums)) < len(nums):
+            raise HTTPException(422, f"Species Clause: their species repeat ({', '.join(body.their_species)})")
 
     from vgc.wp.models import CLOSED, OPEN, in_battle_version
 
@@ -634,18 +931,27 @@ def _best_of(n: int) -> int:
     return n
 
 
-def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
+def _require_legal(reg, text: str, whose: str, sheet: bool = False):
+    """A battle starts only from a legal team: each error the validator finds is named in a 422.
+    A sheet is held to everything but the Stat Points, which it never shows."""
     from vgc.teams.showdown_text import TeamParseError, parse_team
+    from vgc.teams.validate import validate_sheet, validate_team
 
     try:
-        out = [{"species": m.species, "item": m.item or "", "ability": m.ability,
-                "moves": list(m.moves), "nature": m.nature} for m in parse_team(text).members]
+        team = parse_team(text)
     except TeamParseError as e:
-        raise HTTPException(422, f"{whose} sheet: {e}") from e
-    unknown = [m["species"] for m in out if reg.dex.get_species(m["species"]) is None]
-    if unknown:
-        raise HTTPException(422, f"not legal in {reg.name}: {', '.join(unknown)}")
-    return out
+        raise HTTPException(422, f"{whose}: {e}") from e
+    errors = [p for p in (validate_sheet if sheet else validate_team)(team, reg) if p.severity == "error"]
+    if errors:
+        raise HTTPException(422, f"{whose} isn't legal in {reg.name}: "
+                                 + "; ".join(f"{p.pokemon}: {p.message}" if p.pokemon else p.message for p in errors))
+    return team
+
+
+def _sheet(reg, text: str, whose: str) -> list[dict[str, Any]]:
+    team = _require_legal(reg, text, f"{whose} sheet", sheet=True)
+    return [{"species": m.species, "item": m.item or "", "ability": m.ability,
+             "moves": list(m.moves), "nature": m.nature} for m in team.members]
 
 
 def _watch(reg, body: NewBattle) -> dict[str, Any]:
@@ -742,7 +1048,10 @@ def battle_at(battle_id: str, index: int, regulation: str = "reg_mc") -> dict[st
     blob, b = _battle(reg, battle_id)
     index = max(0, min(index, len(b.journal)))
     prefix = entry.Battle(reg, blob["setup"], b.journal[:index])
-    view = _view(reg, blob, prefix)
+    # A prefix that stops at the next turn's tap is a turn that is over, so its own end is where
+    # the number is taken, as the trajectory takes it there.
+    closed = index < len(b.journal) and b.journal[index].get("kind") == "turn"
+    view = _view(reg, blob, prefix, closed=closed)
     return view | {"at": index, "entries_total": len(b.journal)}
 
 
@@ -775,7 +1084,10 @@ def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
 
     reg = _reg(regulation)
     _, b = _battle(reg, battle_id)
-    return solving.request(reg, battle_id, b)
+    # Asked where the model's number is taken: a search from inside a turn would have every
+    # Pokémon choose again (`live.decision_point`).
+    point, kind, as_of = live.at_decision_point(b)
+    return solving.request(reg, battle_id, point, kind) | {"as_of": as_of}
 
 
 @app.delete("/api/battles/{battle_id}")

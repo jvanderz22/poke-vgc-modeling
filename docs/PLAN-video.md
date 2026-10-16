@@ -5,6 +5,25 @@ battle, give it the time the battle starts, and have win probability follow the 
 It sits beside [PLAN-v3.md](PLAN-v3.md) and depends on its step 4 (Observer mode). Nothing here
 is built yet.
 
+**Status (2026-10-12):** step 0 is in (Watching mode). Reading the two sheets, step 6's first item,
+came first and is in: `vgc.video.sheet` and `POST /api/sheet/read` (OCR, any screenshot), and the
+`/watch` page, which embeds the player, captures it with Region Capture and fills both sheets as
+the broadcast shows them. The battle on that page is entered by hand. Decision 1's record button
+is in too (2026-10-13): a clip and its video times, and `vgc video frames`. Step 1, the screen
+survey, is done on two Louisville games ([video-findings](video-findings.md), 2026-10-14). Step
+2's reader is built offline (`vgc video timeline`, `vgc video read`) and reads both games end to
+end with no replay errors; it is unscored until step 3's hand transcriptions exist. Misses,
+provisional phrasings and moments flagged on the watch page go to a review log (`vgc video review`). Step
+4's live session is in (2026-10-14): **Read the battle** on the watch page sends frames to
+`POST /api/battles/{id}/read` (`vgc.video.reading`), which runs the same reader and appends to the
+battle's journal; rewinds are skipped, skips ahead are logged as gaps, and hand edits are taken as
+the journal. It replaces the planned WebSocket with one POST per frame, sent when the last is
+answered. G-latency and the reader's speed on the Fly machine are not measured yet. For step 3, entries made
+by hand on the watch page carry `video_s`, and `vgc video score READ HAND ...` scores reads against
+transcriptions (`vgc.video.score`): turns are paired by what was used in them rather than by time
+or number, and each gate passes only when its exact interval clears the threshold, so a handful of
+battles reads "undecided", not "pass".
+
 ---
 
 ## The goal

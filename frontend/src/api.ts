@@ -1,6 +1,8 @@
 // The one place that talks to the Python backend. Every type here mirrors a response in
 // src/vgc/web/app.py; if one changes, this file is where it is felt.
 
+import type { OcrConfig, RegionLines } from "./ocr/screen.ts";
+
 export type Problem = { severity: "error" | "warning"; code: string; message: string; pokemon: string | null };
 
 export type Mon = {
@@ -255,6 +257,19 @@ export type LiveMon = {
   moves: string[]; moves_used: string[];
   nature: string | null; stats: Record<string, number> | null;
   ability_unknown: string[];
+  /** On the field only (`live.on_field`): the move a Choice item holds it to, whether its next
+   *  move is its first since coming in (Fake Out works), and whether a Protect held the turn before. */
+  locked?: string | null;
+  first_turn_out?: boolean;
+  protected_last?: boolean;
+};
+
+/** A condition that runs out (`live.timers`): the turn it counts from, its last, and the turns it
+ *  has left counting this one. Five unless what put it up is known to hold the item that makes it
+ *  eight (`extended_by`). */
+export type Timer = {
+  what: "weather" | "terrain" | "pseudo" | "side"; side: "p1" | "p2" | null; id: string;
+  from: number; last: number; left: number; by: string | null; extended_by: string | null;
 };
 
 /** `follows` is what the move does to stats on its own once it connects (logged for you), and
@@ -301,6 +316,12 @@ export type SPBelief = {
   contradicted: string | null;
 };
 
+/** The decision point a number was taken at (`live.decision_point`): the turn's start, just
+ *  before its replacements, or once they are all in. `current` is false while a turn is being
+ *  entered, because a position inside a turn is not one the model was trained on, and a search
+ *  from it would have every Pokémon choose again. */
+export type DecisionPoint = { at: number; turn: number; kind: string | null; current: boolean };
+
 /** `wp` is the position as shown, with what has not been revealed left unknown: on held-out
  *  closed-sheet games that beat averaging over drawn sets. `drawn` is that average over `k`
  *  opponents drawn from the belief, and `lo`/`hi` are the 10th and 90th percentile of the draws,
@@ -310,6 +331,7 @@ export type LiveWP = {
   wp?: number; lo?: number; hi?: number; k?: number;
   drawn?: number;
   kind?: string;
+  as_of?: DecisionPoint;
   /** What is still open about each of their six, and how concentrated the belief is. */
   belief?: {
     species: string; sets: number; off_meta: boolean;
@@ -412,6 +434,26 @@ export type SpeciesOptions = {
   natures: { name: string; share: number }[];
 };
 
+/** Where the battle reader stands after a frame (`vgc.video.reading.Status`). */
+export type ReadStatus = {
+  entries: Record<string, unknown>[];
+  read_to: number | null;
+  behind: boolean;
+  message: string | null;
+  missed: number;
+  recent_missed: { t: number; why: string; what: string }[];
+  provisional: number;
+  gaps: [number, number][];
+  ended: boolean;
+  ms: number;
+  resynced: boolean;
+  /** The player on the left of the screen, once the reader has worked it out from the Pokémon. */
+  left: "p1" | "p2" | null;
+  /** Regions the page reads itself but the server has no lines for: read them all again. */
+  unread?: string[];
+  errors: string[];
+};
+
 export type LiveView = {
   id: string; name: string; sheets: Sheets; perspective: Perspective;
   turn: number; started: boolean; ended: boolean; winner: string | null;
@@ -421,6 +463,7 @@ export type LiveView = {
                                 /** The player's name, when watching and it was given. */
                                 name?: string | null }>;
   field: { weather: string | null; terrain: string | null; pseudo: Record<string, number> };
+  timers?: Timer[];
   menu: Record<"p1" | "p2", SideMenu>;
   questions: Question[];
   derived: string[];
@@ -479,6 +522,8 @@ export type EngineAnswer = {
    *  the answer itself; the other two land after it, on a budget of their own. */
   guesses?: { pending: boolean; values: { key: string; label: string; value: number }[] };
   assumptions?: string[];
+  /** The position it answers: the same decision point as the model's number. */
+  as_of?: DecisionPoint;
   error?: string | null;
 };
 
@@ -494,7 +539,9 @@ export type TrajectoryRow = {
   active: Record<"p1" | "p2", string[]>;
 };
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  constructor(message: string, readonly status = 0) { super(message); }
+}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path, {
@@ -502,18 +549,24 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     // A string body is JSON. Anything else (an image) carries its own type.
     headers: typeof init?.body === "string" ? { "content-type": "application/json" } : init?.headers,
   });
+  // The deployed copy's session has run out (or the password changed): back to its sign-in page,
+  // which returns here afterwards.
+  if (r.status === 401) {
+    location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+  }
   const body = await r.json().catch(() => ({}));
   // FastAPI puts the message in `detail`; Showdown's validator messages arrive this way and are
   // worth showing verbatim, since they name the offending Pokémon.
-  if (!r.ok) throw new ApiError(typeof body.detail === "string" ? body.detail : r.statusText);
+  if (!r.ok) throw new ApiError(typeof body.detail === "string" ? body.detail : r.statusText, r.status);
   return body as T;
 }
 
 export const api = {
   health: (reg: string) => call<Health>(`/api/health?regulation=${reg}`),
   models: (reg: string) => call<{ models: ModelRow[]; default: string | null; modes: Mode[] }>(`/api/models?regulation=${reg}`),
-  validate: (text: string, regulation: string) =>
-    call<Validation>("/api/validate", { method: "POST", body: JSON.stringify({ text, regulation }) }),
+  /** `sheet`: an open team sheet, held to everything but the Stat Points it never shows. */
+  validate: (text: string, regulation: string, sheet = false) =>
+    call<Validation>("/api/validate", { method: "POST", body: JSON.stringify({ text, regulation, sheet }) }),
   teams: (reg: string) => call<{ teams: SavedTeam[] }>(`/api/teams?regulation=${reg}`),
   saveTeam: (t: Partial<SavedTeam> & { name: string; text: string; regulation: string }) =>
     call<{ team: SavedTeam; validation: Validation }>("/api/teams", { method: "POST", body: JSON.stringify(t) }),
@@ -549,6 +602,24 @@ export const api = {
     their_species?: string[]; their_team?: string; p1_team?: string; names?: { p1?: string; p2?: string }; regulation: string;
     best_of?: 1 | 3;
   }) => call<LiveView>("/api/battles", { method: "POST", body: JSON.stringify(body) }),
+  /** Mark a moment of a watched video for review: something the reader got wrong or missed. */
+  flagVideo: (video: string, video_s: number | null, note: string) =>
+    call<{ at: string }>("/api/video/flag", { method: "POST", body: JSON.stringify({ video, video_s, note }) }),
+  /** One frame of the video beside a watched battle, for the battle reader. What it settles is
+   *  appended to the battle's journal; the reply says what, and where the reading stands. */
+  readFrame: (battle: string, frame: Blob, videoS: number, video: string, reg: string, read: RegionLines | null = null) => {
+    // Lines the page read itself go first, their length in a header; the server then runs no OCR.
+    const lines = read ? new TextEncoder().encode(JSON.stringify(read)) : null;
+    return call<ReadStatus>(`/api/battles/${battle}/read?video_s=${videoS}&video=${encodeURIComponent(video)}&regulation=${reg}`, {
+      method: "POST", body: lines ? new Blob([lines, frame]) : frame,
+      headers: { "content-type": frame.type || "image/jpeg", ...(lines ? { "x-ocr-lines": String(lines.length) } : {}) },
+    });
+  },
+  /** What the page needs to read a battle's frames itself: the server's models, the layout. */
+  ocrConfig: () => call<OcrConfig>("/api/video/ocr"),
+  /** Stop reading: what the reader still held is written to the journal. */
+  stopReading: (battle: string, reg: string) =>
+    call<{ stopped: boolean }>(`/api/battles/${battle}/read?regulation=${reg}`, { method: "DELETE" }),
   /** An open team sheet read off a screenshot. Slow: a few seconds of OCR on the server. */
   readSheet: (image: Blob, reg: string) =>
     call<SheetRead>(`/api/sheet/read?regulation=${reg}`, {

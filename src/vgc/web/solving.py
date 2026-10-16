@@ -330,12 +330,15 @@ class PolicySolve:
     """Above two a side: the policy's value of the position, combined with the model's number
     (`POLICY_STACK`), within `DEADLINE`."""
 
-    def __init__(self, reg: Regulation, battle_id: str, battle):
+    def __init__(self, reg: Regulation, battle_id: str, battle, point_kind: str | None = None):
         from vgc.policy import ewp as E
         from vgc.policy import view as V
 
         self.battle_id, self.key = battle_id, fingerprint(battle)
         self.reg, self.battle = reg, battle
+        # The decision point the battle was cut at (`live.decision_point`), which the model is
+        # told, as the live number tells it: a replacement is a `switch` point, not a turn.
+        self.point_kind = point_kind
         self.started = time.time()
         self.view = V.EntryView(reg, battle)
         self.plan = V.value_position(reg, self.view, {**V.SEARCH, "side_k": E.SIDE_K, "root_detail": True})
@@ -356,7 +359,8 @@ class PolicySolve:
         from vgc.web import live
 
         try:
-            model = live.wp(self.reg, self.battle.rp.state, POLICY_STACK["wp_model"], k=0)["wp"]
+            model = live.wp(self.reg, self.battle.rp.state, POLICY_STACK["wp_model"], k=0,
+                            kind=self.point_kind)["wp"]
             [r] = pool().solve_all([self.plan["position"]], self.started + DEADLINE)
             if self.cancelled:
                 return
@@ -448,9 +452,12 @@ _current: Solve | DoublesSolve | PolicySolve | None = None
 _guard = threading.Lock()
 
 
-def request(reg: Regulation, battle_id: str, battle) -> dict[str, Any]:
+def request(reg: Regulation, battle_id: str, battle, point_kind: str | None = None) -> dict[str, Any]:
     """The engine's answer so far for this battle as it now stands, starting a solve if there is
-    none for it. Any solve for another position is cancelled first."""
+    none for it. Any solve for another position is cancelled first.
+
+    A live battle is passed cut at its decision point (`live.at_decision_point`), whose kind is
+    `point_kind`, so a tap inside a turn leaves the position, and the solve under way, as they were."""
     global _current
     why, kind = reason(reg, battle)
     with _guard:
@@ -463,7 +470,8 @@ def request(reg: Regulation, battle_id: str, battle) -> dict[str, Any]:
         if _current is None or (_current.battle_id, _current.key) != (battle_id, key) or not isinstance(_current, kind):
             if _current is not None:
                 _current.cancel()
-            _current = kind(reg, battle_id, battle)
+            _current = (PolicySolve(reg, battle_id, battle, point_kind) if kind is PolicySolve
+                        else kind(reg, battle_id, battle))
         return _current.status()
 
 

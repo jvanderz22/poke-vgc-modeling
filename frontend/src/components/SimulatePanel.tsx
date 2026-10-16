@@ -122,7 +122,7 @@ function Timeline({ result }: { result: SimResult }) {
           <ul className="events">
             {t.events.map((e, i) => (
               <li key={i} className={e.side ? `ev ev-${e.side}` : "ev"}>
-                {e.side && <span className="badge rounded-pill text-bg-dark ev-side">{e.side === "p1" ? "A" : "B"}</span>}
+                {e.side && <span className={`ev-side ${e.side}`}>{e.side === "p1" ? "A" : "B"}</span>}
                 <span>{e.text}</span>
               </li>
             ))}

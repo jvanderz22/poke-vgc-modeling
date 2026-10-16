@@ -38,6 +38,28 @@ def test_every_variant_replays_to_a_1v1(reg, spec):
             assert len(active) == 1 and len(fainted) == 3, (fid, vid, sid)
 
 
+def test_every_variant_is_legal(reg, spec):
+    """Ours in full, their sheet on all it shows, and their true set where a closed sheet hides it.
+    A Covert Cloak, Drought on a Charizard and an Incineroar's Knock Off all went unnoticed until
+    starting a battle began to run the validator (2026-10-16)."""
+    from vgc.teams.showdown_text import parse_team
+    from vgc.teams.validate import SHEET_HIDDEN, validate_set, validate_sheet, validate_team
+
+    def errors(problems, hidden=frozenset()):
+        return [str(p) for p in problems if p.severity == "error" and p.code not in hidden]
+
+    for fid, vid in _variants(spec):
+        setup, _ = benchmark.build(reg, spec, fid, vid)
+        fam, var = benchmark._variant(spec, fid, vid)
+        mine = "\n\n".join(benchmark._set_text(m) for m in setup["mine"])
+        assert errors(validate_team(parse_team(mine), reg)) == [], (fid, vid)
+        truth = benchmark._set_text({**fam["build"]["theirs"], **(var.get("theirs") or {})})
+        assert errors(validate_set(parse_team(truth).members[0], reg), SHEET_HIDDEN) == [], (fid, vid)
+        if "item" in setup["theirs"][0]:
+            theirs = "\n\n".join(benchmark._set_text(m) for m in setup["theirs"])
+            assert errors(validate_sheet(parse_team(theirs), reg)) == [], (fid, vid)
+
+
 def test_a_named_ordering_reaches_the_model_input(reg, spec):
     ahead = evidence(reg, _state(reg, spec, "F8b", "B"))["ahead"]
     assert [[a[:2], b[:2]] for a, b in ahead] == [[["p2", "Basculegion"], ["p1", "Gholdengo"]]]

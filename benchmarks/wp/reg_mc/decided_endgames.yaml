@@ -64,6 +64,15 @@ format: 1v1 and 2v2 endgames, doubles rules (spread moves hit one target when on
 # here never included them, and none decided its family: Extreme Speed KOs F5's Sneasler from 40%
 # with no item, and an Assault Vest does nothing against F11's physical attacks. They are now Life
 # Orb, Shuca Berry and Metal Coat, and the engine re-solved those families.
+#
+# Three more were found on 2026-10-16, when starting a battle began to run the validator: the
+# fillers' Whimsicott held a Covert Cloak (not in Reg M-C; now a Mental Herb), every Charizard
+# listed Drought, which is its Mega's ability and not one a sheet can show (now Blaze, 86% of
+# Charizard sheets; the Mega still has Drought), and F11's Incineroar had Knock Off, which it
+# can't learn in Reg M-C (now Throat Chop, which KOs from 25% for any spread just as well). The
+# whole benchmark was re-solved once at depth 4 for the three (27 min, 4 workers): every value,
+# node count and depth unchanged, as a Mega's ability is its Mega's whatever the sheet lists and
+# Throat Chop KOs where Knock Off did.
 fillers: |
   Rillaboom @ Miracle Seed
   Ability: Grassy Surge
@@ -101,7 +110,7 @@ fillers: |
   - Trick Room
   - Strength Sap
 
-  Whimsicott @ Covert Cloak
+  Whimsicott @ Mental Herb
   Ability: Prankster
   EVs: 32 HP / 2 Def / 32 Spe
   Timid Nature
@@ -138,7 +147,7 @@ families:
       turn-order Speed evidence (variants D, E). On a cartridge Choice Scarf is never announced;
       the only way to learn it is that Basculegion moved first, and no WP model sees turn order.
     ours:
-      - {species: Charizard, item: Charizardite Y, mega: true, ability: Drought, nature: Modest,
+      - {species: Charizard, item: Charizardite Y, mega: true, ability: Blaze, nature: Modest,
          sp: "32 SpA / 32 Spe / 2 HP", hp: 100, moves: [Solar Beam, Heat Wave, Weather Ball, Protect],
          speed: 152}
     theirs:
@@ -154,7 +163,7 @@ families:
       - "Speed: our Zard 152. Non-Scarf Basculegion max 143 (Jolly 32). Scarf Basculegion ≥ 152
          needs only 4 Spe SP (Adamant 0 Spe + Scarf = 147)."
     build:
-      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Blaze,
              nature: Modest, sp: {hp: 2, spa: 32, spe: 32}, hp: 100,
              moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
       theirs: {species: Basculegion, item: Life Orb, ability: Adaptability, nature: Adamant, hp: 60,
@@ -233,7 +242,7 @@ families:
       weather turns — closed in featurizer version 2, which times weather like Trick Room.
       No model is trained on version 2 yet, so every current model still sees one row here.
     ours:
-      - {species: Charizard, item: Charizardite Y, mega: true, ability: Drought, nature: Modest,
+      - {species: Charizard, item: Charizardite Y, mega: true, ability: Blaze, nature: Modest,
          sp: "32 SpA / 32 Spe / 2 HP", hp: 100, moves: [Solar Beam, Heat Wave, Weather Ball, Protect],
          speed: 152}
     theirs:
@@ -243,7 +252,7 @@ families:
     calcs:
       - "as F1; Solar Beam needs a charge turn out of sun, and Last Respects KOs us during it"
     build:
-      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+      ours: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Blaze,
              nature: Modest, sp: {hp: 2, spa: 32, spe: 32}, hp: 100,
              moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
       theirs: {species: Basculegion, item: Life Orb, ability: Adaptability, nature: Adamant, hp: 60,
@@ -272,13 +281,13 @@ families:
          sp: "32 Atk / 32 HP / 2 Def", hp: 55, moves: [Rock Slide, Knock Off, Low Kick, Protect],
          speed: 81}
     theirs:
-      - {species: Charizard, item: Charizardite Y, mega: true, ability: Drought, hp: 100,
+      - {species: Charizard, item: Charizardite Y, mega: true, ability: Blaze, hp: 100,
          moves_known: [Solar Beam, Heat Wave, Protect]}
     field: {weather: sun}
     build:
       ours: {species: Tyranitar, item: Chople Berry, ability: Sand Stream, nature: Adamant,
              sp: {hp: 32, atk: 32, def: 2}, hp: 55, moves: [Rock Slide, Knock Off, Low Kick, Protect]}
-      theirs: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Drought,
+      theirs: {species: Charizard, item: Charizardite Y, mega: Charizard-Mega-Y, ability: Blaze,
                nature: Modest, hp: 100, moves: [Solar Beam, Heat Wave, Weather Ball, Protect]}
       fainted: {ours: [Rillaboom, Garchomp, Sinistcha], theirs: [Incineroar, Garchomp, Whimsicott]}
       field: {weather: Sunny Day}
@@ -504,13 +513,13 @@ families:
          speed: 169}
     theirs:
       - {species: Incineroar, item: Shuca Berry, ability: Intimidate, hp: 50,
-         moves_known: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
+         moves_known: [Throat Chop, Flare Blitz, Snarl, Darkest Lariat]}
     calcs:
       - "Dragon Claw vs 32 HP / 2 Def Incineroar: 37.1–43.5%; on a crit 54.9–65.3%  → KOs from 50%
          only on a crit"
       - "Rock Tomb cannot KO from 50% even on a crit; there is no Earthquake (92–108%)"
-      - "Knock Off vs our 2 HP / 0 Def Garchomp: 42.7–50.8%, Flare Blitz 26.5–31.4%  → either KOs
-         ours from 25%"
+      - "Throat Chop vs our 2 HP / 0 Def Garchomp: 29.2–47.0% from 0 to 32 Atk SP  → KOs ours from
+         25% for any spread; Flare Blitz 21.1–34.6%"
       - "Speed: our Garchomp 169 > any Incineroar. Focus Sash does nothing below full HP; Sand Veil
          does nothing without sand; Fake Out fails after the first turn out"
       - "A frail Incineroar (0 HP / 0 Def) takes up to ~56% uncritted, so 'any spread' does not hold
@@ -519,7 +528,7 @@ families:
       ours: {species: Garchomp, item: Focus Sash, ability: Sand Veil, nature: Jolly,
              sp: {hp: 2, atk: 32, spe: 32}, hp: 25, moves: [Dragon Claw, Rock Tomb, Swords Dance, Protect]}
       theirs: {species: Incineroar, item: Shuca Berry, ability: Intimidate, nature: Careful, hp: 50,
-               moves: [Knock Off, Flare Blitz, Snarl, Darkest Lariat]}
+               moves: [Throat Chop, Flare Blitz, Snarl, Darkest Lariat]}
     variants:
       A: {sheets: open, expected: 0.042, why: "one Dragon Claw, which KOs only on a 1-in-24 crit"}
       B: {sheets: open, expected: 0.125, ours_item: Scope Lens, ours: {item: Scope Lens},

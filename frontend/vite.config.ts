@@ -9,6 +9,9 @@ export default defineConfig(({ command }) => ({
   // under a /static/ base Vite would serve the app there and 404 every route beside it.
   base: command === "build" ? "/static/" : "/",
   plugins: [react()],
+  // The frame worker loads the OCR (onnxruntime-web, the models' pipeline) only when it is used,
+  // which takes a module worker: watch.ts starts it with type "module".
+  worker: { format: "es" },
   build: { outDir: "../src/vgc/web/static", emptyOutDir: true },
   // `npm run dev` gives hot reload while the Python API keeps serving the real endpoints.
   server: { proxy: { "/api": "http://127.0.0.1:8001" } },

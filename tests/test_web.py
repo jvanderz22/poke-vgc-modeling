@@ -368,6 +368,21 @@ def test_the_wrong_number_of_species_is_refused(client, teams, battles_dir):
     assert r.status_code == 422
 
 
+def test_the_same_species_twice_is_refused(client, teams, battles_dir):
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_species": THEIR_SIX[:5] + THEIR_SIX[:1]})
+    assert r.status_code == 422 and "Species Clause" in r.json()["detail"]
+
+
+def test_a_battle_is_not_started_from_an_illegal_team(client, teams, battles_dir):
+    """Yours is held to everything, Stat Points included; their sheet to all a sheet shows."""
+    first, rest = teams[0].split("\n", 1)
+    mine = f"{first}\n- Splash\n{rest}"
+    r = client.post("/api/battles", json={"my_team": mine, "their_species": THEIR_SIX})
+    assert r.status_code == 422 and "your team" in r.json()["detail"]
+    r = client.post("/api/battles", json={"my_team": teams[0], "their_team": teams[1].replace("- ", "- Splash\n- ", 1)})
+    assert r.status_code == 422 and "their sheet" in r.json()["detail"]
+
+
 def test_wp_is_the_position_as_shown_and_says_how_wide(started):
     """The number is the position with their unrevealed sets left unknown, which beat averaging
     over drawn sets on held-out closed-sheet games. The draws are still made: the 10th-to-90th
@@ -455,6 +470,83 @@ def test_the_trajectory_is_one_row_a_turn(client, started):
     # The number is the position as shown, which need not sit inside the band of drawn sets.
     assert all(0 <= row["lo"] <= row["hi"] <= 1 and 0 <= row["wp"] <= 1 for row in t["turns"])
     assert t["gates"]["version"] == t["version"]
+
+
+def _leads(started):
+    """Turn 1 begun, two of your six against Gholdengo and Milotic, so nothing logged is an error."""
+    mine = [m["species"] for m in started["sides"]["p1"]["mons"]]
+    return ({"kind": "lead", "side": "p1", "slot": 0, "species": mine[0]},
+            {"kind": "lead", "side": "p1", "slot": 1, "species": mine[1]},
+            {"kind": "lead", "side": "p2", "slot": 0, "species": "Gholdengo"},
+            {"kind": "lead", "side": "p2", "slot": 1, "species": "Milotic"},
+            {"kind": "turn", "n": 1})
+
+
+def test_inside_a_turn_the_number_holds_at_the_turns_start(client, started):
+    """The models were trained on decision points only. Inside a turn the rest of it is already
+    chosen and nothing says who has acted, so the number is the turn's start until the next one."""
+    bid = started["id"]
+    v = entries(client, bid, *_leads(started))
+    at_start = v["wp"]
+    assert at_start["as_of"] == {"at": 5, "turn": 1, "kind": "turn", "current": True}
+
+    v = entries(client, bid, {"kind": "damage", "side": "p2", "slot": 0, "pct": 40})
+    assert not v["errors"]
+    assert v["wp"]["as_of"] == {"at": 5, "turn": 1, "kind": "turn", "current": False}
+    assert (v["wp"]["wp"], v["wp"]["lo"], v["wp"]["hi"]) == (at_start["wp"], at_start["lo"], at_start["hi"])
+    # The set panel follows the battle, not the number: nothing was revealed, so it is unchanged.
+    assert v["wp"]["belief"] == at_start["belief"]
+
+    v = entries(client, bid, {"kind": "turn", "n": 2})
+    assert v["wp"]["as_of"] == {"at": 7, "turn": 2, "kind": "turn", "current": True}
+    assert v["wp"]["wp"] != at_start["wp"]
+
+
+def test_replacements_move_the_number_once_the_turn_is_over(client, started):
+    """A slot filled while empty is a replacement, so every move and end-of-turn effect is in.
+    While a slot still waits, the number is the moment before the first replacement, which is where
+    a log takes a `switch` point; once none waits, it is the position the next turn starts from."""
+    bid = started["id"]
+    bench = started["sides"]["p1"]["mons"][2]["species"]
+    v = entries(client, bid, *_leads(started),
+                {"kind": "damage", "side": "p1", "slot": 0, "pct": 0, "fainted": True},
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 0, "fainted": True})
+    assert v["wp"]["as_of"]["kind"] == "turn" and not v["wp"]["as_of"]["current"]
+    v = entries(client, bid, {"kind": "switch", "side": "p1", "slot": 0, "species": bench})
+    assert not v["errors"]
+    assert v["wp"]["as_of"] == {"at": 7, "turn": 1, "kind": "switch", "current": False}
+    assert v["wp"]["kind"] == "switch"
+    v = entries(client, bid, {"kind": "switch", "side": "p2", "slot": 0, "species": "Kingambit"})
+    assert not v["errors"] and not v["turn_progress"]["waiting"]
+    assert v["wp"]["as_of"] == {"at": 9, "turn": 1, "kind": "turn", "current": True}
+
+
+def test_the_engine_is_asked_where_the_number_is(client, started):
+    """A search from inside a turn would have every Pokémon choose again, so `/solve` answers the
+    same decision point as the model and says which."""
+    bid = started["id"]
+    entries(client, bid, *_leads(started), {"kind": "damage", "side": "p2", "slot": 0, "pct": 40})
+    got = client.get(f"/api/battles/{bid}/solve").json()
+    assert got["as_of"] == {"at": 5, "turn": 1, "kind": "turn", "current": False}
+
+
+def test_walking_back_to_a_turns_end_takes_the_number_there(client, started):
+    """A prefix that stops at the next turn's tap is a turn that is over, so the review shows the
+    number at its end, the same position the trajectory scores. The trajectory's last row is now,
+    which is the live number's decision point rather than the middle of a turn."""
+    bid = started["id"]
+    v = entries(client, bid, *_leads(started),
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 40},
+                {"kind": "turn", "n": 2},
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 20})
+    assert not v["errors"]
+    end_of_1 = client.get(f"/api/battles/{bid}/at/6").json()["wp"]
+    assert end_of_1["as_of"] == {"at": 6, "turn": 1, "kind": "turn", "current": True}
+    mid_2 = client.get(f"/api/battles/{bid}/at/8").json()["wp"]
+    assert mid_2["as_of"] == {"at": 7, "turn": 2, "kind": "turn", "current": False}
+    turns = client.get(f"/api/battles/{bid}/trajectory").json()["turns"]
+    assert end_of_1["wp"] == next(row["wp"] for row in turns if row["index"] == 6)
+    assert turns[-1]["index"] == 7 and turns[-1]["wp"] == v["wp"]["wp"] == mid_2["wp"]
 
 
 def test_a_battle_takes_the_model_pinned_for_its_regime(client, teams, started):
@@ -585,6 +677,53 @@ def test_watching_needs_both_sheets(client, two_sheets, battles_dir):
     assert r.status_code == 422
 
 
+def test_watching_needs_two_legal_sheets(client, two_sheets, battles_dir):
+    """A sheet read off a video with a field misread is refused, naming what is wrong. A sheet's
+    Stat Points aren't checked: it never shows them."""
+    p1 = two_sheets[0].replace("Ability: Grassy Surge", "Ability: Drizzle")
+    r = client.post("/api/battles", json={"p1_team": p1, "their_team": two_sheets[1]})
+    assert r.status_code == 422
+    assert "player 1's sheet" in r.json()["detail"] and "Rillaboom" in r.json()["detail"]
+    blank = "\n".join(ln for ln in two_sheets[1].splitlines() if not ln.startswith("EVs:"))
+    r = client.post("/api/battles", json={"p1_team": two_sheets[0], "their_team": blank})
+    assert r.status_code == 200, r.text
+
+
+def test_the_speed_read_scales_by_what_is_on_the_field(client, two_sheets, battles_dir):
+    """The read goes through the multipliers the turn-order belief uses, so a Choice Scarf counts.
+
+    Jolly Basculegion is 108–143 and Bold Volcarona is 120–152, which overlap. Under a Scarf
+    Basculegion is 162–214, so it moves first whatever either spent. Tailwind behind Volcarona
+    doubles it to 240–304, which flips the read. This is the board from a watched Bo3
+    (b7b57b4dbcd9, turn 6), where the Scarf was ignored and the read said "not decided yet".
+    """
+    basculegion = ("Basculegion @ Choice Scarf\nAbility: Adaptability\nEVs: 32 Atk / 32 Spe / 2 HP\n"
+                   "Jolly Nature\n- Wave Crash\n- Last Respects\n- Phantom Force\n- Flip Turn")
+    volcarona = ("Volcarona @ Life Orb\nAbility: Flame Body\nEVs: 32 HP / 32 Def / 2 SpD\n"
+                 "Bold Nature\n- Rage Powder\n- Overheat\n- Struggle Bug\n- Protect")
+    p1 = two_sheets[0].split("\n\n")
+    p2 = two_sheets[1].split("\n\n")
+    p1[[s.split(" @")[0] for s in p1].index("Garchomp")] = basculegion
+    p2[[s.split(" @")[0] for s in p2].index("Garchomp")] = volcarona
+    r = client.post("/api/battles", json={"p1_team": "\n\n".join(p1), "their_team": "\n\n".join(p2)})
+    assert r.status_code == 200, r.text
+    bid = r.json()["id"]
+
+    v = entries(client, bid,
+                {"kind": "lead", "side": "p1", "slot": 0, "species": "Basculegion"},
+                {"kind": "lead", "side": "p2", "slot": 0, "species": "Volcarona"})
+    assert not v["errors"]
+    read = next(r for r in v["speed"] if r["mine"] == "Basculegion" and r["theirs"] == "Volcarona")
+    assert read["verdict"] == "faster"
+    assert read["my_speed"] == [162, 214] and read["their_speed"] == [120, 152]
+
+    v = entries(client, bid, {"kind": "side", "side": "p2", "condition": "tailwind", "on": True})
+    assert not v["errors"]
+    read = next(r for r in v["speed"] if r["mine"] == "Basculegion" and r["theirs"] == "Volcarona")
+    assert read["verdict"] == "slower"
+    assert read["their_speed"] == [240, 304]
+
+
 def test_a_watched_turn_narrows_both_sides(client, watched):
     """Both sides' spreads are hidden, so both get a belief panel, and the number is still there:
     player 1's chance, from the open-sheet model."""
@@ -614,11 +753,28 @@ def test_a_password_guards_everything_but_health(monkeypatch):
 
         c = TestClient(guarded.app)
         assert c.get("/api/health").status_code == 200
-        assert c.get("/api/teams").status_code == 401
+        refused = c.get("/api/teams")
+        # No `WWW-Authenticate`: that is what opens the browser's own password dialog.
+        assert refused.status_code == 401 and "www-authenticate" not in refused.headers
         bad = base64.b64encode(b"vgc:wrong").decode()
         assert c.get("/api/teams", headers={"Authorization": f"Basic {bad}"}).status_code == 401
         good = base64.b64encode(b"vgc:hunter2").decode()
         assert c.get("/api/teams", headers={"Authorization": f"Basic {good}"}).status_code == 200
+
+        # A page sends the browser to the sign-in page, which sends it back after.
+        page = c.get("/battles/abc?x=1", follow_redirects=False)
+        assert page.status_code == 303 and page.headers["location"] == "/login?next=/battles/abc%3Fx%3D1"
+        assert 'value="/battles/abc?x=1"' in c.get(page.headers["location"]).text
+        assert c.post("/login", data={"user": "vgc", "password": "wrong"}).status_code == 401
+        assert c.post("/login", data={"user": "someone", "password": "hunter2"}).status_code == 401
+        assert c.post("/login", data={"user": "vgc", "password": "hunter2", "next": "//evil.example"},
+                      follow_redirects=False).headers["location"] == "/"
+        signed_in = c.post("/login", data={"user": "vgc", "password": "hunter2", "next": "/battles/abc"},
+                           follow_redirects=False)
+        assert signed_in.status_code == 303 and signed_in.headers["location"] == "/battles/abc"
+        assert c.get("/api/teams").status_code == 200
+        c.cookies.set("vgc_session", "9999999999.forged")
+        assert c.get("/api/teams").status_code == 401
     finally:
         monkeypatch.delenv("VGC_WEB_PASSWORD")
         importlib.reload(webapp)
@@ -842,3 +998,97 @@ def test_sheet_read_refuses_what_is_not_an_image(client):
     assert client.post("/api/sheet/read", content=b"").status_code == 422
     r = client.post("/api/sheet/read", content=b"Golisopod @ Golisopite", headers={"content-type": "image/png"})
     assert r.status_code == 422
+
+
+def test_a_moment_flagged_while_watching_lands_in_the_review_log(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    r = client.post("/api/video/flag", json={"video": "abc123", "video_s": 61.5, "note": "missed a switch"})
+    assert r.status_code == 200, r.text
+    flags = client.get("/api/video/review").json()["flag"]
+    assert [(f["source"], f["video_s"], f["note"]) for f in flags] == [("youtube:abc123", 61.5, "missed a switch")]
+
+
+def test_a_watched_battle_is_read_frame_by_frame(client, watched, tmp_path, monkeypatch):
+    """A frame of the video goes to the battle reader; its reply says where the reading stands.
+    Before the leads there is nothing to write, and a still player is not read twice."""
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    monkeypatch.setattr(webapp, "_readings", {})
+    frame = (paths.ROOT / "tests" / "fixtures" / "video" / "r5-choosing.jpg").read_bytes()
+    url = f"/api/battles/{watched['id']}/read?video_s=182.5&video=abc123"
+    r = client.post(url, content=frame, headers={"content-type": "image/jpeg"})
+    assert r.status_code == 200, r.text
+    s = r.json()
+    assert s["read_to"] == 182.5 and s["entries"] == [] and not s["ended"] and s["errors"] == []
+    assert client.post(url, content=frame, headers={"content-type": "image/jpeg"}).json()["read_to"] == 182.5
+    behind = client.post(url.replace("182.5", "100.0"), content=frame, headers={"content-type": "image/jpeg"})
+    assert behind.json()["behind"]
+    assert client.delete(f"/api/battles/{watched['id']}/read").json() == {"stopped": True, "entries": []}
+    assert client.get(f"/api/battles/{watched['id']}").json()["journal"] == []
+
+
+def test_the_page_gets_the_readers_own_models_and_layout(client):
+    """The watch page reads frames on its GPU with what the server reads with: the same model
+    files, the same characters, the same regions and threshold."""
+    pytest.importorskip("rapidocr")
+    from vgc.video import screen
+
+    cfg = client.get("/api/video/ocr").json()
+    assert cfg["limit"] == screen.DET_LIMIT and cfg["changed"] == screen.CHANGED
+    assert cfg["regions"] == {k: list(v) for k, v in screen.BROADCAST_2026.regions.items()}
+    assert len(cfg["keys"]) > 1000 and cfg["det"].endswith(f"v={cfg['version']}")
+    r = client.get(cfg["det"])
+    assert r.status_code == 200 and len(r.content) > 1_000_000 and "immutable" in r.headers["cache-control"]
+    assert client.get("/api/video/ocr/cls.onnx").status_code == 404
+
+
+def test_a_frame_the_page_read_itself_runs_no_ocr_on_the_server(client, watched, tmp_path, monkeypatch):
+    from vgc.video import screen
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(paths, "DATA", tmp_path)
+    monkeypatch.setattr(webapp, "_readings", {})
+    monkeypatch.setattr(screen, "_lines", lambda crop: pytest.fail("the server ran OCR"))
+    frame = (paths.ROOT / "tests" / "fixtures" / "video" / "r5-choosing.jpg").read_bytes()
+    read = {region: [] for region in screen.BROADCAST_2026.regions}
+    read["message"] = [["Trainers are choosing actions", 300.0, 20.0, 700.0, 50.0]]
+    lines = json.dumps(read).encode()
+    url = f"/api/battles/{watched['id']}/read?video_s=182.5&video=abc123"
+    r = client.post(url, content=lines + frame, headers={"content-type": "image/jpeg", "x-ocr-lines": str(len(lines))})
+    assert r.status_code == 200, r.text
+    assert r.json()["read_to"] == 182.5 and r.json()["unread"] == []
+    bad = client.post(url.replace("182.5", "183"), content=frame, headers={"content-type": "image/jpeg", "x-ocr-lines": "12"})
+    assert bad.status_code == 422
+
+
+def test_only_a_watched_battle_is_read_off_a_video(client, started):
+    r = client.post(f"/api/battles/{started['id']}/read?video_s=1", content=b"x", headers={"content-type": "image/jpeg"})
+    assert r.status_code == 409
+
+
+def test_a_finished_game_is_not_read_on(client, watched, monkeypatch):
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(webapp, "_readings", {})
+    bid = watched["id"]
+    leads = [{"kind": "lead", "side": sid, "slot": slot, "species": sp}
+             for sid, pair in (("p1", ("Rillaboom", "Garchomp")), ("p2", ("Incineroar", "Pelipper")))
+             for slot, sp in enumerate(pair)]
+    entries(client, bid, *leads, {"kind": "turn", "n": 1}, {"kind": "end", "winner": "p1"})
+    r = client.post(f"/api/battles/{bid}/read?video_s=900", content=b"not even an image",
+                    headers={"content-type": "image/jpeg"})
+    assert r.status_code == 200 and r.json()["ended"] and r.json()["entries"] == []
+
+
+def test_sheet_reads_beyond_one_waiting_are_turned_away(client, monkeypatch):
+    """Each queued read holds its image, and a pile of them took the deployed server past 2 GB."""
+    import threading
+
+    from vgc.web import app as webapp
+
+    monkeypatch.setattr(webapp, "_SHEET_READS", threading.BoundedSemaphore(1))
+    webapp._SHEET_READS.acquire()  # a read already under way
+    r = client.post("/api/sheet/read", content=b"\x89PNG", headers={"content-type": "image/png"})
+    assert r.status_code == 429
+    webapp._SHEET_READS.release()

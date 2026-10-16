@@ -1,5 +1,11 @@
 {
   "enabledPlugins": {
     "vgc-advisor@my-local-marketplace": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(fly ssh sftp get:*)",
+      "Bash(fly ssh console -a vgc-live-battle-calculator -C:*)"
+    ]
   }
 }

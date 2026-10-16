@@ -83,6 +83,11 @@ over 0.22 s.
 
 ## Password
 
-HTTP Basic, set by the `VGC_WEB_PASSWORD` secret (and `VGC_WEB_USER`, default `vgc`). Without it
-the app is open, which is right on localhost and wrong here: anybody could run solves and
-simulations on your bill. `deploy_fly.sh` will not deploy without it. `/api/health` stays open.
+Set by the `VGC_WEB_PASSWORD` secret. Without it the app is open, which is right on localhost and
+wrong here: anybody could run solves and simulations on your bill. `deploy_fly.sh` will not deploy
+without it. `/api/health` stays open.
+
+The username is `VGC_WEB_USER` (default `vgc`). A browser signs in at `/login`, which keeps it
+signed in for 30 days with a cookie; `/logout` ends that, and changing the secret signs everyone
+out. Scripts (the `vgc` MCP server, `scripts/analysis/fly_timing.py`) send the same username and
+password as HTTP Basic.

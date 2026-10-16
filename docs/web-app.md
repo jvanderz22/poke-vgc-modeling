@@ -69,6 +69,102 @@ showing the best lead for each set of four, plus which four the opponent is like
 Both sheets go through the real simulator's validator, so an illegal one comes back with
 Showdown's own message naming the offending Pokémon.
 
+**The number during a turn** stays where the turn started, dimmed, with a line saying so. Once a
+replacement for a fainted Pokémon has been logged, it moves to the moment before that replacement.
+When no slot is still waiting, it moves to the position the next turn starts from. The models were
+trained on decision points only: team preview, the start of a turn, and replacements at its end.
+Inside a turn the rest of the turn is already chosen, and nothing in an observation says who has
+acted. So a position read after the faster side's hit and before the slower side's reply leans
+towards whoever moved first (`live.decision_point`). The engine's answer is asked about the same
+point, because a search from inside a turn would have every Pokémon choose again. A tap inside a
+turn leaves both alone, and a search under way keeps deepening. The set panel still updates on
+every tap. Walking back to a turn mark shows the number at the end of that turn, the same position
+the trajectory scores. The trajectory's last bar is the live number.
+
+### Watch
+
+Someone else's game on YouTube, beside the match. Paste a link (with `t=` if you like) and the page
+takes the full width: the video on the left half, kept in view while you scroll, and the match on
+the right. The URL carries the video (`/watch?v=<id>&t=<seconds>`), so a reload or a shared link
+opens it again.
+
+Before the battle, the right half is both players' sheets and names. **Read sheets from the video**
+asks to share the tab (Chrome or Edge) and captures only the player, through Region Capture. The
+page's own forms are text the reader would read back, so without Region Capture it refuses rather
+than capture the whole tab. A new picture is sent at most every 1.5 seconds and read like a
+screenshot. A frame counts as a sheet only if at least four Pokémon on it have moves under them, so
+a battle's nameplates or team preview don't. The first team read goes to player 1 and the next to
+player 2, with the broadcast's name for each. A later read of the same team only fills what is
+still empty. Where it disagrees with a field already set, the form keeps its value and the page
+lists the disagreement. Reading stops once both sheets are full. **Start watching** makes a
+Watching battle (`/watch/<id>`), with the two names on its setup, and the page becomes the battle
+beside the video.
+
+Once the battle exists the page is laid out to be read at a glance on a laptop, with nothing below
+the fold at 1512×860: the video takes two thirds of the width, both sixes sit under it a row each
+(the player on the left of the screen first, once the reader has seen which that is), and the
+battle is a column beside it (`WatchBoard.tsx`). Top to bottom:
+
+- **The number**, one, said as the question it answers. Where the engine leads (two or fewer a
+  side) it is "with best play from both sides", and the model's stays beside it as "games like
+  this", with its gate verdict. Elsewhere the model's is the number. ⓘ says how each was made.
+  Under it, the model's number at each turn so far, with the engine's as a dot at the end; a point
+  walks back to that turn.
+- **The field**: the four on it with everything known about each (HP, boosts, item, ability,
+  nature, moves; on a hidden sheet "Unknown" for a move not yet seen, with the likeliest a hover
+  away), and what being on the field says about its next move (`live.on_field`): locked into a
+  move by a Choice item, Fake Out ready on its first turn out, or a Protect that may fail after one
+  held the turn before. Then the field and side conditions with the turns they have left, counting
+  the one being played (`live.timers`, from what put each up and the turn it counts from, as the
+  replay records them), and Speed as ranges on one axis. A hatched range is all the nature and
+  Stat Points allow; a solid one has been narrowed by turn order. Each pair under it is decided or
+  open.
+- **The turn so far and the one before it**, each line with the video time it was read at; a time
+  puts the video there.
+- Both sides in full (`BattleState`), folded away.
+
+Items, abilities and moves are shown by name (from the pool), not by id. Entering taps by hand puts
+the stepper at the top of the column.
+
+**Read the battle** (while capturing, once the battle exists) sends the player a frame every
+quarter second while the video plays, and none while it is paused, to the battle reader
+(`POST /api/battles/{id}/read`, `vgc.video.reading`). What it settles is appended to the battle's
+journal, each entry stamped with the `video_s` it was read at, and the battle half refreshes as it
+lands. A frame goes only once the last has been answered, so a slow server reads fewer frames
+rather than falling behind; under 2 a second the page warns that a short message can be missed.
+The line under the player says how far it has read, the last message, and how many things it
+couldn't read (each with its time, under "What it couldn't read"). The journal stays yours:
+correct an entry by hand (undo, re-enter) and the reader takes the journal as it then stands and
+reads on from there. Rewinding skips frames until the video is past where the reading had got to,
+so nothing is read twice. Skipping ahead leaves a gap that isn't read; the page lists it and the
+review log keeps it. **Stop reading the battle** writes out what the reader still held (a move
+waiting on its results). A reading lives in the server's memory: a restart ends it, and reading
+again on the same battle carries on from its journal. The reader knows one broadcast layout
+(Louisville's, [video-findings](video-findings.md)) and is unscored until PLAN-video step 3.
+
+An entry made by hand on this page carries the player's time as `video_s` too, so a game entered
+by hand beside its video is a transcription the reader can be scored against:
+`vgc video score READ HAND` lines a read journal up with a hand one turn by turn and reports
+PLAN-video's gates (`vgc.video.score`). READ and HAND are each a battle id, a battle's JSON, or a
+`vgc video read --json`.
+
+The player is the YouTube IFrame API's, so the page knows the video's own time. The capture asks for
+8 frames a second, twice what the readers sample, and at most 1600 across, the most any reader
+takes. Both are asked for when the capture starts, since later limits save little; the frames are
+encoded in a worker (`frameWorker.ts`), off the page's thread. Without them the video stuttered
+([video-findings](video-findings.md#in-the-browser-2026-10-15)). While capturing, **Record clip**
+saves the player as `<video>-<time>.webm`, at the capture's 8 frames a second, with a `.json`
+beside it: the player's time sampled every 200 ms. **Save frame** saves one PNG named by its video
+time. These are the fixtures the battle reader is built and scored on (PLAN-video steps 1–3). Keep them in
+`data/video/`, which is gitignored: a battle is a few hundred MB. `vgc video frames CLIP` turns a
+clip into PNGs named by clip time and video time (`vgc.video.clip`, decoded by PyAV).
+
+**⚑ Flag this moment** saves the video's time and a note to the review log
+(`POST /api/video/flag`): anything the page got wrong or didn't catch. The same log takes what the
+battle reader missed and every message it read by a provisional phrasing (`vgc.video.review`).
+`vgc video review` (or `GET /api/video/review`) lists them grouped, with where to look. The log is
+`data/review/video.jsonl`, on the volume when deployed.
+
 ### Endgames
 
 A set of real human games the WP model called at **90%+ before they ended**, to click through.
@@ -239,6 +335,9 @@ surface. Interactive docs are at `/docs` while the server runs.
 | `POST /api/battles/{id}/entries`, `POST /api/battles/{id}/undo`, `GET /api/battles/{id}/at/{index}` | Append taps, pop the last, or see the battle after its first `index` taps |
 | `POST /api/battles/{id}/next` | The next game of the battle's Bo3, made if it is not there yet (ending a game of one already makes it) |
 | `GET /api/species/{name}` | What a sheet can say about one species: types, legal abilities and moves, and the items and natures people run, each ordered by usage |
+| `POST /api/battles/{id}/read`, `DELETE /api/battles/{id}/read` | A watched battle read off its video: one JPEG frame (`video_s`, `video`) → what it appended and where the reading stands; stop, writing out what was held. A page that read the frame itself puts its lines first (`x-ocr-lines`: their length in bytes) and the server runs no OCR |
+| `GET /api/video/ocr`, `GET /api/video/ocr/{det,rec}.onnx` | What the watch page needs to read frames on its GPU: the reader's model files (cached for good under their hash), its characters, layout and change threshold |
+| `POST /api/video/flag`, `GET /api/video/review` | A moment marked for review; the review log, grouped |
 | `GET /api/battles/{id}/trajectory` | The WP at every turn so far, with the band over drawn sets |
 | `GET /api/battles/{id}/solve` | In a 1v1, the engine's answer with best play: the first call starts a background search, later calls show it deepening (depth, `leaf_mass`, the sets solved, what it assumes). With two or fewer a side on open sheets, the same call answers within 5 s: `kind`, depth 0 (quick) then 1 (searched), any forced win, and `guesses`: the answer under three guesses at their bulk, the last two landing after it |
 

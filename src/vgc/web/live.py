@@ -335,10 +335,96 @@ def series_view(reg: Regulation, blob: dict[str, Any], state) -> dict[str, Any] 
 
 # --- the screen ----------------------------------------------------------------------------
 
-def mon_view(state, m, own: bool) -> dict[str, Any]:
+CHOICE_ITEMS = {"choiceband", "choicespecs", "choicescarf"}
+PROTECTS = {"protect", "detect", "spikyshield", "kingsshield", "banefulbunker", "silktrap",
+            "burningbulwark", "obstruct"}
+
+
+def upcoming(rp: entry.Replay, sid: str, m) -> int:
+    """The turn this Pokémon chooses its next move for: this one while it has still to act in it,
+    else the next (it has acted, the turn is over, or the battle has not started)."""
+    st = rp.state
+    done = not st.started or rp.turn_over or (sid, m.species) in rp.acted
+    return st.turn + (1 if done else 0)
+
+
+def on_field(rp: entry.Replay, sid: str, m) -> dict[str, Any]:
+    """What only being on the field says about a Pokémon's next move.
+
+    `locked` is the move a Choice item (or Gorilla Tactics) holds it to: the last it used since
+    it came in, until it leaves. `first_turn_out` is that move being its first since it came in,
+    the only turn Fake Out and First Impression work. `protected_last` is a Protect that held on
+    the turn before: another straight after works one time in three."""
+    if m.state != "active":
+        return {"locked": None, "first_turn_out": False, "protected_last": False}
+    turn = upcoming(rp, sid, m)
+    came = rp.came_in.get((sid, m.species))
+    held = m.item in CHOICE_ITEMS or m.ability == "gorillatactics"
+    # `guarded` is this turn's Protects and `guarded_before` the last turn's; one used before it
+    # last came in was undone by the switch.
+    last = rp.guarded if turn == rp.state.turn + 1 else rp.guarded_before
+    return {
+        "locked": m.last_move if held and m.last_move else None,
+        "first_turn_out": came is not None and turn == came + 1,
+        "protected_last": (sid, m.species) in last and came is not None and came < turn - 1,
+    }
+
+
+# How many turns a condition lasts, counting the one it went up in (or, after the turn's end, the
+# next): what the game does when nothing extends it. The item that makes it eight, held by
+# whatever put it up.
+LASTS = {"weather": 5, "terrain": 5, "reflect": 5, "lightscreen": 5, "auroraveil": 5, "tailwind": 4,
+         "safeguard": 5, "mist": 5, "trickroom": 5, "magicroom": 5, "wonderroom": 5, "gravity": 5}
+EXTENDED_BY = {"raindance": "damprock", "sunnyday": "heatrock", "sandstorm": "smoothrock", "snow": "icyrock",
+               "reflect": "lightclay", "lightscreen": "lightclay", "auroraveil": "lightclay"}
+# What can put a weather or terrain up, for a `field` tap that does not say who did.
+SET_BY_MOVE = {"snow": "snowscape"}
+
+
+def _setter(rp: entry.Replay, what: str, cid: str, by: tuple[str, str] | None):
+    """The Pokémon that put a condition up: the one the entry named, else the only one on the side
+    it could have come from that has the ability or the move for it."""
+    from vgc.battle import rules
+
+    sides = [what[5:]] if what.startswith("side:") else ["p1", "p2"]
+    if by is not None:
+        return next((m for m in rp.state.sides[by[0]].mons if m.species == by[1]), None)
+    by_ability = {**rules.WEATHER_ON_START, **rules.TERRAIN_ON_START}
+    move = SET_BY_MOVE.get(cid, cid)
+    could = [m for sid in sides for m in rp.state.sides[sid].mons
+             if m.state not in ("unrevealed", "not_brought")
+             and (by_ability.get(m.ability or "") == cid or move in m.moves or move in m.moves_used)]
+    return could[0] if len(could) == 1 else None
+
+
+def timers(rp: entry.Replay) -> list[dict[str, Any]]:
+    """Each condition up that runs out, with its last turn and the turns it has left, counting the
+    one being played. Five (four for Tailwind) unless what put it up is known to hold the item that
+    makes it eight: an item nobody has seen is taken to be something else, as the game would."""
+    st = rp.state
+    now = st.turn + (1 if not st.started or rp.turn_over else 0)
+    out = []
+    for (what, cid), t in sorted(rp.timers.items()):
+        kind = what.split(":")[0]
+        lasts = LASTS.get(kind if kind in ("weather", "terrain") else cid)
+        if lasts is None or (kind == "weather" and cid not in EXTENDED_BY):
+            continue                      # Spikes, or a weather that lasts until its holder leaves
+        ext = "terrainextender" if kind == "terrain" else EXTENDED_BY.get(cid)
+        m = _setter(rp, what, cid, t["by"])
+        extended = ext is not None and m is not None and ext in (m.item, m.lost_item)
+        last = t["from"] + (8 if extended else lasts) - 1
+        if last < now:
+            continue                      # over, and the journal has not said so yet
+        out.append({"what": kind, "side": what[5:] if kind == "side" else None, "id": cid,
+                    "from": t["from"], "last": last, "left": last - now + 1,
+                    "by": m.species if m is not None else None, "extended_by": ext if extended else None})
+    return out
+
+
+def mon_view(state, m, own: bool, rp: entry.Replay | None = None, sid: str | None = None) -> dict[str, Any]:
     """One Pokémon as the screen shows it. `hp_exact` only for your own side, because that is all
     the cartridge gives you: real numbers for yours and a percentage for theirs."""
-    return {
+    return ({} if rp is None or sid is None else on_field(rp, sid, m)) | {
         "species": m.species, "forme": m.forme, "state": m.state, "slot": m.position,
         "hp": round(m.hp, 4), "hp_max": m.hp_max if own else None,
         "hp_exact": round(m.hp * m.hp_max) if own and m.hp_max else None,
@@ -495,10 +581,39 @@ def speed_read(reg: Regulation, state, beliefs: dict) -> list[dict[str, Any]]:
     than resolved to whichever end happens to be likelier, because the cost of being told
     "you outspeed" and being wrong is a lost game and the cost of "not yet" is nothing.
     """
+    from vgc.battle import rules
+    from vgc.battle.state import MoveEvent
     from vgc.belief import speed as speed_channel
 
+    def scale(m) -> tuple[float, float]:
+        """What multiplies this Pokémon's Speed stat right now: the held item, boosts, Tailwind,
+        paralysis, a weather or terrain Speed ability. It is the same `effective_speed` the
+        turn-order belief reads, so the two cannot disagree about what a Choice Scarf does.
+
+        Whatever is hidden widens it. An unseen item could be any legal one that scales Speed, and
+        an unseen ability any that is still possible."""
+        side = state._side_of(m)
+        items = ([m.item] if m.item is not None else
+                 ["", *(i for i in speed_channel.ITEM_MULT if reg.dex.get_item(i))])
+        ability = state._active_ability(m)
+        abilities = [ability] if ability else (rules.still_possible(reg, m) or [None])
+        now = {"order_boosts": m.boosts, "order_status": m.status,
+               "order_side_conditions": list(state.sides[side].conditions),
+               "order_weather": state.weather, "order_terrain": state.terrain}
+        mults = [speed_channel.effective_speed(1, MoveEvent(item=i, ability=a, **now))
+                 for i in items for a in abilities]
+        return min(mults), max(mults)
+
     def band(m) -> tuple[float, float] | None:
-        """The Speed this Pokémon could have, at its widest given what is known."""
+        """The Speed this Pokémon could have right now, at its widest given what is known."""
+        stat_band = unscaled(m)
+        if stat_band is None:
+            return None
+        lo, hi = scale(m)
+        return stat_band[0] * lo, stat_band[1] * hi
+
+    def unscaled(m) -> tuple[float, float] | None:
+        """The Speed stat this Pokémon could have, before anything on the field scales it."""
         stat = (m.stats or {}).get("spe")
         if stat:
             return float(stat), float(stat)
@@ -624,12 +739,30 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
             m["moves"] = list(pick.moves)
         if not m["nature"]:
             m["nature"] = pick.nature or None
-        note.setdefault(m["species"], {"sets": len(sb.sheets), "off_meta": sb.off_meta,
-                                       "concentration": round(sb.concentration, 3),
-                                       "evidence": sb.evidence})
+        note.setdefault(m["species"], _set_note(sb))
     for sid in hidden:
         out["sides"][sid]["sheet"] = True
     return out
+
+
+def _set_note(sb) -> dict[str, Any]:
+    return {"sets": len(sb.sheets), "off_meta": sb.off_meta,
+            "concentration": round(sb.concentration, 3), "evidence": sb.evidence}
+
+
+def set_notes(reg: Regulation, state) -> list[dict[str, Any]]:
+    """What is still open about each hidden Pokémon in `state`: `wp`'s `belief`, without the draws."""
+    from vgc.belief import sets as set_belief
+
+    note = {}
+    for sid in ("p1", "p2"):
+        if sid == state.perspective:
+            continue
+        for m in state.sides[sid].mons:
+            sb = set_belief.given(reg, m)
+            if sb.sheets:
+                note[m.species] = _set_note(sb)
+    return [{"species": sp} | v for sp, v in sorted(note.items())]
 
 
 def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
@@ -638,7 +771,56 @@ def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
     return per_record(recs, fz, p)
 
 
-def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
+def decision_point(battle: entry.Battle, *, closed: bool = False) -> tuple[int, str | None]:
+    """Where the live number is taken: the journal index of the last decision point, and its kind.
+
+    The models were trained on decision points only (`snapshots.human_decision_points`): team
+    preview, just after a turn starts, and the replacements once a turn is over. Inside a turn the
+    rest of the turn has already been chosen, and nothing in an observation says who has acted,
+    so a position read after the faster side's hit and before the slower side's reply leans
+    towards whoever moved first. Scoring it measures the order of the taps, not the game.
+
+    So within a turn this is the turn's start. Once a replacement into a fainted slot has been
+    logged, every move and end-of-turn effect is in: while a slot is still waiting it is the
+    moment just before the first replacement, which is where a log takes a `switch` point, and
+    when none is, the turn is over and the journal's end is the next turn's start in all but its
+    counter. Before turn 1 and once the game is over it is the journal's end, with no kind (`wp`
+    reads it off the state, as it always has).
+
+    `closed` is for a journal that stops where a turn closed, which a page walking back knows (the
+    next tap was the next `turn`) and a journal being entered does not. Its end is then the point,
+    the same one the trajectory takes at each turn mark.
+    """
+    end = len(battle.journal)
+    turns = [i for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
+    if closed and turns:
+        return end, "turn"
+    if not turns or battle.rp.state.ended:
+        return end, None
+    start = turns[-1] + 1
+    for i in range(start, end):
+        e = battle.journal[i]
+        # A slot is only ever filled while empty by a replacement: a fainted slot stays empty
+        # until the turn is over, and a mid-turn switch (U-turn, Eject Button) is into a full one.
+        if e.get("kind") == "switch" and battle.at(i).state.at(e["side"], int(e["slot"])) is None:
+            return (i, "switch") if entry.progress(battle.rp, battle.reg)["waiting"] else (end, "turn")
+    return start, "turn"
+
+
+def at_decision_point(battle: entry.Battle, *, closed: bool = False
+                      ) -> tuple[entry.Battle, str | None, dict[str, Any]]:
+    """The battle cut at its decision point (`decision_point`), that point's kind, and the `as_of`
+    the page is told. The model's number and the engine's answer are both taken from the cut: a
+    search from inside a turn would have every Pokémon choose again, for the reason the model
+    does not know the position."""
+    at, kind = decision_point(battle, closed=closed)
+    current = at == len(battle.journal)
+    point = battle if current else entry.Battle(battle.reg, battle.setup, battle.journal[:at])
+    return point, kind, {"at": at, "turn": point.rp.state.turn, "kind": kind, "current": current}
+
+
+def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0,
+       kind: str | None = None) -> dict[str, Any]:
     """P(you win) from here, from the position as it has been shown: what their sheet or this
     battle has not revealed is left unknown.
 
@@ -660,7 +842,7 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
 
     model, fz = _load(reg, version)
     obs = state.observation()
-    kind = "preview" if not state.started else "turn"
+    kind = kind or ("preview" if not state.started else "turn")
     # Seeded on the journal length, so the same position gives the same number twice running and
     # the WP does not jitter when nothing happened.
     rng = random.Random(seed)
@@ -698,7 +880,8 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
 
     Each turn is the position as shown, as the live number is, with a band from fewer draws than
     the live one, because this is a whole game at once and a curve does not need the precision a
-    decision does.
+    decision does. The last row is now: the live number's decision point (`decision_point`), not
+    the journal's end, which inside a turn is no position the model knows.
     """
     import random
 
@@ -706,14 +889,15 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     from vgc.wp.features import featurize
     from vgc.wp.tools import _load, _record
 
-    marks = [(i, e["n"]) for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
-    marks.append((len(battle.journal), battle.rp.state.turn))
+    marks = [(i, e["n"], None) for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
+    now, now_kind = decision_point(battle)
+    marks.append((now, battle.at(now).state.turn, now_kind))
     rows, recs = [], []
-    for index, turn in marks:
+    for index, turn, point_kind in marks:
         rp = battle.at(index)
         obs = rp.state.observation()
         rng = random.Random(index)
-        kind = "preview" if not rp.state.started else "turn"
+        kind = point_kind or ("preview" if not rp.state.started else "turn")
         rows.append({"index": index, "turn": turn, "draws": k,
                      "left": {sid: sum(m.state != "fainted" for m in rp.state.sides[sid].mons[:4])
                               for sid in ("p1", "p2")},
@@ -744,25 +928,29 @@ def _engine_reason(reg: Regulation, battle) -> str | None:
 
 
 def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
-         version: str | None = None, with_wp: bool = True) -> dict[str, Any]:
+         version: str | None = None, with_wp: bool = True, closed: bool = False) -> dict[str, Any]:
     """Everything one screen needs: the field, what you can tap, what is still being asked, what
-    the Speed bound says, and the number — in that order of trustworthiness."""
+    the Speed bound says, and the number — in that order of trustworthiness. `closed` says the
+    journal stops where a turn closed (`decision_point`)."""
     from vgc.wp import endgame
 
     state = battle.rp.state
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
     belief, contradictions = beliefs(reg, state)
+    # The number and the engine are taken here, not at the journal's end (`decision_point`).
+    point, kind, as_of = at_decision_point(battle, closed=closed)
     out: dict[str, Any] = {
         "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob),
-        "perspective": perspective(blob), "turn": state.turn,
-        "started": state.started, "ended": state.ended, "winner": state.winner,
+        "perspective": perspective(blob),
+        "turn": state.turn, "started": state.started, "ended": state.ended, "winner": state.winner,
         "entries": len(battle.journal), "journal": battle.journal,
-        "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
+        "sides": {sid: {"mons": [mon_view(state, m, sid == mine, battle.rp, sid) for m in state.sides[sid].mons],
                         "conditions": dict(sorted(state.sides[sid].conditions.items())),
                         "sheet": state.sides[sid].sheet, "name": state.sides[sid].name}
                   for sid in ("p1", "p2")},
         "field": {"weather": state.weather, "terrain": state.terrain,
                   "pseudo": dict(sorted(state.pseudo.items()))},
+        "timers": timers(battle.rp),
         "menu": {sid: menu(reg, state, sid) for sid in ("p1", "p2")},
         "questions": [q.to_json() for q in battle.rp.questions],
         "derived": battle.rp.derived,
@@ -780,14 +968,16 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "contradictions": contradictions,
         # Whether the engine can be asked about this position (`/solve`), and if not, why.
         # A 1v1, or two or fewer a side on open sheets (`solving.reason`).
-        "endgame": {"eligible": (why := _engine_reason(reg, battle)) is None, "reason": why},
+        "endgame": {"eligible": (why := _engine_reason(reg, point)) is None, "reason": why},
         "series": series_view(reg, blob, state),
     }
     if with_wp and version:
         try:
-            # Seeded on how much has been logged, so the same position gives the same number
-            # twice running and the bar does not jitter when nothing has happened.
-            out["wp"] = wp(reg, state, version, seed=len(battle.journal))
+            # Seeded on the decision point, so the number holds still while a turn is entered.
+            out["wp"] = wp(reg, point.rp.state, version, seed=as_of["at"], kind=kind) | {"as_of": as_of}
+            if not as_of["current"]:
+                # The set panel reads `belief`, and a reveal mid-turn belongs on it straight away.
+                out["wp"]["belief"] = set_notes(reg, state)
         except Exception as e:                  # a missing model must not take the screen down
             out["wp"] = {"error": str(e)}
     return out

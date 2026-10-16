@@ -106,7 +106,7 @@ const RESULT_WORDS: Record<string, string> = {
   miss: "It missed.", protected: "Protected.", immune: "No effect.", failed: "It failed.",
 };
 
-const PRETTY: Record<string, string> = {
+export const PRETTY: Record<string, string> = {
   sunnyday: "Sun", raindance: "Rain", sandstorm: "Sandstorm", snow: "Snow",
   grassyterrain: "Grassy Terrain", electricterrain: "Electric Terrain",
   psychicterrain: "Psychic Terrain", mistyterrain: "Misty Terrain", trickroom: "Trick Room",

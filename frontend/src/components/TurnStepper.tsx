@@ -123,11 +123,13 @@ function optClass(o: Opt, isDefault: boolean): string {
  *  where the turn has got to off the view (`turn_progress`), so it keeps nothing the backend does
  *  not have beyond the half-finished action in front of you.
  */
-export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSomethingElse, fieldPick, preview }: {
+export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUndo, onWalk, onSomethingElse, fieldPick, preview }: {
   id: string;
   reg: string;
   view: LiveView;
   busy: boolean;
+  /** Start turn 1 once the leads are in. Off while the video reader writes the turns itself. */
+  autoStart?: boolean;
   onLog: (entries: Entry[]) => Promise<void> | void;
   onUndo: () => void;
   onWalk: (index: number) => void;
@@ -185,6 +187,25 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
 
   const log = async (entries: Entry[]) => { await onLog(entries); };
 
+  // Turn 1 starts by itself when the last lead goes in, once anything the leads announced is
+  // answered. Only on that change: a battle opened at team preview, or turn 1 undone, waits for
+  // the button, and so does one whose own brought four haven't been said yet.
+  const leadsIn = !view.started && (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.every(Boolean));
+  const fourUnsaid = view.perspective !== "spectator"
+    && !view.sides[view.perspective].mons.some((m) => m.state === "not_brought");
+  const wasIn = useRef<boolean | null>(null);
+  const startOwed = useRef(false);
+  useEffect(() => {
+    const before = wasIn.current;
+    wasIn.current = view.started || leadsIn;
+    if (!leadsIn) startOwed.current = false;
+    else if (before === false) startOwed.current = true;
+    if (startOwed.current && autoStart && !busy && !fourUnsaid && !view.questions.length && !staged.length) {
+      startOwed.current = false;
+      void log([{ kind: "turn", n: 1 }]);
+    }
+  });
+
   // --- what has happened this turn ---------------------------------------------------------
   const acted = useMemo(() => actedSet(view), [view]);
   const moved = view.turn_progress?.moved ?? false;
@@ -194,10 +215,13 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   const toAct = actives.filter((p) => !hasActed(p));
   const mon = (p: Pos) => active(view, p);
   const nameAt = (p: Pos) => mon(p)?.forme ?? view.menu[p.side].actives[p.slot]?.species ?? "—";
-  const where = (p: Pos) => `${names[p.side]} · ${across(p.side, p.slot)}`;
+  // The side's name may be cut short; the slot after it never is.
+  const where = (p: Pos) => <span className="opt-sub where">
+    <span className="side-name" title={names[p.side]}>{names[p.side]}</span>&nbsp;· {across(p.side, p.slot)}
+  </span>;
   /** The name a sentence uses: `nameAt`, with its side when both teams have the species. */
   const said = (p: Pos) => tagged(view, names, p.side, nameAt(p));
-  const monButton = (p: Pos) => <>{nameAt(p)} <span className="opt-sub">{where(p)}</span></>;
+  const monButton = (p: Pos) => <>{nameAt(p)} {where(p)}</>;
 
   // --- logging an action -------------------------------------------------------------------
   const commit = async (a: Act, results: Outcome[]) => {
@@ -466,7 +490,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       ...(chances.length ? [{ label: `${chances.map((c) => `${c.label} (${c.chance}%)`).join(" · ")}`,
                               tone: "toggle" as const, pressed: ticked, pick: tick,
                               title: "the move's added effect: tick it if it happened" }] : []),
-      { label: "KO", tone: "danger", pick: ko },
+      { label: "KO", pick: ko },
       { label: "Missed", tone: "ghost", pick: how("miss") },
       { label: "Protected", tone: "ghost", pick: how("protected") },
       { label: "No effect", tone: "ghost", pick: how("immune") },
@@ -593,13 +617,13 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
       case "faint":
         return {
           id: `extra:faint:${posKey(p)}`, prompt: <>{m.forme} fainted?</>, back, dflt: 0,
-          options: [{ label: "Fainted", tone: "danger", pick: () => logAndClose([{ kind: "faint", side: p.side, slot: p.slot }], `${m.forme} fainted`) }],
+          options: [{ label: "Fainted", pick: () => logAndClose([{ kind: "faint", side: p.side, slot: p.slot }], `${m.forme} fainted`) }],
         };
       case "hp":
         return hpStage(p, {
           id: `extra:hp:${posKey(p)}`, back,
           submit: (v) => logAndClose(hpSet(p, v), `${m.forme} on ${v}${p.side === own && m.hp_max != null ? " HP" : "%"}`),
-          extra: [{ label: "KO", tone: "danger", pick: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) }],
+          extra: [{ label: "KO", pick: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) }],
           keys: { k: () => logAndClose(hpSet(p, 0), `${m.forme} fainted`) },
         });
     }
@@ -746,9 +770,6 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     return canAdd ? { ...st, keys: { a: addMore, ...st.keys } } : st;
   }
 
-  /** Both slots on both sides filled: the leads are in. */
-  const leadsIn = () => (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.every(Boolean));
-
   function stageNow(): Stage {
     if (view.ended) {
       const forfeit = view.journal.some((e) => e.kind === "end" && e.by === "forfeit");
@@ -760,7 +781,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
     // The four leads arrive together, so nothing they announce is asked until all four are in:
     // an Intimidate answered early would miss a target, and a seed would be asked before the
     // terrain that pops it.
-    if (!view.started && !leadsIn()) return base;
+    if (!view.started && !leadsIn) return base;
     if (base.arrival) return { ...base, pre: <>{questionCards()}{base.pre}</>, digit: digitInCards,
                                 enter: staged.length ? confirmAnswers : undefined };
     return questionStage();
@@ -768,7 +789,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
 
   function baseStage(): Stage {
     if (!view.started) {
-      const ready = leadsIn();
+      const ready = leadsIn;
       return {
         id: "preview",
         prompt: ready ? "Leads are in." : "Team preview: who led?",
@@ -844,7 +865,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
                 <div key={posKey(p)} className="batch-row">
                   <span className="batch-name">
                     {order(sk) >= 0 && <span className="order-badge">{order(sk) + 1}</span>}
-                    {nameAt(p)} <span className="opt-sub">{where(p)}</span>
+                    {nameAt(p)} {where(p)}
                   </span>
                   <span className="batch-choices">
                     {benchFor(view, p.side).map((b) => {
@@ -920,7 +941,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
         extra: [
           { label: `As expected: ${expect}${unit}`, pick: () => void finish(hpSet(pos, expect, r.key)) },
           { label: "Didn't happen", tone: "ghost", pick: () => void finish([]) },
-          { label: "KO", tone: "danger", pick: () => void finish(hpSet(pos, 0, r.key)) },
+          { label: "KO", pick: () => void finish(hpSet(pos, 0, r.key)) },
         ],
         dflt: 0,
         keys: { k: () => void finish(hpSet(pos, 0, r.key)) },
@@ -1120,6 +1141,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
                     title={o.title} disabled={busy || o.disabled} onClick={o.pick}>
               {help && i < 9 && <span className="key-badge">{i + 1}</span>}
               {o.label}
+              {s.dflt === i && <kbd className="default-key" title="↵ accepts this">↵</kbd>}
             </button>
           ))}
         </div>

@@ -106,7 +106,7 @@ function Snapshot({ title, view, names, wp }: {
     <div className="review-block">
       <div className="review-title row" style={{ justifyContent: "space-between" }}>
         <span>{title}</span>
-        {wp && <span className="tiny dim">{view.perspective === "spectator" ? names.p1 : "you"} {wp}</span>}
+        {wp && <span className="tiny dim">{view.perspective === "spectator" ? <span className="side-name" style={{ maxWidth: "16ch" }} title={names.p1}>{names.p1}</span> : "you"} {wp}</span>}
       </div>
       {(["p2", "p1"] as Side[]).map((sid) => {
         const side = view.sides[sid];
@@ -114,8 +114,8 @@ function Snapshot({ title, view, names, wp }: {
         const fainted = side.mons.filter((m) => m.state === "fainted").length;
         const conditions = Object.keys(side.conditions).map((c) => PRETTY[c] ?? c);
         return (
-          <div key={sid} className="review-side">
-            <span className="review-who">{names[sid]}</span>
+          <div key={sid} className={`review-side${view.perspective === "spectator" ? " named" : ""}`}>
+            <span className="review-who side-name" title={names[sid]}>{names[sid]}</span>
             <span>
               {out.every((m) => !m) ? <span className="dim">nothing out</span>
                 : out.map((m, i) => <span key={i}>{i > 0 && " · "}{m ? <MonLine mon={m} /> : <span className="dim">empty</span>}</span>)}
@@ -125,7 +125,7 @@ function Snapshot({ title, view, names, wp }: {
           </div>
         );
       })}
-      {field.length > 0 && <div className="review-side"><span className="review-who">Field</span><span>{field.join(", ")}</span></div>}
+      {field.length > 0 && <div className={`review-side${view.perspective === "spectator" ? " named" : ""}`}><span className="review-who">Field</span><span>{field.join(", ")}</span></div>}
     </div>
   );
 }

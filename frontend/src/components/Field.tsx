@@ -15,7 +15,7 @@ export function ActiveCard({ mon, own, onHp, onPick, selected }: {
   onPick: () => void;
   selected: boolean;
 }) {
-  const boosts = STAT_ORDER.filter((s) => mon.boosts[s]).map((s) => `${s} ${mon.boosts[s] > 0 ? "+" : ""}${mon.boosts[s]}`);
+  const boosts = STAT_ORDER.filter((s) => mon.boosts[s]).map((s) => `${mon.boosts[s] > 0 ? "▲" : "▼"} ${s} ${mon.boosts[s] > 0 ? "+" : ""}${mon.boosts[s]}`);
   return (
     <div className={`active-card${selected ? " selected" : ""}`}>
       <button className="active-name" onClick={onPick}>
@@ -54,6 +54,9 @@ export function ActiveCard({ mon, own, onHp, onPick, selected }: {
   );
 }
 
+/** Red and green are one colour to a deuteranope, so the verdict is a shape too. */
+const GLYPH: Record<string, string> = { faster: "▲", slower: "▼", undecided: "?" };
+
 function Arrow({ read, watching }: { read: SpeedRead; watching: boolean }) {
   const text = read.verdict === "faster" ? (watching ? `${read.mine} first` : "you move first")
     : read.verdict === "slower" ? (watching ? `${read.theirs} first` : "they move first")
@@ -63,6 +66,7 @@ function Arrow({ read, watching }: { read: SpeedRead; watching: boolean }) {
       read.their_speed
         ? `${read.mine} ${read.my_speed?.[0]}–${read.my_speed?.[1]} vs ${read.theirs} ${read.their_speed[0]}–${read.their_speed[1]}`
         : undefined}>
+      <span aria-hidden="true">{GLYPH[read.verdict] ?? "?"} </span>
       {read.mine} → {read.theirs}: {text}{read.trick_room ? " (Trick Room)" : ""}
     </span>
   );
@@ -87,11 +91,12 @@ export function Field({ view, onHp, onPick, selected }: {
   const field = [
     view.field.weather, view.field.terrain, ...Object.keys(view.field.pseudo),
   ].filter(Boolean) as string[];
+  const names = sideNames(view);
 
   return (
     <div className="panel field-panel">
       <div className="field-head">
-        <span className="dim tiny">{sideNames(view).p2}</span>
+        <span className="dim tiny side-name" title={names.p2}>{names.p2}</span>
         {field.length > 0 && <span className="chips">{field.map((f) => <span key={f} className="chip field">{f}</span>)}</span>}
       </div>
       <div className="field-row">
@@ -113,7 +118,7 @@ export function Field({ view, onHp, onPick, selected }: {
                         selected={selected?.side === "p1" && selected.slot === i} />
           : <div key={i} className="active-card empty">empty</div>)}
       </div>
-      <div className="field-head"><span className="dim tiny">{sideNames(view).p1}</span></div>
+      <div className="field-head"><span className="dim tiny side-name" title={names.p1}>{names.p1}</span></div>
     </div>
   );
 }

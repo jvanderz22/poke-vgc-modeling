@@ -32,6 +32,32 @@ def test_exact_names_match_their_kind(vocab):
 def test_a_sheet_spells_formes_its_own_way(vocab):
     assert match("BASCULEGION (FEMALE)", vocab).name == "Basculegion-F"
     assert match("BASCULEGION", vocab).name == "Basculegion"
+    # The base name, when only one of its formes is legal: not the nearest item (Floettite).
+    assert (match("FLOETTE", vocab).kind, match("FLOETTE", vocab).name) == ("species", "Floette-Eternal")
+
+
+def test_a_forme_named_in_brackets_is_that_forme(vocab):
+    assert match("FLOETTE (ETERNAL FLOWER)", vocab).name == "Floette-Eternal"
+    assert match("TAUROS (AQUA BREED)", vocab).name == "Tauros-Paldea-Aqua"
+    assert match("ROTOM (WASH ROTOM)", vocab).name == "Rotom-Wash"
+    assert match("LYCANROC (MIDNIGHT FORM)", vocab).name == "Lycanroc-Midnight"
+    # The base's own forme name isn't in the dex: it reads as the base, as "(MALE)" does. Read
+    # whole, "basculegionmale" was nearest to "basculegionfemale".
+    assert match("LYCANROC (MIDDAY FORM)", vocab).name == "Lycanroc"
+    assert match("BASCULEGION (MALE)", vocab).name == "Basculegion"
+    # Named as well as each other: not guessed.
+    assert match("TAUROS (PALDEAN FORM)", vocab) is None
+
+
+def test_a_gender_is_read_only_when_spelled(vocab):
+    # Male and female are different Pokémon. Each reads from its own word, and a misread of
+    # either is left unread: never the other gender, and never the base by default.
+    for species in ("Basculegion", "Indeedee", "Meowstic"):
+        up = species.upper()
+        assert match(f"{up} (MALE)", vocab).name == species
+        assert match(f"{up} (FEMALE)", vocab).name == f"{species}-F"
+        for garbled in ("FEMAIE", "EMALE", "MAIE", "FORM", ""):
+            assert match(f"{up} ({garbled})", vocab) is None, (species, garbled)
 
 
 def test_a_mega_forme_is_never_a_sheet_species(vocab):
@@ -75,6 +101,17 @@ def test_lines_are_grouped_into_cards_by_position(reg):
     assert raichu.moves == ["Zap Cannon", "Focus Blast", "Fake Out", "Protect"]
     # The stat labels after a nature are dropped; the facecam's text is off the sheet.
     assert read.unread == [] and read.notes == []
+
+
+def test_a_card_printed_with_the_base_name_is_read_whole(reg):
+    lines = [Line("SECR", 1, 313, 220, 400, 249)]
+    lines += _card(896, 139, "FLOETTE", "Flower Veil", "Modest",
+                   ["Light of Ruin", "Moonblast", "Calm Mind", "Protect"], "Floettite")
+    read = assemble(lines, reg.dex)
+    [floette] = read.entries
+    assert (floette.species, floette.ability, floette.nature, floette.item) == \
+        ("Floette-Eternal", "Flower Veil", "Modest", "Floettite")
+    assert floette.moves == ["Light of Ruin", "Moonblast", "Calm Mind", "Protect"]
 
 
 def test_an_unreadable_field_is_left_blank_and_reported(reg):
@@ -144,6 +181,57 @@ Adamant Nature
 """
 
 
+BROADCAST_GRIMALDO = """\
+Floette-Eternal @ Floettite
+Ability: Flower Veil
+Modest Nature
+- Calm Mind
+- Moonblast
+- Dazzling Gleam
+- Protect
+
+Archaludon @ Leftovers
+Ability: Stamina
+Modest Nature
+- Electro Shot
+- Dragon Pulse
+- Protect
+- Flash Cannon
+
+Basculegion @ Choice Scarf
+Ability: Adaptability
+Jolly Nature
+- Wave Crash
+- Last Respects
+- Phantom Force
+- Flip Turn
+
+Incineroar @ Sitrus Berry
+Ability: Intimidate
+Adamant Nature
+- Flare Blitz
+- Fake Out
+- Parting Shot
+- Throat Chop
+
+Pelipper @ Focus Sash
+Ability: Drizzle
+Modest Nature
+- Hurricane
+- Weather Ball
+- Tailwind
+- Wide Guard
+
+Sinistcha @ Colbur Berry
+Ability: Hospitality
+Calm Nature
+- Matcha Gotcha
+- Rage Powder
+- Trick Room
+- Protect
+"""
+
+
 def test_broadcast_team_list(reg):
     """A broadcast team-list frame, facecam included, against its sheet transcribed by hand."""
     pytest.importorskip("rapidocr")
@@ -153,4 +241,17 @@ def test_broadcast_team_list(reg):
     assert read.title == "CARSON CONFER"
     assert read.showdown() == BROADCAST_CONFER
     assert read.unread == [] and read.notes == []
+    assert problems(read, reg) == []
+
+
+def test_broadcast_team_list_with_formes_in_brackets(reg):
+    """The frame flagged in prod: "FLOETTE (ETERNAL FLOWER)" dropped its card, and "BASCULEGION
+    (MALE)" read as Basculegion-F."""
+    pytest.importorskip("rapidocr")
+    from vgc.video.sheet import read_sheet
+
+    read = read_sheet(FIXTURES / "broadcast-grimaldo.jpg", reg)
+    assert read.title == "ENRIQUE GRIMALDO"
+    assert read.showdown() == BROADCAST_GRIMALDO
+    assert read.notes == []
     assert problems(read, reg) == []

@@ -32,6 +32,9 @@ data/analysis/**
 !data/analysis/reg_mc/endgames.json
 data/battles
 data/library
+# Recorded games (gigabytes) and the video reader's review log: local only
+data/video
+data/review
 data/champions-data
 # The replay cache: deploy_fly.sh stages the few the app opens into deploy/replays
 data/replays
