@@ -517,6 +517,11 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     // A string body is JSON. Anything else (an image) carries its own type.
     headers: typeof init?.body === "string" ? { "content-type": "application/json" } : init?.headers,
   });
+  // The deployed copy's session has run out (or the password changed): back to its sign-in page,
+  // which returns here afterwards.
+  if (r.status === 401) {
+    location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+  }
   const body = await r.json().catch(() => ({}));
   // FastAPI puts the message in `detail`; Showdown's validator messages arrive this way and are
   // worth showing verbatim, since they name the offending Pokémon.

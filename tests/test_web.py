@@ -631,11 +631,28 @@ def test_a_password_guards_everything_but_health(monkeypatch):
 
         c = TestClient(guarded.app)
         assert c.get("/api/health").status_code == 200
-        assert c.get("/api/teams").status_code == 401
+        refused = c.get("/api/teams")
+        # No `WWW-Authenticate`: that is what opens the browser's own password dialog.
+        assert refused.status_code == 401 and "www-authenticate" not in refused.headers
         bad = base64.b64encode(b"vgc:wrong").decode()
         assert c.get("/api/teams", headers={"Authorization": f"Basic {bad}"}).status_code == 401
         good = base64.b64encode(b"vgc:hunter2").decode()
         assert c.get("/api/teams", headers={"Authorization": f"Basic {good}"}).status_code == 200
+
+        # A page sends the browser to the sign-in page, which sends it back after.
+        page = c.get("/battles/abc?x=1", follow_redirects=False)
+        assert page.status_code == 303 and page.headers["location"] == "/login?next=/battles/abc%3Fx%3D1"
+        assert 'value="/battles/abc?x=1"' in c.get(page.headers["location"]).text
+        assert c.post("/login", data={"user": "vgc", "password": "wrong"}).status_code == 401
+        assert c.post("/login", data={"user": "someone", "password": "hunter2"}).status_code == 401
+        assert c.post("/login", data={"user": "vgc", "password": "hunter2", "next": "//evil.example"},
+                      follow_redirects=False).headers["location"] == "/"
+        signed_in = c.post("/login", data={"user": "vgc", "password": "hunter2", "next": "/battles/abc"},
+                           follow_redirects=False)
+        assert signed_in.status_code == 303 and signed_in.headers["location"] == "/battles/abc"
+        assert c.get("/api/teams").status_code == 200
+        c.cookies.set("vgc_session", "9999999999.forged")
+        assert c.get("/api/teams").status_code == 401
     finally:
         monkeypatch.delenv("VGC_WEB_PASSWORD")
         importlib.reload(webapp)

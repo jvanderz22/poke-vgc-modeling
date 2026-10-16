@@ -120,32 +120,97 @@ async def _lifespan(_: FastAPI):
 
 app = FastAPI(title="VGC battle companion", version="0.1", lifespan=_lifespan)
 
-# A password, for a copy served beyond this machine (`deploy/`): HTTP Basic, user `VGC_WEB_USER`
-# ("vgc" by default) and password `VGC_WEB_PASSWORD`. Unset, the app is open, as it is on
-# localhost. `/api/health` stays open for the platform's health check. Without it a public copy
-# would run anybody's solves and simulations on its owner's bill.
+# A password, for a copy served beyond this machine (`deploy/`): `VGC_WEB_PASSWORD`. Unset, the
+# app is open, as it is on localhost. `/api/health` stays open for the platform's health check.
+# Without it a public copy would run anybody's solves and simulations on its owner's bill.
+#
+# Both ways in take user `VGC_WEB_USER` ("vgc" by default) and that password. A browser signs in
+# at `/login`, which sets a signed cookie; a script (the MCP server, `fly_timing.py`) sends HTTP
+# Basic. A 401 never carries `WWW-Authenticate`, so the browser's own password dialog never opens.
 _PASSWORD = os.environ.get("VGC_WEB_PASSWORD")
 if _PASSWORD:
     import base64
+    import hashlib
+    import hmac
+    import html
     import secrets
+    import time
+    from string import Template
+    from urllib.parse import parse_qs, quote
 
     from fastapi import Request
-    from fastapi.responses import Response
+    from fastapi.responses import RedirectResponse, Response
 
-    @app.middleware("http")
-    async def _password(request: Request, call_next):
-        if request.url.path == "/api/health":
-            return await call_next(request)
-        header = request.headers.get("authorization", "")
+    _COOKIE = "vgc_session"
+    _SESSION_DAYS = 30
+
+    def _sign(expires: int) -> str:
+        # Keyed by the password, so changing the secret signs everybody out.
+        return hmac.new(_PASSWORD.encode(), f"vgc-session:{expires}".encode(), hashlib.sha256).hexdigest()
+
+    def _session_ok(token: str) -> bool:
+        expires, _, mac = token.partition(".")
+        return expires.isdigit() and int(expires) > time.time() \
+            and secrets.compare_digest(mac, _sign(int(expires)))
+
+    def _credentials_ok(user: str, password: str) -> bool:
+        return (secrets.compare_digest(user.encode(), os.environ.get("VGC_WEB_USER", "vgc").encode())
+                and secrets.compare_digest(password.encode(), _PASSWORD.encode()))
+
+    def _basic_ok(header: str) -> bool:
         try:
             user, _, password = base64.b64decode(header[6:]).decode().partition(":") \
                 if header.startswith("Basic ") else ("", "", "")
         except ValueError:
-            user, password = "", ""
-        if not (secrets.compare_digest(user.encode(), os.environ.get("VGC_WEB_USER", "vgc").encode())
-                and secrets.compare_digest(password.encode(), _PASSWORD.encode())):
-            return Response("password required", 401, {"WWW-Authenticate": 'Basic realm="vgc"'})
-        return await call_next(request)
+            return False
+        return _credentials_ok(user, password)
+
+    def _next(path: str | None) -> str:
+        # Only a path on this site: `//elsewhere.com` would make the form an open redirect.
+        return path if path and path.startswith("/") and not path.startswith("//") else "/"
+
+    @app.middleware("http")
+    async def _password(request: Request, call_next):
+        if request.url.path in ("/api/health", "/login", "/logout") \
+                or _session_ok(request.cookies.get(_COOKIE, "")) \
+                or _basic_ok(request.headers.get("authorization", "")):
+            return await call_next(request)
+        if request.url.path.startswith("/api/"):
+            return Response('{"detail": "password required"}', 401, media_type="application/json")
+        target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+        return RedirectResponse(f"/login?next={quote(target)}", 303)
+
+    def _login_page(next_path: str, user: str = "", wrong: bool = False) -> HTMLResponse:
+        error = '<p class="err">That username or password is not right.</p>' if wrong else ""
+        page = Template(LOGIN_PAGE).substitute(next=html.escape(next_path), user=html.escape(user),
+                                               error=error)
+        return HTMLResponse(page, 401 if wrong else 200)
+
+    @app.get("/login", include_in_schema=False)
+    def login_form(next: str = "/"):
+        return _login_page(_next(next))
+
+    @app.post("/login", include_in_schema=False)
+    async def login(request: Request):
+        # Parsed by hand: FastAPI's `Form` needs python-multipart for one field.
+        form = parse_qs((await request.body()).decode())
+        user, password = form.get("user", [""])[0], form.get("password", [""])[0]
+        next_path = _next(form.get("next", ["/"])[0])
+        if not _credentials_ok(user, password):
+            return _login_page(next_path, user, wrong=True)
+        expires = int(time.time()) + _SESSION_DAYS * 86400
+        page = RedirectResponse(next_path, 303)
+        # Fly ends TLS at its proxy, so the scheme the browser used is in the forwarded header.
+        https = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+        page.set_cookie(_COOKIE, f"{expires}.{_sign(expires)}", max_age=_SESSION_DAYS * 86400,
+                        httponly=True, secure=https, samesite="lax")
+        return page
+
+    @app.get("/logout", include_in_schema=False)
+    def logout():
+        page = RedirectResponse("/login", 303)
+        page.delete_cookie(_COOKIE)
+        return page
 
 
 class TeamText(BaseModel):
@@ -719,6 +784,35 @@ so it is not in git.</p>
 npm --prefix frontend run build</pre>
 <p>Then reload. <code>make web</code> does both. The API is already running —
 see <a style="color:#6aa9ff" href="/docs">/docs</a>.</p>"""
+
+# The deployed copy's sign-in (see `_PASSWORD`). Standalone, because the app's own bundle is
+# behind the password too. `$next`, `$user` and `$error` are filled in by `_login_page`.
+LOGIN_PAGE = """<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>VGC Companion</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+         background: #12141a; color: #e6e8ee; font: 15px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  form { width: 100%; max-width: 340px; background: #1b1e26; border: 1px solid #2c3040;
+         border-radius: 12px; padding: 24px; display: grid; gap: 14px; }
+  h1 { font-size: 16px; margin: 0; letter-spacing: .2px; }
+  label { display: grid; gap: 6px; color: #9aa1b4; font-size: 13px; }
+  input { font: inherit; color: inherit; background: #161922; border: 1px solid #2c3040;
+          border-radius: 8px; padding: 9px 11px; }
+  input:focus { outline: 2px solid #6aa9ff; outline-offset: -1px; border-color: transparent; }
+  button { font: inherit; font-weight: 600; color: #12141a; background: #6aa9ff; border: 0;
+           border-radius: 8px; padding: 9px 11px; cursor: pointer; }
+  .err { margin: 0; color: #e06666; font-size: 13px; }
+</style>
+<form method="post" action="/login">
+  <h1>VGC Companion</h1>
+  $error
+  <label>Username<input name="user" value="$user" autocomplete="username" autocapitalize="none" autofocus required></label>
+  <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+  <input type="hidden" name="next" value="$next">
+  <button type="submit">Sign in</button>
+</form>
+</html>"""
 
 
 @app.post("/api/simulate")
