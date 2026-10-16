@@ -1,8 +1,7 @@
 // RapidOCR's pipeline (rapidocr 3.10, PP-OCRv6 small), in the browser: the steps the server's
 // `screen._lines` runs, so the browser can read a region instead of the server. The models are the
 // server's own files (GET /api/video/ocr/...); this file only reproduces what RapidOCR does around
-// them. Each step names the RapidOCR function it follows. Nothing here touches the DOM, so the
-// parity check (scripts/analysis/browser_ocr_parity.py) runs it in Node against RapidOCR itself.
+// them. Each step names the RapidOCR function it follows. Nothing here touches the DOM.
 
 /** An image as rows of pixels: 3 (RGB) or 4 (RGBA, from a canvas) bytes each. */
 export type Img = { data: Uint8Array | Uint8ClampedArray; width: number; height: number; channels: 3 | 4 };
