@@ -201,7 +201,10 @@ class Assembler:
                 if pick is not None:
                     break
             if pick is not None or all_ or t - raised > BANNER_WINDOW_S:
-                self._write(t, {"kind": "answer", "question": q.id, "option": pick})
+                # Species and label ride along, as the Turn Stepper's do, so the log can say what
+                # was answered; replay reads only `option`.
+                self._write(t, {"kind": "answer", "question": q.id, "option": pick, "species": q.species,
+                                "label": None if pick is None else q.outcomes[pick].label})
 
     # --- moves --------------------------------------------------------------------------------
 

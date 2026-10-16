@@ -206,8 +206,10 @@ export function turnLines(view: LiveView, names: Record<Side, string>): Line[] {
       case "consume": text = `${named(e.side, String(e.species))} used up its ${e.item}.`; break;
       case "mega": text = `${named(e.side, String(e.species))} Mega Evolved${e.forme ? ` into ${e.forme}` : ""}.`; break;
       case "answer":
-        text = e.option == null ? `${e.species ?? "It"}: not sure what happened.`
-          : e.label ? `${e.species ?? ""}: ${e.label}.` : "A question answered.";
+        // An answer the reader wrote before it carried species and label names neither.
+        text = e.option == null ? (e.species ? `${e.species}: not sure what happened.` : "Not sure what happened.")
+          : e.label ? (e.species ? `${e.species}: ${e.label}.` : `${e.label}.`)
+          : e.species ? `${e.species}: a question answered.` : "A question answered.";
         break;
       case "cant": text = `${who(e.side, e.slot)} couldn't move (${CANT_WORDS[String(e.reason)] ?? e.reason}).`; break;
       case "note": text = String(e.text ?? ""); break;
