@@ -23,7 +23,7 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
@@ -32,6 +32,8 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp 
   refresh?: number;
   /** Adds to each entry before it is logged: the watch page puts the video's time on it. */
   stamp?: (entries: Entry[]) => Entry[];
+  /** Start turn 1 once the leads are in; off while the video reader writes the turns itself. */
+  autoStart?: boolean;
 }) {
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -117,7 +119,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp 
         <div className="battle-work">
           {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
           {step === null
-            ? <TurnStepper id={id} reg={reg} view={view} busy={busy} onLog={log} onUndo={undo}
+            ? <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
                            onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
                            onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
                            preview={<>

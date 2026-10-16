@@ -123,11 +123,13 @@ function optClass(o: Opt, isDefault: boolean): string {
  *  where the turn has got to off the view (`turn_progress`), so it keeps nothing the backend does
  *  not have beyond the half-finished action in front of you.
  */
-export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSomethingElse, fieldPick, preview }: {
+export function TurnStepper({ id, reg, view, busy, autoStart = true, onLog, onUndo, onWalk, onSomethingElse, fieldPick, preview }: {
   id: string;
   reg: string;
   view: LiveView;
   busy: boolean;
+  /** Start turn 1 once the leads are in. Off while the video reader writes the turns itself. */
+  autoStart?: boolean;
   onLog: (entries: Entry[]) => Promise<void> | void;
   onUndo: () => void;
   onWalk: (index: number) => void;
@@ -184,6 +186,25 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   }, [id]);
 
   const log = async (entries: Entry[]) => { await onLog(entries); };
+
+  // Turn 1 starts by itself when the last lead goes in, once anything the leads announced is
+  // answered. Only on that change: a battle opened at team preview, or turn 1 undone, waits for
+  // the button, and so does one whose own brought four haven't been said yet.
+  const leadsIn = !view.started && (["p1", "p2"] as Side[]).every((s) => view.menu[s].actives.every(Boolean));
+  const fourUnsaid = view.perspective !== "spectator"
+    && !view.sides[view.perspective].mons.some((m) => m.state === "not_brought");
+  const wasIn = useRef<boolean | null>(null);
+  const startOwed = useRef(false);
+  useEffect(() => {
+    const before = wasIn.current;
+    wasIn.current = view.started || leadsIn;
+    if (!leadsIn) startOwed.current = false;
+    else if (before === false) startOwed.current = true;
+    if (startOwed.current && autoStart && !busy && !fourUnsaid && !view.questions.length && !staged.length) {
+      startOwed.current = false;
+      void log([{ kind: "turn", n: 1 }]);
+    }
+  });
 
   // --- what has happened this turn ---------------------------------------------------------
   const acted = useMemo(() => actedSet(view), [view]);

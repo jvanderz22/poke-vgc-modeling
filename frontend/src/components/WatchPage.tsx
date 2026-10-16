@@ -28,6 +28,9 @@ export function WatchPage({ reg, route, navigate, pool }: {
   // Bumped when the battle reader writes to the journal, so the battle half shows it.
   const [refresh, setRefresh] = useState(0);
   const onRead = useCallback(() => setRefresh((n) => n + 1), []);
+  // While the reader is on it writes turn 1 itself, at the first choice screen; the battle half
+  // starting it too would put the reader's turns one ahead.
+  const [readerOn, setReaderOn] = useState(false);
   // The player's time, set by the video half. An entry made by hand carries it, as the reader's
   // do, so a transcription lines up with the video and with a read of it (PLAN-video step 3).
   const videoTime = useRef<() => number | null>(() => null);
@@ -49,12 +52,13 @@ export function WatchPage({ reg, route, navigate, pool }: {
   return (
     <div className="watch-page">
       <VideoColumn reg={reg} route={route} navigate={navigate}
-                   watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead}
+                   watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} onReaderOn={setReaderOn}
                    onPlayer={(f) => { videoTime.current = f; }} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
-                           navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries} />
+                           navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
+                           autoStart={!readerOn} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -80,7 +84,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onPlayer }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -88,6 +92,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   onWatch: (f: (w: WatchSheets) => WatchSheets) => void;
   reading: boolean;
   onRead: () => void;
+  onReaderOn: (on: boolean) => void;
   onPlayer: (time: () => number | null) => void;
 }) {
   const [link, setLink] = useState("");
@@ -210,6 +215,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
 
   // A different battle (the next game of a Bo3) starts unread.
   useEffect(() => { setBattleReading(true); setReadStatus(null); }, [battle]);
+  useEffect(() => { onReaderOn(capturing && battleReading && !!battle); }, [capturing, battleReading, battle, onReaderOn]);
 
   async function stopReading() {
     setBattleReading(false);
