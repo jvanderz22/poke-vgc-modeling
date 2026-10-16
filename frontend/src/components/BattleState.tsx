@@ -39,7 +39,7 @@ export function BattleState({ view, extra }: { view: LiveView; extra?: Partial<R
     <div className="panel battle-state">
       <div className="state-grid">
         {order.map((side) => <SideState key={side} view={view} side={side} own={side === own}
-                                        title={names[side] === "You" ? "Your side" : names[side] === "Them" ? "Their side" : names[side]}
+                                        title={view.players?.[side] || (names[side] === "You" ? "Your side" : names[side] === "Them" ? "Their side" : names[side])}
                                         extra={extra?.[side]} />)}
       </div>
     </div>
@@ -68,8 +68,10 @@ function SideState({ view, side, own, title, extra }: {
         {rows.map(({ m, st }) => {
           const boosts = STAT_ORDER.filter((k) => m.boosts[k]).map((k) => `${k} ${m.boosts[k] > 0 ? "+" : ""}${m.boosts[k]}`);
           const sp = !own ? spreads.get(m.species) : undefined;
-          // One set left is a sheet, or a set this battle has pinned: nothing is open to show.
-          const ranked = !own ? sets.get(m.species) : undefined;
+          // A set the sheet gives whole has nothing left to rank, and whether the corpus ever saw
+          // it is not news. One set left is a set this battle has pinned: nothing open either.
+          const whole = m.moves.length > 0 && m.item !== null && m.ability !== null && m.nature !== null;
+          const ranked = !own && !whole ? sets.get(m.species) : undefined;
           const set = ranked && (ranked.off_meta || ranked.sets > 1) ? ranked : undefined;
           // A stat pinned at 0 is the unused offensive stat, which is 0 by construction: not news.
           const bounds = sp

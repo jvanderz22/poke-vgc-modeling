@@ -420,6 +420,8 @@ export type ReadStatus = {
 
 export type LiveView = {
   id: string; name: string; sheets: Sheets; perspective: Perspective;
+  /** The names typed for a watched game's two players; a side left blank is absent. */
+  players?: Partial<Record<"p1" | "p2", string>>;
   turn: number; started: boolean; ended: boolean; winner: string | null;
   entries: number;
   journal: Entry[];

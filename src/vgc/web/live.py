@@ -751,8 +751,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     belief, contradictions = beliefs(reg, state)
     out: dict[str, Any] = {
         "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob),
-        "perspective": perspective(blob), "turn": state.turn,
-        "started": state.started, "ended": state.ended, "winner": state.winner,
+        "perspective": perspective(blob), "players": blob["setup"].get("names", {}),
+        "turn": state.turn, "started": state.started, "ended": state.ended, "winner": state.winner,
         "entries": len(battle.journal), "journal": battle.journal,
         "sides": {sid: {"mons": [mon_view(state, m, sid == mine) for m in state.sides[sid].mons],
                         "conditions": dict(sorted(state.sides[sid].conditions.items())),
