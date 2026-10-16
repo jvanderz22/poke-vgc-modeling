@@ -91,6 +91,11 @@ def test_a_faint(observe):
     assert observe("r5-faint").message == "Gardevoir fainted!"
 
 
+def test_an_hp_read_with_its_percent_sign_first(observe):
+    # Struggle Bug's chip on Incineroar, which OCR reads as "%88".
+    assert observe("struggle-bug-hp").plates == {"L1": Plate("Incineroar", 88)}
+
+
 def test_scenery_moving_behind_the_regions_is_not_read_again():
     """The animated screens put white shapes (a jacket, a Pokémon) in the banner regions on most
     frames. A shape isn't text, so it mustn't send a region back to OCR."""

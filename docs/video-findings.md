@@ -77,6 +77,13 @@ charging), and a forfeit: "The battle has ended due to a forfeit." then "The Tra
 the left player's view the right one is "the Trainer". `said.CONFIRMED` lists what footage has
 shown; every other phrasing the reader knows is the main series' and reads provisionally.
 
+Watched in production (2026-10-15, Enrnsque Grimaldo vs Alex Madara): "The opposing Kingambit's
+Attack rose sharply!" (Defiant; the reader had the words the wrong way round), "Floette is radiating
+a fairy aura!" (Mega Floette's Fairy Aura, as a message rather than a banner), and "Floette is
+paralyzed, so it may be unable to move!" (Champions' wording, not the main series' "is paralyzed! It
+may be unable to move!"). OCR also read a plate's "88%" as "%88", which left Struggle Bug's chip on
+Incineroar unread.
+
 **The broadcast can cut away mid-turn.** In round 6 nothing was on screen for about 30 seconds at
 the end of a turn, and the opposing Sneasler fainted unseen (sandstorm, from 21%). The next thing
 shown was its replacement. The reader works such a faint out from the next decision point's plates

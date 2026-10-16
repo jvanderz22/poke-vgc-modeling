@@ -83,7 +83,7 @@ class Reading:
     def resync(self, entries: list[dict[str, Any]]) -> None:
         """Take the battle's journal as it now stands (it was edited by hand), and read on from it."""
         a = self.asm
-        a.rp = journal.replay(self.reg, self.setup, entries)
+        a.use(journal.replay(self.reg, self.setup, entries))
         a.out.entries = [dict(e) for e in entries]
         a.turn = a.rp.state.turn
         a.led = {e["side"] for e in entries if e.get("kind") == "lead"}

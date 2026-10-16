@@ -133,7 +133,8 @@ def _text(img: np.ndarray) -> np.ndarray:
 
 # --- reading a region -----------------------------------------------------------------------
 
-_HP = re.compile(r"(\d+)\s*%")
+# OCR sometimes puts the "%" first: "88%" has read "%88".
+_HP = re.compile(r"(\d+)\s*%|%\s*(\d+)")
 # The HP bar, under the name: its clean top rows (the number covers the rest), as fractions of the
 # plate, and its full length as a fraction of the frame. It reads about 1.5 points long.
 BAR_ROWS = (0.45, 0.53)
@@ -213,7 +214,7 @@ def _read_plate(lines, crop: np.ndarray, frame_width: int) -> Plate | None:
     for text, x0, *_ in sorted(lines, key=lambda ln: ln[1]):
         m = _HP.search(text)
         if m:
-            digits = m.group(1)
+            digits = m.group(1) or m.group(2)
         elif _letters(text) >= 3:  # the gender mark reads as "of" or "o"; a name is longer
             name_parts.append(re.sub(r"[^A-Za-z .'-]", "", text).strip())
     # OCR sometimes splits a name in two ("Indee", "dee"); the pieces are one name.

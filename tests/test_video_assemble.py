@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+from vgc.battle import entry as journal
 from vgc.regulation import load_regulation
 from vgc.video.assemble import assemble
 from vgc.video.screen import Event
@@ -185,12 +186,12 @@ def test_a_turn_shown_again_is_not_read_twice(reg):
 
 def test_a_status_and_a_turn_lost_to_it(reg):
     entries, a = _read(reg, LEADS + [
-        (250.0, "message", {"text": "The opposing Raichu is paralyzed! It may be unable to move!"}),
+        (250.0, "message", {"text": "The opposing Raichu is paralyzed, so it may be unable to move!"}),
         (260.0, "message", {"text": "The opposing Raichu is paralyzed! It can't move!"}),
     ])
     assert entries[5:] == [{"kind": "status", "side": "p2", "slot": 0, "status": "par"},
                            {"kind": "cant", "side": "p2", "slot": 0, "reason": "par"}]
-    assert [p["pattern"] for p in a.provisional] == ["status:par", "cant:par"]
+    assert [p["pattern"] for p in a.provisional] == ["cant:par"]
 
 
 def test_a_forfeit_ends_the_game(reg):
@@ -241,3 +242,24 @@ def test_the_winner_comes_from_the_board_when_the_names_differ(reg):
     a = assemble(reg, renamed, [Event(t, k, d) for t, k, d in
                                 LEADS + faints + sendouts + more + [(745.0, "message", {"text": "GAME WINNER SAMUEL THOMPSON"})]])
     assert a.entries[-1]["kind"] == "end" and a.entries[-1]["winner"] == "p1"
+
+
+def test_intimidate_and_defiant_are_matched_to_their_own_messages(reg):
+    # Seen in production: the Intimidate banner settles both Intimidate's drop and Defiant's
+    # answer, so Kingambit is at +1 before either message. Neither message is a change of its own.
+    setup = {"perspective": "spectator", "names": {"p1": "Enrnsque Grimaldo", "p2": "Alex Madara"},
+             "p1": [_set("Floette-Eternal", "Flower Veil", "Modest", "Floettite", ["Moonblast", "Dazzling Gleam", "Calm Mind", "Protect"]),
+                    _set("Incineroar", "Intimidate", "Adamant", "Sitrus Berry", ["Fake Out", "Flare Blitz", "Parting Shot", "Throat Chop"])],
+             "p2": [_set("Raichu", "Lightning Rod", "Timid", "Raichunite Y", ["Fake Out", "Zap Cannon", "Focus Blast", "Protect"]),
+                    _set("Kingambit", "Defiant", "Adamant", "Life Orb", ["Sucker Punch", "Kowtow Cleave", "Swords Dance", "Protect"])]}
+    rows = [(26101.5, "message", {"text": "Alex™ sent out Raichu and Kingambit the Paldea Champion!"}),
+            (26105.76, "message", {"text": "Go! Floette the Champion-Tiered and Incineroar the Feisty!"}),
+            (26109.76, "banner", {"side": "L", "text": "Ancineroar's Intimidate"}),
+            (26110.26, "message", {"text": "The opposing Raichu and the opposing Kingambit's Attack fell!"}),
+            (26112.01, "banner", {"side": "R", "text": "Kingambit's Defiant"}),
+            (26112.51, "message", {"text": "The opposing Kingambit's Attack rose sharply!"}),
+            (26114.27, "choosing", {})]
+    a = assemble(reg, setup, [Event(t, k, d) for t, k, d in rows])
+    assert [e["kind"] for e in a.entries] == ["lead"] * 4 + ["answer", "turn"]
+    raichu, kingambit = journal.replay(reg, setup, a.entries).state.sides["p2"].mons
+    assert (raichu.boosts.get("atk"), kingambit.boosts.get("atk")) == (-1, 1)

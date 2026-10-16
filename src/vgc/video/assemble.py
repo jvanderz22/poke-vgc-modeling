@@ -81,7 +81,7 @@ class Assembler:
         self.side, self.vocab = SIDE, self.vocabs[False]
         # Settled by the first send-out only one way round explains; until then, either could be.
         self.oriented = False
-        self.rp = journal.Replay(journal.setup_state(reg, setup))
+        self.use(journal.Replay(journal.setup_state(reg, setup)))
         self.out = Assembly()
         self.started = False
         self.led: set[str] = set()
@@ -91,7 +91,6 @@ class Assembler:
         self.vacated: dict[str, list[int]] = {"p1": [], "p2": []}
         self.banners: list[tuple[float, Said]] = []
         self.asked: dict[str, float] = {}  # question id -> when it was raised
-        self.boosts_before: dict[int, dict[str, int]] = {}
         # A decision point seen and its turn not yet written: the plates that follow it are still
         # coming in, and they are the check on every HP the turn left unexplained.
         self.decision: float | None = None
@@ -108,6 +107,23 @@ class Assembler:
         self.held: dict[str, list[tuple[float, Who]]] = {"p1": [], "p2": []}
         self.forfeit = False
         self.won: tuple[float, str] | None = None  # (when, winner) once a side has nothing left
+
+    def use(self, rp: journal.Replay) -> None:
+        """Read on from this replay, keeping each stat step it applies (`_boost`)."""
+        self.rp = rp
+        # Each stat step the replay has applied since the last move that no message has announced
+        # yet, by Pokémon: id(mon) -> [(stat, stages)]. Steps, not a net change: Intimidate's -1
+        # and Defiant's +2 are two messages, and their net +1 matches neither.
+        self.unannounced: dict[int, list[tuple[str, int]]] = {}
+        self.announcing = False
+        apply = rp.state.apply_boost
+
+        def apply_and_keep(m: Mon, stat: str, stages: int) -> None:
+            apply(m, stat, stages)
+            if not self.announcing:
+                self.unannounced.setdefault(id(m), []).append((stat, stages))
+
+        rp.state.apply_boost = apply_and_keep
 
     # --- writing ------------------------------------------------------------------------------
 
@@ -220,10 +236,10 @@ class Assembler:
                 self.last_target = {"side": self.side[target.side], "slot": m.position}
         if mv.result and "result" not in entry and not results:
             entry["result"] = mv.result
-        mons = {id(m): dict(m.boosts) for s in ("p1", "p2") for m in self.rp.state.sides[s].mons}
+        unannounced, self.unannounced = self.unannounced, {}
         if not self._write(mv.t, entry):
+            self.unannounced = unannounced
             return
-        self.boosts_before = mons
         self.used.add((mv.side, mv.species, mv.move))
         for dt, who, hp in mv.damage:
             self._hp(dt, who, hp, crit=mv.crit, by_move=True)
@@ -479,7 +495,8 @@ class Assembler:
                 self._write(t, {"kind": "side", "side": side, "condition": cond, "on": s.data["on"]})
         elif s.kind == "unknown":
             self._miss(t, text, "message not understood")
-        # recoil, center, helping: the rules derive what they do, or there is nothing to log.
+        # recoil, center, helping: the rules derive what they do, or there is nothing to log. An
+        # aura announces a Mega's ability, which the Mega forme already gives.
 
     def _orient(self, text: str, s: Said) -> Said:
         """Which sheet is on the left, from the Pokémon on screen: the names on the sheets and the
@@ -515,20 +532,25 @@ class Assembler:
             self._write(t, {"kind": "switch", "side": side, "slot": slot, "species": who.species})
 
     def _boost(self, t: float, who: Who, stats: list[str], stages: int) -> None:
-        """A stat change the rules didn't already make: what the replay applied since the last
-        move is subtracted, so Close Combat's own drops aren't counted twice."""
+        """A stat change the rules didn't already make. Each message is matched to the first step
+        the replay applied that no message has announced, of the same stat and direction, so Close
+        Combat's own drops aren't counted twice, nor Defiant's rise after Intimidate."""
         m = self._active(who)
         if m is None:
             return
-        before = self.boosts_before.get(id(m), {})
+        steps = self.unannounced.get(id(m), [])
         for stat in stats:
-            done = m.boosts.get(stat, 0) - before.get(stat, 0)
-            rest = stages - done if (stages > 0) == (done > 0) or done == 0 else stages
+            rest = stages
+            i = next((i for i, (s, n) in enumerate(steps) if s == stat and (n > 0) == (stages > 0)), None)
+            if i is not None:
+                rest -= steps.pop(i)[1]
             if rest:
-                self._write(t, {"kind": "boost", "side": self.side[who.side], "slot": m.position,
-                                "stat": stat, "stages": rest})
-            before[stat] = m.boosts.get(stat, 0)
-        self.boosts_before[id(m)] = before
+                self.announcing = True
+                try:
+                    self._write(t, {"kind": "boost", "side": self.side[who.side], "slot": m.position,
+                                    "stat": stat, "stages": rest})
+                finally:
+                    self.announcing = False
 
     def _mega(self, t: float, who: Who) -> None:
         m = self._mon(who)

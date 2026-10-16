@@ -29,14 +29,14 @@ MARGIN = 0.08
 
 STATS = {"attack": "atk", "defense": "def", "sp. atk": "spa", "sp. def": "spd", "speed": "spe",
          "accuracy": "accuracy", "evasiveness": "evasion"}
-STAGES = {"rose": 1, "sharplyrose": 2, "rosedrastically": 3, "fell": -1, "harshlyfell": -2, "severelyfell": -3}
+STAGES = {"rose": 1, "rosesharply": 2, "rosedrastically": 3, "fell": -1, "harshlyfell": -2, "severelyfell": -3}
 
 # The phrasings seen in the Louisville Regionals footage (docs/video-findings.md). Everything else
 # in this module is provisional until a game shows it.
 CONFIRMED = {
     "move", "sendout_L", "sendout_R", "withdraw_L", "went_back", "faint", "effective", "protected",
     "miss", "boost", "mega", "mega_stone", "center", "helping", "crit", "charge", "drain", "herb",
-    "knocked_off", "chip:recoil", "chip:sandstorm",
+    "knocked_off", "chip:recoil", "chip:sandstorm", "status:par", "aura",
     "field:Psychic Terrain:on", "field:Psychic Terrain:off", "field:Electric Terrain:on",
     "field:RainDance:on", "field:RainDance:off", "field:Sandstorm:on", "side:Light Screen:on",
     "banner:item", "banner:ability", "forfeit_notice", "lost",
@@ -67,7 +67,8 @@ FIELD_ENDS = {
     "The twisted dimensions returned to normal!": ("pseudo", "Trick Room"),
 }
 
-STATUS_GAINED = {"was burned": "brn", "is paralyzed! It may be unable to move": "par",
+# Champions words paralysis its own way: "is paralyzed, so it may be unable to move!"
+STATUS_GAINED = {"was burned": "brn", "is paralyzed, so it may be unable to move": "par",
                  "was poisoned": "psn", "was badly poisoned": "tox", "fell asleep": "slp",
                  "was frozen solid": "frz"}
 CANT = {"flinched and couldn't move": "flinch", "is paralyzed! It can't move": "par",
@@ -217,9 +218,10 @@ PATTERNS: list[tuple[str, str]] = [
     ("failed", r"^But it failed$"),
     ("redirect", r"^(?P<who>.+?) took the attack$"),
     ("boost", rf"^(?P<who>.+?)'s (?P<stats>{_STAT}(?: and {_STAT})*) "
-              r"(?P<how>rose ?drastically|sharply ?rose|rose|harshly ?fell|severely ?fell|fell)$"),
+              r"(?P<how>rose ?drastically|rose ?sharply|rose|harshly ?fell|severely ?fell|fell)$"),
     ("mega_stone", r"^(?P<who>.+?)'s (?P<item>.+?) is reacting to .+$"),
     ("mega", r"^(?P<who>.+?) has Mega Evolved into Mega .+$"),
+    ("aura", r"^(?P<who>.+?) is radiating an? (?P<aura>fairy|dark) aura$"),
     ("status", rf"^(?P<who>.+?) (?P<what>{_alt(STATUS_GAINED)})$"),
     ("cant", rf"^(?P<who>.+?) (?P<what>{_alt(CANT)})$"),
     ("chip", rf"^(?P<who>.+?) (?P<what>{_alt(CHIP)})$"),
@@ -336,6 +338,8 @@ def _read(pid: str, g: dict[str, str], vocab: Vocabulary, full: str) -> Said | N
         return said("mega", (w,))
     if pid == "mega_stone":
         return said("mega_stone", (w,), item=best(g["item"], vocab.items))
+    if pid == "aura":
+        return said("ability", (w,), ability=f"{g['aura'].title()} Aura")
     if pid == "helping":
         ally = _who(g["ally"], vocab)
         return said("helping", (w,) + ((ally,) if ally else ()))

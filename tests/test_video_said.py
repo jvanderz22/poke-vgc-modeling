@@ -128,6 +128,27 @@ def test_stat_words_ocr_ran_together(vocab):
     assert parse("The opposing Raichu's Sp. Atk harshlyfell!", vocab).data == {"stats": ["spa"], "stages": -2}
 
 
+def test_a_sharp_rise_reads_in_the_games_word_order(vocab):
+    # Seen in production: the game puts "sharply" after "rose".
+    s = parse("The opposing Raichu's Attack rose sharply!", vocab)
+    assert (s.kind, s.who, s.data, s.provisional) == ("boost", (Who("R", "Raichu"),),
+                                                      {"stats": ["atk"], "stages": 2}, False)
+    assert parse("The opposing Raichu's Attack rosesharply!", vocab).data == {"stats": ["atk"], "stages": 2}
+
+
+def test_champions_words_paralysis_its_own_way(vocab):
+    s = parse("Sneasler is paralyzed, so it may be unable to move!", vocab)
+    assert (s.kind, s.data, s.provisional) == ("status", {"status": "par"}, False)
+
+
+def test_an_aura_announces_an_ability(dex):
+    left = [{"species": "Floette-Eternal", "item": "Floettite", "moves": ["Moonblast", "Protect"]}]
+    v = Vocabulary.from_sheets(dex, left, RIGHT)
+    s = parse("Floette is radiating a fairy aura!", v)
+    assert (s.kind, s.who, s.data, s.provisional) == ("ability", (Who("L", "Floette-Eternal"),),
+                                                      {"ability": "Fairy Aura"}, False)
+
+
 def test_a_move_off_a_sheet_read_short_is_read_from_the_learnset(dex, vocab):
     # Round 6: the sheet reader left Knock Off blank on Tyranitar's card.
     right = [{"species": "Tyranitar", "item": "Tyranitarite", "moves": ["Protect", "Rock Slide", "Low Kick"]}]
