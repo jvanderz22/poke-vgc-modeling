@@ -454,8 +454,14 @@ class Assembler:
                 self._write(t, {"kind": "cant", "side": side, "slot": m.position, "reason": s.data["reason"]})
             elif (m.status or None) != s.data.get("status"):
                 self._write(t, {"kind": "status", "side": side, "slot": m.position, "status": s.data.get("status")})
-        elif s.kind == "chip":
+        elif s.kind in ("chip", "heal"):
+            # What moves the HP is the plate that follows; the message says why.
             self.hints.append((t, s.who[0], s.data["cause"]))
+            if s.kind == "heal" and s.data["cause"] == "hospitality":
+                # The host's ability announcing on arrival, said as a message: it answers the
+                # switch-in question as a banner would, and when is Speed evidence.
+                self.banners.append((t, Said("ability", s.who[1:], {"ability": "Hospitality"}, text, s.pattern)))
+                self._settle_questions(t)
         elif s.kind == "consume":
             self.hints.append((t, s.who[0], to_id(s.data["item"])))
             self._write(t, {"kind": "consume", "side": self.side[s.who[0].side], "species": s.who[0].species,

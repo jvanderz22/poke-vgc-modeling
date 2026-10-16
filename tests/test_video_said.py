@@ -149,6 +149,19 @@ def test_an_aura_announces_an_ability(dex):
                                                       {"ability": "Fairy Aura"}, False)
 
 
+def test_hospitality_names_the_one_healed_and_its_host(dex):
+    # Seen in production (2026-10-16): Sinistcha switching in beside Floette.
+    left = _sheet(("Floette-Eternal", "Floettite", ["Moonblast", "Protect"]),
+                  ("Sinistcha", "Sitrus Berry", ["Matcha Gotcha", "Rage Powder"]))
+    v = Vocabulary.from_sheets(dex, left, left)
+    s = parse("Floette drank down all the matcha that Sinistcha made!", v)
+    assert (s.kind, s.who, s.data, s.provisional) == (
+        "heal", (Who("L", "Floette-Eternal"), Who("L", "Sinistcha")), {"cause": "hospitality"}, False)
+    s = parse("The opposing Floette drank down all the matcha that the opposing Sinistcha made!", v)
+    assert s.who == (Who("R", "Floette-Eternal"), Who("R", "Sinistcha"))
+    assert parse("The opposing Floette drank down all the matcha that Sinistcha made!", v).who[1] == Who("R", "Sinistcha")
+
+
 def test_a_move_off_a_sheet_read_short_is_read_from_the_learnset(dex, vocab):
     # Round 6: the sheet reader left Knock Off blank on Tyranitar's card.
     right = [{"species": "Tyranitar", "item": "Tyranitarite", "moves": ["Protect", "Rock Slide", "Low Kick"]}]

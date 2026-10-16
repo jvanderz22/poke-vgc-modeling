@@ -39,7 +39,7 @@ CONFIRMED = {
     "knocked_off", "chip:recoil", "chip:sandstorm", "status:par", "aura",
     "field:Psychic Terrain:on", "field:Psychic Terrain:off", "field:Electric Terrain:on",
     "field:RainDance:on", "field:RainDance:off", "field:Sandstorm:on", "side:Light Screen:on",
-    "banner:item", "banner:ability", "forfeit_notice", "lost",
+    "banner:item", "banner:ability", "forfeit_notice", "lost", "hospitality",
 }
 
 # What starts and ends each field effect, as the game says it.
@@ -228,6 +228,8 @@ PATTERNS: list[tuple[str, str]] = [
     ("status_end", r"^(?P<who>.+?) (?:woke up|thawed out|was cured of its .+)$"),
     ("confused", r"^(?P<who>.+?) became confused$"),
     ("drain", r"^(?P<who>.+?) had its energy drained$"),
+    # Sinistcha's Hospitality, on arrival: its ally gets back a quarter of its HP.
+    ("hospitality", r"^(?P<who>.+?) drank down all the matcha that (?P<host>.+?) made$"),
     ("berry", r"^(?P<who>.+?) restored its HP using its (?P<item>.+)$"),
     ("sash", r"^(?P<who>.+?) hung on using its (?P<item>.+)$"),
     ("herb", r"^(?P<who>.+?) returned its stats to normal using its (?P<item>.+)$"),
@@ -357,6 +359,11 @@ def _read(pid: str, g: dict[str, str], vocab: Vocabulary, full: str) -> Said | N
         return said("knocked_off", (w,) + ((target,) if target else ()), item=item) if target and item else None
     if pid == "trick":
         return said("trick", (w,))
+    if pid == "hospitality":
+        # The host is the drinker's partner, so on the drinker's side however its name is written.
+        name = re.sub(r"(?i)^the opposing\s+", "", g["host"])
+        host = _who(("the opposing " if w.side == "R" else "") + name, vocab)
+        return said("heal", (w, host), cause="hospitality") if host else None
     if pid in ("went_back", "eject"):
         return said("withdraw", (w,), side=w.side)
     if pid in _SIMPLE:

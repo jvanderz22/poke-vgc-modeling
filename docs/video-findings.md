@@ -84,6 +84,11 @@ paralyzed, so it may be unable to move!" (Champions' wording, not the main serie
 may be unable to move!"). OCR also read a plate's "88%" as "%88", which left Struggle Bug's chip on
 Incineroar unread.
 
+Watched in production (2026-10-16, at 7:19:06 of JET7oW_RiLI): "Floette drank down all the matcha
+that Sinistcha made!" (Hospitality, on Sinistcha's arrival). The ability announces as a message,
+not a banner, and names its host. The still plates put Floette's HP right at the next decision
+point anyway, but as an unexplained heal, and the switch-in question went unanswered.
+
 **The broadcast can cut away mid-turn.** In round 6 nothing was on screen for about 30 seconds at
 the end of a turn, and the opposing Sneasler fainted unseen (sandstorm, from 21%). The next thing
 shown was its replacement. The reader works such a faint out from the next decision point's plates

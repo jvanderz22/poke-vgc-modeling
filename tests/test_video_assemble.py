@@ -128,6 +128,32 @@ def test_a_spread_move_into_a_protect(reg):
     assert {"kind": "damage", "side": "p1", "slot": 0, "pct": 86, "fainted": False} in entries
 
 
+def test_hospitality_heals_the_partner_of_the_sinistcha_sent_in(reg):
+    left = [_set("Sinistcha", "Hospitality", "Bold", "Sitrus Berry", ["Matcha Gotcha", "Rage Powder", "Trick Room", "Protect"])
+            if m["species"] == "Milotic" else m for m in LEFT]
+    rows = LEADS + [
+        (190.0, "message", {"text": "The opposing Raichu used Volt Tackle!"}),
+        (191.0, "plate", {"slot": "L1", "name": "Gardevoir", "hp": 40}),
+        (200.0, "choosing", {}),
+        *[(200.2, "plate", {"slot": s, "name": n, "hp": hp})
+          for s, n, hp in (("L0", "Sneasler", 100), ("L1", "Gardevoir", 40), ("R0", "Grimmsnarl", 100))],
+        (230.0, "message", {"text": "Sneasler, come back!"}),
+        (231.5, "message", {"text": "Go! Sinistcha!"}),
+        (233.0, "message", {"text": "Gardevoir drank down all the matcha that Sinistcha made!"}),
+        (234.0, "plate", {"slot": "L1", "name": "Gardevoir", "hp": 65}),
+    ]
+    a = assemble(reg, {**SETUP, "p1": left}, [Event(t, k, d) for t, k, d in rows])
+    entries = [{k: v for k, v in e.items() if k != "t"} for e in a.entries]
+    at = entries.index({"kind": "switch", "side": "p1", "slot": 0, "species": "Sinistcha"})
+    answer, heal = entries[at + 1:]
+    # The message answers the question Sinistcha's arrival raised: Hospitality announced.
+    rp = journal.replay(reg, {**SETUP, "p1": left}, a.entries[:at + 1])
+    q = next(q for q in rp.questions if q.id == answer["question"])
+    assert q.outcomes[answer["option"]].ability == "hospitality"
+    assert heal == {"kind": "heal", "side": "p1", "slot": 1, "pct": 65, "eot": "hospitality"}
+    assert a.missed == [] and a.errors == []
+
+
 def test_a_number_nothing_explains_waits_for_the_still_plates(reg):
     # A plate sliding past during a switch read "Gardevoir 10%"; the decision point's plates say 100.
     entries, _ = _read(reg, LEADS + [
