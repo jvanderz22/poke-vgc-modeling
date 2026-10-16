@@ -728,4 +728,6 @@ main:has(> .watch-page) { max-width: none; }
 .watch-reading { margin: 6px 2px 0; display: grid; gap: 2px; }
 .watch-reading code { font-size: 0.95em; }
 .watch-manual { display: block; margin: 10px 2px 0; color: var(--dim); }
-.watch-manual:hover { color: var(--accent); }
+.watch-manual:hover, .manual-link:hover, .manual-toggle .link:hover { color: var(--accent); }
+.manual-link, .manual-toggle .link { color: var(--dim); }
+.manual-toggle { justify-content: flex-end; margin: 0 2px 4px; }

@@ -62,7 +62,7 @@ export function WatchPage({ reg, route, navigate, pool }: {
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
-                           autoStart={!readerOn} manual={manual} />
+                           autoStart={!readerOn} manual={manual} onManual={setManual} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>

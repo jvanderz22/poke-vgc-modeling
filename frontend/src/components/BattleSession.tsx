@@ -10,6 +10,7 @@ import { filled, SHEET_SIZE, toShowdown } from "../sheet";
 import { SpeciesPicker } from "./SpeciesPicker";
 import { TurnReview } from "./TurnReview";
 import { TurnStepper } from "./TurnStepper";
+import { turnLines, turnStart } from "../turn";
 import type { Pos } from "../screen";
 import { linkProps, tabRoute, type Navigate, type Route } from "../router";
 
@@ -23,7 +24,7 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true, onManual }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
@@ -37,6 +38,8 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   /** Show what logs a tap by hand: the stepper, the free-form bar, forfeiting. The watch page
    *  hides them until asked, since the video reader fills the journal. */
   manual?: boolean;
+  /** Where the page can switch `manual` from, beside the log and the stepper. */
+  onManual?: (on: boolean) => void;
 }) {
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
@@ -121,6 +124,15 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
       <div className="battle-top">
         <div className="battle-work">
           {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
+          {step === null && !manual && (
+            <TurnLog view={view} onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
+                     onManual={onManual && (() => onManual(true))} />
+          )}
+          {step === null && manual && onManual && (
+            <div className="row manual-toggle">
+              <button className="link tiny" onClick={() => onManual(false)}>Hide the manual inputs</button>
+            </div>
+          )}
           {step === null
             ? manual && <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
                            onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
@@ -379,6 +391,46 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           ))}
         </ul>
       </details>
+    </div>
+  );
+}
+
+/** The turn so far, read-only: what the stepper lists above its questions, for when the taps are
+ *  being made by the video reader rather than by hand. A line walks the battle back to before it,
+ *  and the turns before this one are a click away. */
+function TurnLog({ view, onWalk, onManual }: { view: LiveView; onWalk: (index: number) => void; onManual?: () => void }) {
+  const lines = turnLines(view, sideNames(view));
+  const start = turnStart(view.journal);
+  let prev = -1;
+  for (let i = start - 1; i >= 0; i--) if (view.journal[i].kind === "turn") { prev = i; break; }
+  return (
+    <div className="panel turn-log">
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+        <h2 style={{ margin: 0 }}>{view.started ? `Turn ${view.turn}` : "Team preview"}</h2>
+        <span className="row">
+          {start >= 0 && (
+            <button className="ghost small-btn" onClick={() => onWalk(prev >= 0 ? prev : 0)}>
+              ← {prev >= 0 ? "last turn" : "leads"}
+            </button>
+          )}
+          {onManual && <button className="link tiny manual-link" onClick={onManual}>Enter taps by hand…</button>}
+        </span>
+      </div>
+      {lines.length === 0
+        ? <p className="tiny dim" style={{ margin: 0 }}>Nothing logged yet this turn.</p>
+        : (
+          <ol className="turn-lines">
+            {lines.map((l) => (
+              <li key={l.index}>
+                <button className={`turn-line${l.error ? " bad" : ""}`} onClick={() => onWalk(l.index)}
+                        title="Walk the battle back to just before this">
+                  <span className="turn-check">{l.error ? "!" : "✓"}</span> {l.text}
+                  {l.error && <span className="turn-err"> {l.error}</span>}
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
     </div>
   );
 }
