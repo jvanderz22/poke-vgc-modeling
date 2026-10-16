@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, type Entry, type Problem, type ReadStatus, type Species } from "../api";
-import { filled, SHEET_SIZE, toShowdown } from "../sheet";
+import { complete, filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
 import {
   CaptureError, download, emptyWatch, isSheet, mergeRead, parseYouTube, readFrames, stamp, startCapture,
@@ -362,7 +362,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       <div className="tiny dim" style={{ margin: "6px 2px 0" }}>
         {!capturing && "Chrome or Edge: share this tab when asked. Only the player is captured."}
         {capturing && sheetsWanted && status}
-        {capturing && reading && !sheetsWanted && "Both sheets are full, so no more are read."}
+        {capturing && reading && !sheetsWanted && "Both sheets are full, so no more are read. Check them and start the battle from the sheets."}
         {capturing && " A recorded clip saves as a .webm and a .json of the video's times, for building the battle reader."}
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
@@ -454,6 +454,11 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
   const ready = filled(p1) === SHEET_SIZE && filled(p2) === SHEET_SIZE;
   const errors = useSheetErrors(reg, watch.sheets);
   const legal = errors.every((e) => e !== null && e.length === 0);
+  // Once both sheets are whole, the start is asked for at the top, where it is seen from anywhere
+  // in the forms: the button under them sat below both sheets, and the battle went unstarted.
+  const entered = complete(p1) && complete(p2);
+  const label = `Start watching${bestOf === 3 ? " game 1 of a Bo3" : ""}`;
+  const [n1, n2] = watch.names.map((n) => n.trim());
 
   const setSheet = (i: 0 | 1) => (s: typeof p1) =>
     onWatch((w) => ({ ...w, sheets: i === 0 ? [s, w.sheets[1]] : [w.sheets[0], s] }));
@@ -464,7 +469,6 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
     setBusy(true);
     setError(null);
     try {
-      const [n1, n2] = watch.names.map((n) => n.trim());
       const v = await api.newBattle({
         name: n1 || n2 ? `${n1 || "P1"} vs ${n2 || "P2"}` : "", regulation: reg, best_of: bestOf,
         p1_name: n1, p2_name: n2,
@@ -479,6 +483,18 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
   }
 
   return (
+    <>
+    {entered && (
+      <div className={`banner watch-confirm ${legal ? "ok" : errors.some((e) => e?.length) ? "bad" : "warn"}`}>
+        <div>
+          <b>Both sheets are in.</b>{" "}
+          {legal ? <>Check them against the video, then start {n1 || "Player 1"} vs {n2 || "Player 2"}.</>
+            : errors.some((e) => e?.length) ? "Not legal yet: fix what is listed under the sheets."
+            : "Checking the sheets…"}
+        </div>
+        <button disabled={busy || !legal} onClick={start}>{label}</button>
+      </div>
+    )}
     <div className="panel">
       <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
         <span className="row">
@@ -509,7 +525,7 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
         </div>
       ))}
       <div className="row" style={{ marginTop: 10 }}>
-        <button disabled={busy || !ready || !legal} onClick={start}>Start watching{bestOf === 3 ? " game 1 of a Bo3" : ""}</button>
+        <button disabled={busy || !ready || !legal} onClick={start}>{label}</button>
         {!ready && <span className="tiny dim">{filled(p1)}/{SHEET_SIZE} and {filled(p2)}/{SHEET_SIZE} on the sheets</span>}
         {ready && !legal && (
           <span className="tiny dim">
@@ -523,6 +539,7 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
         Speeds are worked out from the battle, and the number is player 1's chance.
       </p>
     </div>
+    </>
   );
 }
 

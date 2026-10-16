@@ -50,6 +50,11 @@ export function filled(sheet: SheetEntry[]): number {
   return sheet.filter((e) => e.species).length;
 }
 
+/** Six Pokémon with nothing the card would ask for. */
+export function complete(sheet: SheetEntry[]): boolean {
+  return filled(sheet) === SHEET_SIZE && sheet.every((e) => missing(e).length === 0);
+}
+
 export function toShowdown(sheet: SheetEntry[]): string {
   return sheet.filter((e) => e.species).map((e) => [
     `${e.species}${e.item ? ` @ ${e.item}` : ""}`,

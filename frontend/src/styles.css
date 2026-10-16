@@ -731,3 +731,6 @@ main:has(> .watch-page) { max-width: none; }
 .watch-manual:hover, .manual-link:hover, .manual-toggle .link:hover { color: var(--accent); }
 .manual-link, .manual-toggle .link { color: var(--dim); }
 .manual-toggle { justify-content: flex-end; margin: 0 2px 4px; }
+/* Asks for the start once both sheets are whole; sticky, so it is seen from anywhere in the forms. */
+.watch-confirm { position: sticky; top: 70px; z-index: 5; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.watch-confirm > div { flex: 1; min-width: 200px; }
