@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { api, ApiError, type Entry, type Problem, type ReadStatus, type Species } from "../api";
 import { complete, filled, SHEET_SIZE, toShowdown } from "../sheet";
 import type { Navigate, Route } from "../router";
@@ -44,8 +45,8 @@ export function WatchPage({ reg, route, navigate, pool }: {
   const [strips, setStrips] = useState<HTMLDivElement | null>(null);
   // The player on the left of the screen, once the reader has worked it out from the Pokémon.
   const [left, setLeft] = useState<"p1" | "p2">("p1");
-  // The reader's frames a second while it is under the rate a short message needs, else null.
-  const [slow, setSlow] = useState<Slow | null>(null);
+  // Where the video half warns, at the top of the battle column, that the reader is slow.
+  const [alertAt, setAlertAt] = useState<HTMLElement | null>(null);
   const stampEntries = useCallback((entries: Entry[]) => {
     const at = videoTime.current();
     return at === null ? entries : entries.map((e) => ("video_s" in e ? e : { ...e, video_s: Math.round(at * 100) / 100 }));
@@ -66,13 +67,13 @@ export function WatchPage({ reg, route, navigate, pool }: {
       <VideoColumn reg={reg} route={route} navigate={navigate}
                    watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} onReaderOn={setReaderOn}
                    onPlayer={(p) => { player.current = p; videoTime.current = () => p.getCurrentTime(); }}
-                   strips={setStrips} onLeft={setLeft} onSlow={setSlow} />
+                   strips={setStrips} onLeft={setLeft} alertAt={alertAt} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
                            autoStart={!readerOn} manual={manual} onManual={setManual}
-                           watch={{ strips, left, onSeek: seek, alert: slow !== null && <SlowReading {...slow} /> }} />
+                           watch={{ strips, left, onSeek: seek, alertSlot: setAlertAt }} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -98,7 +99,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, strips, onLeft, onSlow }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, strips, onLeft, alertAt }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -111,7 +112,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   /** Where the battle half draws both sixes, under the video. */
   strips: (el: HTMLDivElement | null) => void;
   onLeft: (side: "p1" | "p2") => void;
-  onSlow: (slow: Slow | null) => void;
+  /** Where to warn that the reader is slow, at the top of the battle column. */
+  alertAt: HTMLElement | null;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -253,11 +255,11 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   const left = readStatus?.left;
   useEffect(() => { if (left) onLeft(left); }, [left, onLeft]);
   // Under SLOW_RATE frames a second a short message can go by unread: said at the top of the
-  // battle column too, where it is seen, and not only in the reading line under the strips.
+  // battle column too, where it is seen, and not only in the reading line under the strips. It is
+  // drawn there from here, so a rate that changes with every frame redraws this column only.
   const rate = answered.current.length / 5;
   const slowRate = capturing && battleReading && !!battle && rate > 0 && rate < SLOW_RATE ? Math.round(rate * 10) / 10 : null;
   const where = slowRate === null ? "" : spentOn(spent.current);
-  useEffect(() => { onSlow(slowRate === null ? null : { rate: slowRate, where }); }, [slowRate, where, onSlow]);
   useEffect(() => { onReaderOn(capturing && battleReading && !!battle); }, [capturing, battleReading, battle, onReaderOn]);
 
   async function stopReading() {
@@ -420,6 +422,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} where={where} error={readError} ocr={ocr}
                      stalled={stalled} />
       )}
+      {alertAt && slowRate !== null && createPortal(<SlowReading rate={slowRate} where={where} />, alertAt)}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
           A later frame disagreed with what is in the form; the form kept its value. Check:
@@ -641,10 +644,8 @@ function spentOn(frames: Spent[]): string {
     .map(([k, v]) => `${SPENT_LABEL[k]} ${v}`).join(", ");
 }
 
-type Slow = { rate: number; where: string };
-
 /** The reader falling behind, as a warning at the top of the battle column. */
-function SlowReading({ rate, where }: Slow) {
+function SlowReading({ rate, where }: { rate: number; where: string }) {
   return (
     <span className="chip flag warn slow-reading" role="status"
           title={`Reading ${rate.toFixed(1)} frames a second, under ${SLOW_RATE}: a short message can be missed.` +

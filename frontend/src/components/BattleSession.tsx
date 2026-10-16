@@ -49,8 +49,10 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
    *  in `strips` under the video, `left` the player on the left of the screen, and `onSeek` to
    *  put the video at an entry's time. */
   watch?: { strips: HTMLElement | null; left: Side; onSeek?: (seconds: number) => void;
-            /** Something about the reading to see from anywhere: drawn at the top of the column. */
-            alert?: ReactNode };
+            /** Where the video half draws something about the reading to see from anywhere, at the
+             *  top of the column. A slot rather than a prop: it changes with every frame while the
+             *  reader is slow, and a prop would redraw this whole page each time. */
+            alertSlot?: (el: HTMLElement | null) => void };
 }) {
   const name = useNames(reg);
   const [view, setView] = useState<LiveView | null>(null);
@@ -60,17 +62,53 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   // The free-form entry bar, behind "free-form entry…": the escape hatch for whatever the stepper
   // does not ask about. Clicking the field goes to whichever of the two is in front.
   const [freeForm, setFreeForm] = useState(false);
+  // Beside a video: whether "both sides in full" is open.
+  const [full, setFull] = useState(false);
   const fieldPick = useRef<((p: Pos) => void) | null>(null);
 
   const id = route.battle;
   const step = route.step;
 
+  // Each view shown counts, so a refetch that a tap's own answer overtook is dropped, not shown.
+  const shown = useRef(0);
+  const show = useCallback((v: LiveView) => { shown.current++; setView(v); }, []);
+
   useEffect(() => {
     if (!id) { setView(null); return; }
+    let live = true;
     setBusy(true);
     const load = step === null ? api.battle(id, reg) : api.battleAt(id, step, reg);
-    load.then(setView).catch((e) => setError(String(e.message ?? e))).finally(() => setBusy(false));
-  }, [id, step, reg, refresh]);
+    load.then((v) => { if (live) show(v); }).catch((e) => setError(String(e.message ?? e)))
+      .finally(() => { if (live) setBusy(false); });
+    return () => { live = false; };
+  }, [id, step, reg, show]);
+
+  // What the video reader wrote. It writes a few times a second at its busiest, and the server
+  // that answers this also reads the frames, so one fetch is out at a time and a burst becomes
+  // one more once it lands. The buttons stay live through it: nothing is being sent.
+  const current = useRef({ id, step, reg });
+  current.current = { id, step, reg };
+  const pull = useRef({ out: false, again: false });
+  useEffect(() => {
+    if (!refresh) return;
+    const p = pull.current;
+    if (p.out) { p.again = true; return; }
+    const go = () => {
+      const at = current.current;
+      if (!at.id) return;
+      p.out = true;
+      p.again = false;
+      const seen = shown.current;
+      (at.step === null ? api.battle(at.id, at.reg) : api.battleAt(at.id, at.step, at.reg))
+        .then((v) => {
+          const now = current.current;
+          if (shown.current === seen && now.id === at.id && now.step === at.step && now.reg === at.reg) show(v);
+        })
+        .catch(() => { /* the next write asks again */ })
+        .finally(() => { p.out = false; if (p.again) go(); });
+    };
+    go();
+  }, [refresh, show]);
 
   const log = useCallback(async (entries: Entry[]) => {
     if (!id) return;
@@ -80,7 +118,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
       // Logging while looking at an earlier turn would append to the end, not to what is on
       // screen — so the first tap brings you back to the present, where the taps belong.
       if (step !== null) navigate({ tab: "battle", battle: id, step: null }, { replace: true });
-      setView(await api.log(id, stamp ? stamp(entries) : entries, reg));
+      show(await api.log(id, stamp ? stamp(entries) : entries, reg));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
     } finally {
@@ -92,7 +130,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
     if (!id) return;
     setBusy(true);
     setSelected(null);
-    try { setView(await api.undo(id, reg)); } finally { setBusy(false); }
+    try { show(await api.undo(id, reg)); } finally { setBusy(false); }
   }, [id, reg]);
 
   if (!id) return <BattleList reg={reg} navigate={navigate} teams={teams} />;
@@ -157,7 +195,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
           {/* The reader sees a forfeit only when the game shows it, so this is here whether taps
               are being entered by hand or not. */}
           <span className="row" style={{ marginLeft: "auto", gap: 6 }}>
-            {watch.alert}
+            <span ref={watch.alertSlot} style={{ display: "contents" }} />
             {step === null && !view.ended && <Forfeit view={view} onLog={log} busy={busy} menu />}
           </span>
         </div>
@@ -171,14 +209,16 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
           <WatchLog view={view} onWalk={walk} onManual={onManual && (() => onManual(true))} onSeek={watch.onSeek} />
         )}
         {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
-        <details className="panel watch-full">
+        <details className="panel watch-full" onToggle={(e) => setFull(e.currentTarget.open)}>
           <summary className="small">Both sides in full: what is known about each set</summary>
-          <BattleState view={view} extra={{ p2: view.derived.length > 0 ? (
+          {/* Drawn only while open: a closed <details> still renders what is in it, and this page
+              redraws with every write the reader makes. */}
+          {full && <BattleState view={view} extra={{ p2: view.derived.length > 0 ? (
             <div className="worked-out">
               <div className="tiny dim">Worked out for you</div>
               <ul className="tiny dim derived">{view.derived.slice(-8).map((d, i) => <li key={i}>{d}</li>)}</ul>
             </div>
-          ) : undefined }} />
+          ) : undefined }} />}
         </details>
       </div>
     );
