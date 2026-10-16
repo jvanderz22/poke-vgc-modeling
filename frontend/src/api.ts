@@ -336,9 +336,12 @@ export type Perspective = "p1" | "spectator";
 /** One battle mode the app can offer, and the model a battle in it would run. */
 export type Mode = { id: string; sheets: Sheets; perspective: Perspective; version: string | null; gate: string };
 
-/** How a battle's two sides are named on screen. */
-export function sideNames(perspective: Perspective | undefined): Record<"p1" | "p2", string> {
-  return perspective === "spectator" ? { p1: "P1", p2: "P2" } : { p1: "You", p2: "Them" };
+/** How a battle's two sides are named on screen: a watched game's players by the names typed for
+ *  them, P1 and P2 where none was. A name can be long, so a label of fixed width truncates it
+ *  (`.side-name`) and keeps the whole of it in a tooltip. */
+export function sideNames(view: Pick<LiveView, "perspective" | "players"> | undefined): Record<"p1" | "p2", string> {
+  if (view?.perspective !== "spectator") return { p1: "You", p2: "Them" };
+  return { p1: view.players?.p1 || "P1", p2: view.players?.p2 || "P2" };
 }
 
 /** A battle's mode in a few words, for lists and headers. */

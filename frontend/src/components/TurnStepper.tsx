@@ -135,7 +135,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   fieldPick: MutableRefObject<((p: Pos) => void) | null>;
   preview: ReactNode;
 }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const own: Side | null = view.perspective === "spectator" ? null : "p1";
   const [ui, setUi] = useState<TurnUi>(() => freshTurn(view.turn));
   const t = ui.turn === view.turn ? ui : freshTurn(view.turn);
@@ -194,8 +194,11 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
   const toAct = actives.filter((p) => !hasActed(p));
   const mon = (p: Pos) => active(view, p);
   const nameAt = (p: Pos) => mon(p)?.forme ?? view.menu[p.side].actives[p.slot]?.species ?? "—";
-  const where = (p: Pos) => `${names[p.side]} · ${across(p.side, p.slot)}`;
-  const monButton = (p: Pos) => <>{nameAt(p)} <span className="opt-sub">{where(p)}</span></>;
+  // The side's name may be cut short; the slot after it never is.
+  const where = (p: Pos) => <span className="opt-sub where">
+    <span className="side-name" title={names[p.side]}>{names[p.side]}</span>&nbsp;· {across(p.side, p.slot)}
+  </span>;
+  const monButton = (p: Pos) => <>{nameAt(p)} {where(p)}</>;
 
   // --- logging an action -------------------------------------------------------------------
   const commit = async (a: Act, results: Outcome[]) => {
@@ -825,7 +828,7 @@ export function TurnStepper({ id, reg, view, busy, onLog, onUndo, onWalk, onSome
                 <div key={posKey(p)} className="batch-row">
                   <span className="batch-name">
                     {order(sk) >= 0 && <span className="order-badge">{order(sk) + 1}</span>}
-                    {nameAt(p)} <span className="opt-sub">{where(p)}</span>
+                    {nameAt(p)} {where(p)}
                   </span>
                   <span className="batch-choices">
                     {benchFor(view, p.side).map((b) => {

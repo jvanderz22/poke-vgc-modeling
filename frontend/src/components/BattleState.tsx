@@ -32,14 +32,14 @@ function hpClass(hp: number) {
  *  who was not brought and who might not have been, and what is known about each set. This is
  *  what changes slowly and matters when planning, so it sits under the row where you work. */
 export function BattleState({ view, extra }: { view: LiveView; extra?: Partial<Record<Side, ReactNode>> }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const own: Side | null = view.perspective === "spectator" ? null : "p1";
   const order: Side[] = ["p1", "p2"];
   return (
     <div className="panel battle-state">
       <div className="state-grid">
         {order.map((side) => <SideState key={side} view={view} side={side} own={side === own}
-                                        title={view.players?.[side] || (names[side] === "You" ? "Your side" : names[side] === "Them" ? "Their side" : names[side])}
+                                        title={names[side] === "You" ? "Your side" : names[side] === "Them" ? "Their side" : names[side]}
                                         extra={extra?.[side]} />)}
       </div>
     </div>
@@ -60,7 +60,7 @@ function SideState({ view, side, own, title, extra }: {
   return (
     <div className="side-state">
       <div className="side-head">
-        <b>{title}</b>
+        <b className="side-name" title={title}>{title}</b>
         <span className="tiny dim">{brought} of {BRING} brought {own || brought >= BRING ? "known" : "seen"}</span>
         {conditions.map((c) => <span key={c} className="chip field">{c}</span>)}
       </div>

@@ -54,6 +54,8 @@ main { padding: 16px; max-width: 1040px; margin: 0 auto; }
 .tiny { font-size: 12px; }
 .err { color: var(--bad); }
 .ok { color: var(--good); }
+/* A player's name where a label has a set width: cut with an ellipsis, the whole in its title. */
+.side-name { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: text-bottom; }
 
 label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 5px; }
 
@@ -485,6 +487,10 @@ kbd {
 .stage-opt.next:not(.ghost):not(.danger) { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
 .stage-opt.is-default.next:not(.ghost):not(.danger) { background: var(--panel-2); }
 .opt-sub { font-weight: 400; font-size: 11px; opacity: .7; margin-left: 4px; }
+/* A side and slot under a Pokémon's name: kept on one line, the name cut first. Flex so the cut
+   name sits on the text's baseline, which an inline-block with overflow hidden does not. */
+.where { display: inline-flex; align-items: baseline; white-space: nowrap; }
+.where .side-name { max-width: 14ch; }
 .key-badge {
   position: absolute; top: -7px; left: -7px; min-width: 18px; height: 18px; border-radius: 9px;
   background: var(--text); color: var(--bg); font: 700 11px/18px ui-monospace, Menlo, monospace; text-align: center;
@@ -574,6 +580,7 @@ main:has(> .battle-page) { max-width: 1600px; }
 @container battle-state (max-width: 860px) { .state-grid { grid-template-columns: 1fr; } }
 .side-state { container: side-state / inline-size; min-width: 0; }
 .side-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.side-head .side-name { max-width: 24ch; }
 .state-rows { display: flex; flex-direction: column; }
 .state-row {
   display: grid; grid-template-columns: minmax(110px, 1.2fr) 118px 64px 58px minmax(0, 2fr);
@@ -691,6 +698,7 @@ button.choice:disabled { opacity: .4; }
 .turn-review .review-block { border-top: 1px solid var(--line); padding: 8px 0; }
 .review-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--dim); margin-bottom: 4px; }
 .review-side { display: grid; grid-template-columns: 54px 1fr; gap: 8px; font-size: 13px; padding: 2px 0; }
+.review-side.named { grid-template-columns: 110px 1fr; }
 .review-who { color: var(--dim); }
 .review-lines { margin: 0; padding-left: 20px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .review-lines li.err { color: var(--bad); }

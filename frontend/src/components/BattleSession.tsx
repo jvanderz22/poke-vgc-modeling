@@ -192,7 +192,7 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
       <div className="row wp-line">
         <span>
           {labelled && <>Model: </>}<b className="wp-num big">{pct(wp.wp)}%</b>{" "}
-          <span className="small">{view.perspective === "spectator" ? "P1 wins" : "you win"}</span>
+          <span className="small">{view.perspective === "spectator" ? <><Who name={sideNames(view).p1} /> wins</> : "you win"}</span>
         </span>
         <GateTag view={view}>
           {wp.drawn != null && Math.abs(wp.drawn - (wp.wp ?? 0)) >= 0.005 &&
@@ -277,7 +277,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const model = view.wp?.wp;
   const apart = ans.value != null && model != null && Math.abs(ans.value - model) > 0.2;
   const hidden = view.perspective === "spectator" ? (["p1", "p2"] as const) : (["p2"] as const);
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const sets = hidden.flatMap((sid) => (ans.sets?.[sid] ?? []).map((s) => ({ ...s, side: sid })));
   const guessed = hidden.find((sid) => (ans.sets?.[sid]?.length ?? 0) > 1);
   // Above two a side, after the first faint: the model and the policy's value combined.
@@ -305,7 +305,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
           {policy ? "Model + policy:" : "Engine:"}{" "}
           {ans.value != null
             ? <><b className="wp-num">{pct(ans.value)}%</b>{" "}
-                {view.perspective === "spectator" ? "P1 wins" : "you win"}
+                {view.perspective === "spectator" ? <><Who name={sideNames(view).p1} /> wins</> : "you win"}
                 {policy ? <> (the policy's one-turn value {pct(ans.policy ?? 0)}%, the model {pct(ans.model ?? 0)}%)</>
                         : <> with best play from both sides</>}</>
             : <>searching…</>}
@@ -378,10 +378,15 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   );
 }
 
+/** A player's name in a line of text, cut short past a couple of words with the whole in its title. */
+function Who({ name }: { name: string }) {
+  return <span className="side-name" style={{ maxWidth: "20ch" }} title={name}>{name}</span>;
+}
+
 /** Where the series goes from here, once this game is over: the next game, set up when this one
  *  ended, or the series' result. */
 function SeriesNext({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   if (series.decided) {
     const winner = series.score.p1 > series.score.p2 ? "p1" : "p2";
     return (
@@ -407,7 +412,7 @@ function SeriesNext({ view, series, navigate }: { view: LiveView; series: Series
 /** The series this battle is a game of: each game's line, and what this one started out knowing
  *  from the ones before it. */
 function SeriesPanel({ view, series, navigate }: { view: LiveView; series: Series; navigate: Navigate }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const hidden: ("p1" | "p2")[] = view.perspective === "spectator" ? ["p1", "p2"] : ["p2"];
   const { races, reveals } = series.carried;
   return (
@@ -523,13 +528,15 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
   const [pick, setPick] = useState<{ side: Side; slot: number } | null>(null);
   const filled = (side: Side, slot: number) =>
     view.sides[side].mons.find((m) => m.state === "active" && m.slot === slot);
+  const names = sideNames(view);
+  const watching = view.perspective === "spectator";
   return (
     <div className="panel">
       <h2>Leads</h2>
       <div className="lead-grid">
         {(["p2", "p1"] as Side[]).map((side) => (
           <div key={side} className="row">
-            <span className="dim small" style={{ width: 54 }}>{sideNames(view.perspective)[side]}</span>
+            <span className="dim small side-name" style={{ width: watching ? 110 : 54 }} title={names[side]}>{names[side]}</span>
             {[0, 1].map((slot) => {
               const m = filled(side, slot);
               return (
@@ -546,7 +553,7 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
       {pick && (
         <div className="pad" style={{ marginTop: 8 }}>
           <span className="tiny dim" style={{ alignSelf: "center" }}>
-            Who led on {sideNames(view.perspective)[pick.side] === "You" ? "your" : `${sideNames(view.perspective)[pick.side]}'s`.replace("Them's", "their")} {pick.slot === 0 ? "left" : "right"}?
+            Who led on {names[pick.side] === "You" ? "your" : names[pick.side] === "Them" ? "their" : `${names[pick.side]}'s`} {pick.slot === 0 ? "left" : "right"}?
           </span>
           {view.sides[pick.side].mons
             .filter((m) => m.state !== "active" && m.state !== "fainted" && m.state !== "not_brought")
@@ -573,9 +580,9 @@ function Leads({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => v
 /** Ending the game early, for either side. The other side wins; it is one `end` entry like any
  *  other, so undo takes it back. */
 function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) => void; busy: boolean }) {
-  const names = sideNames(view.perspective);
+  const names = sideNames(view);
   const label: Record<Side, string> = view.perspective === "spectator"
-    ? { p1: "P1 forfeits", p2: "P2 forfeits" } : { p1: "I forfeit", p2: "They forfeit" };
+    ? { p1: `${names.p1} forfeits`, p2: `${names.p2} forfeits` } : { p1: "I forfeit", p2: "They forfeit" };
   const quit = (loser: Side) => {
     const winner: Side = loser === "p1" ? "p2" : "p1";
     if (confirm(`${label[loser]}: end the battle with ${names[winner]} as the winner?`)) {
@@ -585,7 +592,9 @@ function Forfeit({ view, onLog, busy }: { view: LiveView; onLog: (e: Entry[]) =>
   return (
     <>
       {(["p1", "p2"] as Side[]).map((s) => (
-        <button key={s} className="danger small-btn" disabled={busy} onClick={() => quit(s)}>{label[s]}</button>
+        <button key={s} className="danger small-btn" disabled={busy} onClick={() => quit(s)}>
+          <span className="side-name" style={{ maxWidth: "24ch" }} title={label[s]}>{label[s]}</span>
+        </button>
       ))}
     </>
   );
