@@ -4,7 +4,7 @@
 import type { SheetRead } from "./api";
 import { emptySheet, filled, type SheetEntry } from "./sheet";
 import { entriesFromRead } from "./components/SheetFromImage";
-import type { FrameDone, FrameJob } from "./frameWorker";
+import type { FrameDone, FrameJob, FrameMs } from "./frameWorker";
 import type { OcrConfig, RegionLines } from "./ocr/screen.ts";
 
 // --- the video ------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ export type Capture = {
   thumb: () => Promise<Float32Array | null>;
   /** A frame for the battle reader, at most `maxWidth` across, with the lines the page read off
    *  it itself once `startOcr` has worked (null before, or without WebGPU). */
-  battleFrame: (quality: number, maxWidth: number) => Promise<{ jpeg: Blob; read: RegionLines | null } | null>;
+  battleFrame: (quality: number, maxWidth: number) => Promise<BattleShot | null>;
   /** Load the server's OCR models onto the GPU, so battle frames are read here. Throws when the
    *  browser can't (no WebGPU); the server reads them then. */
   startOcr: (config: OcrConfig) => Promise<boolean>;
@@ -233,11 +233,15 @@ export async function startCapture(target: HTMLElement, onEnded: () => void): Pr
       return done && "blob" in done ? done.blob : null;
     },
     battleFrame: async (quality, maxWidth) => {
+      const began = performance.now();
       const k = Math.min(1, maxWidth / (video.videoWidth || 1));
       const done = await job(Math.round(video.videoWidth * k), Math.round(video.videoHeight * k), { kind: "battle", quality });
       if (!done || !("read" in done)) return null;
       const shot = done as Extract<FrameDone, { read: unknown }>;
-      return { jpeg: shot.blob, read: shot.read };
+      const { draw, mask, ocr } = shot.ms;
+      // Taking the picture and handing it to the worker and back: the rest of the time.
+      const take = performance.now() - began - draw - mask - ocr;
+      return { jpeg: shot.blob, read: shot.read, ms: { take, ...shot.ms } };
     },
     startOcr: async (config) => {
       const done = await ask({ kind: "ocr", config });
@@ -319,21 +323,25 @@ const BATTLE_INTERVAL_MS = 250;
 /** The reader works at 1200 wide (`screen.WORK_WIDTH`); a larger frame only costs upload. */
 const BATTLE_WIDTH = 1200;
 
+/** A battle frame, what the page read off it, and where the time went (`take` is the picture
+ *  being taken and passed to the worker). */
+export type BattleShot = { jpeg: Blob; read: RegionLines | null; ms: FrameMs & { take: number } };
+
 /** Stream frames for the battle reader, each with the video time it shows. A frame goes only once
  *  the last has been answered, so a slow host reads fewer frames instead of falling behind, and
  *  none goes while the video is paused (`time` gives null). Returns the stopper. */
 export function streamFrames(cap: Capture, time: () => number | null,
-                             onFrame: (jpeg: Blob, videoS: number, read: RegionLines | null) => Promise<void>): () => void {
+                             onFrame: (shot: BattleShot, videoS: number) => Promise<void>): () => void {
   let stopped = false;
   const loop = async () => {
     while (!stopped) {
       const began = Date.now();
       const at = time();
       if (at !== null) {
-        let shot: { jpeg: Blob; read: RegionLines | null } | null = null;
+        let shot: BattleShot | null = null;
         try { shot = await cap.battleFrame(0.85, BATTLE_WIDTH); } catch (e) { console.error(e); }
         if (stopped) break;
-        if (shot) try { await onFrame(shot.jpeg, at, shot.read); } catch { /* reported by onFrame; keep reading */ }
+        if (shot) try { await onFrame(shot, at); } catch { /* reported by onFrame; keep reading */ }
       }
       await new Promise((ok) => window.setTimeout(ok, Math.max(0, BATTLE_INTERVAL_MS - (Date.now() - began))));
     }

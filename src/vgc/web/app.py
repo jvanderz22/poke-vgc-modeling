@@ -486,9 +486,11 @@ async def read_frame(battle_id: str, request: Request, video_s: float, video: st
 
     def run() -> dict[str, Any]:
         import io
+        import time
 
         from PIL import Image, UnidentifiedImageError
 
+        began = time.perf_counter()
         blob, b = _battle(reg, battle_id)
         if blob["setup"].get("perspective") != "spectator":
             raise HTTPException(409, "only a watched game (both sheets open) can be read off a video")
@@ -523,7 +525,9 @@ async def read_frame(battle_id: str, request: Request, video_s: float, video: st
                 live.after_edit(reg, blob, b.rp.state.ended)
             if status.ended:
                 _readings.pop(battle_id, None)
-            return {**status.as_dict(), "errors": list(b.rp.errors)}
+            # The whole request's time here, so the page can tell it from the network's.
+            return {**status.as_dict(), "errors": list(b.rp.errors),
+                    "server_ms": round((time.perf_counter() - began) * 1000, 1)}
         finally:
             reading.lock.release()
 

@@ -131,7 +131,12 @@ quarter second while the video plays, and none while it is paused, to the battle
 (`POST /api/battles/{id}/read`, `vgc.video.reading`). What it settles is appended to the battle's
 journal, each entry stamped with the `video_s` it was read at, and the battle half refreshes as it
 lands. A frame goes only once the last has been answered, so a slow server reads fewer frames
-rather than falling behind; under 2 a second the page warns that a short message can be missed.
+rather than falling behind; under 2 a second the page warns that a short message can be missed,
+at the top of the battle column and under the player, with where an average frame's time went
+(taking the picture, drawing and encoding it, finding its text, OCR on the GPU, the server, the
+network; the server's share is `server_ms` on each reply). A game starts once both sides' leads
+are read. A send-out missed (read too slowly, or the game opened late) is made up from the plates at
+the first decision point, and noted in the review log, rather than leaving the game unstarted.
 The line under the player says how far it has read, the last message, and how many things it
 couldn't read (each with its time, under "What it couldn't read"). The journal stays yours:
 correct an entry by hand (undo, re-enter) and the reader takes the journal as it then stands and

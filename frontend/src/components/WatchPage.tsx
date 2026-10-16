@@ -45,7 +45,7 @@ export function WatchPage({ reg, route, navigate, pool }: {
   // The player on the left of the screen, once the reader has worked it out from the Pokémon.
   const [left, setLeft] = useState<"p1" | "p2">("p1");
   // The reader's frames a second while it is under the rate a short message needs, else null.
-  const [slow, setSlow] = useState<number | null>(null);
+  const [slow, setSlow] = useState<Slow | null>(null);
   const stampEntries = useCallback((entries: Entry[]) => {
     const at = videoTime.current();
     return at === null ? entries : entries.map((e) => ("video_s" in e ? e : { ...e, video_s: Math.round(at * 100) / 100 }));
@@ -72,7 +72,7 @@ export function WatchPage({ reg, route, navigate, pool }: {
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
                            autoStart={!readerOn} manual={manual} onManual={setManual}
-                           watch={{ strips, left, onSeek: seek, alert: slow !== null && <SlowReading rate={slow} /> }} />
+                           watch={{ strips, left, onSeek: seek, alert: slow !== null && <SlowReading {...slow} /> }} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -111,7 +111,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   /** Where the battle half draws both sixes, under the video. */
   strips: (el: HTMLDivElement | null) => void;
   onLeft: (side: "p1" | "p2") => void;
-  onSlow: (rate: number | null) => void;
+  onSlow: (slow: Slow | null) => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -137,6 +137,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);
   const [readError, setReadError] = useState<string | null>(null);
   const answered = useRef<number[]>([]);
+  // Where the last few frames' time went, to say why reading is slow when it is.
+  const spent = useRef<Spent[]>([]);
   // Where a battle's frames are OCR'd: on this page's GPU once the models have loaded, on the
   // server before then or without WebGPU (the deployed server's shared CPU can't keep up alone).
   const [ocr, setOcr] = useState<{ where: "loading" | "page" | "server"; why?: string } | null>(null);
@@ -214,16 +216,22 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
     if (!capturing || !battleReading || !battle || !capture.current || !route.video) return;
     const video = route.video;
     answered.current = [];
+    spent.current = [];
     const playing = () => {
       const p = player.current;
       return p && p.getPlayerState() === 1 ? p.getCurrentTime() : null;
     };
-    return streamFrames(capture.current, playing, async (jpeg, at, read) => {
+    return streamFrames(capture.current, playing, async (shot, at) => {
       try {
-        const s = await api.readFrame(battle, jpeg, Math.round(at * 1000) / 1000, video, reg, read);
+        const sent = performance.now();
+        const s = await api.readFrame(battle, shot.jpeg, Math.round(at * 1000) / 1000, video, reg, shot.read);
+        const trip = performance.now() - sent;
         if (s.unread?.length) capture.current?.resetOcr();
         const now = Date.now();
         answered.current = [...answered.current.filter((x) => now - x < 5000), now];
+        const server = s.server_ms ?? s.ms;
+        spent.current = [...spent.current.slice(-(SPENT_FRAMES - 1)),
+                         { ...shot.ms, server, network: Math.max(0, trip - server) }];
         setReadStatus(s);
         setReadError(null);
         if (s.entries.length || s.resynced) onRead();
@@ -242,8 +250,9 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   // Under SLOW_RATE frames a second a short message can go by unread: said at the top of the
   // battle column too, where it is seen, and not only in the reading line under the strips.
   const rate = answered.current.length / 5;
-  const slow = capturing && battleReading && !!battle && rate > 0 && rate < SLOW_RATE ? Math.round(rate * 10) / 10 : null;
-  useEffect(() => { onSlow(slow); }, [slow, onSlow]);
+  const slowRate = capturing && battleReading && !!battle && rate > 0 && rate < SLOW_RATE ? Math.round(rate * 10) / 10 : null;
+  const where = slowRate === null ? "" : spentOn(spent.current);
+  useEffect(() => { onSlow(slowRate === null ? null : { rate: slowRate, where }); }, [slowRate, where, onSlow]);
   useEffect(() => { onReaderOn(capturing && battleReading && !!battle); }, [capturing, battleReading, battle, onReaderOn]);
 
   async function stopReading() {
@@ -403,7 +412,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
       </div>
       {captureError && <p className="small err" style={{ margin: "4px 2px" }}>{captureError}</p>}
       {battle && ((capturing && battleReading) || readStatus) && (
-        <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} error={readError} ocr={ocr} />
+        <ReadingLine status={readStatus} on={capturing && battleReading} rate={rate} where={where} error={readError} ocr={ocr} />
       )}
       {conflicts.length > 0 && (
         <div className="tiny warn-text" style={{ margin: "4px 2px" }}>
@@ -416,8 +425,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
 }
 
 /** Where the battle reader stands: what it read last, how fast, and what it couldn't read. */
-function ReadingLine({ status, on, rate, error, ocr }: {
-  status: ReadStatus | null; on: boolean; rate: number; error: string | null;
+function ReadingLine({ status, on, rate, where, error, ocr }: {
+  status: ReadStatus | null; on: boolean; rate: number; where: string; error: string | null;
   ocr: { where: "loading" | "page" | "server"; why?: string } | null;
 }) {
   const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -447,7 +456,10 @@ function ReadingLine({ status, on, rate, error, ocr }: {
             </div>
           )}
           {on && rate > 0 && rate < SLOW_RATE && (
-            <div className="warn-text">Under 2 frames a second: a short message can be missed.</div>
+            <div className="warn-text">
+              Under 2 frames a second: a short message can be missed.
+              {where && <> A frame takes {where}.</>}
+            </div>
           )}
           {status.behind && status.read_to !== null && (
             <div className="dim">Rewound: reading picks up again after {clock(status.read_to)}, where it had got to.</div>
@@ -596,11 +608,34 @@ function useSheetErrors(reg: string, sheets: WatchSheets["sheets"]): (Problem[] 
 /** Below this many frames a second the reader can miss a message that is only on screen briefly. */
 const SLOW_RATE = 2;
 
+/** One frame's milliseconds: taking the picture, drawing and encoding it, finding its text, reading
+ *  the text on the GPU, the server's handling of it, and the network there and back. */
+type Spent = { take: number; draw: number; mask: number; ocr: number; server: number; network: number };
+const SPENT_FRAMES = 8;
+const SPENT_LABEL: Record<keyof Spent, string> = {
+  take: "taking the picture", draw: "drawing and encoding", mask: "finding the text",
+  ocr: "OCR on the GPU", server: "the server", network: "the network",
+};
+
+/** The last few frames' time, averaged, largest part first: "820 ms: OCR on the GPU 610, …". */
+function spentOn(frames: Spent[]): string {
+  if (!frames.length) return "";
+  const keys = Object.keys(SPENT_LABEL) as (keyof Spent)[];
+  // Rounded to 10 ms, so the line doesn't change on every frame.
+  const avg = keys.map((k) => [k, Math.round(frames.reduce((a, f) => a + f[k], 0) / frames.length / 10) * 10] as const);
+  const total = avg.reduce((a, [, v]) => a + v, 0);
+  return `${total} ms: ` + avg.filter(([, v]) => v >= 10).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${SPENT_LABEL[k]} ${v}`).join(", ");
+}
+
+type Slow = { rate: number; where: string };
+
 /** The reader falling behind, as a warning at the top of the battle column. */
-function SlowReading({ rate }: { rate: number }) {
+function SlowReading({ rate, where }: Slow) {
   return (
     <span className="chip flag warn slow-reading" role="status"
-          title={`Reading ${rate.toFixed(1)} frames a second, under ${SLOW_RATE}: a short message can be missed`}>
+          title={`Reading ${rate.toFixed(1)} frames a second, under ${SLOW_RATE}: a short message can be missed.` +
+                 (where ? ` A frame takes ${where}.` : "")}>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
            strokeLinejoin="round" aria-hidden="true"><path d="M8 2 15 14H1z" /><path d="M8 6.5v3.5M8 12v.01" /></svg>
       {rate.toFixed(1)} frames/s

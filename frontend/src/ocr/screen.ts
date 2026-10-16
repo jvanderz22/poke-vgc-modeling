@@ -64,6 +64,8 @@ export function textMask(img: Img): Uint8Array {
 }
 
 export class RegionReader {
+  /** The last frame's milliseconds: finding the text (on this thread) and reading it (on the GPU). */
+  last = { mask: 0, ocr: 0 };
   private masks = new Map<string, { mask: Uint8Array; w: number; h: number }>();
   // Whether a region's last read was on the frame after its change, not the first one.
   private checked = new Map<string, boolean>();
@@ -80,9 +82,11 @@ export class RegionReader {
   async read(frame: Img): Promise<RegionLines> {
     const { width: W, height: H } = frame;
     const out: RegionLines = {};
+    this.last = { mask: 0, ocr: 0 };
     for (const [key, [x0, y0, x1, y1]] of Object.entries(this.config.regions)) {
       // Python's int() on the same doubles: the same pixels as the server's crop.
       const cx = Math.trunc(x0 * W), cy = Math.trunc(y0 * H);
+      const began = performance.now();
       const region = crop(frame, cx, cy, Math.trunc(x1 * W) - cx, Math.trunc(y1 * H) - cy);
       const mask = textMask(region);
       const prev = this.masks.get(key);
@@ -93,10 +97,13 @@ export class RegionReader {
         same = moved < this.config.changed * mask.length;
       }
       // The first frame of new text is often mid-fade, so the frame after a change is read again.
+      const masked = performance.now();
+      this.last.mask += masked - began;
       if (same && this.checked.get(key)) continue;
       this.checked.set(key, same);
       this.masks.set(key, { mask, w: region.width, h: region.height });
       out[key] = await readLines(region, this.engine, this.config.limit);
+      this.last.ocr += performance.now() - masked;
     }
     return out;
   }

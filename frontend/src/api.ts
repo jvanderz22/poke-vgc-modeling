@@ -445,7 +445,9 @@ export type ReadStatus = {
   provisional: number;
   gaps: [number, number][];
   ended: boolean;
+  /** The reader's own time on the frame; `server_ms` is the whole request's, on the server. */
   ms: number;
+  server_ms?: number;
   resynced: boolean;
   /** The player on the left of the screen, once the reader has worked it out from the Pokémon. */
   left: "p1" | "p2" | null;

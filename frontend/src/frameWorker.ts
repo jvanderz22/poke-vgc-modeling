@@ -12,10 +12,14 @@ export type FrameJob =
   | { id: number; kind: "ocr"; config: OcrConfig }
   | { id: number; kind: "ocr-reset" };
 
+/** Where a battle frame's time went, in milliseconds: drawing and encoding it, finding the text in
+ *  its regions, and reading that text on the GPU. */
+export type FrameMs = { draw: number; mask: number; ocr: number };
+
 export type FrameDone =
   | { id: number; blob: Blob }
   | { id: number; thumb: Float32Array }
-  | { id: number; blob: Blob; read: RegionLines | null }
+  | { id: number; blob: Blob; read: RegionLines | null; ms: FrameMs }
   | { id: number; ocr: true }
   | { id: number; error: string };
 
@@ -35,14 +39,16 @@ function sized(c: OffscreenCanvas | null, w: number, h: number): OffscreenCanvas
 
 async function battle(job: Extract<FrameJob, { kind: "battle" }>): Promise<FrameDone> {
   const { bitmap } = job;
+  const began = performance.now();
   battleCanvas = sized(battleCanvas, bitmap.width, bitmap.height);
   const ctx = battleCanvas.getContext("2d", { willReadFrequently: true })!;
   ctx.drawImage(bitmap, 0, 0);
   const pixels = reader ? ctx.getImageData(0, 0, bitmap.width, bitmap.height) : null;
   const blob = await battleCanvas.convertToBlob({ type: "image/jpeg", quality: job.quality });
-  if (!reader || !pixels) return { id: job.id, blob, read: null };
+  const draw = performance.now() - began;
+  if (!reader || !pixels) return { id: job.id, blob, read: null, ms: { draw, mask: 0, ocr: 0 } };
   const read = await reader.read({ data: pixels.data, width: pixels.width, height: pixels.height, channels: 4 });
-  return { id: job.id, blob, read };
+  return { id: job.id, blob, read, ms: { draw, ...reader.last } };
 }
 
 self.onmessage = async ({ data: job }: MessageEvent<FrameJob>) => {
