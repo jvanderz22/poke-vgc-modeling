@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /** An ⓘ that opens a small panel attached to it: how a number was made, kept out of the way of
  *  the number itself. Non-modal, and closed by a second click, a click outside it, or Esc. */
@@ -50,5 +50,46 @@ export function Menu({ label, children, align = "right" }: {
       </button>
       {open && <span className={`menu-pop ${align}`} id={id} role="menu" aria-label={label}>{children(() => setOpen(false))}</span>}
     </span>
+  );
+}
+
+/** A card that shows more of itself while the pointer is on it or it has focus: a read-only panel
+ *  attached to it, so nothing in it needs the pointer. It opens a beat after the pointer arrives,
+ *  so a pass along a row of cards opens nothing, and under the card unless only above has room.
+ *  Leaving, a click elsewhere or Esc closes it; a tap opens it where there is no hover. */
+export function HoverCard({ label, className, pop, align = "left", children }: {
+  label: string; className?: string; pop: ReactNode; align?: "left" | "right"; children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
+  const id = useId();
+  const box = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const timer = useRef<number | undefined>(undefined);
+  const show = (delay: number) => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setOpen(true), delay);
+  };
+  const hide = () => { window.clearTimeout(timer.current); setOpen(false); setUp(false); };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useLayoutEffect(() => {
+    if (!open || !box.current || !panel.current) return;
+    const b = box.current.getBoundingClientRect(), p = panel.current.getBoundingClientRect();
+    setUp(p.bottom > window.innerHeight && b.top > window.innerHeight - b.bottom);
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    // As the `Info` panel: Esc closes it and goes no further, where the stepper would take it.
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopImmediatePropagation(); hide(); } };
+    window.addEventListener("keydown", esc, true);
+    return () => window.removeEventListener("keydown", esc, true);
+  }, [open]);
+  return (
+    <div ref={box} className={`hover-card${className ? ` ${className}` : ""}`} tabIndex={0} aria-label={label}
+         aria-describedby={open ? id : undefined}
+         onMouseEnter={() => show(250)} onMouseLeave={hide} onFocus={() => show(0)} onBlur={hide}>
+      {children}
+      {open && <div ref={panel} id={id} role="tooltip" className={`hover-pop ${align}${up ? " up" : ""}`}>{pop}</div>}
+    </div>
   );
 }

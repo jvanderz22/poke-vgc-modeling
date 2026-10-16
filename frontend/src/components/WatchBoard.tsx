@@ -4,9 +4,9 @@ import { useEngine } from "../engine";
 import { videoAcross, videoSlots, type Side } from "../screen";
 import { BRING, PRETTY, toId, turnLines, turnStart } from "../turn";
 import type { Navigate, Route } from "../router";
-import { hpClass, LABEL, ORDER, standing } from "./BattleState";
+import { hpClass, LABEL, ORDER, SetDetail, standing } from "./BattleState";
 import { BattleGateBanner } from "./GateBanner";
-import { Info } from "./Popover";
+import { HoverCard, Info } from "./Popover";
 
 // The battle beside a watched video, read at a glance: the number, the four on the field with
 // what they can do, who moves first, the turn as it happened, and both sixes under the video.
@@ -446,7 +446,8 @@ export function WatchLog({ view, onWalk, onManual, onSeek }: {
 }
 
 /** Both sixes, a row each, under the video: who is on the field, in the back, fainted, not
- *  brought, or not yet known to be. The whole set is in each card's tooltip. */
+ *  brought, or not yet known to be. The whole set, and what the beliefs say of it, is in each
+ *  card's popover. */
 export function TeamStrips({ view, name, left }: { view: LiveView; name: Name; left: Side }) {
   const names = sideNames(view);
   return (
@@ -467,13 +468,14 @@ export function TeamStrips({ view, name, left }: { view: LiveView; name: Name; l
               <span className="tiny dim">{standingLeft} left{unknownBrought ? ` · ${seen} of ${BRING} brought seen` : ""}</span>
             </div>
             <div className="wb-strip-row">
-              {rows.map(({ m, st }) => {
+              {rows.map(({ m, st }, i) => {
                 const shown = st !== "out" && st !== "unknown";
                 const set = [m.item === "" ? (m.lost_item ? `${name(m.lost_item)} (used)` : "no item") : m.item ? name(m.item) : "item ?",
                              m.ability ? name(m.ability) : "ability ?"].join(" · ");
-                const moves = (m.moves.length ? m.moves : m.moves_used).map(name).join(", ");
                 return (
-                  <div key={m.species} className={`wb-mini ${side} st-${st}`} title={`${m.forme}: ${set}${moves ? `\n${moves}` : ""}`}>
+                  <HoverCard key={m.species} className={`wb-mini ${side} st-${st}`} label={`${m.forme}'s set`}
+                             align={i < rows.length / 2 ? "left" : "right"}
+                             pop={<SetDetail view={view} side={side} m={m} st={st} name={name} />}>
                     <div className="wb-mini-top">
                       <span className="wb-mini-name">{m.forme}</span>
                       <span className="wb-mini-state">{st === "field" && m.slot != null ? videoAcross(side, m.slot, left) : LABEL[st]}</span>
@@ -483,7 +485,7 @@ export function TeamStrips({ view, name, left }: { view: LiveView; name: Name; l
                       <span className="mono tiny dim">{shown ? `${pct(m.hp)}%` : ""}</span>
                     </div>
                     <div className="wb-mini-set">{set}</div>
-                  </div>
+                  </HoverCard>
                 );
               })}
             </div>

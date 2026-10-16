@@ -690,6 +690,25 @@ main:has(> .battle-page) { max-width: 1600px; }
 .info-pop .banner { margin: 0 0 8px; }
 .info-pop p { margin: 0 0 6px; }
 
+.hover-card { position: relative; }
+.hover-pop {
+  position: absolute; z-index: 30; top: calc(100% + 6px); width: min(320px, 90vw); pointer-events: none;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+  box-shadow: 0 10px 30px var(--shadow); font-size: 12px; color: var(--text); text-align: left;
+}
+.hover-pop.up { top: auto; bottom: calc(100% + 6px); }
+.hover-pop.left { left: 0; }
+.hover-pop.right { right: 0; }
+.set-detail .sd-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+.set-detail .sd-head > b { font-size: 13px; }
+.set-detail .sd-where { margin-left: auto; white-space: nowrap; }
+.set-detail .sd-set { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; margin: 0; }
+.set-detail dt { color: var(--dim); }
+.set-detail dd { margin: 0; min-width: 0; }
+.set-detail .sd-moves { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1px 10px; }
+.set-detail .sd-moves > li.used { font-weight: 650; }
+.set-detail .sd-belief { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--line); display: grid; gap: 2px; }
+
 .curve-open { margin-top: 8px; }
 .curve { margin-top: 10px; }
 .curve-bars { display: flex; gap: 2px; align-items: stretch; height: 64px; margin-top: 6px; }
