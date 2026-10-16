@@ -6,6 +6,7 @@
 export type YouTubePlayer = {
   getCurrentTime(): number;
   getPlayerState(): number; // 1 is playing
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
   destroy(): void;
 };
 

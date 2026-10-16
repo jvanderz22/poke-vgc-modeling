@@ -37,6 +37,12 @@ export function WatchPage({ reg, route, navigate, pool }: {
   // The player's time, set by the video half. An entry made by hand carries it, as the reader's
   // do, so a transcription lines up with the video and with a read of it (PLAN-video step 3).
   const videoTime = useRef<() => number | null>(() => null);
+  const player = useRef<YouTubePlayer | null>(null);
+  const seek = useCallback((seconds: number) => player.current?.seekTo(seconds, true), []);
+  // Under the video, both sixes: the battle half draws them there.
+  const [strips, setStrips] = useState<HTMLDivElement | null>(null);
+  // The player on the left of the screen, once the reader has worked it out from the Pokémon.
+  const [left, setLeft] = useState<"p1" | "p2">("p1");
   const stampEntries = useCallback((entries: Entry[]) => {
     const at = videoTime.current();
     return at === null ? entries : entries.map((e) => ("video_s" in e ? e : { ...e, video_s: Math.round(at * 100) / 100 }));
@@ -53,16 +59,17 @@ export function WatchPage({ reg, route, navigate, pool }: {
   }, [navigate, route.video, route.start]);
 
   return (
-    <div className="watch-page">
+    <div className={`watch-page${route.battle ? " live" : ""}`}>
       <VideoColumn reg={reg} route={route} navigate={navigate}
                    watch={watch} onWatch={setWatch} reading={!route.battle} onRead={onRead} onReaderOn={setReaderOn}
-                   onPlayer={(f) => { videoTime.current = f; }}
-                   manual={manual} onManual={setManual} />
+                   onPlayer={(p) => { player.current = p; videoTime.current = () => p.getCurrentTime(); }}
+                   strips={setStrips} onLeft={setLeft} />
       <div className="watch-match">
         {route.battle
           ? <BattleSession reg={reg} route={{ tab: "battle", battle: route.battle, step: route.step }}
                            navigate={inPage} teams={[]} refresh={refresh} stamp={stampEntries}
-                           autoStart={!readerOn} manual={manual} onManual={setManual} />
+                           autoStart={!readerOn} manual={manual} onManual={setManual}
+                           watch={{ strips, left, onSeek: seek }} />
           : <WatchSetup reg={reg} route={route} navigate={navigate} pool={pool} watch={watch} onWatch={setWatch} />}
       </div>
     </div>
@@ -88,7 +95,7 @@ function useWatchDraft(key: string): [WatchSheets, (w: WatchSheets | ((w: WatchS
   return [watch, set];
 }
 
-function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, manual, onManual }: {
+function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, onReaderOn, onPlayer, strips, onLeft }: {
   reg: string;
   route: WatchRoute;
   navigate: Navigate;
@@ -97,9 +104,10 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
   reading: boolean;
   onRead: () => void;
   onReaderOn: (on: boolean) => void;
-  onPlayer: (time: () => number | null) => void;
-  manual: boolean;
-  onManual: (on: boolean) => void;
+  onPlayer: (player: YouTubePlayer) => void;
+  /** Where the battle half draws both sixes, under the video. */
+  strips: (el: HTMLDivElement | null) => void;
+  onLeft: (side: "p1" | "p2") => void;
 }) {
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -146,7 +154,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
     if (!route.video || !host.current) return;
     setPlayerProblem(null);
     return mountPlayer(host.current, route.video, route.start,
-                       (p) => { player.current = p; onPlayer(() => p.getCurrentTime()); },
+                       (p) => { player.current = p; onPlayer(p); },
                        (message) => setPlayerProblem(message));
   }, [route.video, route.start]);
 
@@ -225,6 +233,8 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
 
   // A different battle (the next game of a Bo3) starts unread.
   useEffect(() => { setBattleReading(true); setReadStatus(null); }, [battle]);
+  const left = readStatus?.left;
+  useEffect(() => { if (left) onLeft(left); }, [left, onLeft]);
   useEffect(() => { onReaderOn(capturing && battleReading && !!battle); }, [capturing, battleReading, battle, onReaderOn]);
 
   async function stopReading() {
@@ -359,6 +369,7 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
         </form>
       )}
       {flagged && <div className="tiny dim" style={{ margin: "4px 2px" }}>{flagged}</div>}
+      {battle && <div ref={strips} className="watch-strips" />}
       <div className="tiny dim" style={{ margin: "6px 2px 0" }}>
         {!capturing && "Chrome or Edge: share this tab when asked. Only the player is captured."}
         {capturing && sheetsWanted && status}
@@ -374,11 +385,6 @@ function VideoColumn({ reg, route, navigate, watch, onWatch, reading, onRead, on
           A later frame disagreed with what is in the form; the form kept its value. Check:
           <ul style={{ margin: "2px 0 0 16px", padding: 0 }}>{conflicts.map((c) => <li key={c}>{c}</li>)}</ul>
         </div>
-      )}
-      {battle && (
-        <button className="link tiny watch-manual" aria-pressed={manual} onClick={() => onManual(!manual)}>
-          {manual ? "Hide the manual inputs" : "Enter taps by hand…"}
-        </button>
       )}
     </div>
   );

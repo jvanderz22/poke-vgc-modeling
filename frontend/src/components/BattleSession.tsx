@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, modeLabel, sideNames, type BattleRow, type DecisionPoint, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { createPortal } from "react-dom";
+import { api, ApiError, modeLabel, sideNames, type BattleRow, type DecisionPoint, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { useEngine } from "../engine";
+import { useNames } from "../names";
+import { FieldPanel, TeamStrips, WatchLog, WinPanel } from "./WatchBoard";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -24,7 +28,8 @@ type Side = "p1" | "p2";
  *  tail; walking back to turn 6 is replaying a prefix; the WP curve is replaying every prefix.
  *  One mechanism, and nothing here can drift out of step with it.
  */
-export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true, onManual }: {
+export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp, autoStart = true, manual = true, onManual,
+                                watch }: {
   reg: string;
   route: Extract<Route, { tab: "battle" }>;
   navigate: Navigate;
@@ -40,7 +45,12 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   manual?: boolean;
   /** Where the page can switch `manual` from, beside the log and the stepper. */
   onManual?: (on: boolean) => void;
+  /** Beside a video (the watch page): the battle as a column for reading at a glance, both sixes
+   *  in `strips` under the video, `left` the player on the left of the screen, and `onSeek` to
+   *  put the video at an entry's time. */
+  watch?: { strips: HTMLElement | null; left: Side; onSeek?: (seconds: number) => void };
 }) {
+  const name = useNames(reg);
   const [view, setView] = useState<LiveView | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,9 +99,11 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
   // Which four you brought, until you have said: the page cannot see your back.
   const yourFour = view.perspective !== "spectator" &&
     !view.sides[view.perspective].mons.some((m) => m.state === "not_brought");
+  const walk = (index: number) => navigate({ tab: "battle", battle: id, step: index }, { replace: true });
+  const pick = (side: Side, slot: number) => (freeForm ? setSelected({ side, slot }) : fieldPick.current?.({ side, slot }));
 
-  return (
-    <div className="battle-page">
+  const banners = (
+    <>
       {error && <div className="banner bad">{error}</div>}
       {view.contradictions.map((c, i) => (
         <div key={i} className="banner warn">
@@ -103,6 +115,71 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
           {view.errors[view.errors.length - 1]} — <button className="link" onClick={undo}>undo that</button>
         </div>
       )}
+    </>
+  );
+  const stepper = step === null && manual && (
+    <>
+      {onManual && (
+        <div className="row manual-toggle">
+          <button className="link tiny" onClick={() => onManual(false)}>Hide the manual inputs</button>
+        </div>
+      )}
+      <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
+                   onWalk={walk} onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
+                   preview={<>
+                     {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
+                     <Leads view={view} onLog={log} busy={busy} />
+                   </>} />
+      {freeForm && (
+        <>
+          <div className="row free-form-head">
+            <span className="tiny dim">Something else: the free-form entry bar</span>
+            <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
+          </div>
+          <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
+        </>
+      )}
+    </>
+  );
+
+  // Beside a video: one column, in the order it is glanced at (the number, the field, the turn),
+  // with both sixes under the video. The stepper goes on top when taps are being entered by hand.
+  if (watch) {
+    return (
+      <div className="battle-page watch-rail">
+        {banners}
+        {watch.strips && createPortal(<TeamStrips view={view} name={name} left={watch.left} />, watch.strips)}
+        <div className="watch-rail-bar tiny dim">
+          {view.series && <>game {view.series.game} of a Bo{view.series.best_of} ({view.series.score.p1}–{view.series.score.p2}) · </>}
+          {modeLabel(view.sheets, view.perspective)} · {view.started ? `turn ${view.turn}` : "team preview"}
+          {manual && step === null && !view.ended && <span className="row" style={{ marginLeft: "auto" }}><Forfeit view={view} onLog={log} busy={busy} /></span>}
+        </div>
+        {view.series && view.ended && step === null && <SeriesNext view={view} series={view.series} navigate={navigate} />}
+        {stepper}
+        {step !== null && <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
+        <WinPanel id={id} reg={reg} view={view} route={route} navigate={navigate} />
+        <FieldPanel view={view} name={name} left={watch.left}
+                    selected={manual && freeForm ? selected : null} onPick={manual && step === null ? pick : undefined} />
+        {step === null && !manual && (
+          <WatchLog view={view} onWalk={walk} onManual={onManual && (() => onManual(true))} onSeek={watch.onSeek} />
+        )}
+        {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
+        <details className="panel watch-full">
+          <summary className="small">Both sides in full: what is known about each set</summary>
+          <BattleState view={view} extra={{ p2: view.derived.length > 0 ? (
+            <div className="worked-out">
+              <div className="tiny dim">Worked out for you</div>
+              <ul className="tiny dim derived">{view.derived.slice(-8).map((d, i) => <li key={i}>{d}</li>)}</ul>
+            </div>
+          ) : undefined }} />
+        </details>
+      </div>
+    );
+  }
+
+  return (
+    <div className="battle-page">
+      {banners}
 
       <div className="battle-bar">
         <div>
@@ -128,30 +205,7 @@ export function BattleSession({ reg, route, navigate, teams, refresh = 0, stamp,
             <TurnLog view={view} onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
                      onManual={onManual && (() => onManual(true))} />
           )}
-          {step === null && manual && onManual && (
-            <div className="row manual-toggle">
-              <button className="link tiny" onClick={() => onManual(false)}>Hide the manual inputs</button>
-            </div>
-          )}
-          {step === null
-            ? manual && <TurnStepper id={id} reg={reg} view={view} busy={busy} autoStart={autoStart} onLog={log} onUndo={undo}
-                           onWalk={(index) => navigate({ tab: "battle", battle: id, step: index }, { replace: true })}
-                           onSomethingElse={() => setFreeForm((f) => !f)} fieldPick={fieldPick}
-                           preview={<>
-                             {yourFour && <YourFour view={view} onLog={log} busy={busy} />}
-                             <Leads view={view} onLog={log} busy={busy} />
-                           </>} />
-            : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
-
-          {manual && step === null && freeForm && (
-            <>
-              <div className="row free-form-head">
-                <span className="tiny dim">Something else: the free-form entry bar</span>
-                <button className="link" onClick={() => { setFreeForm(false); setSelected(null); }}>close (Esc)</button>
-              </div>
-              <EntryBar view={view} selected={selected} onSelect={setSelected} onLog={log} busy={busy} />
-            </>
-          )}
+          {step === null ? stepper : <TurnReview id={id} reg={reg} view={view} step={step} navigate={navigate} />}
           {view.series && <SeriesPanel view={view} series={view.series} navigate={navigate} />}
         </div>
 
@@ -286,22 +340,7 @@ function GateTag({ view, children }: { view: LiveView; children?: ReactNode }) {
  *  A shallow answer rests partly on HP share, and the page says how much, but it is not faded: in
  *  the same check the answers resting ~half on HP share still beat the model. */
 function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView }) {
-  const [ans, setAns] = useState<EngineAnswer | null>(null);
-  useEffect(() => {
-    let live = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const tick = () => api.solve(id, reg).then((a) => {
-      if (!live) return;
-      setAns(a);
-      // A doubles answer has seconds, not minutes: ask again often enough to show it as it lands.
-      // The guesses at their bulk land after the answer, so keep asking until they have.
-      if (a.eligible && (a.searching != null || a.guesses?.pending)) timer = setTimeout(tick, a.kind ? 500 : 2000);
-    }).catch(() => { if (live) timer = setTimeout(tick, 5000); });
-    setAns(null);
-    tick();
-    return () => { live = false; clearTimeout(timer); };
-  }, [id, reg, view]);
-
+  const ans = useEngine(id, reg, view);
   if (!ans) return <div className="engine lead tiny dim">Engine: starting a search…</div>;
   if (!ans.eligible) return ans.reason ? <div className="engine lead tiny dim">Engine: {ans.reason}.</div> : null;
   const pct = (x: number) => Math.round(x * 100);

@@ -8,14 +8,14 @@ const STAT_ORDER = ["atk", "def", "spa", "spd", "spe", "accuracy", "evasion"];
 /** What is known about whether a Pokémon is in this game. Four answers, and the page keeps them
  *  apart because they are different claims: one in the back is alive and can come in; one not
  *  brought never will; one that has not been seen may be either until four of its side have. */
-type Standing = "field" | "back" | "fainted" | "out" | "unknown";
+export type Standing = "field" | "back" | "fainted" | "out" | "unknown";
 
-const LABEL: Record<Standing, string> = {
+export const LABEL: Record<Standing, string> = {
   field: "on the field", back: "in the back", fainted: "fainted", out: "not brought", unknown: "brought?",
 };
-const ORDER: Standing[] = ["field", "back", "fainted", "unknown", "out"];
+export const ORDER: Standing[] = ["field", "back", "fainted", "unknown", "out"];
 
-function standing(m: LiveMon, seen: number): Standing {
+export function standing(m: LiveMon, seen: number): Standing {
   if (m.state === "active") return "field";
   if (m.state === "bench") return "back";
   if (m.state === "fainted") return "fainted";
@@ -24,7 +24,7 @@ function standing(m: LiveMon, seen: number): Standing {
   return seen >= BRING ? "out" : "unknown";
 }
 
-function hpClass(hp: number) {
+export function hpClass(hp: number) {
   return hp > 0.5 ? "hp-ok" : hp > 0.2 ? "hp-low" : "hp-crit";
 }
 

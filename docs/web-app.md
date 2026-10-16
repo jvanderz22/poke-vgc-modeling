@@ -97,8 +97,30 @@ a battle's nameplates or team preview don't. The first team read goes to player 
 player 2, with the broadcast's name for each. A later read of the same team only fills what is
 still empty. Where it disagrees with a field already set, the form keeps its value and the page
 lists the disagreement. Reading stops once both sheets are full. **Start watching** makes a
-Watching battle (`/watch/<id>`), with the two names on its setup, and the right half becomes the
-battle page.
+Watching battle (`/watch/<id>`), with the two names on its setup, and the page becomes the battle
+beside the video.
+
+Once the battle exists the page is laid out to be read at a glance on a laptop, with nothing below
+the fold at 1512×860: the video takes two thirds of the width, both sixes sit under it a row each
+(the player on the left of the screen first, once the reader has seen which that is), and the
+battle is a column beside it (`WatchBoard.tsx`). Top to bottom:
+
+- **The number**, one, said as the question it answers. Where the engine leads (two or fewer a
+  side) it is "with best play from both sides", and the model's stays beside it as "games like
+  this", with its gate verdict. Elsewhere the model's is the number. ⓘ says how each was made.
+  Under it, the model's number at each turn so far, with the engine's as a dot at the end; a point
+  walks back to that turn.
+- **The field**: the four on it with everything known about each (HP, boosts, item, ability,
+  nature, moves; on a hidden sheet "Unknown" for a move not yet seen, with the likeliest a hover
+  away), the field and side conditions with the turns they have left where the page can count
+  them, and Speed as ranges on one axis. A hatched range is all the nature and Stat Points allow;
+  a solid one has been narrowed by turn order. Each pair under it is decided or open.
+- **The turn so far and the one before it**, each line with the video time it was read at; a time
+  puts the video there.
+- Both sides in full (`BattleState`), folded away.
+
+Items, abilities and moves are shown by name (from the pool), not by id. Entering taps by hand puts
+the stepper at the top of the column.
 
 **Read the battle** (while capturing, once the battle exists) sends the player a frame every
 quarter second while the video plays, and none while it is paused, to the battle reader
