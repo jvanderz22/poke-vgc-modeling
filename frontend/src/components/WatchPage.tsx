@@ -450,7 +450,13 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
   return (
     <div className="panel">
       <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
-        <h2 style={{ margin: 0 }}>The two sheets</h2>
+        <span className="row">
+          <h2 style={{ margin: 0 }}>The two sheets</h2>
+          <div className="toggle" role="group" aria-label="Best of">
+            <button className="seg" aria-pressed={bestOf === 1} onClick={() => setBestOf(1)}>Bo1</button>
+            <button className="seg" aria-pressed={bestOf === 3} onClick={() => setBestOf(3)}>Bo3</button>
+          </div>
+        </span>
         <span className="row">
           <button className="link tiny" onClick={() => onWatch((w) => ({
             sheets: [w.sheets[1], w.sheets[0]], names: [w.names[1], w.names[0]],
@@ -467,11 +473,7 @@ function WatchSetup({ reg, route, navigate, pool, watch, onWatch }: {
         </div>
       ))}
       <div className="row" style={{ marginTop: 10 }}>
-        <div className="toggle" role="group" aria-label="Best of">
-          <button className="seg" aria-pressed={bestOf === 1} onClick={() => setBestOf(1)}>Bo1</button>
-          <button className="seg" aria-pressed={bestOf === 3} onClick={() => setBestOf(3)}>Bo3</button>
-        </div>
-        <button disabled={busy || !ready} onClick={start}>Start watching</button>
+        <button disabled={busy || !ready} onClick={start}>Start watching{bestOf === 3 ? " game 1 of a Bo3" : ""}</button>
         {!ready && <span className="tiny dim">{filled(p1)}/{SHEET_SIZE} and {filled(p2)}/{SHEET_SIZE} on the sheets</span>}
       </div>
       {error && <p className="small err" style={{ marginBottom: 0 }}>{error}</p>}
