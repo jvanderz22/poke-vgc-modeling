@@ -621,12 +621,30 @@ def _particle(reg: Regulation, obs: dict[str, Any], state, rng: Any,
             m["moves"] = list(pick.moves)
         if not m["nature"]:
             m["nature"] = pick.nature or None
-        note.setdefault(m["species"], {"sets": len(sb.sheets), "off_meta": sb.off_meta,
-                                       "concentration": round(sb.concentration, 3),
-                                       "evidence": sb.evidence})
+        note.setdefault(m["species"], _set_note(sb))
     for sid in hidden:
         out["sides"][sid]["sheet"] = True
     return out
+
+
+def _set_note(sb) -> dict[str, Any]:
+    return {"sets": len(sb.sheets), "off_meta": sb.off_meta,
+            "concentration": round(sb.concentration, 3), "evidence": sb.evidence}
+
+
+def set_notes(reg: Regulation, state) -> list[dict[str, Any]]:
+    """What is still open about each hidden Pokémon in `state`: `wp`'s `belief`, without the draws."""
+    from vgc.belief import sets as set_belief
+
+    note = {}
+    for sid in ("p1", "p2"):
+        if sid == state.perspective:
+            continue
+        for m in state.sides[sid].mons:
+            sb = set_belief.given(reg, m)
+            if sb.sheets:
+                note[m.species] = _set_note(sb)
+    return [{"species": sp} | v for sp, v in sorted(note.items())]
 
 
 def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
@@ -635,7 +653,42 @@ def _per_record(recs: list[dict[str, Any]], fz, p) -> list[float]:
     return per_record(recs, fz, p)
 
 
-def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> dict[str, Any]:
+def decision_point(battle: entry.Battle, *, closed: bool = False) -> tuple[int, str | None]:
+    """Where the live number is taken: the journal index of the last decision point, and its kind.
+
+    The models were trained on decision points only (`snapshots.human_decision_points`): team
+    preview, just after a turn starts, and the replacements once a turn is over. Inside a turn the
+    rest of the turn has already been chosen, and nothing in an observation says who has acted,
+    so a position read after the faster side's hit and before the slower side's reply leans
+    towards whoever moved first. Scoring it measures the order of the taps, not the game.
+
+    So within a turn this is the turn's start, and once a replacement into a fainted slot has
+    been logged it is the moment just before it, which is where a log takes a `switch` point and
+    is after every move and end-of-turn effect. Before turn 1 and once the game is over it is the
+    journal's end, with no kind (`wp` reads it off the state, as it always has).
+
+    `closed` is for a journal that stops where a turn closed, which a page walking back knows (the
+    next tap was the next `turn`) and a journal being entered does not. Its end is then the point,
+    the same one the trajectory takes at each turn mark.
+    """
+    end = len(battle.journal)
+    turns = [i for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
+    if closed and turns:
+        return end, "turn"
+    if not turns or battle.rp.state.ended:
+        return end, None
+    start = turns[-1] + 1
+    for i in range(start, end):
+        e = battle.journal[i]
+        # A slot is only ever filled while empty by a replacement: a fainted slot stays empty
+        # until the turn is over, and a mid-turn switch (U-turn, Eject Button) is into a full one.
+        if e.get("kind") == "switch" and battle.at(i).state.at(e["side"], int(e["slot"])) is None:
+            return i, "switch"
+    return start, "turn"
+
+
+def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0,
+       kind: str | None = None) -> dict[str, Any]:
     """P(you win) from here, from the position as it has been shown: what their sheet or this
     battle has not revealed is left unknown.
 
@@ -657,7 +710,7 @@ def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0) -> d
 
     model, fz = _load(reg, version)
     obs = state.observation()
-    kind = "preview" if not state.started else "turn"
+    kind = kind or ("preview" if not state.started else "turn")
     # Seeded on the journal length, so the same position gives the same number twice running and
     # the WP does not jitter when nothing happened.
     rng = random.Random(seed)
@@ -741,9 +794,10 @@ def _engine_reason(reg: Regulation, battle) -> str | None:
 
 
 def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
-         version: str | None = None, with_wp: bool = True) -> dict[str, Any]:
+         version: str | None = None, with_wp: bool = True, closed: bool = False) -> dict[str, Any]:
     """Everything one screen needs: the field, what you can tap, what is still being asked, what
-    the Speed bound says, and the number — in that order of trustworthiness."""
+    the Speed bound says, and the number — in that order of trustworthiness. `closed` says the
+    journal stops where a turn closed (`decision_point`)."""
     from vgc.wp import endgame
 
     state = battle.rp.state
@@ -781,9 +835,16 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     }
     if with_wp and version:
         try:
-            # Seeded on how much has been logged, so the same position gives the same number
-            # twice running and the bar does not jitter when nothing has happened.
-            out["wp"] = wp(reg, state, version, seed=len(battle.journal))
+            # Taken at the last decision point, not after every tap (`decision_point`). Seeded on
+            # where that is, so the number holds still while a turn is being entered.
+            at, kind = decision_point(battle, closed=closed)
+            current = at == len(battle.journal)
+            point = battle.rp if current else battle.at(at)
+            out["wp"] = wp(reg, point.state, version, seed=at, kind=kind) | {
+                "as_of": {"at": at, "turn": point.state.turn, "kind": kind, "current": current}}
+            if not current:
+                # The set panel reads `belief`, and a reveal mid-turn belongs on it straight away.
+                out["wp"]["belief"] = set_notes(reg, state)
         except Exception as e:                  # a missing model must not take the screen down
             out["wp"] = {"error": str(e)}
     return out

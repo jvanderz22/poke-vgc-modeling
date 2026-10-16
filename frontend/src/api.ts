@@ -312,6 +312,10 @@ export type LiveWP = {
   wp?: number; lo?: number; hi?: number; k?: number;
   drawn?: number;
   kind?: string;
+  /** The decision point the number was taken at (`live.decision_point`): the turn's start, or
+   *  just before its replacements. `current` is false while a turn is being entered, because a
+   *  position inside a turn is not one the model was trained on. */
+  as_of?: { at: number; turn: number; kind: string | null; current: boolean };
   /** What is still open about each of their six, and how concentrated the belief is. */
   belief?: {
     species: string; sets: number; off_meta: boolean;

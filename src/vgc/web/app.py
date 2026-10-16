@@ -1047,7 +1047,10 @@ def battle_at(battle_id: str, index: int, regulation: str = "reg_mc") -> dict[st
     blob, b = _battle(reg, battle_id)
     index = max(0, min(index, len(b.journal)))
     prefix = entry.Battle(reg, blob["setup"], b.journal[:index])
-    view = _view(reg, blob, prefix)
+    # A prefix that stops at the next turn's tap is a turn that is over, so its own end is where
+    # the number is taken, as the trajectory takes it there.
+    closed = index < len(b.journal) and b.journal[index].get("kind") == "turn"
+    view = _view(reg, blob, prefix, closed=closed)
     return view | {"at": index, "entries_total": len(b.journal)}
 
 

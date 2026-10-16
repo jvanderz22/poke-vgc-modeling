@@ -472,6 +472,64 @@ def test_the_trajectory_is_one_row_a_turn(client, started):
     assert t["gates"]["version"] == t["version"]
 
 
+def _leads(started):
+    """Turn 1 begun, with one of your six against Gholdengo, so nothing logged is an error."""
+    mine = started["sides"]["p1"]["mons"][0]["species"]
+    return ({"kind": "lead", "side": "p1", "slot": 0, "species": mine},
+            {"kind": "lead", "side": "p2", "slot": 0, "species": "Gholdengo"},
+            {"kind": "turn", "n": 1})
+
+
+def test_inside_a_turn_the_number_holds_at_the_turns_start(client, started):
+    """The models were trained on decision points only. Inside a turn the rest of it is already
+    chosen and nothing says who has acted, so the number is the turn's start until the next one."""
+    bid = started["id"]
+    v = entries(client, bid, *_leads(started))
+    at_start = v["wp"]
+    assert at_start["as_of"] == {"at": 3, "turn": 1, "kind": "turn", "current": True}
+
+    v = entries(client, bid, {"kind": "damage", "side": "p2", "slot": 0, "pct": 40})
+    assert not v["errors"]
+    assert v["wp"]["as_of"] == {"at": 3, "turn": 1, "kind": "turn", "current": False}
+    assert (v["wp"]["wp"], v["wp"]["lo"], v["wp"]["hi"]) == (at_start["wp"], at_start["lo"], at_start["hi"])
+    # The set panel follows the battle, not the number: nothing was revealed, so it is unchanged.
+    assert v["wp"]["belief"] == at_start["belief"]
+
+    v = entries(client, bid, {"kind": "turn", "n": 2})
+    assert v["wp"]["as_of"] == {"at": 5, "turn": 2, "kind": "turn", "current": True}
+    assert v["wp"]["wp"] != at_start["wp"]
+
+
+def test_after_a_faint_the_number_moves_to_the_replacement(client, started):
+    """A slot filled while empty is a replacement at the end of a turn, which is where a log takes
+    a `switch` point: the number is the position just before it, scored as one."""
+    bid = started["id"]
+    v = entries(client, bid, *_leads(started),
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 0, "fainted": True})
+    assert v["wp"]["as_of"]["kind"] == "turn" and not v["wp"]["as_of"]["current"]
+    v = entries(client, bid, {"kind": "switch", "side": "p2", "slot": 0, "species": "Kingambit"})
+    assert not v["errors"]
+    assert v["wp"]["as_of"] == {"at": 4, "turn": 1, "kind": "switch", "current": False}
+    assert v["wp"]["kind"] == "switch"
+
+
+def test_walking_back_to_a_turns_end_takes_the_number_there(client, started):
+    """A prefix that stops at the next turn's tap is a turn that is over, so the review shows the
+    number at its end, the same position the trajectory scores."""
+    bid = started["id"]
+    v = entries(client, bid, *_leads(started),
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 40},
+                {"kind": "turn", "n": 2},
+                {"kind": "damage", "side": "p2", "slot": 0, "pct": 20})
+    assert not v["errors"]
+    end_of_1 = client.get(f"/api/battles/{bid}/at/4").json()["wp"]
+    assert end_of_1["as_of"] == {"at": 4, "turn": 1, "kind": "turn", "current": True}
+    mid_2 = client.get(f"/api/battles/{bid}/at/6").json()["wp"]
+    assert mid_2["as_of"] == {"at": 5, "turn": 2, "kind": "turn", "current": False}
+    turns = client.get(f"/api/battles/{bid}/trajectory").json()["turns"]
+    assert end_of_1["wp"] == next(row["wp"] for row in turns if row["index"] == 4)
+
+
 def test_a_battle_takes_the_model_pinned_for_its_regime(client, teams, started):
     """Hidden sheets and open sheets are gated separately, so each gets its own model, recorded on
     the battle — and the screen carries that model's verdicts so it can say when one failed."""

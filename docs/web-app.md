@@ -69,6 +69,15 @@ showing the best lead for each set of four, plus which four the opponent is like
 Both sheets go through the real simulator's validator, so an illegal one comes back with
 Showdown's own message naming the offending Pokémon.
 
+**The number during a turn** stays where the turn started, dimmed, with a line saying so. Once a
+replacement for a fainted Pokémon has been logged, it moves to the moment before that replacement.
+The models were trained on decision points only: team preview, the start of a turn, and
+replacements at its end. Inside a turn the rest of the turn is already chosen, and nothing in an
+observation says who has acted. So a position read after the faster side's hit and before the
+slower side's reply leans towards whoever moved first (`live.decision_point`). The set panel still
+updates on every tap. Walking back to a turn mark shows the number at the end of that turn, the
+same position the trajectory scores.
+
 ### Watch
 
 Someone else's game on YouTube, beside the match. Paste a link (with `t=` if you like) and the page

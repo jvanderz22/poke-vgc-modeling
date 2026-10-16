@@ -204,11 +204,14 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
   const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
   const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
+  // Inside a turn the number stays where the turn started (or where its replacements were
+  // chosen) and says so, because the model was only ever trained on those points.
+  const asOf = wp.as_of && !wp.as_of.current ? wp.as_of : null;
   return (
     <div className={`wp${labelled ? " second" : ""}`}>
       <div className="row wp-line">
         <span>
-          {labelled && <>Model: </>}<b className="wp-num big">{pct(wp.wp)}%</b>{" "}
+          {labelled && <>Model: </>}<b className="wp-num big" style={asOf ? { opacity: 0.6 } : undefined}>{pct(wp.wp)}%</b>{" "}
           <span className="small">{view.perspective === "spectator" ? <><Who name={sideNames(view).p1} /> wins</> : "you win"}</span>
         </span>
         <GateTag view={view}>
@@ -217,6 +220,12 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           <p>{open > 0 ? `${open} of their six still open.` : `Band from ${wp.k} draws.`} {wp.regime}</p>
         </GateTag>
       </div>
+      {asOf && (
+        <div className="tiny dim">
+          {asOf.kind === "switch" ? <>As of the replacements at the end of turn {asOf.turn}</>
+            : <>As of the start of turn {asOf.turn}</>}; it updates when the turn is done.
+        </div>
+      )}
       <div className="wp-bar">
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
