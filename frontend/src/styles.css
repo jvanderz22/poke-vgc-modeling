@@ -567,8 +567,12 @@ main:has(> .battle-page) { max-width: 1600px; }
 .curve-turn { position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; color: var(--dim); text-align: center; }
 
 /* --- the battle state: both sides in full ------------------------------------------------- */
+/* Sized by the panel, not the window: on the watch page it gets half of a wide window, and the
+   window's width said there was room for two columns of rows that need ~400px each. */
+.battle-state { container: battle-state / inline-size; }
 .state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-@media (max-width: 900px) { .state-grid { grid-template-columns: 1fr; } }
+@container battle-state (max-width: 860px) { .state-grid { grid-template-columns: 1fr; } }
+.side-state { container: side-state / inline-size; min-width: 0; }
 .side-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .state-rows { display: flex; flex-direction: column; }
 .state-row {
@@ -580,7 +584,7 @@ main:has(> .battle-page) { max-width: 1600px; }
 .st-pct { text-align: right; font-variant-numeric: tabular-nums; color: var(--dim); }
 .st-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .st-belief { grid-column: 1 / -1; padding-left: 2px; }
-@media (max-width: 620px) {
+@container side-state (max-width: 460px) {
   .state-row { grid-template-columns: 1fr auto; }
   .state-row .board-hp, .st-chips { grid-column: 1 / -1; }
 }
