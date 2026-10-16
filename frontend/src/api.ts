@@ -303,6 +303,12 @@ export type SPBelief = {
   contradicted: string | null;
 };
 
+/** The decision point a number was taken at (`live.decision_point`): the turn's start, just
+ *  before its replacements, or once they are all in. `current` is false while a turn is being
+ *  entered, because a position inside a turn is not one the model was trained on, and a search
+ *  from it would have every Pokémon choose again. */
+export type DecisionPoint = { at: number; turn: number; kind: string | null; current: boolean };
+
 /** `wp` is the position as shown, with what has not been revealed left unknown: on held-out
  *  closed-sheet games that beat averaging over drawn sets. `drawn` is that average over `k`
  *  opponents drawn from the belief, and `lo`/`hi` are the 10th and 90th percentile of the draws,
@@ -312,10 +318,7 @@ export type LiveWP = {
   wp?: number; lo?: number; hi?: number; k?: number;
   drawn?: number;
   kind?: string;
-  /** The decision point the number was taken at (`live.decision_point`): the turn's start, or
-   *  just before its replacements. `current` is false while a turn is being entered, because a
-   *  position inside a turn is not one the model was trained on. */
-  as_of?: { at: number; turn: number; kind: string | null; current: boolean };
+  as_of?: DecisionPoint;
   /** What is still open about each of their six, and how concentrated the belief is. */
   belief?: {
     species: string; sets: number; off_meta: boolean;
@@ -496,6 +499,8 @@ export type EngineAnswer = {
    *  the answer itself; the other two land after it, on a budget of their own. */
   guesses?: { pending: boolean; values: { key: string; label: string; value: number }[] };
   assumptions?: string[];
+  /** The position it answers: the same decision point as the model's number. */
+  as_of?: DecisionPoint;
   error?: string | null;
 };
 

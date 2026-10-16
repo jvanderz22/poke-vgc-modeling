@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, ApiError, modeLabel, sideNames, type BattleRow, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
+import { api, ApiError, modeLabel, sideNames, type BattleRow, type DecisionPoint, type EngineAnswer, type Entry, type LiveView, type Mode, type SavedTeam, type Series, type Species, type TrajectoryRow } from "../api";
 import { EntryBar } from "./EntryBar";
 import { Field } from "./Field";
 import { BattleGateBanner } from "./GateBanner";
@@ -204,9 +204,7 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
   if (!wp || wp.error) return <p className="tiny dim" style={{ margin: "8px 0 0" }}>{wp?.error ?? ""}</p>;
   const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
   const open = view.wp?.belief?.filter((b) => b.sets > 1).length ?? 0;
-  // Inside a turn the number stays where the turn started (or where its replacements were
-  // chosen) and says so, because the model was only ever trained on those points.
-  const asOf = wp.as_of && !wp.as_of.current ? wp.as_of : null;
+  const asOf = wp.as_of && !wp.as_of.current;
   return (
     <div className={`wp${labelled ? " second" : ""}`}>
       <div className="row wp-line">
@@ -220,12 +218,7 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           <p>{open > 0 ? `${open} of their six still open.` : `Band from ${wp.k} draws.`} {wp.regime}</p>
         </GateTag>
       </div>
-      {asOf && (
-        <div className="tiny dim">
-          {asOf.kind === "switch" ? <>As of the replacements at the end of turn {asOf.turn}</>
-            : <>As of the start of turn {asOf.turn}</>}; it updates when the turn is done.
-        </div>
-      )}
+      <AsOf point={wp.as_of} />
       <div className="wp-bar">
         <span className="wp-range" style={{ left: `${pct(wp.lo)}%`, width: `${pct(wp.hi) - pct(wp.lo)}%` }} />
         <span className="wp-mark" style={{ left: `${pct(wp.wp)}%` }} />
@@ -243,6 +236,19 @@ function WPBar({ view, labelled = false }: { view: LiveView; labelled?: boolean 
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Inside a turn a number stays where the turn started (or where its replacements were chosen)
+ *  and says so: the model was only trained on those points, and the engine would have every
+ *  Pokémon choose again from anywhere else. */
+function AsOf({ point }: { point?: DecisionPoint }) {
+  if (!point || point.current) return null;
+  return (
+    <div className="tiny dim">
+      {point.kind === "switch" ? <>As of the replacements at the end of turn {point.turn}</>
+        : <>As of the start of turn {point.turn}</>}; it updates when the turn is done.
     </div>
   );
 }
@@ -319,6 +325,7 @@ function EngineRow({ id, reg, view }: { id: string; reg: string; view: LiveView 
   const hi = guesses.length > 1 ? Math.max(...guesses.map((g) => g.value)) : null;
   return (
     <div className="engine lead tiny dim">
+      <AsOf point={ans.as_of} />
       {ans.value != null && (
         <div className="wp-bar">
           {lo != null && hi != null &&

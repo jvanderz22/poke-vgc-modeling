@@ -1083,7 +1083,10 @@ def battle_solve(battle_id: str, regulation: str = "reg_mc") -> dict[str, Any]:
 
     reg = _reg(regulation)
     _, b = _battle(reg, battle_id)
-    return solving.request(reg, battle_id, b)
+    # Asked where the model's number is taken: a search from inside a turn would have every
+    # Pokémon choose again (`live.decision_point`).
+    point, kind, as_of = live.at_decision_point(b)
+    return solving.request(reg, battle_id, point, kind) | {"as_of": as_of}
 
 
 @app.delete("/api/battles/{battle_id}")

@@ -71,12 +71,15 @@ Showdown's own message naming the offending Pokémon.
 
 **The number during a turn** stays where the turn started, dimmed, with a line saying so. Once a
 replacement for a fainted Pokémon has been logged, it moves to the moment before that replacement.
-The models were trained on decision points only: team preview, the start of a turn, and
-replacements at its end. Inside a turn the rest of the turn is already chosen, and nothing in an
-observation says who has acted. So a position read after the faster side's hit and before the
-slower side's reply leans towards whoever moved first (`live.decision_point`). The set panel still
-updates on every tap. Walking back to a turn mark shows the number at the end of that turn, the
-same position the trajectory scores.
+When no slot is still waiting, it moves to the position the next turn starts from. The models were
+trained on decision points only: team preview, the start of a turn, and replacements at its end.
+Inside a turn the rest of the turn is already chosen, and nothing in an observation says who has
+acted. So a position read after the faster side's hit and before the slower side's reply leans
+towards whoever moved first (`live.decision_point`). The engine's answer is asked about the same
+point, because a search from inside a turn would have every Pokémon choose again. A tap inside a
+turn leaves both alone, and a search under way keeps deepening. The set panel still updates on
+every tap. Walking back to a turn mark shows the number at the end of that turn, the same position
+the trajectory scores. The trajectory's last bar is the live number.
 
 ### Watch
 

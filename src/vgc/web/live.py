@@ -691,10 +691,12 @@ def decision_point(battle: entry.Battle, *, closed: bool = False) -> tuple[int, 
     so a position read after the faster side's hit and before the slower side's reply leans
     towards whoever moved first. Scoring it measures the order of the taps, not the game.
 
-    So within a turn this is the turn's start, and once a replacement into a fainted slot has
-    been logged it is the moment just before it, which is where a log takes a `switch` point and
-    is after every move and end-of-turn effect. Before turn 1 and once the game is over it is the
-    journal's end, with no kind (`wp` reads it off the state, as it always has).
+    So within a turn this is the turn's start. Once a replacement into a fainted slot has been
+    logged, every move and end-of-turn effect is in: while a slot is still waiting it is the
+    moment just before the first replacement, which is where a log takes a `switch` point, and
+    when none is, the turn is over and the journal's end is the next turn's start in all but its
+    counter. Before turn 1 and once the game is over it is the journal's end, with no kind (`wp`
+    reads it off the state, as it always has).
 
     `closed` is for a journal that stops where a turn closed, which a page walking back knows (the
     next tap was the next `turn`) and a journal being entered does not. Its end is then the point,
@@ -712,8 +714,20 @@ def decision_point(battle: entry.Battle, *, closed: bool = False) -> tuple[int, 
         # A slot is only ever filled while empty by a replacement: a fainted slot stays empty
         # until the turn is over, and a mid-turn switch (U-turn, Eject Button) is into a full one.
         if e.get("kind") == "switch" and battle.at(i).state.at(e["side"], int(e["slot"])) is None:
-            return i, "switch"
+            return (i, "switch") if entry.progress(battle.rp, battle.reg)["waiting"] else (end, "turn")
     return start, "turn"
+
+
+def at_decision_point(battle: entry.Battle, *, closed: bool = False
+                      ) -> tuple[entry.Battle, str | None, dict[str, Any]]:
+    """The battle cut at its decision point (`decision_point`), that point's kind, and the `as_of`
+    the page is told. The model's number and the engine's answer are both taken from the cut: a
+    search from inside a turn would have every Pokémon choose again, for the reason the model
+    does not know the position."""
+    at, kind = decision_point(battle, closed=closed)
+    current = at == len(battle.journal)
+    point = battle if current else entry.Battle(battle.reg, battle.setup, battle.journal[:at])
+    return point, kind, {"at": at, "turn": point.rp.state.turn, "kind": kind, "current": current}
 
 
 def wp(reg: Regulation, state, version: str, *, k: int = 24, seed: int = 0,
@@ -777,7 +791,8 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
 
     Each turn is the position as shown, as the live number is, with a band from fewer draws than
     the live one, because this is a whole game at once and a curve does not need the precision a
-    decision does.
+    decision does. The last row is now: the live number's decision point (`decision_point`), not
+    the journal's end, which inside a turn is no position the model knows.
     """
     import random
 
@@ -785,14 +800,15 @@ def trajectory(reg: Regulation, battle: entry.Battle, version: str, *,
     from vgc.wp.features import featurize
     from vgc.wp.tools import _load, _record
 
-    marks = [(i, e["n"]) for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
-    marks.append((len(battle.journal), battle.rp.state.turn))
+    marks = [(i, e["n"], None) for i, e in enumerate(battle.journal) if e.get("kind") == "turn"]
+    now, now_kind = decision_point(battle)
+    marks.append((now, battle.at(now).state.turn, now_kind))
     rows, recs = [], []
-    for index, turn in marks:
+    for index, turn, point_kind in marks:
         rp = battle.at(index)
         obs = rp.state.observation()
         rng = random.Random(index)
-        kind = "preview" if not rp.state.started else "turn"
+        kind = point_kind or ("preview" if not rp.state.started else "turn")
         rows.append({"index": index, "turn": turn, "draws": k,
                      "left": {sid: sum(m.state != "fainted" for m in rp.state.sides[sid].mons[:4])
                               for sid in ("p1", "p2")},
@@ -832,6 +848,8 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
     state = battle.rp.state
     mine, theirs = state.perspective, "p2" if state.perspective == "p1" else "p1"
     belief, contradictions = beliefs(reg, state)
+    # The number and the engine are taken here, not at the journal's end (`decision_point`).
+    point, kind, as_of = at_decision_point(battle, closed=closed)
     out: dict[str, Any] = {
         "id": blob["id"], "name": blob.get("name", ""), "sheets": sheets(blob),
         "perspective": perspective(blob), "players": blob["setup"].get("names", {}),
@@ -859,19 +877,14 @@ def view(reg: Regulation, blob: dict[str, Any], battle: entry.Battle, *,
         "contradictions": contradictions,
         # Whether the engine can be asked about this position (`/solve`), and if not, why.
         # A 1v1, or two or fewer a side on open sheets (`solving.reason`).
-        "endgame": {"eligible": (why := _engine_reason(reg, battle)) is None, "reason": why},
+        "endgame": {"eligible": (why := _engine_reason(reg, point)) is None, "reason": why},
         "series": series_view(reg, blob, state),
     }
     if with_wp and version:
         try:
-            # Taken at the last decision point, not after every tap (`decision_point`). Seeded on
-            # where that is, so the number holds still while a turn is being entered.
-            at, kind = decision_point(battle, closed=closed)
-            current = at == len(battle.journal)
-            point = battle.rp if current else battle.at(at)
-            out["wp"] = wp(reg, point.state, version, seed=at, kind=kind) | {
-                "as_of": {"at": at, "turn": point.state.turn, "kind": kind, "current": current}}
-            if not current:
+            # Seeded on the decision point, so the number holds still while a turn is entered.
+            out["wp"] = wp(reg, point.rp.state, version, seed=as_of["at"], kind=kind) | {"as_of": as_of}
+            if not as_of["current"]:
                 # The set panel reads `belief`, and a reveal mid-turn belongs on it straight away.
                 out["wp"]["belief"] = set_notes(reg, state)
         except Exception as e:                  # a missing model must not take the screen down
