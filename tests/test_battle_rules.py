@@ -500,3 +500,12 @@ def test_a_rocky_helmet_hurts_every_contact_attacker_and_an_unseen_one_is_offere
     assert "Rocky Helmet hurt the attacker" in labels and labels[-1].startswith("nothing announced")
     both = next(o for o in unseen if "both" in o.label)
     assert both.item == "rockyhelmet" and len(both.effects) == 2
+
+
+def test_sleep_left_rules_out_the_counters_it_would_have_woken_from():
+    """Champions draws sleep's counter from 2, 3, 3; each failed try takes one off (Early Bird two)."""
+    assert rules.sleep_left(0) == [(2, pytest.approx(1 / 3)), (3, pytest.approx(2 / 3))]
+    assert rules.sleep_left(1) == [(1, pytest.approx(1 / 3)), (2, pytest.approx(2 / 3))]
+    assert rules.sleep_left(2) == [(1, 1.0)]
+    assert rules.sleep_left(3) == []
+    assert rules.sleep_left(1, early_bird=True) == [(1, 1.0)]

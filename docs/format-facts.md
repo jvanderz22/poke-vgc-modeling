@@ -138,6 +138,22 @@ replacement's Psychic Surge) starts with the next turn.
   `field` or `side` tap names nobody, so the setter is the one Pokémon on that side with the
   ability or the move for it, or nobody, which is five.
 
+### Sleep lasts one try or two, and Yawn's sleep starts at the end of the next turn
+
+Champions draws sleep's counter from 2, 3, 3 as a Pokémon falls asleep. Each try to move takes one
+off (Early Bird two), and the try that reaches 0 wakes and moves, so a Pokémon sleeps through one
+try a third of the time and two otherwise. The counter is hidden, but once the onset has been seen,
+every failed try rules draws out: asleep for two tries, it wakes on the next. Yawn makes its target
+drowsy, and the target falls asleep at the end of the turn after Yawn was used.
+
+- **Source:** the rules; the `slp` condition in the pinned build's Champions mod, and `yawn` in
+  `moves.ts`. Caught 2026-10-16 (Carson Confer vs Paul Chua, game 2): the engine took no account
+  of a pending Yawn and refused every position with a sleeping Pokémon.
+- **In code:** `rules.sleep_left`; `Replay.yawned` and `Replay.sleep_tries` (a try per turn mark spent
+  on the field); `doubles.sleep_draws` splits a position by counter; the solver's `sleep` and `yawn`,
+  and its races skip a sleeping Pokémon's turns (`asleepFor`). A 1v1 with a sleeping Pokémon is
+  still refused.
+
 ## A series
 
 ### A team is locked for a Bo3, Stat Points included

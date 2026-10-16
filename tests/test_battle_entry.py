@@ -702,3 +702,30 @@ def test_a_move_under_trick_room_is_read_as_trick_room(battle):
     battle.append({"kind": "turn", "n": 2})
     rp = battle.append({"kind": "move", "side": "p2", "slot": 0, "move": "Kowtow Cleave", "target": {"side": "p1", "slot": 1}})
     assert rp.state.moves_log[-1].trick_room       # what the Speed read orders this turn by
+
+
+def test_yawn_makes_its_target_drowsy_for_a_turn_and_its_sleep_counts_the_tries_since(reg):
+    """Sylveon's Yawn lands on turn 4: Sneasler is drowsy at the start of turn 5 (as a log's
+    `-start` makes it, which the WP model was trained on), falls asleep at its end, and has spent a
+    try at each turn mark after, turn 6 included though nothing was logged in it."""
+    from vgc import paths
+
+    blob = json.loads((paths.ROOT / "tests" / "fixtures" / "solver" / "yawn_then_sleep.json").read_text())
+    journal = blob["journal"]
+    mark = {e["n"]: i + 1 for i, e in enumerate(journal) if e["kind"] == "turn"}
+
+    def at(n):
+        b = entry.Battle(reg, blob["setup"], journal[:mark[n]])
+        m = next(x for x in b.rp.state.sides["p1"].mons if x.species == "Sneasler")
+        return m, b.rp.sleep_tries.get(("p1", "Sneasler"))
+
+    m, tries = at(5)
+    assert m.volatiles == {"yawn"} and m.status is None and tries is None
+    for n, want in ((6, 0), (7, 1), (8, 2)):
+        m, tries = at(n)
+        assert m.volatiles == set() and m.status == "slp" and tries == want, n
+    # It moved, so it woke.
+    b = entry.Battle(reg, blob["setup"], journal + [
+        {"kind": "move", "side": "p1", "slot": 1, "move": "Dire Claw", "target": {"side": "p2", "slot": 1}}])
+    m = next(x for x in b.rp.state.sides["p1"].mons if x.species == "Sneasler")
+    assert m.status is None and ("p1", "Sneasler") not in b.rp.sleep_tries

@@ -29,6 +29,7 @@ from __future__ import annotations
 import random
 from typing import Any
 
+from vgc.battle import rules
 from vgc.regulation import Regulation, to_id
 from vgc.wp import endgame, solver
 
@@ -55,10 +56,13 @@ def actives(state, sid: str) -> list[Any]:
     return sorted(endgame._left(state, sid), key=lambda m: m.position if m.position is not None else 9)
 
 
-def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
+def reason(reg: Regulation, state, both_closed: bool = False,
+           sleep: dict[tuple[str, str], int] | None = None) -> str | None:
     """Why this is not a position with at most two Pokémon a side that this module builds, or
     None when it is. `both_closed` says two closed sheets can be read again with candidate sets
-    shown (a replay can, a hand-entered battle cannot)."""
+    shown (a replay can, a hand-entered battle cannot). `sleep` is the tries each Pokémon seen
+    falling asleep has spent asleep (`Replay.sleep_tries`): with it, its counter is known well
+    enough to solve."""
     if not state.started or state.ended:
         return "the battle is not in progress"
     left = {}
@@ -73,9 +77,13 @@ def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
         return "a 1v1, which `endgame` answers"
     for sid in ("p1", "p2"):
         for m in actives(state, sid):
-            if m.volatiles:
-                return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
-            if m.status and m.status not in endgame.STATUSES:
+            if m.volatiles - endgame.SOLVED_VOLATILES:
+                return (f"{m.species} has {', '.join(sorted(m.volatiles - endgame.SOLVED_VOLATILES))}, "
+                        "which the solver cannot set up")
+            if m.status == "slp" and (sid, m.species) in (sleep or {}):
+                if not _sleep_left(m, sleep[(sid, m.species)]):
+                    return f"{m.species} has been asleep longer than sleep lasts: a wake or a turn is missing"
+            elif m.status and m.status not in endgame.STATUSES:
                 return f"{m.species} is {m.status}, whose turn counter is not shown"
     if not both_closed and not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
         return "neither side's sets are known"
@@ -222,7 +230,9 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
         "fainted": {sid: sum(x.state == "fainted" for x in state.sides[sid].mons) for sid in mons},
         "boosts": {sid: [{k: v for k, v in m.boosts.items() if v} for m in ms] for sid, ms in mons.items()},
         "consumed": {sid: [bool(m.lost_item) and not m.item for m in ms] for sid, ms in mons.items()},
-        "status": {sid: [m.status if m.status in endgame.STATUSES else None for m in ms] for sid, ms in mons.items()},
+        "status": {sid: [m.status if m.status in endgame.STATUSES or m.status == "slp" else None for m in ms]
+                   for sid, ms in mons.items()},
+        "yawn": {sid: ["yawn" in m.volatiles for m in ms] for sid, ms in mons.items()},
         "sides": {sid: {c: left(since, endgame.SIDE_TURNS[c]) for c, since in state.sides[sid].conditions.items()
                         if c in endgame.SIDE_TURNS and left(since, endgame.SIDE_TURNS[c])} for sid in mons},
         "timesAttacked": {sid: [sum(d.target_side == sid and d.target == m.species for d in state.damage_log)
@@ -241,7 +251,8 @@ def facts(reg: Regulation, battle, side_sets: dict[str, list[dict[str, Any]]],
     tr = state.pseudo.get("trickroom")
     out["trickroom"] = left(tr, endgame.FIELD_TURNS) or None if tr is not None else None
     # A list that says nothing for any Pokémon is left out, as `compose` prunes the 1v1's.
-    for k in ("boosts", "consumed", "status", "timesAttacked", "stall", "fresh", "choicelock", "mega", "evolving"):
+    for k in ("boosts", "consumed", "status", "timesAttacked", "stall", "fresh", "choicelock", "mega", "evolving",
+              "yawn"):
         out[k] = {sid: v for sid, v in out[k].items() if any(v)}
     return out
 
@@ -437,11 +448,53 @@ def _unplayable(side_sets: dict[str, list[dict[str, Any]]]) -> str | None:
 
 
 def plan(reg: Regulation, battle, search: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Every position one answer needs — one per move order, and on a closed sheet one per
-    combination of likely sets as well — with its weight, or why there is none."""
+    """Every position one answer needs — one per move order, on a closed sheet one per combination
+    of likely sets as well, and one per counter a sleeping Pokémon's sleep can have — with its
+    weight, or why there is none."""
+    got = _plan(reg, battle, search)
+    draws = sleep_draws(battle)
+    if not got.get("eligible") or draws == [({}, 1.0, "")]:
+        return got
+    jobs = [{**j, "order": j["order"] + label, "weight": j["weight"] * p,
+             "position": {**j["position"], "setup": {**j["position"]["setup"], "sleep": counters}}}
+            for j in got["jobs"] for counters, p, label in draws]
+    return {**got, "jobs": sorted(jobs, key=lambda j: -j["weight"])}
+
+
+def _sleep_left(m: Any, tries: int) -> list[tuple[int, float]]:
+    return rules.sleep_left(tries, early_bird=to_id(m.ability or "") == "earlybird")
+
+
+def sleep_draws(battle) -> list[tuple[dict[str, list[int]], float, str]]:
+    """Each way the sleep counters of the Pokémon asleep on the field can stand, as the solver's
+    `sleep` (the counter each has left, by slot), with its probability and a label for the page.
+    Sleep's counter is hidden, but the draw it came from and the tries since say what it can be
+    (`rules.sleep_left`)."""
+    state = battle.rp.state
+    tries = getattr(battle.rp, "sleep_tries", None) or {}
+    draws: list[tuple[dict[str, list[int]], float, str]] = [({}, 1.0, "")]
+    for sid in ("p1", "p2"):
+        on = actives(state, sid)
+        for i, m in enumerate(on):
+            if m.status != "slp" or (sid, m.species) not in tries:
+                continue
+            nxt = []
+            for counters, p, label in draws:
+                for n, q in _sleep_left(m, tries[(sid, m.species)]):
+                    c = {k: list(v) for k, v in counters.items()}
+                    c.setdefault(sid, [0] * len(on))[i] = n
+                    more = ("wakes on its next try" if n == 1 else
+                            f"sleeps through {n - 1} more {'try' if n == 2 else 'tries'}")
+                    nxt.append((c, p * q, f"{label} · {m.species} {more}"))
+            draws = nxt
+    return draws
+
+
+def _plan(reg: Regulation, battle, search: dict[str, Any] | None = None) -> dict[str, Any]:
     search = {**SEARCH, **(search or {})}
     state = battle.rp.state
-    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"))
+    why = reason(reg, state, both_closed=hasattr(battle, "with_sets"),
+                 sleep=getattr(battle.rp, "sleep_tries", None))
     if why:
         return {"eligible": False, "reason": why}
     notes: list[str] = []

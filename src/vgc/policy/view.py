@@ -184,8 +184,9 @@ def reason(reg: Regulation, view: PlayerView) -> str | None:
         if left > len(on) and len(on) < 2 and sid not in empty:
             return "a slot is waiting for a replacement"
         for m in on:
-            if m.volatiles:
-                return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
+            if m.volatiles - endgame.SOLVED_VOLATILES:
+                return (f"{m.species} has {', '.join(sorted(m.volatiles - endgame.SOLVED_VOLATILES))}, "
+                        "which the solver cannot set up")
         for m in _left(state, sid):
             if m.status and m.status not in endgame.STATUSES:
                 return f"{m.species} is {m.status}, whose turn counter is not shown"
@@ -398,8 +399,9 @@ def value_reason(reg: Regulation, view: Any) -> str | None:
         if len(on) < min(2, left[sid]):
             return "a slot is waiting for a replacement"
         for m in on:
-            if m.volatiles:
-                return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
+            if m.volatiles - endgame.SOLVED_VOLATILES:
+                return (f"{m.species} has {', '.join(sorted(m.volatiles - endgame.SOLVED_VOLATILES))}, "
+                        "which the solver cannot set up")
         for m in _left(state, sid):
             if m.status and m.status not in endgame.STATUSES:
                 return f"{m.species} is {m.status}, whose turn counter is not shown"

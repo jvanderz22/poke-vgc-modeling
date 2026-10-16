@@ -49,6 +49,9 @@ from vgc.wp import solver
 SIDE_TURNS = {"tailwind": 4, "reflect": 5, "lightscreen": 5, "auroraveil": 5}
 FIELD_TURNS = 5
 STATUSES = ("brn", "par", "psn")
+# Volatiles the solver sets up: Yawn's drowsiness, which puts its holder to sleep at the end of the
+# turn (`yawn` in the solver's setup).
+SOLVED_VOLATILES = {"yawn"}
 # Moves the solver cannot play: Revival Blessing brings back a fainted teammate, and the solver's
 # fainted teammates are stand-ins. A set with one is not solved; its weight is left unsolved.
 UNSOLVABLE_MOVES = {"revivalblessing"}
@@ -77,8 +80,8 @@ def reason(reg: Regulation, state, both_closed: bool = False) -> str | None:
             return "each side needs exactly one Pokémon left"
     for sid in ("p1", "p2"):
         m = _left(state, sid)[0]
-        if m.volatiles:
-            return f"{m.species} has {', '.join(sorted(m.volatiles))}, which the solver cannot set up"
+        if m.volatiles - SOLVED_VOLATILES:
+            return f"{m.species} has {', '.join(sorted(m.volatiles - SOLVED_VOLATILES))}, which the solver cannot set up"
         if m.status and m.status not in STATUSES:
             return f"{m.species} is {m.status}, whose turn counter is not shown"
     if not both_closed and not any(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):
@@ -348,6 +351,7 @@ def facts(reg: Regulation, battle, sets: dict[str, dict[str, Any]]) -> dict[str,
         "mega": {sid: bool(sets[sid].get("mega")) for sid in mons},
         # A Mega assumed for this turn (`_mega`), whose ability the solver announces on the field.
         "evolving": {sid: bool(sets[sid].get("mega")) and not m.mega for sid, m in mons.items()},
+        "yawn": {sid: "yawn" in m.volatiles for sid, m in mons.items()},
         "fainted": {sid: sum(x.state == "fainted" for x in state.sides[sid].mons) for sid in mons},
         "boosts": {sid: {k: v for k, v in m.boosts.items() if v} for sid, m in mons.items()},
         "consumed": {sid: bool(m.lost_item) and not m.item for sid, m in mons.items()},

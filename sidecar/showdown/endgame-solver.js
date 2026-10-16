@@ -16,7 +16,9 @@
  *            boosts: {p1: {...}, p2: {...}}, consumed: {p1: bool, p2: bool},
  *            choicelock: {p1: moveid, p2: moveid}, timesAttacked: {p1: n, p2: n},
  *            fresh: {p1: bool, p2: bool} (just switched in; otherwise it has been out a while),
- *            status: {p1: 'brn' | 'par' | 'psn', p2: ...},
+ *            status: {p1: 'brn' | 'par' | 'psn' | 'slp', p2: ...},
+ *            sleep: {p1: n, p2: n} (a sleeping Pokémon's counter: the try that takes it to 0 wakes),
+ *            yawn: {p1: bool, p2: bool} (drowsy: it falls asleep at the end of this turn),
  *            stall: {p1: n, p2: ...} (Protect and its kin used n turns running: the next works
  *            one time in 3^n),
  *            sides: {p1: {tailwind | reflect | lightscreen | auroraveil: turns}, p2: {...}}},
@@ -49,7 +51,7 @@
 // the search). A change that cannot (a comment, pruning that is switched off, speed that leaves
 // every answer as it was) keeps it, and so keeps every cached answer. A forgotten bump is caught
 // by `vgc wp cache-check`, which solves a sample of cached answers again without the cache.
-const VERSION = 2;
+const VERSION = 3;
 
 const path = require('path');
 const crypto = require('crypto');
@@ -200,13 +202,27 @@ function setUp(pos) {
 			const slot = me.moveSlots.find(m => m.id === id);
 			if (slot) slot.pp = 0;
 		}
-		// Only the statuses whose effect is fixed once set. Sleep and bad poison carry a counter the
-		// cartridge does not show, so a position with either is not built (vgc.wp.endgame says so).
+		// Bad poison carries a counter the cartridge does not show, so a position with it is not built
+		// (vgc.wp.endgame says so). Sleep comes with its counter (`sleep`, the tries it has left, drawn
+		// by vgc.wp.doubles from when it fell asleep) and a foe as its source, which Sleep Clause reads.
 		const status = per(s.status, side, i);
 		if (status) me.setStatus(status, me, null, true);
+		if (status === 'slp') {
+			const left = per(s.sleep, side, i);
+			if (!left) throw new Error(`${me.name} is asleep with no counter`);
+			me.statusState.time = me.statusState.startTime = left;
+			me.statusState.source = side.foe.active.find(p => p && !p.fainted) || me;
+		}
 		// Protect used `stall` turns running: the simulator's own counter, which triples each time.
 		const stall = out && per(s.stall, side, i);
 		if (stall) { me.addVolatile('stall'); me.volatiles.stall.counter = 3 ** stall; }
+		// Yawned last turn: it falls asleep at the end of this one (a switch clears it). The source is
+		// a foe, which is what Sleep Clause reads.
+		if (out && per(s.yawn, side, i)) {
+			const foe = side.foe.active.find(p => p && !p.fainted);
+			me.addVolatile('yawn', foe);
+			me.volatiles.yawn.duration = 1;
+		}
 	});
 	// `megaUsed`: the side has Mega Evolved already, with a Pokémon no longer in the position, so a
 	// second stone holder cannot (a position with a bench may have one).
@@ -737,6 +753,15 @@ function race(snap) {
 	return solve(M).value;
 }
 
+// The turns a sleeping Pokémon has yet to lose: the simulator counts its sleep down on each try to
+// move and it moves on the try that reaches 0 (Early Bird counts two a try). Champions draws the
+// count from 2, 3, 3 as it falls asleep, so one fallen asleep this turn loses one turn or two.
+function asleepFor(p) {
+	if (p.status !== 'slp') return 0;
+	const time = p.statusState.time || 1;
+	return p.hasAbility('earlybird') ? Math.ceil(time / 2) - 1 : time - 1;
+}
+
 // P(p1 wins) when each side uses one attack every turn: a distribution over both HP totals.
 function duel(mons, atk, speed) {
 	const max = mons.map(p => p.maxhp);
@@ -756,16 +781,20 @@ function duel(mons, atk, speed) {
 	const fires = (who, turn) => !atk[who].charge || (turn % 2 === (atk[who].charge === 2 ? 1 : 0));
 	const orders = atk[0].priority !== atk[1].priority ? [[atk[0].priority > atk[1].priority ? 0 : 1, 1]]
 		: speed[0] !== speed[1] ? [[speed[0] > speed[1] ? 0 : 1, 1]] : [[0, 0.5], [1, 0.5]];
-	let states = new Map([[`${mons[0].hp}|${mons[1].hp}|${+sitrus[0]}|${+sitrus[1]}`, 1]]);
+	// The state: both HP totals, whether each still has its Sitrus Berry, and the turns each has yet
+	// to sleep.
+	let states = new Map([[`${mons[0].hp}|${mons[1].hp}|${+sitrus[0]}|${+sitrus[1]}|${asleepFor(mons[0])}|${asleepFor(mons[1])}`, 1]]);
 	let won = 0, live = 0;
 	for (let turn = 0; turn < RACE_TURNS && states.size; turn++) {
 		const next = new Map();
-		const add = (hp, berry, p) => {
-			const k = `${hp[0]}|${hp[1]}|${berry[0]}|${berry[1]}`;
+		const add = (hp, berry, sleep, p) => {
+			const k = `${hp[0]}|${hp[1]}|${berry[0]}|${berry[1]}|${sleep[0]}|${sleep[1]}`;
 			next.set(k, (next.get(k) || 0) + p);
 		};
 		for (const [k, p0] of states) {
-			const [h0, h1, b0, b1] = k.split('|').map(Number);
+			const [h0, h1, b0, b1, s0, s1] = k.split('|').map(Number);
+			// Each sleeping one loses its try this turn, whoever goes first.
+			const sleep = [Math.max(0, s0 - 1), Math.max(0, s1 - 1)];
 			for (const [first, po] of orders) {
 				// Each branch: [hp, berry, p, ended (null, or p1's result)]
 				let branches = [[[h0, h1], [b0, b1], p0 * po, null]];
@@ -774,7 +803,7 @@ function duel(mons, atk, speed) {
 					const after = [];
 					for (const [hp, berry, p, end] of branches) {
 						if (end !== null) { after.push([hp, berry, p, end]); continue; }
-						const acts = !fires(who, turn) ? [{p: 1, d: 0}]
+						const acts = !fires(who, turn) || [s0, s1][who] > 0 ? [{p: 1, d: 0}]
 							: para[who] ? [{p: para[who], d: null}, ...outs[who].map(o => ({p: o.p * (1 - para[who]), d: o.d}))] : outs[who];
 						for (const o of acts) {
 							const h = hp.slice(), b = berry.slice();
@@ -801,7 +830,7 @@ function duel(mons, atk, speed) {
 					const h = hp.map((x, i) => Math.min(max[i], x + residual[i]));
 					const out0 = h[0] <= 0, out1 = h[1] <= 0;
 					if (out0 || out1) { won += p * (out0 && out1 ? 0.5 : out1 ? 1 : 0); continue; }
-					add(h, berry, p);
+					add(h, berry, sleep, p);
 				}
 			}
 		}
@@ -979,7 +1008,7 @@ function melee(snap, seedKey, live = null, search = null) {
 		}
 		mons.push({side: s, mon: me, foes: foes.map(f => sides[1 - s].indexOf(f)), moves, speed: me.getActionSpeed(),
 			max: me.maxhp, sash: me.item === 'focussash' || me.ability === 'sturdy', sitrus: me.item === 'sitrusberry',
-			para: me.status === 'par' ? 1 / 8 : 0,
+			para: me.status === 'par' ? 1 / 8 : 0, sleep: asleepFor(me),
 			residual: (me.item === 'leftovers' ? Math.floor(me.maxhp / 16) : 0) - (me.status === 'brn' ? Math.floor(me.maxhp / 16) : 0)
 				- (['psn', 'tox'].includes(me.status) ? Math.floor(me.maxhp / 8) : 0)});
 	}
@@ -988,6 +1017,7 @@ function melee(snap, seedKey, live = null, search = null) {
 	let won = 0;
 	for (let run = 0; run < runs; run++) {
 		const hp = mons.map(x => x.mon.hp), berry = mons.map(x => x.sitrus), sash = mons.map(x => x.sash);
+		const asleep = mons.map(x => x.sleep);
 		const alive = s => mons.some((x, k) => x.side === s && hp[k] > 0);
 		let result = null;
 		for (let turn = 0; turn < RACE_TURNS && result === null; turn++) {
@@ -1014,6 +1044,7 @@ function melee(snap, seedKey, live = null, search = null) {
 			for (const k of order) {
 				if (hp[k] <= 0) continue;
 				const x = mons[k], {mv} = plan[k];
+				if (asleep[k] > 0) { asleep[k]--; continue; }
 				if (x.para && rng.random() < x.para) continue;
 				let ts = plan[k].ts.filter(t => hp[t.k] > 0);
 				if (!ts.length && !mv.spread) {
@@ -1124,7 +1155,7 @@ function meleeBench(snap, seedKey, live = null, search = null) {
 		if (tr) v = 1e4 - v;
 		x.speed = tw[x.side] ? v / 2 : v;
 		Object.assign(x, {max: me.maxhp, sash: me.item === 'focussash' || me.ability === 'sturdy', sitrus: me.item === 'sitrusberry',
-			para: me.status === 'par' ? 1 / 8 : 0,
+			para: me.status === 'par' ? 1 / 8 : 0, sleep: asleepFor(me),
 			residual: (me.item === 'leftovers' ? Math.floor(me.maxhp / 16) : 0) - (me.status === 'brn' ? Math.floor(me.maxhp / 16) : 0)
 				- (['psn', 'tox'].includes(me.status) ? Math.floor(me.maxhp / 8) : 0)});
 	}
@@ -1133,6 +1164,7 @@ function meleeBench(snap, seedKey, live = null, search = null) {
 	let won = 0;
 	for (let run = 0; run < runs; run++) {
 		const hp = mons.map(x => x.mon.hp), berry = mons.map(x => x.sitrus), sash = mons.map(x => x.sash);
+		const asleep = mons.map(x => x.sleep);
 		const on = [...startOn];
 		const alive = s => mons.some((x, k) => x.side === s && hp[k] > 0);
 		const onField = s => mons.map((x, k) => k).filter(k => mons[k].side === s && on[k] && hp[k] > 0);
@@ -1164,6 +1196,7 @@ function meleeBench(snap, seedKey, live = null, search = null) {
 			for (const k of order) {
 				if (hp[k] <= 0) continue;
 				const x = mons[k], {mv} = plan[k];
+				if (asleep[k] > 0) { asleep[k]--; continue; }
 				if (x.para && rng.random() < x.para) continue;
 				const foes = onField(1 - x.side);
 				let ts = plan[k].ts.filter(t => hp[t] > 0 && on[t]);

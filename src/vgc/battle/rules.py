@@ -452,6 +452,25 @@ DRAIN = {"bitterblade": (1, 2), "drainingkiss": (3, 4), "drainpunch": (1, 2), "g
 # room again while it is up ends it; Gravity just fails.
 FIELD_MOVES = {"trickroom", "magicroom", "wonderroom", "gravity"}
 FIELD_TURNS = 5
+
+# Sleep's counter as Champions draws it on falling asleep (the `slp` condition in its mod): 2 or 3,
+# 3 twice as often. Each try to move takes one off (Early Bird two) and the try that reaches 0 wakes
+# and moves, so it sleeps through one try or two.
+SLEEP_COUNTER = {2: 1 / 3, 3: 2 / 3}
+# Moves a sleeping Pokémon uses without waking.
+SLEEP_USABLE = {"sleeptalk", "snore"}
+# Yawn's target falls asleep at the end of the turn after the one it was used in.
+YAWN_TURNS = 2
+
+
+def sleep_left(tries: int, early_bird: bool = False) -> list[tuple[int, float]]:
+    """The counter a Pokémon asleep for `tries` failed tries can have now, with its probability:
+    every draw it would already have woken from is ruled out. Empty when none is left, which says a
+    wake or a try was logged wrong."""
+    step = 2 if early_bird else 1
+    left = {start - tries * step: p for start, p in SLEEP_COUNTER.items() if start - tries * step > 0}
+    total = sum(left.values())
+    return [(n, p / total) for n, p in sorted(left.items())]
 TOGGLES = {"trickroom", "magicroom", "wonderroom"}
 
 

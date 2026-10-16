@@ -440,7 +440,7 @@ def reason(reg: Regulation, battle) -> tuple[str | None, type]:
 def doubles_reason(reg: Regulation, battle) -> str | None:
     """Why a battle's position is not one the doubles answer is shown for, or None."""
     state = battle.rp.state
-    why = doubles.reason(reg, state)
+    why = doubles.reason(reg, state, sleep=getattr(battle.rp, "sleep_tries", None))
     if why:
         return why
     if not all(state.sides[sid].sheet or sid == state.perspective for sid in ("p1", "p2")):

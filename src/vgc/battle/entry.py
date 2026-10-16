@@ -138,6 +138,13 @@ class Replay:
     last_in: dict[tuple[str, int], str] = field(default_factory=dict)
     # When each badly poisoned Pokémon was poisoned, for the toxic counter. Reset on switching in.
     tox_since: dict[tuple[str, str], int] = field(default_factory=dict)
+    # The turn Yawn landed on each Pokémon still drowsy, keyed (side, species): it falls asleep at the
+    # end of the next turn, and is drowsy (the `yawn` volatile) until then.
+    yawned: dict[tuple[str, str], int] = field(default_factory=dict)
+    # Tries to move each Pokémon has spent asleep since it fell asleep in front of us, keyed (side,
+    # species): sleep's counter is hidden, but how it was drawn and these say what it can be
+    # (`rules.sleep_left`). Missing for a sleep whose start was not seen.
+    sleep_tries: dict[tuple[str, str], int] = field(default_factory=dict)
     # End-of-turn effects already confirmed this turn (`eot` on a damage or heal), so a reload does
     # not offer a Leftovers heal that has already been logged.
     eot_done: set[str] = field(default_factory=set)
@@ -446,6 +453,7 @@ def _on_swap(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
 
 def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     n = int(e["n"])
+    _sleep_turn(rp, n)
     # Trick Room and its kind end after their fifth turn. Before the turn starts, because its
     # switches are read in Speed order too.
     for effect, since in list(rp.state.pseudo.items()):
@@ -459,9 +467,29 @@ def _on_turn(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     rp.guarded_before, rp.guarded, rp.shielded = rp.guarded, set(), set()
 
 
+def _sleep_turn(rp: Replay, n: int) -> None:
+    """At the mark of turn `n`: each sleeping Pokémon that was out for all of the turn before spent a
+    try in it, and Yawn used two turns back has done its work (its target fell asleep, or the drowsy
+    one was protected from it), so nobody is drowsy from it any more."""
+    for (sid, species), tries in list(rp.sleep_tries.items()):
+        m = _named(rp, sid, species)
+        if m.status != "slp":
+            del rp.sleep_tries[(sid, species)]
+        elif m.state == "active" and rp.came_in.get((sid, species), -1) < n - 1:
+            rp.sleep_tries[(sid, species)] = tries + 1
+    for (sid, species), since in list(rp.yawned.items()):
+        if n >= since + rules.YAWN_TURNS:
+            _named(rp, sid, species).volatiles.discard("yawn")
+            del rp.yawned[(sid, species)]
+
+
 def _on_move(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     m = _active(rp, e)
     move = to_id(e["move"])
+    if m.status == "slp" and move not in rules.SLEEP_USABLE and not e.get("called_by"):
+        # It moved, so it woke first.
+        m.status = None
+        rp.sleep_tries.pop((e["side"], m.species), None)
     target = e.get("target")
     ident = None
     if target:
@@ -538,6 +566,12 @@ def _move_effects(rp: Replay, reg: Regulation, e: dict[str, Any], m: Mon, move: 
         aimed = []
     targets = [t for (s, x) in aimed if (s, x) not in settled and (t := rp.state.at(s, x)) is not None]
     if (reg.dex.get_move(move) or {}).get("category") == "Status":
+        if move == "yawn" and e.get("target"):
+            for t in targets:
+                key = (e["target"]["side"], t.species)
+                if t.status is None and key not in rp.yawned:
+                    t.volatiles.add("yawn")
+                    rp.yawned[key] = rp.state.turn
         if move in rules.MOVE_SELF:
             _stat_change(rp, reg, m, rules.MOVE_SELF[move], source=None, move=move)
         for t in targets if move in rules.MOVE_TARGET else []:
@@ -832,9 +866,19 @@ def _on_status(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
     if status is not None and status not in STATUSES:
         raise EntryError(f"unknown status {status!r}")
     m = _active(rp, e)
+    key = (e["side"], m.species)
+    if status == "slp" and m.status != "slp":
+        # Its try this turn is still to come unless it has had its turn: Yawn's sleep lands at the
+        # end of the turn, after everyone has.
+        rp.sleep_tries[key] = -1 if key in rp.acted or rp.turn_over else 0
+    elif status != "slp":
+        rp.sleep_tries.pop(key, None)
+    if status is not None:
+        m.volatiles.discard("yawn")
+        rp.yawned.pop(key, None)
     m.status = status
     if status == "tox":
-        rp.tox_since[(e["side"], m.species)] = rp.state.turn
+        rp.tox_since[key] = rp.state.turn
 
 
 def _on_boost(rp: Replay, reg: Regulation, e: dict[str, Any]) -> None:
